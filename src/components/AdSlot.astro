@@ -1,0 +1,34 @@
+---
+// Renders a Google AdSense unit once PUBLIC_ADSENSE_CLIENT is configured (see .env.example).
+// Until then it renders nothing in production, and a labeled placeholder box in dev
+// so the layout can be reviewed before AdSense approval comes through.
+const client = import.meta.env.PUBLIC_ADSENSE_CLIENT as string | undefined;
+const slot = import.meta.env.PUBLIC_ADSENSE_SLOT as string | undefined;
+---
+
+{
+  client && slot ? (
+    <ins
+      class="adsbygoogle"
+      style="display:block"
+      data-ad-client={client}
+      data-ad-slot={slot}
+      data-ad-format="auto"
+      data-full-width-responsive="true"
+    />
+  ) : import.meta.env.DEV ? (
+    <div class="ad-placeholder">Ad slot (set PUBLIC_ADSENSE_CLIENT / PUBLIC_ADSENSE_SLOT to enable)</div>
+  ) : null
+}
+
+<style>
+  .ad-placeholder {
+    border: 1px dashed #999;
+    border-radius: 8px;
+    padding: 1rem;
+    text-align: center;
+    font-size: 0.85rem;
+    color: #888;
+    margin: 1.5rem 0;
+  }
+</style>

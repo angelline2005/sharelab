@@ -1,0 +1,79 @@
+---
+// Minimal cookie consent banner. Required before showing personalized ads to
+// visitors in the EEA/UK once AdSense is live — see /privacy-policy.
+// Stores the choice in localStorage as "cookie-consent": "accepted" | "declined".
+---
+
+<div id="cookie-consent" class="cookie-consent" hidden>
+  <p>
+    <slot name="message">This site uses cookies for analytics and ads.</slot>
+  </p>
+  <div class="cookie-consent-actions">
+    <button id="cookie-decline" type="button">Decline</button>
+    <button id="cookie-accept" type="button">Accept</button>
+  </div>
+</div>
+
+<script>
+  const KEY = 'cookie-consent';
+  const banner = document.getElementById('cookie-consent');
+  const accept = document.getElementById('cookie-accept');
+  const decline = document.getElementById('cookie-decline');
+
+  function setChoice(value: 'accepted' | 'declined') {
+    localStorage.setItem(KEY, value);
+    banner?.setAttribute('hidden', '');
+    document.dispatchEvent(new CustomEvent('cookie-consent-changed', { detail: value }));
+  }
+
+  const existing = localStorage.getItem(KEY);
+  if (!existing && banner) {
+    banner.hidden = false;
+  }
+
+  accept?.addEventListener('click', () => setChoice('accepted'));
+  decline?.addEventListener('click', () => setChoice('declined'));
+</script>
+
+<style>
+  .cookie-consent {
+    position: fixed;
+    left: 1rem;
+    right: 1rem;
+    bottom: 1rem;
+    max-width: 32rem;
+    margin: 0 auto;
+    background: #1a1a1a;
+    color: #fff;
+    padding: 1rem 1.25rem;
+    border-radius: 10px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+    z-index: 100;
+    font-size: 0.9rem;
+  }
+  .cookie-consent p {
+    margin: 0 0 0.75rem;
+  }
+  .cookie-consent-actions {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: flex-end;
+  }
+  .cookie-consent-actions button {
+    border: none;
+    border-radius: 6px;
+    padding: 0.4rem 0.9rem;
+    cursor: pointer;
+    font-size: 0.85rem;
+  }
+  #cookie-accept {
+    background: #fff;
+    color: #111;
+    font-weight: 600;
+  }
+  #cookie-decline {
+    background: transparent;
+    color: #fff;
+    border: 1px solid rgba(255, 255, 255, 0.4);
+  }
+</style>

@@ -1,0 +1,36 @@
+---
+import type { Locale } from '../i18n';
+
+interface Props {
+  currentLocale: Locale;
+  // Fully-resolved target URL for each locale. Callers must compute these
+  // themselves (e.g. by looking up the sibling post's real slug) rather than
+  // assuming the two locales share the same slug — they often don't.
+  hrefs: Record<Locale, string>;
+}
+
+const { currentLocale, hrefs } = Astro.props;
+---
+
+<nav class="lang-switcher" aria-label="Language">
+  <a href={hrefs.vi} aria-current={currentLocale === 'vi' ? 'page' : undefined}>VI</a>
+  <span aria-hidden="true">/</span>
+  <a href={hrefs.en} aria-current={currentLocale === 'en' ? 'page' : undefined}>EN</a>
+</nav>
+
+<style>
+  .lang-switcher {
+    display: inline-flex;
+    gap: 0.4em;
+    font-size: 0.9rem;
+  }
+  .lang-switcher a {
+    text-decoration: none;
+    color: inherit;
+    opacity: 0.6;
+  }
+  .lang-switcher a[aria-current='page'] {
+    opacity: 1;
+    font-weight: 600;
+  }
+</style>

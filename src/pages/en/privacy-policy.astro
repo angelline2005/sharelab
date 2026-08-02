@@ -1,0 +1,46 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { useTranslations } from '../../i18n';
+import { sameSlugLangHrefs } from '../../utils/url';
+
+const t = useTranslations('en');
+---
+
+<BaseLayout
+  locale="en"
+  title={t('nav.privacy')}
+  description="Privacy policy for sharelab"
+  langHrefs={sameSlugLangHrefs('/privacy-policy/')}
+>
+  <h1>Privacy Policy</h1>
+  <p><em>Last updated: <!-- TODO: update date --> [date]</em></p>
+
+  <h2>Data we collect</h2>
+  <p>
+    sharelab does not require an account and does not actively collect personal information. The site may
+    use basic analytics (e.g. aggregate page views, country-level traffic) to understand which content is
+    useful.
+  </p>
+
+  <h2>Cookies & advertising</h2>
+  <p>
+    This site may show ads served by Google AdSense. Google and its advertising partners may use cookies to
+    serve ads based on your prior visits to this or other websites. You can opt out of personalized
+    advertising by visiting
+    <a href="https://adssettings.google.com" target="_blank" rel="noopener noreferrer">Google Ads Settings</a>.
+    On your first visit, a banner will ask whether you consent to cookies.
+  </p>
+
+  <h2>Children's privacy</h2>
+  <p>sharelab is not directed at, and does not knowingly collect data from, children under 13.</p>
+
+  <h2>External links</h2>
+  <p>This site may link to other websites; this privacy policy does not apply to those sites.</p>
+
+  <h2>Contact</h2>
+  <p>
+    Questions about this policy:
+    <!-- TODO: fill in your real contact email -->
+    <a href="mailto:your-email@example.com">your-email@example.com</a>
+  </p>
+</BaseLayout>

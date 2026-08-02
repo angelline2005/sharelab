@@ -1,0 +1,46 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { useTranslations } from '../../i18n';
+import { sameSlugLangHrefs } from '../../utils/url';
+
+const t = useTranslations('vi');
+---
+
+<BaseLayout
+  locale="vi"
+  title={t('nav.privacy')}
+  description="Chính sách riêng tư của sharelab"
+  langHrefs={sameSlugLangHrefs('/privacy-policy/')}
+>
+  <h1>Chính sách riêng tư</h1>
+  <p><em>Cập nhật lần cuối: <!-- TODO: cập nhật ngày --> [ngày/tháng/năm]</em></p>
+
+  <h2>Dữ liệu chúng tôi thu thập</h2>
+  <p>
+    sharelab không yêu cầu đăng ký tài khoản và không chủ động thu thập thông tin cá nhân của bạn. Trang có
+    thể dùng công cụ phân tích lượt truy cập (ví dụ số lượt xem trang, quốc gia truy cập ở mức tổng hợp) để
+    hiểu nội dung nào hữu ích.
+  </p>
+
+  <h2>Cookie & quảng cáo</h2>
+  <p>
+    Trang này có thể hiển thị quảng cáo thông qua Google AdSense. Google và các đối tác quảng cáo có thể sử
+    dụng cookie để hiển thị quảng cáo dựa trên lượt truy cập trước đó của bạn vào trang này hoặc các trang
+    khác. Bạn có thể từ chối quảng cáo cá nhân hoá tại
+    <a href="https://adssettings.google.com" target="_blank" rel="noopener noreferrer">Cài đặt quảng cáo của Google</a>.
+    Khi bạn truy cập lần đầu, một banner sẽ hỏi bạn có đồng ý với cookie hay không.
+  </p>
+
+  <h2>Trẻ em</h2>
+  <p>sharelab không hướng tới hoặc chủ đích thu thập dữ liệu từ trẻ em dưới 13 tuổi.</p>
+
+  <h2>Liên kết ngoài</h2>
+  <p>Trang có thể chứa liên kết tới các trang khác; chính sách riêng tư này không áp dụng cho các trang đó.</p>
+
+  <h2>Liên hệ</h2>
+  <p>
+    Nếu có câu hỏi về chính sách này, liên hệ:
+    <!-- TODO: điền email liên hệ thật -->
+    <a href="mailto:your-email@example.com">your-email@example.com</a>
+  </p>
+</BaseLayout>

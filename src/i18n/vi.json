@@ -1,0 +1,17 @@
+{
+  "site.title": "sharelab",
+  "site.tagline": "Ghi chép & hướng dẫn từ các dự án cá nhân, làm cùng Claude Code",
+  "nav.home": "Trang chủ",
+  "nav.about": "Giới thiệu",
+  "nav.donate": "Ủng hộ",
+  "nav.privacy": "Chính sách riêng tư",
+  "nav.terms": "Điều khoản",
+  "home.latest": "Bài viết mới nhất",
+  "post.readMore": "Đọc tiếp",
+  "post.publishedOn": "Đăng ngày",
+  "post.updatedOn": "Cập nhật ngày",
+  "post.otherLanguage": "Đọc bản tiếng Anh",
+  "donate.title": "Ủng hộ sharelab",
+  "donate.body": "Nếu nội dung ở đây giúp ích cho bạn, một ly cà phê nhỏ sẽ giúp mình duy trì viết đều hơn.",
+  "footer.rss": "RSS"
+}

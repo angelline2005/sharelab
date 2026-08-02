@@ -1,0 +1,46 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import { useTranslations, type Locale } from '../i18n';
+import { withBase } from '../utils/url';
+
+interface Props {
+  post: CollectionEntry<'posts'>;
+  locale: Locale;
+}
+
+const { post, locale } = Astro.props;
+const t = useTranslations(locale);
+// post.id looks like "vi/my-post-slug" — strip the locale prefix for the URL.
+const slug = post.id.split('/').slice(1).join('/');
+const href = withBase(`/${locale}/posts/${slug}/`);
+---
+
+<article class="post-card">
+  <h2><a href={href}>{post.data.title}</a></h2>
+  <p class="post-card-meta">{t('post.publishedOn')} {post.data.pubDate.toLocaleDateString(locale)}</p>
+  <p>{post.data.description}</p>
+  <a class="post-card-more" href={href}>{t('post.readMore')} →</a>
+</article>
+
+<style>
+  .post-card {
+    padding: 1.5rem 0;
+    border-bottom: 1px solid rgba(128, 128, 128, 0.2);
+  }
+  .post-card h2 {
+    margin: 0 0 0.25rem;
+    font-size: 1.25rem;
+  }
+  .post-card h2 a {
+    color: inherit;
+    text-decoration: none;
+  }
+  .post-card-meta {
+    font-size: 0.8rem;
+    opacity: 0.65;
+    margin: 0 0 0.5rem;
+  }
+  .post-card-more {
+    font-size: 0.9rem;
+  }
+</style>

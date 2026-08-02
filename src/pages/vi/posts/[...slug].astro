@@ -1,0 +1,24 @@
+---
+import { getCollection, render } from 'astro:content';
+import PostLayout from '../../../layouts/PostLayout.astro';
+
+export async function getStaticPaths() {
+  const posts = await getCollection('posts', ({ id, data }) => id.startsWith('vi/') && !data.draft);
+  return posts.map((post) => ({
+    params: { slug: post.id.slice('vi/'.length) },
+    props: { post },
+  }));
+}
+
+const { post } = Astro.props;
+const { Content } = await render(post);
+
+const enPosts = await getCollection('posts', ({ id }) => id.startsWith('en/'));
+const otherLocaleSlug = enPosts.find((p) => p.data.translationId === post.data.translationId)?.id.slice(
+  'en/'.length,
+);
+---
+
+<PostLayout locale="vi" post={post} otherLocaleSlug={otherLocaleSlug}>
+  <Content />
+</PostLayout>

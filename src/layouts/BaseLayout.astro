@@ -1,0 +1,129 @@
+---
+import LangSwitcher from '../components/LangSwitcher.astro';
+import CookieConsent from '../components/CookieConsent.astro';
+import { useTranslations, type Locale } from '../i18n';
+import { withBase } from '../utils/url';
+
+interface Props {
+  locale: Locale;
+  title: string;
+  description: string;
+  // Fully-resolved URL for this same page in each locale, used by the header
+  // language switcher — see LangSwitcher.astro for why this can't be derived
+  // from the current path alone.
+  langHrefs: Record<Locale, string>;
+}
+
+const { locale, title, description, langHrefs } = Astro.props;
+const t = useTranslations(locale);
+const canonicalURL = new URL(Astro.url.pathname, Astro.site);
+---
+
+<!doctype html>
+<html lang={locale}>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" type="image/svg+xml" href={withBase('/favicon.svg')} />
+    <link rel="canonical" href={canonicalURL} />
+    <link
+      rel="alternate"
+      type="application/rss+xml"
+      title={t('site.title')}
+      href={withBase(`/${locale}/rss.xml`)}
+    />
+    <title>{title} · {t('site.title')}</title>
+    <meta name="description" content={description} />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonicalURL} />
+    <meta name="twitter:card" content="summary" />
+    <meta name="generator" content={Astro.generator} />
+  </head>
+  <body>
+    <header class="site-header">
+      <a class="site-title" href={withBase(`/${locale}/`)}>{t('site.title')}</a>
+      <nav class="site-nav">
+        <a href={withBase(`/${locale}/`)}>{t('nav.home')}</a>
+        <a href={withBase(`/${locale}/about/`)}>{t('nav.about')}</a>
+        <a href={withBase(`/${locale}/donate/`)}>{t('nav.donate')}</a>
+      </nav>
+      <LangSwitcher currentLocale={locale} hrefs={langHrefs} />
+    </header>
+
+    <main>
+      <slot />
+    </main>
+
+    <footer class="site-footer">
+      <p>&copy; {new Date().getFullYear()} {t('site.title')}</p>
+      <nav>
+        <a href={withBase(`/${locale}/privacy-policy/`)}>{t('nav.privacy')}</a>
+        <a href={withBase(`/${locale}/terms/`)}>{t('nav.terms')}</a>
+        <a href={withBase(`/${locale}/rss.xml`)}>{t('footer.rss')}</a>
+      </nav>
+    </footer>
+
+    <CookieConsent />
+  </body>
+</html>
+
+<style is:global>
+  :root {
+    color-scheme: light dark;
+    font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  }
+  body {
+    max-width: 42rem;
+    margin: 0 auto;
+    padding: 0 1.25rem 4rem;
+    line-height: 1.65;
+  }
+  .site-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+    padding: 1.5rem 0;
+  }
+  .site-title {
+    font-weight: 700;
+    font-size: 1.1rem;
+    text-decoration: none;
+    color: inherit;
+  }
+  .site-nav {
+    display: flex;
+    gap: 1rem;
+    font-size: 0.95rem;
+  }
+  .site-nav a {
+    color: inherit;
+    text-decoration: none;
+    opacity: 0.75;
+  }
+  .site-nav a:hover {
+    opacity: 1;
+  }
+  .site-footer {
+    margin-top: 4rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid rgba(128, 128, 128, 0.25);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    font-size: 0.85rem;
+    opacity: 0.8;
+  }
+  .site-footer nav {
+    display: flex;
+    gap: 1rem;
+  }
+  .site-footer a {
+    color: inherit;
+  }
+</style>

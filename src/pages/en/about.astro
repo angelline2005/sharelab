@@ -1,0 +1,16 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { useTranslations } from '../../i18n';
+import { sameSlugLangHrefs } from '../../utils/url';
+
+const t = useTranslations('en');
+---
+
+<BaseLayout locale="en" title={t('nav.about')} description={t('site.tagline')} langHrefs={sameSlugLangHrefs('/about/')}>
+  <h1>{t('nav.about')}</h1>
+  <p>
+    <!-- TODO: write a real bio/about here -->
+    sharelab is where I write up how I build small everyday projects — from planning a trip to automating a
+    repetitive chore — mostly built together with Claude Code.
+  </p>
+</BaseLayout>

@@ -1,0 +1,96 @@
+---
+import BaseLayout from './BaseLayout.astro';
+import AdSlot from '../components/AdSlot.astro';
+import { useTranslations, type Locale } from '../i18n';
+import { withBase } from '../utils/url';
+import type { CollectionEntry } from 'astro:content';
+
+interface Props {
+  locale: Locale;
+  post: CollectionEntry<'posts'>;
+  // Slug (without locale prefix) of the sibling post in the other language, if it exists.
+  otherLocaleSlug?: string;
+}
+
+const { locale, post, otherLocaleSlug } = Astro.props;
+const { title, description, pubDate, updatedDate, tags } = post.data;
+const t = useTranslations(locale);
+const otherLocale = locale === 'vi' ? 'en' : 'vi';
+const slug = post.id.split('/').slice(1).join('/');
+
+// If the other-language version doesn't exist yet, the switcher falls back
+// to that locale's homepage instead of linking to a post that isn't there.
+const langHrefs = {
+  [locale]: withBase(`/${locale}/posts/${slug}/`),
+  [otherLocale]: otherLocaleSlug
+    ? withBase(`/${otherLocale}/posts/${otherLocaleSlug}/`)
+    : withBase(`/${otherLocale}/`),
+} as Record<Locale, string>;
+---
+
+<BaseLayout locale={locale} title={title} description={description} langHrefs={langHrefs}>
+  <article>
+    <header class="post-header">
+      <h1>{title}</h1>
+      <p class="post-meta">
+        {t('post.publishedOn')} {pubDate.toLocaleDateString(locale)}
+        {updatedDate && <> · {t('post.updatedOn')} {updatedDate.toLocaleDateString(locale)}</>}
+      </p>
+      {tags.length > 0 && (
+        <ul class="post-tags">
+          {tags.map((tag) => <li>{tag}</li>)}
+        </ul>
+      )}
+      {otherLocaleSlug && (
+        <a class="post-other-lang" href={withBase(`/${otherLocale}/posts/${otherLocaleSlug}/`)}>
+          {t('post.otherLanguage')}
+        </a>
+      )}
+    </header>
+
+    <div class="post-content">
+      <slot />
+    </div>
+
+    <AdSlot />
+  </article>
+</BaseLayout>
+
+<style>
+  .post-header {
+    margin-bottom: 2rem;
+  }
+  .post-header h1 {
+    margin: 0 0 0.5rem;
+  }
+  .post-meta {
+    font-size: 0.85rem;
+    opacity: 0.65;
+    margin: 0 0 0.75rem;
+  }
+  .post-tags {
+    list-style: none;
+    display: flex;
+    gap: 0.5rem;
+    padding: 0;
+    margin: 0 0 0.75rem;
+    flex-wrap: wrap;
+  }
+  .post-tags li {
+    font-size: 0.75rem;
+    background: rgba(128, 128, 128, 0.15);
+    border-radius: 999px;
+    padding: 0.15rem 0.65rem;
+  }
+  .post-other-lang {
+    font-size: 0.85rem;
+  }
+  .post-content :global(h2) {
+    margin-top: 2rem;
+  }
+  .post-content :global(pre) {
+    padding: 1rem;
+    border-radius: 8px;
+    overflow-x: auto;
+  }
+</style>
