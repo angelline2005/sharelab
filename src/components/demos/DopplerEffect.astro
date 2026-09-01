@@ -34,6 +34,11 @@
     <button type="button" data-btn="sound">🔊 Bật âm thanh</button>
   </div>
 
+  <p class="sound-hint" data-sound-hint hidden>
+    Không nghe thấy? Trên iPhone hãy gạt nút im lặng bên hông máy về chế độ
+    chuông và tăng âm lượng.
+  </p>
+
   <p class="readout" data-readout></p>
 
   <figcaption>
@@ -91,6 +96,12 @@
     font-variant-numeric: tabular-nums;
     line-height: 1.6;
   }
+  .sound-hint {
+    margin: 0.6rem 0 0;
+    font-size: 0.8rem;
+    opacity: 0.7;
+    line-height: 1.5;
+  }
   figcaption {
     margin-top: 0.75rem;
     font-size: 0.8rem;
@@ -126,10 +137,41 @@
     // --- audio ---------------------------------------------------------
     let audio: { ctx: AudioContext; osc: OscillatorNode; gain: GainNode } | null = null;
     let soundOn = false;
+    let unlockEl: HTMLAudioElement | null = null;
+    const hintEl = root.querySelector('[data-sound-hint]') as HTMLElement;
+    const isIOS =
+      /iP(hone|ad|od)/.test(navigator.userAgent) ||
+      (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+
+    // iOS quirk: a bare Web-Audio context runs in the "ambient" audio session,
+    // which the hardware silent switch hard-mutes while ctx.state still says
+    // "running". Opting into the "playback" session (Safari 16.4+) and keeping
+    // a silent looping <audio> element playing from the same tap moves the page
+    // to the media category, which ignores the switch on older iOS too.
+    function unlockPlaybackSession() {
+      try {
+        const nav = navigator as Navigator & { audioSession?: { type: string } };
+        if (nav.audioSession) nav.audioSession.type = 'playback';
+      } catch {
+        /* experimental API — absence is fine */
+      }
+      if (!isIOS) return;
+      if (!unlockEl) {
+        unlockEl = document.createElement('audio');
+        unlockEl.setAttribute('playsinline', '');
+        unlockEl.loop = true;
+        unlockEl.src =
+          'data:audio/wav;base64,UklGRkQDAABXQVZFZm10IBAAAAABAAEAQB8AAIA+AAACABAAZGF0YSADAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==';
+      }
+      unlockEl.play().catch(() => {});
+    }
 
     function ensureAudio() {
       if (audio) return audio;
-      const actx = new AudioContext();
+      const AC =
+        window.AudioContext ||
+        (window as Window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+      const actx = new AC();
       const osc = actx.createOscillator();
       const gain = actx.createGain();
       osc.type = 'sine';
@@ -144,14 +186,29 @@
     }
 
     function setSound(on: boolean) {
+      if (on) {
+        let a: NonNullable<typeof audio>;
+        try {
+          unlockPlaybackSession();
+          a = ensureAudio();
+        } catch {
+          readout.textContent = 'Trình duyệt này không hỗ trợ Web Audio — demo hình vẫn chạy.';
+          return;
+        }
+        a.ctx.resume().catch(() => {});
+        // Set an audible level right away instead of waiting a frame — the rAF
+        // loop takes over from the next tick.
+        const { f, r } = heard(Number(input('vs').value), Number(input('dy').value), carX);
+        a.osc.frequency.setValueAtTime(f, a.ctx.currentTime);
+        a.gain.gain.setTargetAtTime(Math.min(15 / r, 1) * 0.12, a.ctx.currentTime, 0.05);
+        if (hintEl && isIOS) hintEl.hidden = false;
+      } else {
+        if (audio) audio.gain.gain.setTargetAtTime(0, audio.ctx.currentTime, 0.05);
+        if (unlockEl) unlockEl.pause();
+        if (hintEl) hintEl.hidden = true;
+      }
       soundOn = on;
       soundBtn.textContent = on ? '🔇 Tắt âm thanh' : '🔊 Bật âm thanh';
-      if (on) {
-        const a = ensureAudio();
-        a.ctx.resume();
-      } else if (audio) {
-        audio.gain.gain.setTargetAtTime(0, audio.ctx.currentTime, 0.05);
-      }
     }
 
     soundBtn.addEventListener('click', () => setSound(!soundOn));
@@ -299,19 +356,35 @@
         `cả cú trượt ≈ <b>${semis.toFixed(1)} nửa cung</b>`;
     }
 
+    // Scrolling away mutes via the gain node instead of suspending the
+    // context: a gesture-less resume() can fail silently on iOS after a system
+    // interruption, leaving the button state lying. A running-but-silent
+    // context costs nothing and always comes back.
+    function muteForBackground(mute: boolean) {
+      if (!audio) return;
+      if (mute) {
+        audio.gain.gain.setTargetAtTime(0, audio.ctx.currentTime, 0.05);
+      } else if (soundOn) {
+        audio.ctx.resume().catch(() => {});
+        // The rAF loop restores the proper 1/r level on its next tick.
+      }
+    }
+
     const observer = new IntersectionObserver((entries) => {
       for (const entry of entries) {
         if (entry.isIntersecting) {
           last = 0;
+          cancelAnimationFrame(raf);
           raf = requestAnimationFrame(frame);
-          if (audio && soundOn) audio.ctx.resume();
+          muteForBackground(false);
         } else {
           cancelAnimationFrame(raf);
-          if (audio) audio.ctx.suspend();
+          muteForBackground(true);
         }
       }
     });
     observer.observe(root);
+    document.addEventListener('visibilitychange', () => muteForBackground(document.hidden));
   }
 
   document.querySelectorAll<HTMLElement>('[data-demo="doppler"]').forEach(setup);
