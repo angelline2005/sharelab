@@ -1,0 +1,8 @@
+# REPLACE THE PUBLISHER ID BELOW BEFORE PUBLISHING THIS FILE.
+# Yours is in AdSense under Account -> Settings -> Account information,
+# in the form pub-0000000000000000.
+#
+# Shipping this file with the placeholder is worse than shipping nothing: it
+# declares that an account you do not own is authorised to sell your inventory,
+# and it stops your own ads from serving.
+google.com, pub-0000000000000000, DIRECT, f08c47fec0942fa0

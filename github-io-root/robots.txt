@@ -1,0 +1,7 @@
+# Served from the root of the subdomain, so this governs everything under it,
+# including /sharelab/. The robots.txt the blog generates at
+# /sharelab/robots.txt is never read by crawlers — this is the one that counts.
+User-agent: *
+Allow: /
+
+Sitemap: https://angelline2005.github.io/sharelab/sitemap-index.xml
