@@ -1,0 +1,75 @@
+---
+title: "Công thức ném xiên trong sách giáo khoa sai bao nhiêu?"
+description: "Tầm xa R = v₀²sin(2θ)/g chỉ đúng trong chân không. Có lực cản, góc ném tối ưu không còn là 45° — và càng ném mạnh thì càng lệch xa."
+pubDate: 2026-09-01
+tags: ["vat-ly", "mo-phong", "javascript"]
+translationId: "cong-thuc-nem-xien-sai-bao-nhieu"
+draft: true
+---
+
+import ProjectileDrag from '../../../components/demos/ProjectileDrag.astro';
+
+Công thức tầm xa của chuyển động ném xiên được dạy như một sự thật hiển nhiên:
+
+```
+R = v₀² · sin(2θ) / g
+```
+
+Từ đó suy ra ngay góc ném tối ưu là 45°, vì `sin(2θ)` đạt cực đại khi `2θ = 90°`.
+Gọn gàng, đẹp đẽ, và thi cử chỉ cần đến thế.
+
+Vấn đề là công thức này giả định vật bay trong **chân không**. Không khí không
+xuất hiện ở bất kỳ đâu trong phép suy luận.
+
+## Lực cản làm hỏng phép tính đẹp đó
+
+Với vật bay đủ nhanh, lực cản của không khí tỉ lệ với **bình phương** vận tốc và
+ngược chiều chuyển động:
+
+```
+F = −b·|v|·v
+```
+
+Dấu bình phương là chỗ mọi thứ sụp đổ. Phương trình chuyển động trở thành phi
+tuyến, và **không có nghiệm giải tích** — không tồn tại công thức đóng nào cho
+tầm xa. Cách duy nhất là giải số: chia thời gian thành từng bước nhỏ rồi cộng dồn.
+
+Đó chính là thứ demo dưới đây làm. Đường nét đứt là quỹ đạo lý tưởng trong sách,
+đường liền là quỹ đạo tích phân số có lực cản.
+
+<ProjectileDrag />
+
+## Ba con số đáng nhớ
+
+Quét toàn bộ góc ném để tìm tầm xa lớn nhất, với hệ số cản trung bình:
+
+| Vận tốc đầu | Góc tối ưu | Tầm xa thực | Sách tính ra |
+|---|---|---|---|
+| 30 m/s | 44,0° | 80,5 m | 91,7 m |
+| 60 m/s | 41,8° | 242,0 m | 367,0 m |
+| 100 m/s | 38,8° | 445,7 m | 1019,4 m |
+
+Ba điều rút ra:
+
+**Góc tối ưu tụt xuống dưới 45°.** Trực giác đằng sau: bay cao thì mất thời gian
+trên không, mà thời gian trên không là thời gian bị lực cản bào mòn vận tốc. Nên
+có lực cản thì đáng đánh đổi độ cao lấy tốc độ.
+
+**Càng ném mạnh càng lệch xa.** Ở 30 m/s góc tối ưu gần như vẫn là 45°, sai số
+12%. Ở 100 m/s, tầm xa thật chỉ bằng **44%** con số sách giáo khoa đưa ra. Lực
+cản tỉ lệ bình phương vận tốc, nên tăng tốc độ lên gấp đôi thì lực cản gấp bốn.
+
+**Ở tốc độ đời thường thì công thức vẫn ổn.** Ném một quả bóng bằng tay, tốc độ
+cỡ 20–30 m/s, sai số vài phần trăm — đủ nhỏ để trực giác "ném chếch 45° là xa
+nhất" vẫn đúng. Đây là lý do công thức tồn tại được trong sách và không ai thấy
+gợn.
+
+## Không phải sách sai, mà là phạm vi áp dụng hẹp hơn ta tưởng
+
+Cách nói "sách giáo khoa sai" thì giật gân nhưng không chính xác. Công thức đúng
+tuyệt đối trong điều kiện nó tuyên bố. Vấn đề nằm ở chỗ điều kiện đó hiếm khi
+được nhấn mạnh, nên học sinh mang nó ra khỏi phòng thi mà không biết ranh giới ở
+đâu.
+
+Và ranh giới đó không nằm ở "có không khí hay không" — không khí luôn có. Nó nằm
+ở **tốc độ**: chậm thì bỏ qua được, nhanh thì không.

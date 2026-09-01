@@ -1,0 +1,69 @@
+---
+title: "Định luật Malus: công thức mà bạn xoay được"
+description: "Hai kính phân cực vuông góc thì tối đen. Chèn thêm kính thứ ba vào giữa, ánh sáng lại xuất hiện — nghịch lý giải thích được bằng chính công thức I = I₀cos²θ."
+pubDate: 2026-09-01
+tags: ["vat-ly", "quang-hoc", "javascript"]
+translationId: "dinh-luat-malus-xoay-duoc"
+draft: true
+---
+
+import MalusLaw from '../../../components/demos/MalusLaw.astro';
+
+Ánh sáng từ mặt trời hay bóng đèn dao động theo mọi phương vuông góc với hướng
+truyền. Cho nó qua một kính phân cực, chỉ thành phần dao động theo đúng một
+phương đi lọt — cường độ còn một nửa, nhưng ánh sáng bây giờ **có phương xác
+định**.
+
+Đặt thêm kính thứ hai lệch góc θ so với kính thứ nhất, cường độ còn lại tuân
+theo định luật Malus:
+
+```
+I = I₀ · cos²θ
+```
+
+Đọc công thức thì khô khan. Xoay nó thì khác.
+
+<MalusLaw />
+
+Kéo thanh trượt và để ý điểm cam chạy trên đường cong: ở 0° ánh sáng qua trọn
+vẹn, ở 90° tắt hoàn toàn, và ở 45° còn đúng một nửa — vì `cos²45° = 0,5`.
+
+## Nghịch lý ba kính phân cực
+
+Đây là chỗ định luật Malus thú vị hơn hẳn một công thức để thay số.
+
+Đặt hai kính vuông góc nhau. Ánh sáng tắt đen, đúng như demo cho thấy ở θ = 90°.
+Bây giờ **chèn thêm một kính thứ ba vào giữa**, lệch 45° so với cả hai.
+
+Trực giác nói: thêm một vật cản nữa thì phải tối hơn. Thực tế thì **ánh sáng
+sáng trở lại**.
+
+Tính bằng chính công thức trên, gọi cường độ sau kính thứ nhất là I₀:
+
+- Qua kính giữa, lệch 45°: `I₀ · cos²45° = I₀/2`
+- Qua kính cuối, lệch tiếp 45°: `(I₀/2) · cos²45° = I₀/4`
+
+Một phần tư cường độ, từ chỗ hoàn toàn tối đen.
+
+## Vì sao lại thế
+
+Sai lầm của trực giác là coi kính phân cực như cái **lọc** — thứ chỉ có thể lấy
+đi, không thể thêm vào. Nhưng nó không lọc, nó **chiếu**.
+
+Ánh sáng đi qua kính phân cực không giữ nguyên phương cũ rồi bị chặn bớt. Nó đi
+ra với **phương dao động mới**, đúng bằng phương của kính. Kính giữa nhận ánh
+sáng phương 0°, trả ra ánh sáng phương 45°. Kính cuối ở 90° giờ chỉ còn lệch 45°
+so với thứ nó nhận được, chứ không phải 90° nữa.
+
+Nói cách khác: kính thứ ba không thêm ánh sáng, nó **xoay** ánh sáng. Và chính
+`cos²θ` trong công thức là phép chiếu đó — bình phương vì cường độ tỉ lệ với bình
+phương biên độ.
+
+## Chỗ bạn gặp nó hằng ngày
+
+Màn hình LCD hoạt động đúng theo nguyên lý này: hai kính phân cực vuông góc kẹp
+một lớp tinh thể lỏng ở giữa, và điện áp đặt vào lớp đó quyết định nó xoay phương
+ánh sáng bao nhiêu — tức quyết định điểm ảnh sáng hay tối. Đeo kính râm phân cực
+rồi nghiêng đầu 90° trước màn hình điện thoại, bạn sẽ thấy màn hình tối đi hoặc
+tắt hẳn. Đó chính là hai kính phân cực vuông góc, chỉ khác là một cái nằm trên
+mặt bạn.

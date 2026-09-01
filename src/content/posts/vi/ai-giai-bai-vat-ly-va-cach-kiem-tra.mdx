@@ -1,0 +1,82 @@
+---
+title: "AI giải bài vật lý — và bốn cách phát hiện nó sai"
+description: "Mô hình ngôn ngữ dựng phương trình rất tốt nhưng tính toán nhiều bước thì hay sai, mà đáp án sai lại trông rất hợp lý. Bốn cách kiểm tra, và vì sao không cách nào đủ một mình."
+pubDate: 2026-09-01
+tags: ["ai", "vat-ly", "claude-code"]
+translationId: "ai-giai-bai-vat-ly-va-cach-kiem-tra"
+draft: true
+---
+
+import VerifyPhysics from '../../../components/demos/VerifyPhysics.astro';
+
+Đưa một bài vật lý cho mô hình ngôn ngữ, nó thường nhận ra ngay phải dùng nguyên
+lý nào: bảo toàn năng lượng, bảo toàn động lượng, định luật II Newton. Phần đó nó
+làm tốt, và đó là phần khó nhất với học sinh.
+
+Phần nó làm kém là **số học nhiều bước**. Rút gọn biểu thức, chuyển vế, thay số
+— càng dài càng dễ trượt. Và đây mới là chỗ nguy hiểm: đáp án sai không trông
+như đáp án sai. Nó vẫn đúng đơn vị, vẫn có dạng hợp lý, vẫn cho ra một con số
+nghe được.
+
+Nên câu hỏi thực tế không phải *"AI giải đúng không"*, mà **"làm sao biết nó
+đúng"**.
+
+## Bốn cách kiểm tra
+
+Bài toán: con lắc đơn dài `L`, thả không vận tốc đầu từ góc lệch `θ₀`. Tốc độ lớn
+nhất khi qua vị trí cân bằng là bao nhiêu?
+
+Dưới đây là ba đáp án — một đúng, hai sai theo kiểu rất dễ gặp — và bốn cách kiểm
+tra chạy trên đáp án bạn chọn. Đổi công thức trong ô chọn để xem cách nào bắt
+được lỗi nào.
+
+<VerifyPhysics />
+
+Tổng hợp lại:
+
+| Đáp án | Thứ nguyên | Góc nhỏ | θ₀ = 90° | Mô phỏng số |
+|---|---|---|---|---|
+| `√(2gL(1−cos θ₀))` — đúng | qua | qua | qua | qua |
+| `√(2gL·sin θ₀)` — sai | qua | **trượt** | qua | **trượt** |
+| `√(2gL·θ₀)` — sai | qua | **trượt** | **trượt** | **trượt** |
+
+## Đọc cái bảng đó cho kỹ
+
+**Phân tích thứ nguyên không cứu được bạn.** Cả ba đáp án đều có dạng
+`√(g·L·[không đơn vị])` và cho ra m/s, vì `sin`, `cos` và radian đều không có
+đơn vị. Đây là cách kiểm tra được dạy nhiều nhất, và trong bài này nó vô dụng.
+
+**Trường hợp đặc biệt có thể trùng hợp.** Ở θ₀ = 90° thì `1 − cos 90° = 1` và
+`sin 90° = 1` — hai công thức cho ra cùng một số. Chọn đúng cái góc "tròn trịa"
+mà ai cũng nghĩ tới đầu tiên, và bạn bỏ lọt lỗi hoàn toàn. Kiểm tra trường hợp
+đặc biệt chỉ có giá trị nếu bạn chọn **trường hợp làm hai công thức tách nhau
+ra**, chứ không phải trường hợp dễ tính nhất.
+
+**Giới hạn góc nhỏ mới là cách rẻ mà hiệu quả.** Khai triển `1 − cos θ ≈ θ²/2`
+cho thấy tốc độ đúng **tỉ lệ tuyến tính** với `θ₀`. Hai đáp án sai đều đi theo
+`√θ₀`. Chỉ cần gấp đôi `θ₀` rồi xem tốc độ nhân lên bao nhiêu lần: đúng thì ra 2,
+sai thì ra 1,414. Không cần biết đáp án đúng là gì cũng phát hiện được.
+
+**Mô phỏng số là trọng tài cuối cùng.** Giải số phương trình
+`θ'' = −(g/L)·sin θ` từ trạng thái nghỉ rồi đo tốc độ lúc qua đáy — cách này
+không giả định gì về công thức cần kiểm tra, nên nó độc lập thật sự. Với `L = 1 m`
+và `θ₀ = 30°`, nó cho 1,6213 m/s, còn đáp án `sin θ₀` cho 3,1321 m/s: lệch 93%.
+
+## Quy trình dùng được
+
+Đúc kết lại thành cách làm việc:
+
+1. **Để mô hình dựng bài** — nêu nguyên lý áp dụng và viết ra phương trình. Đây
+   là thế mạnh thật của nó.
+2. **Bắt nó sinh code thay vì tự tính.** SymPy rút gọn biểu thức không bao giờ
+   sai dấu; mô hình thì có. Việc của nó là dịch bài toán thành code, không phải
+   làm thay máy tính.
+3. **Kiểm tra bằng nhiều cách, và chọn cách tách được các đáp án ra.** Một cách
+   kiểm tra mà mọi ứng viên đều qua thì không mang thông tin gì.
+4. **Có ít nhất một cách độc lập** — mô phỏng số, hoặc giải lại bằng phương pháp
+   khác hẳn. Nếu tất cả các cách kiểm tra đều xuất phát từ cùng một hướng suy
+   nghĩ, chúng sẽ cùng sai theo một kiểu.
+
+Điều đáng nhớ nhất: **không cách nào đủ một mình.** Cái bảng ở trên có đúng một
+hàng mà cả bốn cột đều "qua", và đó không phải chuyện ngẫu nhiên — đó là lý do
+phải chạy cả bốn.
