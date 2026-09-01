@@ -27,6 +27,9 @@
 // Options:
 //   --lang <en|vi>     Output collection (default: en). vi is legal under CC BY
 //                      but leaves you an untranslated file to work on.
+//   --slug <name>      Filename, and therefore the URL. Defaults to the source
+//                      slug; give a Vietnamese one for a vi/ translation. The
+//                      translationId stays keyed to the source slug either way.
 //   --from <url>       Listing page to scan for --list (default: the global
 //                      home page). Topic hubs like /global/health/ also work.
 //   --tags a,b,c       Frontmatter tags (default: scidev-net,science)
@@ -218,7 +221,7 @@ function yamlString(s) {
   return `"${s.replace(/\\/g, '\\\\').replace(/"/g, '\\"')}"`;
 }
 
-function buildPost(article, { tags, draft, withImages }) {
+function buildPost(article, { tags, draft, withImages, lang }) {
   const byline = article.authors
     .map((a) => (a.profile ? `[${a.name}](${a.profile})` : a.name))
     .join(', ');
@@ -240,14 +243,23 @@ function buildPost(article, { tags, draft, withImages }) {
   // Their guidelines put the credit "at the start, no more than three
   // paragraphs in", so it leads the post. Raw HTML keeps it rendering the same
   // wherever the markdown ends up.
+  //
+  // The vi wording also states that this is a translation: CC BY requires you
+  // to indicate when the material has been changed, and a translation is a
+  // change. Attribution alone is not enough for a derivative work.
+  const attribution = lang === 'vi'
+    ? `*${byline ? `Tác giả: ${byline}. ` : ''}Bài gốc đăng trên [SciDev.Net](${article.url}) theo giấy phép
+[Creative Commons Attribution 2.0](${LICENCE}). Bản tiếng Việt do sharelab dịch.*`
+    : `*${byline ? `By ${byline}. ` : ''}Originally published on [SciDev.Net](${article.url}) under a
+[Creative Commons Attribution 2.0 licence](${LICENCE}).*`;
+
   const credit = `<p class="republished-from">
   <a href="https://www.scidev.net" rel="noopener">
     <img src="/sharelab/scidev-net-logo.png" alt="SciDev.Net" height="24" />
   </a>
 </p>
 
-*${byline ? `By ${byline}. ` : ''}Originally published on [SciDev.Net](${article.url}) under a
-[Creative Commons Attribution 2.0 licence](${LICENCE}).*`;
+${attribution}`;
 
   const body = htmlToMarkdown(article.body, { withImages });
 
@@ -260,6 +272,7 @@ function parseArgs(argv) {
   const opts = {
     lang: 'en',
     from: HOME,
+    slug: '',
     tags: ['scidev-net', 'science'],
     withImages: false,
     draft: false,
@@ -275,6 +288,7 @@ function parseArgs(argv) {
     else if (arg === '--force') opts.force = true;
     else if (arg === '--lang') opts.lang = argv[++i];
     else if (arg === '--from') opts.from = argv[++i];
+    else if (arg === '--slug') opts.slug = argv[++i];
     else if (arg === '--tags') opts.tags = argv[++i].split(',').map((t) => t.trim()).filter(Boolean);
     else if (!arg.startsWith('--')) opts.target = arg;
     else throw new Error(`Unknown option: ${arg}`);
@@ -355,8 +369,16 @@ async function main() {
     throw new Error(`No publication date found for ${opts.target}; refusing to guess one.`);
   }
 
+  // The filename becomes the URL, so a translation gets a Vietnamese one. The
+  // translationId stays keyed to the original slug — that is what pairs the two
+  // language versions together.
+  const fileSlug = opts.slug || article.slug;
+  if (!/^[a-z0-9-]+$/.test(fileSlug)) {
+    throw new Error(`--slug must be lowercase letters, digits and hyphens, got "${fileSlug}"`);
+  }
+
   const dir = POSTS_DIR(opts.lang);
-  const outPath = join(dir, `${article.slug}.md`);
+  const outPath = join(dir, `${fileSlug}.md`);
   if (!opts.force && (await exists(outPath))) {
     throw new Error(`${relative(ROOT, outPath)} already exists. Pass --force to overwrite.`);
   }
