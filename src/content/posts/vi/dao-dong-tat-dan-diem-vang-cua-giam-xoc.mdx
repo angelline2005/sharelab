@@ -1,0 +1,64 @@
+---
+title: "Dao động tắt dần: vì sao giảm xóc tốt không được phép quá tốt"
+description: "Cản yếu thì xe nhún mãi, cản mạnh thì xe lì đơ — giữa hai cái dở có đúng một điểm vàng: tắt dần tới hạn, nơi hệ về cân bằng nhanh nhất mà không nhún thêm lần nào."
+pubDate: 2026-09-02
+tags: ["vat-ly", "dao-dong", "javascript"]
+translationId: "dao-dong-tat-dan-diem-vang-cua-giam-xoc"
+---
+
+import DampedOscillation from '../../../components/demos/DampedOscillation.astro';
+
+Mọi dao động thật đều chết dần — ma sát và sức cản rút năng lượng từng chu
+kỳ. Nhưng "chết dần" có ba kiểu rất khác nhau, và ranh giới giữa chúng là một
+trong những con số được các kỹ sư săn lùng kỹ nhất. Kéo hệ số cản qua ba vùng:
+
+<DampedOscillation />
+
+## Ba số phận của một cú nhún
+
+**Tắt dần yếu** (γ nhỏ): hệ vẫn lắc qua lại, biên độ bị bọc trong bao hình
+`e^(−γt/2)` — đường nét đứt của demo. Đặc sản của vùng này: biên độ giảm nửa
+sau các quãng thời gian **bằng nhau** — người quen của
+[chu kỳ bán rã](/vi/posts/chu-ky-ban-ra-khong-hat-nao-biet-tuoi-minh/) và
+[tụ xả RC](/vi/posts/mach-rc-va-chiec-thang-63-phan-tram/): lại hàm mũ, lại
+"mỗi kỳ mất chừng ấy phần trăm của phần đang còn".
+
+**Tắt dần mạnh** (γ lớn): hết lắc — hệ bò về cân bằng không vượt qua nó lần
+nào. Nghe an toàn, nhưng nhìn kỹ đường cong: bò **chậm**, và càng tăng cản
+càng chậm hơn. Cửa lò xo gắn tay đòn thuỷ lực chỉnh quá tay, đóng lại mất nửa
+phút — đó là vùng này.
+
+**Tắt dần tới hạn** (γ = 2ω₀): đúng lằn ranh — về cân bằng **nhanh nhất có
+thể** mà vẫn không nhún quá đà. Không phải thoả hiệp giữa hai cái dở; là
+nghiệm tối ưu thật sự của phương trình.
+
+## Điểm vàng được lắp dưới gầm xe bạn
+
+Giảm xóc ô tô là bài toán này đúc bằng dầu và piston. Lò xo nhún của xe có
+ω₀ riêng; ống giảm chấn cung cấp γ. Chỉnh nó ở đâu?
+
+- **Thiếu cản** (giảm xóc mòn): qua ổ gà một cái, xe *nhún thêm bốn năm nhịp*
+  — lốp nhấp nhổm khỏi mặt đường, mất bám, say xe. Đây chính là bài kiểm tra
+  giảm xóc cổ điển: ấn mạnh góc xe rồi thả — xe tử tế nảy lên **một lần** rồi
+  im; nhún tiếp tức là dầu trong ống đã cạn.
+- **Thừa cản**: bánh xe bị ghì cứng, gặp ổ gà không kịp nhún — cú sốc truyền
+  thẳng lên khung, và bánh mất tiếp xúc theo kiểu khác.
+- Kỹ sư chỉnh **quanh mức tới hạn** (thường hơi non hơn một chút cho êm):
+  nuốt trọn cú sốc trong một nhịp, bánh dán lại mặt đường ngay.
+
+Cùng bài toán, khác vỏ: **cửa chống sập** ở hành lang, **kim đồng hồ đo** phải
+phóng tới vạch rồi đứng im không rung, **hệ thống treo của cân điện tử**, và
+cả **tay ghi âm địa chấn** — tất cả đều săn đúng cái lằn ranh γ = 2ω₀ ấy. Máy
+đo nào để kim rung qua lại là máy chưa nộp đủ γ; máy nào kim bò lề mề là nộp
+thừa.
+
+## Nối về hai bài cũ
+
+Chiếc γ này chính là nhân vật phụ từng xuất hiện trong
+[bài cộng hưởng](/vi/posts/cong-huong-vi-sao-day-nho-thang-luc-lon/) — ở đó
+nó quyết định độ cao đỉnh cộng hưởng, ở đây nó quyết định tốc độ chết của dao
+động tự do. Hai mặt của một đồng xu: hệ tắt chậm (γ bé, Q cao) thì cộng hưởng
+dữ dội; hệ tắt nhanh thì lì đòn với kích thích. Chuông chùa ngân được một phút
+*vì thế* mà cũng dễ được đánh cộng hưởng; cục đất sét không ngân *vì thế* mà
+cũng không sợ ai kích. Chọn γ là chọn tính cách cho hệ — và demo trên là bảng
+chọn tính cách thu nhỏ.

@@ -1,0 +1,125 @@
+---
+// Myopia and diopters: a diverging lens of power D = −1/d_far makes parallel
+// rays from infinity appear to come from the wearer's far point — the farthest
+// distance the eye can still focus. Slider moves the far point; the readout is
+// the prescription. Static redraw, closed-form only.
+---
+
+<figure class="demo" data-demo="eyeglasses">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Điểm cực viễn của mắt cận (m) <output data-out="d"></output>
+      <input type="range" data-in="d" min="0.25" max="3" step="0.05" value="0.5" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Tia sáng song song (vật ở vô cực) qua kính phân kỳ bị bẻ loe ra, như thể
+    phát ra từ đúng điểm cực viễn (nét đứt đỏ) — nơi mắt cận vẫn còn nhìn rõ.
+    Kính không "chữa" mắt; nó dời cả thế giới xa xôi về đứng trong tầm nhìn.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const RAY = '#f59e0b', OUT = '#2563eb', VIRT = '#dc2626';
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const slider = root.querySelector('[data-in="d"]') as HTMLInputElement;
+    const out = root.querySelector('[data-out="d"]') as HTMLOutputElement;
+
+    function draw() {
+      const d = Number(slider.value);
+      out.textContent = d.toFixed(2).replace('.', ',');
+      const D = -1 / d;
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.4);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+
+      const midY = cssH / 2;
+      const xL = cssW * 0.76;                 // lens plane
+      const xE = cssW * 0.9;                  // eye
+      const scale = (xL - 30) / 3;            // 3 m of far-point range fits left of lens
+      const xF = xL - scale * d;              // virtual focal point = far point
+
+      // Optical axis.
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.3;
+      ctx.beginPath(); ctx.moveTo(8, midY); ctx.lineTo(cssW - 8, midY); ctx.stroke();
+      ctx.globalAlpha = 1;
+
+      // Diverging lens: vertical line, inward arrowheads.
+      const lensH = cssH * 0.36;
+      ctx.strokeStyle = fg; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.moveTo(xL, midY - lensH); ctx.lineTo(xL, midY + lensH); ctx.stroke();
+      for (const s of [-1, 1]) {
+        const yTip = midY + s * lensH;
+        ctx.beginPath();
+        ctx.moveTo(xL - 6, yTip - s * 9); ctx.lineTo(xL, yTip); ctx.lineTo(xL + 6, yTip - s * 9);
+        ctx.stroke();
+      }
+      ctx.lineWidth = 1;
+
+      // Eye.
+      ctx.strokeStyle = fg; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.arc(xE, midY, cssH * 0.13, 0, Math.PI * 2); ctx.stroke();
+      ctx.lineWidth = 1; ctx.globalAlpha = 0.6; ctx.fillStyle = fg;
+      ctx.font = '10px system-ui,sans-serif'; ctx.textAlign = 'center';
+      ctx.fillText('mắt', xE, midY + cssH * 0.13 + 12);
+      ctx.fillText('kính', xL, midY + lensH + 14);
+      ctx.globalAlpha = 1;
+
+      // Far point marker.
+      ctx.fillStyle = VIRT;
+      ctx.beginPath(); ctx.arc(xF, midY, 4, 0, Math.PI * 2); ctx.fill();
+      ctx.globalAlpha = 0.75; ctx.textAlign = 'center';
+      ctx.fillText('điểm cực viễn', xF, midY - 10);
+      ctx.globalAlpha = 1;
+
+      // Three parallel rays; each refracts to travel along the line from F.
+      for (const h of [lensH * 0.7, 0, -lensH * 0.7]) {
+        const yP = midY - h;
+        ctx.strokeStyle = RAY; ctx.lineWidth = 1.5;
+        ctx.beginPath(); ctx.moveTo(8, yP); ctx.lineTo(xL, yP); ctx.stroke();
+        // Refracted ray: through (xL, yP) away from F.
+        const slope = (yP - midY) / (xL - xF);
+        const xEnd = cssW - 8;
+        ctx.strokeStyle = OUT;
+        ctx.beginPath(); ctx.moveTo(xL, yP); ctx.lineTo(xEnd, yP + slope * (xEnd - xL)); ctx.stroke();
+        ctx.lineWidth = 1;
+        // Dashed back-extension to the virtual focus.
+        if (h !== 0) {
+          ctx.strokeStyle = VIRT; ctx.globalAlpha = 0.6; ctx.setLineDash([4, 4]);
+          ctx.beginPath(); ctx.moveTo(xF, midY); ctx.lineTo(xL, yP); ctx.stroke();
+          ctx.setLineDash([]); ctx.globalAlpha = 1;
+        }
+      }
+
+      readout.innerHTML =
+        `Nhìn rõ xa nhất <b>${d.toFixed(2).replace('.', ',')} m</b> → kính cần ` +
+        `D = −1/${d.toFixed(2).replace('.', ',')} = <b>${D.toFixed(1).replace('.', ',').replace('-', '−')} dp</b>` +
+        ` (dân gian: cận ${Math.abs(D).toFixed(1).replace('.', ',')} độ)`;
+    }
+
+    slider.addEventListener('input', draw);
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="eyeglasses"]').forEach(setup);
+</script>

@@ -1,0 +1,113 @@
+---
+// Torricelli's barometer: a pump can only "suck" water as high as atmospheric
+// pressure can push it — h = P/(ρg). The liquid-density slider swaps water for
+// mercury and everything in between; the tube fills to the true limit and the
+// readout names the vacuum above it.
+---
+
+<figure class="demo" data-demo="barometer">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Khối lượng riêng chất lỏng <output data-out="rho"></output>
+      <input type="range" data-in="rho" min="700" max="13600" step="50" value="1000" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Ống kín đầu trên, hút chân không, cắm vào chậu hở. Khí quyển đè lên mặt
+    chậu đẩy chất lỏng dâng lên — và dừng đúng nơi trọng lượng cột lỏng cân
+    bằng với sức đè ấy. Phía trên cột là chân không Torricelli.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const P_ATM = 101325, G = 9.81;
+  const LIQ = '#2563eb';
+
+  function name(rho: number) {
+    if (rho < 850) return 'xăng/dầu';
+    if (rho < 1100) return 'nước';
+    if (rho < 1400) return 'nước biển Chết';
+    if (rho < 13000) return 'chất lỏng giả định';
+    return 'thuỷ ngân';
+  }
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const slider = root.querySelector('[data-in="rho"]') as HTMLInputElement;
+    const out = root.querySelector('[data-out="rho"]') as HTMLOutputElement;
+
+    function draw() {
+      const rho = Number(slider.value);
+      out.textContent = `${rho} kg/m³ (${name(rho)})`;
+      const h = P_ATM / (rho * G); // metres
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.52);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+
+      // Height scale: 12 m of world mapped to the canvas.
+      const WORLD = 12;
+      const baseY = cssH - 30;
+      const Y = (m: number) => baseY - (m / WORLD) * (cssH - 50);
+
+      // Basin.
+      const bx = cssW * 0.28, bw = cssW * 0.44;
+      ctx.fillStyle = LIQ; ctx.globalAlpha = 0.25;
+      ctx.fillRect(bx, baseY - 14, bw, 14);
+      ctx.globalAlpha = 1;
+
+      // Tube.
+      const tx = cssW / 2 - 10;
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.55;
+      ctx.strokeRect(tx, Y(11.5), 20, baseY - Y(11.5));
+      ctx.globalAlpha = 1;
+      // Column.
+      ctx.fillStyle = LIQ; ctx.globalAlpha = 0.8;
+      ctx.fillRect(tx + 1, Y(Math.min(h, 11.5)), 18, baseY - Y(Math.min(h, 11.5)) - 1);
+      ctx.globalAlpha = 1;
+      // Vacuum label.
+      ctx.fillStyle = fg; ctx.globalAlpha = 0.55;
+      ctx.font = '10px system-ui,sans-serif'; ctx.textAlign = 'center';
+      if (h < 11) ctx.fillText('chân không', tx + 10, Y(Math.min(h, 11.5)) - 6);
+      ctx.globalAlpha = 1;
+
+      // Metre ruler.
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.35; ctx.textAlign = 'left';
+      for (let m = 0; m <= 11; m += 1) {
+        ctx.beginPath(); ctx.moveTo(cssW * 0.82, Y(m)); ctx.lineTo(cssW * 0.82 + 8, Y(m)); ctx.stroke();
+        if (m % 2 === 0) { ctx.globalAlpha = 0.55; ctx.fillText(`${m} m`, cssW * 0.82 + 12, Y(m) + 3); ctx.globalAlpha = 0.35; }
+      }
+      // Column height marker.
+      ctx.globalAlpha = 0.8; ctx.strokeStyle = '#dc2626'; ctx.setLineDash([4, 4]);
+      ctx.beginPath(); ctx.moveTo(tx + 24, Y(h)); ctx.lineTo(cssW * 0.82, Y(h)); ctx.stroke();
+      ctx.setLineDash([]); ctx.globalAlpha = 1;
+
+      readout.innerHTML =
+        `h = P/(ρg) = <b>${h >= 1 ? h.toFixed(2) + ' m' : (h * 1000).toFixed(0) + ' mm'}</b>` +
+        (Math.abs(rho - 1000) < 60 ? ` — trần 10,3 m của mọi máy bơm hút trên đời` :
+         rho > 13000 ? ` = <b>${(h * 1000).toFixed(0)} mm</b> — chính là "760 mmHg" trên bản tin thời tiết` : '');
+    }
+
+    slider.addEventListener('input', draw);
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="barometer"]').forEach(setup);
+</script>

@@ -1,0 +1,67 @@
+---
+title: "Vì sao đường dây tải điện phải cao thế: câu chuyện của I²R"
+description: "Cùng 100 MW: gửi ở 110 kV mất 8% dọc đường, ở 500 kV chỉ mất 0,4%. Còn thử gửi ở 10 kV thì phép tính trả về điều phi lý — và điều phi lý đó chính là câu trả lời."
+pubDate: 2026-09-02
+tags: ["vat-ly", "dien-hoc", "javascript"]
+translationId: "vi-sao-duong-day-tai-dien-phai-cao-the"
+---
+
+import PowerTransmission from '../../../components/demos/PowerTransmission.astro';
+
+Những cột thép khổng lồ cõng dây 500 kV chạy dọc đất nước — trong khi ổ cắm
+nhà bạn chỉ cần 220 V. Vì sao phải đội điện áp lên hàng nghìn lần rồi lại hạ
+xuống? Câu trả lời nằm trong một cặp công thức và một cái bẫy chết người của
+chữ "bình phương".
+
+<PowerTransmission />
+
+## Bài toán: gửi 100 MW qua sợi dây có điện trở
+
+Dây dẫn dài trăm cây số có điện trở thật — lấy tròn 10 Ω. Công suất gửi đi
+là `P = U·I`: **cùng một lượng hàng, chọn gửi bằng "áp cao dòng nhỏ" hay "áp
+thấp dòng lớn" đều được.** Nhưng phần thành nhiệt dọc dây thì không trung
+lập — nó chỉ nhìn dòng:
+
+```
+P_hao = I²·R
+```
+
+Chữ bình phương đổi mọi thứ. Tăng áp 10 lần → dòng giảm 10 lần → hao hụt giảm
+**100 lần**:
+
+| Điện áp | Dòng | Hao trên dây | Tỉ lệ mất |
+|---|---|---|---|
+| 500 kV | 200 A | 0,4 MW | 0,4% |
+| 110 kV | 909 A | 8,3 MW | 8,3% |
+| 10 kV | 10.000 A | "1.000 MW" | "1000%" |
+
+## Dòng cuối bảng không sai — nó đang nói điều khác
+
+Hao 1000% nghe như lỗi tính toán. Không phải: phép tính đang báo rằng phương
+án đó **không tồn tại**. Đẩy 100 MW ở 10 kV đòi dòng 10.000 A, mà 10.000 A
+qua 10 Ω cần sụt áp 100 kV — gấp mười lần điện áp nguồn đang có. Dòng ấy đơn
+giản không chạy nổi; đường dây sẽ chuyển được một nhúm công suất, phần lớn
+thành lò sưởi trên không. Đây là kiểu [trường hợp biên quen thuộc của
+site](/vi/posts/nguyen-ly-bernoulli-nhanh-hon-la-loang-ap-hon/): công thức
+trả về số phi lý là lúc nó chỉ tay ra ngoài phạm vi áp dụng — và chính chỗ
+đó dạy nhiều nhất.
+
+## Trận chiến dòng điện, phân xử bằng một chữ bình phương
+
+Đây không phải bài toán giấy: nó quyết định cả **cuộc chiến AC/DC** thập niên
+1880. Edison bán điện một chiều 110 V — không tăng áp được với công nghệ thời
+đó, nên nhà máy phải nằm cách khách hàng vài cây số, mỗi khu phố một nhà máy.
+Tesla và Westinghouse bán điện xoay chiều, thứ mà **máy biến áp** — em ruột
+của [cảm ứng Faraday](/vi/posts/cam-ung-faraday-hai-cu-hich-nguoc-dau/) — đội
+lên cao áp lúc gửi và hạ xuống lúc giao dễ như trở bàn tay. I²R làm trọng
+tài: AC thắng tuyệt đối, và lưới điện mọi quốc gia từ đó là xoay chiều.
+
+(Vĩ thanh công bằng cho Edison: với công nghệ bán dẫn nay đã đổi áp được cho
+DC, các tuyến **siêu cao áp một chiều** HVDC lại thành lựa chọn tốt nhất cho
+khoảng cách rất xa — cáp ngầm biển, liên kết lưới quốc gia. Ông chỉ sai sớm
+một thế kỷ.)
+
+Lần tới đi dưới rặng cột 500 kV, bạn có thể đọc nó như một dòng chữ: mỗi mét
+chiều cao cách điện, mỗi chuỗi sứ dài ngoẵng là tiền trả cho việc **chia
+dòng điện cho 10 để chia tiền hao cho 100** — chữ bình phương đắt giá nhất
+của ngành điện, đứng im giữa trời.

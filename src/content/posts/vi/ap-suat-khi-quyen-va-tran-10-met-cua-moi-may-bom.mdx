@@ -1,0 +1,63 @@
+---
+title: "Áp suất khí quyển và cái trần 10 mét của mọi máy bơm hút"
+description: "Không máy bơm nào hút được nước lên quá 10,3 m — kể cả máy bơm hoàn hảo tuyệt đối. Vì 'hút' không tồn tại: chỉ có khí quyển đẩy, và sức đẩy của nó có hạn ngạch."
+pubDate: 2026-09-02
+tags: ["vat-ly", "chat-luu", "javascript"]
+translationId: "ap-suat-khi-quyen-va-tran-10-met-cua-moi-may-bom"
+---
+
+import Barometer from '../../../components/demos/Barometer.astro';
+
+Thế kỷ 17, thợ đào giếng ở Ý gặp chuyện khó hiểu: máy bơm hút kiểu piston —
+dù chế tác tinh xảo đến đâu — **không bao giờ** kéo được nước lên quá chừng
+10 mét. Trên mốc đó, cột nước đứt, để lại khoảng trống. Galileo được hỏi,
+chưa kịp giải xong thì qua đời; học trò của ông, Torricelli, tìm ra câu trả
+lời làm đảo lộn cách hiểu về "hút".
+
+<Barometer />
+
+## "Hút" không phải là một lực
+
+Trực giác nói máy bơm *kéo* nước lên. Sự thật: chân không không kéo được gì —
+nó chỉ là **sự vắng mặt của đẩy**. Thứ nâng nước lên ống là **khí quyển đè
+xuống mặt chậu**: bơm rút không khí khỏi ống, phía trên hết đẩy, phía dưới
+biển khí quyển vẫn đè nguyên — chênh lệch ấy dồn nước lên.
+
+Mà sức đè của khí quyển là hữu hạn: ~101.325 Pa. Nó chỉ cân nổi cột nước cao:
+
+```
+h = P/(ρg) = 101325 / (1000 × 9,81) ≈ 10,3 m
+```
+
+Đến đó khí quyển "hết tiền". Máy bơm tốt hơn không giúp gì — trần này không
+nằm trong máy bơm, nó nằm trong bầu trời. (Giếng sâu hơn 10 m vẫn bơm được,
+nhưng phải đổi chiến thuật: đặt máy bơm **chìm dưới đáy và đẩy lên** — đẩy thì
+không có trần.)
+
+## Torricelli thu nhỏ bầu trời vào một ống
+
+Kéo thanh trượt tới thuỷ ngân — nặng gấp 13,6 lần nước — và cột tụt xuống còn
+**760 mm**. Đó chính là thí nghiệm 1643 của Torricelli: thay 10 mét nước
+cồng kềnh bằng chưa đầy một mét thuỷ ngân, ông tạo ra **phong vũ biểu** đầu
+tiên — và tiện thể cả **chân không nhân tạo** đầu tiên trong lịch sử, cái
+khoảng trống phía trên cột mà giáo điều thời đó ("tự nhiên ghê sợ chân
+không") khẳng định không thể tồn tại.
+
+Con số 760 mmHg sống tới nay trong bản tin thời tiết và máy đo huyết áp: chỉ
+số "120/80" của bạn đo bằng đúng đơn vị cột thuỷ ngân của Torricelli. Và vì
+cột đo *sức đè của khí quyển*, nó thành máy dự báo: khí áp tụt là khối khí
+nhẹ, ẩm, báo mưa bão — chiếc ống của Torricelli đọc được thời tiết trước khi
+ai hiểu vì sao.
+
+## Cái trần đi theo bạn lên núi
+
+Lên cao, biển khí quyển trên đầu mỏng đi, sức đè giảm — và mọi hệ quả kéo
+theo: ở Đà Lạt (1.500 m) trần hút nước còn ~8,7 m; trên đỉnh Everest, khí áp
+chỉ còn một phần ba, và nước **sôi ở ~70 °C** vì áp suất hơi bắt kịp khí
+quyển sớm hơn — nấu mì trên nóc nhà thế giới là món luộc dở vĩnh viễn, dù lửa
+to đến đâu. Nồi áp suất là mưu ngược lại: tự chế một "khí quyển" dày hơn trong
+nồi để đẩy điểm sôi lên trên 100 °C.
+
+Bài học Torricelli để lại gọn trong một câu đáng nhớ: **chúng ta sống dưới
+đáy một đại dương không khí** — và mọi chuyện "hút", từ ống hút trà sữa tới
+máy bơm giếng, thực ra là đại dương ấy đang đè giúp chúng ta.

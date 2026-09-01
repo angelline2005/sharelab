@@ -1,0 +1,114 @@
+---
+// Earth's radiative balance: T_eq = [S(1−a)/4σ]^¼. Sliders for albedo and a
+// crude greenhouse "blanket" fraction f (surface temperature from the one-layer
+// model: T_s = T_eq·(2/(2−f))^¼). Defaults reproduce the classic numbers:
+// bare balance −19 °C, observed +15 °C, greenhouse worth ~33 K.
+---
+
+<figure class="demo" data-demo="earth-balance">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Albedo (phần nắng bị hắt thẳng về trời) <output data-out="a"></output>
+      <input type="range" data-in="a" min="0.1" max="0.6" step="0.005" value="0.3" /></label>
+    <label>"Chăn" khí nhà kính f <output data-out="f"></output>
+      <input type="range" data-in="f" min="0" max="0.95" step="0.005" value="0.77" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Mô hình một lớp: nắng vào phải cân với hồng ngoại ra. Đặt f = 0 để thấy
+    Trái Đất "trần trụi" ở −19 °C; mặc định f = 0,77 tái tạo +15 °C thực đo.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const S = 1361, SIGMA = 5.67e-8;
+  const SUN = '#f59e0b', IR = '#dc2626', EARTH = '#2563eb';
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (n: string) => root.querySelector(`[data-in="${n}"]`) as HTMLInputElement;
+    const output = (n: string) => root.querySelector(`[data-out="${n}"]`) as HTMLOutputElement;
+
+    function draw() {
+      const a = Number(input('a').value);
+      const f = Number(input('f').value);
+      const fmt = (x: number, dp: number) => x.toFixed(dp).replace('.', ',').replace('-', '−');
+      output('a').textContent = fmt(a, 2);
+      output('f').textContent = fmt(f, 2);
+
+      const Teq = Math.pow((S * (1 - a)) / (4 * SIGMA), 0.25);
+      const Ts = Teq * Math.pow(2 / (2 - f), 0.25);
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.42);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+
+      const groundY = cssH * 0.78;
+      // Earth surface.
+      ctx.fillStyle = EARTH; ctx.globalAlpha = 0.25;
+      ctx.fillRect(0, groundY, cssW, cssH - groundY);
+      ctx.globalAlpha = 1;
+      // Greenhouse layer.
+      if (f > 0.02) {
+        ctx.fillStyle = fg; ctx.globalAlpha = 0.08 + f * 0.15;
+        ctx.fillRect(0, cssH * 0.3, cssW, 10);
+        ctx.globalAlpha = 0.55; ctx.font = '10px system-ui,sans-serif';
+        ctx.textAlign = 'left'; ctx.fillStyle = fg;
+        ctx.fillText('lớp khí nhà kính', 8, cssH * 0.3 - 4);
+        ctx.globalAlpha = 1;
+      }
+
+      const arrow = (x: number, y0: number, y1: number, colour: string, w: number) => {
+        if (w <= 0.02) return;
+        ctx.strokeStyle = colour; ctx.fillStyle = colour;
+        ctx.lineWidth = 1 + w * 8; ctx.globalAlpha = 0.85;
+        ctx.beginPath(); ctx.moveTo(x, y0); ctx.lineTo(x, y1); ctx.stroke();
+        const s = Math.sign(y1 - y0);
+        ctx.beginPath(); ctx.moveTo(x, y1 + 6 * s);
+        ctx.lineTo(x - 5, y1 - 4 * s); ctx.lineTo(x + 5, y1 - 4 * s); ctx.fill();
+        ctx.globalAlpha = 1; ctx.lineWidth = 1;
+      };
+
+      // Sunlight in, albedo bounced, IR out (partly trapped by the layer).
+      arrow(cssW * 0.18, 10, groundY - 8, SUN, 1 - a);
+      arrow(cssW * 0.32, groundY - 8, 10, SUN, a);
+      arrow(cssW * 0.62, groundY - 8, cssH * 0.3 + 12, IR, 1);
+      arrow(cssW * 0.76, cssH * 0.3, 10, IR, 1 - f / 2);
+      arrow(cssW * 0.7, cssH * 0.3 + 10, groundY - 8, IR, f / 2);
+
+      ctx.fillStyle = fg; ctx.globalAlpha = 0.6;
+      ctx.font = '10px system-ui,sans-serif'; ctx.textAlign = 'center';
+      ctx.fillText('nắng vào', cssW * 0.18, groundY + 14);
+      ctx.fillText('hắt lại', cssW * 0.32, groundY + 14);
+      ctx.fillText('hồng ngoại ra', cssW * 0.66, groundY + 14);
+      ctx.globalAlpha = 1;
+
+      readout.innerHTML =
+        `Cân bằng trần trụi: T_eq = <b>${fmt(Teq - 273.15, 1)} °C</b> · ` +
+        `có chăn f = ${fmt(f, 2)}: bề mặt <b>${fmt(Ts - 273.15, 1)} °C</b> · ` +
+        `chăn đang đóng góp <b>${fmt(Ts - Teq, 1)} K</b>`;
+    }
+
+    root.querySelectorAll('input').forEach((el) => el.addEventListener('input', draw));
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="earth-balance"]').forEach(setup);
+</script>

@@ -1,0 +1,127 @@
+---
+// Standing waves in air columns: open-open pipes take all harmonics
+// (fn = n·v/2L), closed-open pipes take only the odd ones (fn = (2n−1)·v/4L)
+// and sound an octave lower at the same length. The toggle flips the boundary
+// condition; the drawing shows the pressure antinode appearing at the closed
+// end. Slider picks the harmonic.
+---
+
+<figure class="demo" data-demo="pipe">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Hoạ âm thứ mấy trong chuỗi <output data-out="n"></output>
+      <input type="range" data-in="n" min="1" max="4" step="1" value="1" /></label>
+    <label class="inline"><input type="checkbox" data-in="closed" /> Bịt kín một đầu</label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Cột khí dài 60 cm, vẽ li độ dao động của không khí. Đầu hở buộc phải là
+    bụng (khí tự do dao động), đầu kín buộc phải là nút — và điều kiện biên đó
+    quyết định cả thang âm của nhạc cụ.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; align-items: end; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls label.inline { flex-direction: row; align-items: center; gap: .4rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input[type='range'] { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const V = 343, L = 0.6;
+  const WAVE = '#2563eb', NODE = '#dc2626';
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (n: string) => root.querySelector(`[data-in="${n}"]`) as HTMLInputElement;
+    const out = root.querySelector('[data-out="n"]') as HTMLOutputElement;
+
+    let simT = 0, raf = 0, last = 0;
+
+    function draw() {
+      const n = Number(input('n').value);
+      const closed = input('closed').checked;
+      out.textContent = `${n}`;
+
+      // Open-open: k = nπ/L, displacement mode sin? For displacement with
+      // antinodes at both open ends: y ∝ cos(nπx/L). Closed at x=0 (node):
+      // y ∝ sin((2n−1)πx/2L).
+      const mult = closed ? 2 * n - 1 : n;
+      const f = closed ? (mult * V) / (4 * L) : (mult * V) / (2 * L);
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.34);
+      if (canvas.width !== cssW * dpr) { canvas.width = cssW * dpr; canvas.height = cssH * dpr; canvas.style.height = `${cssH}px`; }
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+
+      const x0 = 24, x1 = cssW - 24, midY = cssH / 2, A = cssH * 0.3;
+
+      // Pipe walls, closed cap drawn on the left when toggled.
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.5;
+      ctx.beginPath(); ctx.moveTo(x0, midY - A - 8); ctx.lineTo(x1, midY - A - 8); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(x0, midY + A + 8); ctx.lineTo(x1, midY + A + 8); ctx.stroke();
+      if (closed) { ctx.beginPath(); ctx.moveTo(x0, midY - A - 8); ctx.lineTo(x0, midY + A + 8); ctx.stroke(); }
+      ctx.globalAlpha = 1;
+
+      const phase = Math.cos(simT * 2 * Math.PI * 0.6);
+      const shape = (u: number) =>
+        closed ? Math.sin(((2 * n - 1) * Math.PI * u) / 2) : Math.cos(n * Math.PI * u);
+
+      for (const [alpha, ph] of [[0.15, 1], [0.15, -1], [1, phase]] as const) {
+        ctx.strokeStyle = WAVE; ctx.globalAlpha = alpha;
+        ctx.lineWidth = alpha === 1 ? 2 : 1;
+        ctx.beginPath();
+        for (let i = 0; i <= 200; i++) {
+          const u = i / 200;
+          const y = midY - A * shape(u) * ph;
+          i ? ctx.lineTo(x0 + u * (x1 - x0), y) : ctx.moveTo(x0 + u * (x1 - x0), y);
+        }
+        ctx.stroke();
+      }
+      ctx.globalAlpha = 1; ctx.lineWidth = 1;
+
+      // Nodes of the displacement pattern.
+      ctx.fillStyle = NODE;
+      for (let i = 0; i <= 400; i++) {
+        const u = i / 400;
+        if (Math.abs(shape(u)) < 0.008) {
+          ctx.beginPath(); ctx.arc(x0 + u * (x1 - x0), midY, 4, 0, Math.PI * 2); ctx.fill();
+        }
+      }
+
+      readout.innerHTML = closed
+        ? `Kín–hở: chỉ hoạ âm <b>lẻ</b> — đây là bội ${mult} · f = ${mult}·v/4L = <b>${f.toFixed(0)} Hz</b> · ` +
+          `âm cơ bản <b>thấp hơn một quãng tám</b> so với ống hở cùng chiều dài`
+        : `Hở–hở: đủ mọi hoạ âm · f = ${mult}·v/2L = <b>${f.toFixed(0)} Hz</b>`;
+    }
+
+    function frame(now: number) {
+      raf = requestAnimationFrame(frame);
+      if (!last) last = now;
+      simT += Math.min((now - last) / 1000, 0.05); last = now;
+      draw();
+    }
+
+    root.querySelectorAll('input').forEach((el) => el.addEventListener('input', draw));
+    addEventListener('resize', draw);
+    const io = new IntersectionObserver((es) => {
+      for (const e of es) {
+        if (e.isIntersecting) { last = 0; raf = requestAnimationFrame(frame); }
+        else cancelAnimationFrame(raf);
+      }
+    });
+    io.observe(root);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="pipe"]').forEach(setup);
+</script>

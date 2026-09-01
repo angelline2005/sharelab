@@ -1,0 +1,108 @@
+---
+// Carnot: η_max = 1 − Tc/Th. Two temperature sliders; the energy-flow diagram
+// splits heat drawn from the hot reservoir into work and the mandatory waste
+// dumped to the cold one. The readout compares real power plants against the
+// ceiling — engineering lives in the gap.
+---
+
+<figure class="demo" data-demo="carnot">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Nguồn nóng T_h <output data-out="th"></output>
+      <input type="range" data-in="th" min="350" max="1500" step="5" value="800" /></label>
+    <label>Nguồn lạnh T_c <output data-out="tc"></output>
+      <input type="range" data-in="tc" min="250" max="400" step="1" value="300" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Máy nhiệt lý tưởng nhất vật lý cho phép. Phần xám đổ xuống nguồn lạnh
+    không phải lỗi chế tạo — nó là thuế nhiệt động lực học, thu bằng tỉ số
+    hai nhiệt độ tuyệt đối.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const WORK = '#2563eb', WASTE = '#9ca3af', HOT = '#dc2626';
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (n: string) => root.querySelector(`[data-in="${n}"]`) as HTMLInputElement;
+    const output = (n: string) => root.querySelector(`[data-out="${n}"]`) as HTMLOutputElement;
+
+    function draw() {
+      const Th = Number(input('th').value);
+      const Tc = Number(input('tc').value);
+      output('th').textContent = `${Th} K (${(Th - 273).toFixed(0)} °C)`;
+      output('tc').textContent = `${Tc} K (${(Tc - 273).toFixed(0)} °C)`;
+      const eta = Math.max(0, 1 - Tc / Th);
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.42);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+
+      // Flow: hot bar → split into work (up) and waste (down to cold bar).
+      const inX = 30, inW = cssW * 0.2, flowY = cssH * 0.45, flowH = 44;
+      ctx.fillStyle = HOT; ctx.globalAlpha = 0.75;
+      ctx.fillRect(inX, flowY, inW, flowH);
+      ctx.globalAlpha = 1;
+      ctx.fillStyle = fg; ctx.globalAlpha = 0.6;
+      ctx.font = '11px system-ui,sans-serif'; ctx.textAlign = 'center';
+      ctx.fillText(`Q_vào (từ ${Th} K)`, inX + inW / 2, flowY - 8);
+      ctx.globalAlpha = 1;
+
+      const splitX = inX + inW + 20;
+      const workH = flowH * eta, wasteH = flowH * (1 - eta);
+      // Work stream: rises to the right.
+      ctx.fillStyle = WORK; ctx.globalAlpha = 0.85;
+      ctx.beginPath();
+      ctx.moveTo(splitX, flowY);
+      ctx.lineTo(cssW - 60, cssH * 0.14);
+      ctx.lineTo(cssW - 60, cssH * 0.14 + workH);
+      ctx.lineTo(splitX, flowY + workH);
+      ctx.closePath(); ctx.fill();
+      // Waste stream: sinks.
+      ctx.fillStyle = WASTE;
+      ctx.beginPath();
+      ctx.moveTo(splitX, flowY + workH);
+      ctx.lineTo(cssW - 60, cssH * 0.72);
+      ctx.lineTo(cssW - 60, cssH * 0.72 + wasteH);
+      ctx.lineTo(splitX, flowY + flowH);
+      ctx.closePath(); ctx.fill();
+      ctx.globalAlpha = 1;
+
+      ctx.fillStyle = fg; ctx.globalAlpha = 0.65;
+      ctx.textAlign = 'right';
+      ctx.fillText(`công có ích ${(eta * 100).toFixed(0)}%`, cssW - 66, cssH * 0.14 - 6);
+      ctx.fillText(`thải về ${Tc} K · ${((1 - eta) * 100).toFixed(0)}%`, cssW - 66, cssH * 0.72 + wasteH + 14);
+      ctx.globalAlpha = 1;
+
+      const real = eta * 0.6; // typical real plants reach ~60% of Carnot
+      readout.innerHTML =
+        `η_max = 1 − T_c/T_h = <b>${(eta * 100).toFixed(1)}%</b> — trần tuyệt đối · ` +
+        `máy thật cùng cặp nhiệt độ thường đạt cỡ ${(real * 100).toFixed(0)}% · ` +
+        `muốn η = 100% cần T_c = <b>0 K tuyệt đối</b>`;
+    }
+
+    root.querySelectorAll('input').forEach((el) => el.addEventListener('input', draw));
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="carnot"]').forEach(setup);
+</script>

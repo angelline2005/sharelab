@@ -1,0 +1,117 @@
+---
+// Damped oscillation: x(t) = A·e^(−γt/2)·cos(ωt), with the exponential
+// envelope drawn explicitly. The damping slider crosses from underdamped
+// through critical to overdamped — the regime every car suspension is tuned
+// to sit near. Static redraw from closed forms.
+---
+
+<figure class="demo" data-demo="damped">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Hệ số tắt dần γ <output data-out="g"></output>
+      <input type="range" data-in="g" min="0.2" max="30" step="0.1" value="1.5" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Hệ dao động tần số riêng ω₀ = 2π rad/s (1 Hz) thả từ biên. Nét đứt là bao
+    hình e^(−γt/2). Tại γ = 2ω₀ hệ đổi tính: hết dao động, chỉ còn bò về cân
+    bằng — ranh giới mang tên "tắt dần tới hạn".
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const W0 = 2 * Math.PI; // natural angular frequency, 1 Hz
+  const CURVE = '#2563eb', ENV = '#dc2626';
+
+  // x(t) for release from rest at x=1, all three regimes.
+  function makeX(gam: number): (t: number) => number {
+    const g2 = gam / 2;
+    if (g2 < W0) {
+      const wd = Math.sqrt(W0 * W0 - g2 * g2);
+      return (t) => Math.exp(-g2 * t) * (Math.cos(wd * t) + (g2 / wd) * Math.sin(wd * t));
+    }
+    if (Math.abs(g2 - W0) < 1e-9) {
+      return (t) => Math.exp(-W0 * t) * (1 + W0 * t);
+    }
+    const s = Math.sqrt(g2 * g2 - W0 * W0);
+    const r1 = -g2 + s, r2 = -g2 - s;
+    const c2 = -r1 / (r2 - r1), c1 = 1 - c2;
+    return (t) => c1 * Math.exp(r1 * t) + c2 * Math.exp(r2 * t);
+  }
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const slider = root.querySelector('[data-in="g"]') as HTMLInputElement;
+    const out = root.querySelector('[data-out="g"]') as HTMLOutputElement;
+
+    function draw() {
+      const gam = Number(slider.value);
+      out.textContent = gam.toFixed(1).replace('.', ',');
+      const regime = gam / 2 < W0 * 0.98 ? 'under' : gam / 2 > W0 * 1.02 ? 'over' : 'critical';
+      const x = makeX(gam);
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.46);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+
+      const pad = 30, T = 6, midY = cssH / 2, A = cssH * 0.38;
+      const X = (t: number) => pad + (t / T) * (cssW - pad - 8);
+      const Y = (v: number) => midY - v * A;
+
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.3;
+      ctx.beginPath(); ctx.moveTo(pad, midY); ctx.lineTo(cssW - 8, midY); ctx.stroke();
+      ctx.globalAlpha = 1;
+
+      // Envelope (underdamped only, where it means something).
+      if (regime === 'under') {
+        ctx.strokeStyle = ENV; ctx.globalAlpha = 0.65; ctx.setLineDash([4, 4]);
+        for (const s of [1, -1]) {
+          ctx.beginPath();
+          for (let i = 0; i <= 200; i++) {
+            const t = (T * i) / 200;
+            const e = s * Math.exp((-gam / 2) * t);
+            i ? ctx.lineTo(X(t), Y(e)) : ctx.moveTo(X(t), Y(e));
+          }
+          ctx.stroke();
+        }
+        ctx.setLineDash([]); ctx.globalAlpha = 1;
+      }
+
+      ctx.strokeStyle = CURVE; ctx.lineWidth = 2; ctx.beginPath();
+      for (let i = 0; i <= 500; i++) {
+        const t = (T * i) / 500;
+        i ? ctx.lineTo(X(t), Y(x(t))) : ctx.moveTo(X(t), Y(x(t)));
+      }
+      ctx.stroke(); ctx.lineWidth = 1;
+
+      const halfT = (2 * Math.LN2) / gam;
+      readout.innerHTML = regime === 'under'
+        ? `<b>Tắt dần yếu</b> — còn lắc qua lại; biên độ giảm nửa sau mỗi <b>${halfT.toFixed(2).replace('.', ',')} s</b> · tới hạn tại γ = 2ω₀ = ${(2 * W0).toFixed(1).replace('.', ',')}`
+        : regime === 'critical'
+          ? `<b>Tắt dần tới hạn</b> — về cân bằng nhanh nhất có thể mà không vượt qua nó lần nào. Điểm vàng của giảm xóc.`
+          : `<b>Tắt dần mạnh</b> — không dao động, nhưng bò về cân bằng <b>chậm hơn</b> mức tới hạn: cản quá hoá lề mề.`;
+    }
+
+    slider.addEventListener('input', draw);
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="damped"]').forEach(setup);
+</script>

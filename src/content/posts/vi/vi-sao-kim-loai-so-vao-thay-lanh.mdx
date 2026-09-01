@@ -1,0 +1,70 @@
+---
+title: "Vì sao kim loại sờ vào thấy lạnh — dù nó không hề lạnh hơn"
+description: "Tay nắm cửa thép và mặt bàn gỗ trong cùng căn phòng có cùng nhiệt độ, nhiệt kế xác nhận. Nhưng da bạn không phải nhiệt kế — nó là máy đo DÒNG nhiệt, và thép rút nhiệt nhanh gấp 300 lần gỗ."
+pubDate: 2026-09-02
+tags: ["vat-ly", "nhiet-hoc", "javascript"]
+translationId: "vi-sao-kim-loai-so-vao-thay-lanh"
+---
+
+import HeatConduction from '../../../components/demos/HeatConduction.astro';
+
+Sáng sớm, chạm tay vào tay nắm cửa kim loại: lạnh buốt. Chạm mặt bàn gỗ ngay
+cạnh: bình thường. Đặt nhiệt kế lên cả hai — **cùng một nhiệt độ**, đúng bằng
+nhiệt độ phòng. Nhiệt kế không hỏng. Cảm giác của bạn cũng không sai. Hai bên
+chỉ đang **đo hai đại lượng khác nhau**.
+
+<HeatConduction />
+
+## Da không đo nhiệt độ — da đo tốc độ mất nhiệt
+
+Cảm biến nhiệt của da nằm trong da, và thứ nó cảm nhận là **nhiệt độ của
+chính làn da** — thứ tụt nhanh hay chậm tuỳ vật bạn chạm rút nhiệt khỏi tay
+mạnh đến đâu. Tốc độ rút ấy do định luật dẫn nhiệt Fourier quyết định:
+
+```
+q = k·A·ΔT/d
+```
+
+Mọi thứ trong công thức giống nhau giữa gỗ và thép — diện tích chạm, chênh
+nhiệt 37 − 20 °C — trừ **hệ số dẫn nhiệt k**:
+
+| Vật liệu | k (W/m·K) | So với gỗ |
+|---|---|---|
+| Xốp cách nhiệt | 0,03 | ×0,2 |
+| Gỗ | 0,15 | ×1 |
+| Gạch đá | 0,7 | ×5 |
+| Thép | 50 | ×333 |
+
+Thép hút nhiệt khỏi da nhanh **hơn ba trăm lần** gỗ. Da tay tụt nhiệt độ tức
+thì, cảm biến hô "lạnh!" — dù nguồn cơn không phải nhiệt độ của thép mà là
+**tốc độ ống dẫn** của nó. Cùng lý do, sàn gạch "buốt chân" hơn thảm trong
+cùng phòng ngủ, và băng ghế đá công viên "lạnh" hơn ghế gỗ kề bên.
+
+## Phép thử đảo chiều: khi vật NÓNG hơn da
+
+Bằng chứng chắc nhất rằng da đo dòng chứ không đo độ: vào phòng xông hơi khô
+90 °C — không khí 90 °C chạm da bạn khắp nơi mà chịu được, vì không khí dẫn
+nhiệt tệ (k ≈ 0,026, còn kém cả xốp). Nhưng chạm vào cái móc kim loại **cùng
+90 °C** trong phòng ấy: bỏng ngay. Cùng nhiệt độ, khác k — cảm giác và mức
+nguy hiểm khác nhau một trời. "Nóng/lạnh" của xúc giác luôn là câu chuyện
+về k nhân ΔT, chưa bao giờ là chuyện của riêng nhiệt độ.
+
+## Ứng dụng nằm sẵn trong nhà bạn
+
+Một khi thấy chữ k, bạn thấy nó ở mọi nơi được thiết kế:
+
+- **Nồi inox đáy đồng, chảo gang**: kim loại k cao để lửa vào món ăn nhanh —
+  còn **cán nhựa gỗ** k thấp để cùng dòng nhiệt ấy đừng vào tay bạn. Một dụng
+  cụ, hai đầu triết lý.
+- **Tường ba lớp, hộp xốp đựng đá**: chuỗi vật liệu k thấp mắc "nối tiếp" —
+  cùng logic [điện trở nối tiếp](/vi/posts/dien-tro-song-song-nho-hon-ca-nhanh-nho-nhat/),
+  vì dẫn nhiệt và dẫn điện chung một khung toán. Cách nhiệt là "điện trở
+  nhiệt" mắc chồng.
+- **Chăn và áo len không sưởi ấm** — chúng không có nguồn nhiệt nào. Chúng chỉ
+  là lớp không khí tù đọng k thấp quấn quanh bạn, hãm dòng nhiệt từ 37 °C của
+  bạn chảy ra trời. Người giữ ấm cho chăn, chưa bao giờ ngược lại.
+
+Câu chốt đáng mang theo: hỏi "vật này bao nhiêu độ?" là câu của nhiệt kế; da
+bạn suốt đời chỉ trả lời một câu khác — *"nhiệt đang chảy qua chỗ chạm nhanh
+cỡ nào?"* Hai câu hỏi trùng đáp án đủ thường xuyên để ta nhầm chúng là một,
+và tay nắm cửa mỗi sáng là lời nhắc rằng không phải.

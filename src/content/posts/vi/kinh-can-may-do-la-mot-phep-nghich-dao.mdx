@@ -1,0 +1,77 @@
+---
+title: "Kính cận \"mấy độ\": con số trên toa kính là một phép nghịch đảo"
+description: "Cận 2 độ nghĩa là gì? Là điểm cực viễn của mắt nằm ở 1/2 mét — và tròng kính −2 điốp chỉ làm đúng một việc: dời cả thế giới xa xôi về đứng trong nửa mét ấy."
+pubDate: 2026-09-02
+tags: ["vat-ly", "quang-hoc", "javascript"]
+translationId: "kinh-can-may-do-la-mot-phep-nghich-dao"
+---
+
+import Eyeglasses from '../../../components/demos/Eyeglasses.astro';
+
+Đi đo mắt về, tờ toa ghi "−2.0". Hỏi hai độ là *gì* thì hiếm ai — kể cả người
+đeo — trả lời được. Câu trả lời gọn đến bất ngờ: **nghịch đảo của một khoảng
+cách**. Kéo điểm cực viễn trong demo và nhìn con số toa kính chạy theo:
+
+<Eyeglasses />
+
+## Mắt cận là mắt có "chân trời" riêng
+
+Mắt bình thường thả lỏng thì lấy nét ở vô cực. Mắt cận có thuỷ tinh thể–giác
+mạc hội tụ hơi mạnh so với chiều dài cầu mắt: ảnh của vật xa rơi *trước* võng
+mạc, nhoè. Nó chỉ nhìn rõ mọi thứ từ một khoảng cách trở vào — khoảng ấy gọi
+là **điểm cực viễn**. Cận nhẹ, chân trời ấy ở 2 mét; cận nặng, nó co về vài
+chục xăng-ti-mét.
+
+Kính cận không sửa con mắt nào cả. Nó là [thấu kính phân
+kỳ](/vi/posts/thau-kinh-hoi-tu-anh-that-anh-ao) làm việc ngược với kính lúp:
+nhận tia song song từ vật ở vô cực, bẻ loe ra như thể chúng phát từ **ảnh ảo**
+nằm ngay tiêu điểm của kính. Mưu kế nằm trọn trong một câu: **chọn kính có tiêu
+điểm trùng đúng điểm cực viễn**. Thế giới ở vô cực được "chép" thành ảnh ảo
+đứng ở nơi mắt còn với tới — phần việc còn lại mắt tự làm như vẫn làm.
+
+## Điốp: đơn vị sinh ra để làm toán cộng
+
+Từ mưu kế trên, tiêu cự kính phải là f = −d_viễn (âm vì phân kỳ, ảnh ảo). Dân
+quang học không ghi tiêu cự mà ghi nghịch đảo của nó, gọi là **điốp** (dp):
+
+```
+D = 1/f (mét)  →  kính cận: D = −1/d_viễn
+```
+
+| Nhìn rõ xa nhất | Toa kính | Dân gian |
+|---|---|---|
+| 2 m | −0,5 dp | cận nửa độ |
+| 1 m | −1 dp | cận 1 độ |
+| 0,5 m | −2 dp | cận 2 độ |
+| 0,25 m | −4 dp | cận 4 độ |
+
+Vì sao nghịch đảo mà không dùng thẳng tiêu cự? Vì **điốp cộng được**. Hai
+thấu kính áp sát nhau có công suất bằng tổng: mắt +60 dp của bạn đeo thêm kính
+−2 dp thành hệ +58 dp — phép cộng tiểu học. Nếu ghi bằng tiêu cự, phép ghép
+thành bài nghịch đảo ba tầng. Cùng lý do khiến [điện trở song
+song](/vi/posts/dien-tro-song-song-nho-hon-ca-nhanh-nho-nhat) được dân điện
+cộng bằng nghịch đảo: chọn đúng đại lượng, phép tính khó tự hoá dễ.
+
+Bảng trên còn giấu một cảnh báo dạng **trường hợp biên**: hàm 1/d dốc ngược
+về gần. Từ 2 m xuống 1 m — mất nửa độ; từ 0,5 m xuống 0,25 m — mất **hai độ**.
+Độ cận tăng một đơn vị đều đặn nghĩa là chân trời của mắt đang sập về theo
+cấp số nhân.
+
+## Viễn thị chạy phép tính ngược
+
+Mắt viễn (và mắt lão sau tuổi 40) hỏng ở đầu kia: nhìn xa tốt nhưng **điểm cực
+cận** bị đẩy ra xa, sách để 25 cm chuẩn lại nhoè. Kính đọc sách là thấu kính
+hội tụ làm việc y hệt nhưng ngược hướng — chép trang sách ở 25 cm thành ảnh ảo
+đứng ngoài điểm cực cận:
+
+```
+D = 1/0,25 − 1/d_cận
+```
+
+Người có điểm cực cận trôi ra 1 m cần D = 4 − 1 = **+3 dp** — dấu cộng, và
+tròng dày ở giữa thay vì dày ở mép. Hai tật, một công thức nghịch đảo, chỉ đổi
+dấu và đổi đầu đo.
+
+Lần tới cầm tờ toa kính, bạn đọc được nó như dân quang học: lấy 1 chia cho con
+số ấy (bỏ dấu) — ra đúng khoảng cách mà thế giới của người đeo kết thúc khi
+họ tháo kính ra.

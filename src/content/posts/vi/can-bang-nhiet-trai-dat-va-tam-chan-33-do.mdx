@@ -1,0 +1,66 @@
+---
+title: "Cân bằng nhiệt Trái Đất: hành tinh này lẽ ra phải đóng băng ở −19 °C"
+description: "Cân nắng vào với hồng ngoại ra, phép tính cho Trái Đất −19 °C — trong khi thực đo +15 °C. Khoản chênh 33 độ ấy là hiệu ứng nhà kính: không phải kẻ xấu, mà là cái chăn đang bị đắp dày thêm."
+pubDate: 2026-09-02
+tags: ["vat-ly", "nhiet-hoc", "khi-hau", "javascript"]
+translationId: "can-bang-nhiet-trai-dat-va-tam-chan-33-do"
+---
+
+import EarthEnergyBalance from '../../../components/demos/EarthEnergyBalance.astro';
+
+Trái Đất tắm trong nắng liên tục mà không nóng lên vô hạn — vì nó cũng **phát
+ra** liên tục: mọi vật có nhiệt độ đều bức xạ, và hành tinh toả hồng ngoại
+vào không gian đúng như [định luật Wien](/vi/posts/dinh-luat-wien-mau-cua-nhiet-do)
+đã kể. Nhiệt độ hành tinh là mực nước của cái bồn có vòi chảy vào và lỗ thoát
+ra: nó tự đứng ở đúng chỗ **vào bằng ra**.
+
+<EarthEnergyBalance />
+
+## Phép tính một dòng và cú hụt 33 độ
+
+Cân nắng hấp thụ `S(1−a)/4` với bức xạ ra `σT⁴` (a là albedo — phần nắng bị
+mây, băng, sa mạc hắt thẳng về trời; số 4 vì Trái Đất hứng nắng bằng hình
+tròn nhưng toả nhiệt bằng cả mặt cầu):
+
+```
+T_eq = [S(1−a)/4σ]^¼ ≈ 255 K = −19 °C
+```
+
+Kết quả nói Trái Đất phải là quả cầu băng. Nhiệt độ trung bình thực đo:
+**+15 °C**. Phép tính không sai — nó **thiếu một nhân vật**: khí quyển.
+
+Hơi nước, CO₂, methane trong suốt với ánh nắng (sóng ngắn) nhưng **chặn hồng
+ngoại** (sóng dài) mà mặt đất phát ra, rồi bức xạ lại — một nửa xuống đất.
+Mặt đất vì thế nhận hai nguồn: nắng và "hồi âm" từ tấm chăn. Muốn cân bằng, nó
+phải nóng hơn. Đặt f = 0 trong demo để về hành tinh trần trụi −19 °C; kéo lên
+mức thực tế, +15 °C hiện ra. **Hiệu ứng nhà kính đóng góp ~33 độ — và sự sống
+như ta biết nợ nó toàn bộ đại dương lỏng.**
+
+## Kẻ xấu không phải cái chăn — mà là tốc độ đắp thêm
+
+Chi tiết hay bị nói sai: hiệu ứng nhà kính không phải "vấn đề". Vấn đề là
+**đạo hàm**. Cái chăn 33 độ đã ổn định hàng nghìn năm; điều đang xảy ra là f
+nhích lên vì CO₂ tăng từ 280 lên hơn 420 ppm trong hai thế kỷ. Demo cho cảm
+nhận độ nhạy: quanh mức hiện tại, chỉ cần f tăng thêm cỡ **0,01** — một phần
+trăm của tấm chăn — nhiệt độ bề mặt đã nhích cả độ. Hành tinh không cần chăn
+dày gấp đôi để rắc rối; nó chỉ cần vài phần trăm.
+
+Thanh albedo kể nốt phần còn lại của câu chuyện: băng trắng hắt nắng tốt
+(a cao). Ấm lên → băng tan → a giảm → hấp thụ thêm → ấm thêm → tan thêm. Đó
+là **vòng hồi tiếp dương** — kéo thử albedo xuống vài phần trăm trong demo để
+thấy nó cộng hưởng với tấm chăn thay vì bù trừ.
+
+## Hai hàng xóm làm nhóm đối chứng
+
+Mô hình một lớp này thô — khí quyển thật có đối lưu, mây, nhiều tầng — nhưng
+nó qua được bài kiểm tra khắc nghiệt nhất: **các hành tinh khác**.
+
+- **Sao Kim**: khí quyển CO₂ đặc gấp 90 lần khí quyển ta, f ≈ 1 chồng nhiều
+  tầng — bề mặt **464 °C**, nóng hơn cả Sao Thuỷ dù xa Mặt Trời gấp đôi. Đó là
+  tấm chăn đắp tới hạn, phiên bản "chuyện gì xảy ra nếu".
+- **Sao Hoả**: khí quyển mỏng còn 0,6% của ta, chăn gần như không có — chênh
+  chỉ vài độ so với tính trần, đêm lạnh −80 °C.
+
+Ba hành tinh, một công thức, ba số phận — khác nhau đúng ở một tham số f. Khoa
+học khí hậu hiện đại tinh vi hơn demo này hàng vạn lần, nhưng cột sống của nó
+vẫn là phép cân vào–ra bạn vừa kéo bằng hai thanh trượt.

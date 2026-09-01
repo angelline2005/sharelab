@@ -1,0 +1,98 @@
+---
+// Why power lines run at hundreds of kilovolts: shipping fixed power P at
+// voltage U means current I = P/U, and the line burns I²R. The voltage slider
+// shows loss collapsing with the SQUARE of the step-up. At the silly end the
+// "loss" exceeds the shipment — meaning that line simply cannot carry it.
+---
+
+<figure class="demo" data-demo="power-line">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Điện áp truyền tải <output data-out="u"></output>
+      <input type="range" data-in="u" min="10" max="500" step="5" value="110" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Gửi 100 MW qua đường dây điện trở tổng 10 Ω. Cột đỏ là phần thành nhiệt
+    dọc dây theo I²R; phần xanh về tới nơi. Tăng áp 10 lần, hao hụt giảm 100
+    lần — đó là toàn bộ lý do cột điện cao thế tồn tại.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const P = 100e6, R = 10;
+  const OK = '#2563eb', LOSS = '#dc2626';
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const slider = root.querySelector('[data-in="u"]') as HTMLInputElement;
+    const out = root.querySelector('[data-out="u"]') as HTMLOutputElement;
+
+    function draw() {
+      const U = Number(slider.value) * 1000;
+      out.textContent = `${(U / 1000).toFixed(0)} kV`;
+      const I = P / U;
+      const loss = I * I * R;
+      const frac = loss / P;
+      const impossible = frac >= 1;
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.4);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+
+      // Transmission bar: delivered vs burned.
+      const bx = 24, bw = cssW - 48, by = cssH * 0.3, bh = 34;
+      const lossW = Math.min(frac, 1) * bw;
+      ctx.fillStyle = OK; ctx.globalAlpha = 0.8;
+      ctx.fillRect(bx, by, bw - lossW, bh);
+      ctx.fillStyle = LOSS;
+      ctx.fillRect(bx + bw - lossW, by, lossW, bh);
+      ctx.globalAlpha = 1;
+
+      ctx.fillStyle = fg; ctx.globalAlpha = 0.65;
+      ctx.font = '11px system-ui,sans-serif'; ctx.textAlign = 'left';
+      ctx.fillText('nhà máy', bx, by - 8);
+      ctx.textAlign = 'right'; ctx.fillText('thành phố', bx + bw, by - 8);
+      ctx.globalAlpha = 1;
+
+      // Pylon sketches whose height scales with voltage — the visual cost.
+      const pyH = 14 + (U / 500e3) * (cssH * 0.3);
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.5;
+      for (const px of [bx + bw * 0.25, bx + bw * 0.5, bx + bw * 0.75]) {
+        ctx.beginPath();
+        ctx.moveTo(px - 8, cssH - 12); ctx.lineTo(px, cssH - 12 - pyH); ctx.lineTo(px + 8, cssH - 12);
+        ctx.moveTo(px - 10, cssH - 12 - pyH * 0.7); ctx.lineTo(px + 10, cssH - 12 - pyH * 0.7);
+        ctx.stroke();
+      }
+      ctx.globalAlpha = 1;
+
+      readout.innerHTML = impossible
+        ? `I = <b>${I.toFixed(0)} A</b> → I²R "hao" <b>${(loss / 1e6).toFixed(0)} MW</b> — vượt cả 100 MW gửi đi: ` +
+          `đường dây này <b>không thể</b> tải nổi công suất ấy ở điện áp ấy.`
+        : `I = P/U = <b>${I.toFixed(0)} A</b> · hao trên dây I²R = <b>${(loss / 1e6).toFixed(1)} MW</b> ` +
+          `(<b>${(frac * 100).toFixed(1)}%</b>) · về tới nơi ${(100 - frac * 100).toFixed(1)} MW`;
+    }
+
+    slider.addEventListener('input', draw);
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="power-line"]').forEach(setup);
+</script>

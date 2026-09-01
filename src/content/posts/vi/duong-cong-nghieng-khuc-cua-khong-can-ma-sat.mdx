@@ -1,0 +1,67 @@
+---
+title: "Đường cong nghiêng: khúc cua được thiết kế để không cần ma sát"
+description: "Ở đúng tốc độ v = √(rg·tanθ), xe ôm cua trên mặt băng trơn tuyệt đối vẫn không trượt — phản lực mặt đường tự lo trọn lực hướng tâm. Đường đua Daytona nghiêng 31° vì đúng công thức này."
+pubDate: 2026-09-02
+tags: ["vat-ly", "co-hoc", "javascript"]
+translationId: "duong-cong-nghieng-khuc-cua-khong-can-ma-sat"
+---
+
+import BankedCurve from '../../../components/demos/BankedCurve.astro';
+
+Xe ôm cua được là nhờ có lực kéo nó vào tâm — trên đường phẳng, toàn bộ lực
+hướng tâm ấy khoán trắng cho **ma sát lốp**. Mưa xuống, dầu loang, ma sát bỏ
+việc: xe văng thẳng. Kỹ sư đường có một mưu hay hơn là cầu nguyện cho lốp tốt:
+**nghiêng mặt đường vào trong**.
+
+<BankedCurve />
+
+## Phản lực bị nghiêng là phản lực có việc làm
+
+Mặt đường phẳng đẩy xe thẳng đứng — phản lực chỉ biết cân trọng lực, vô dụng
+cho việc ôm cua. Nghiêng mặt đường góc θ, phản lực (luôn vuông góc mặt đường)
+nghiêng theo — và **thành phần nằm ngang của nó chĩa thẳng vào tâm cua**. Cân
+bằng hai phương cho tốc độ mà tại đó thành phần ấy lo trọn việc:
+
+```
+v_thiết_kế = √(r·g·tanθ)
+```
+
+Với khúc cua bán kính 50 m nghiêng 20°: đúng **48 km/h**, không cần ma sát
+tham gia một newton nào. Mặt đường hoá băng trơn lý tưởng, xe vẫn ôm cua ngọt
+— thử ngay trên demo bằng cách đặt tốc độ trùng tốc độ thiết kế.
+
+Lệch khỏi tốc độ ấy, ma sát mới phải vào ca — và demo cho thấy nó đổi phe tuỳ
+hướng lệch: chạy **nhanh hơn**, xe chực văng lên mép ngoài, ma sát ghì xuống;
+chạy **chậm hơn** trên dốc nghiêng gắt, xe chực tuột vào trong, ma sát đỡ
+ngược lên. Mặt cua nghiêng vì thế không xoá vai trò của ma sát — nó **thu hẹp
+việc** của ma sát từ "gánh tất cả" xuống "bù phần lệch", và đó là toàn bộ
+triết lý an toàn của nó.
+
+## Đọc góc nghiêng quanh bạn
+
+**Cao tốc**: các nút cong được nghiêng vài độ, tính cho tốc độ giới hạn —
+đó là lý do biển "khúc cua, giảm tốc" nghiêm túc hơn vẻ ngoài: chạy đúng tốc
+độ ghi, bạn được hình học che lưng; vượt xa nó, phần lệch quay về đè lên lốp.
+
+**Đường đua Daytona**: nghiêng tới **31°** — dốc đến mức đi bộ lên còn khó —
+cho tốc độ thiết kế cỡ 150 km/h ở vành ngoài, để xe đua giữ ga suốt vòng cua
+mà lốp còn dư sức cho việc khác.
+
+**Vận động viên đua xe đạp lòng chảo** nghiêng người và mặt sân gỗ nghiêng
+42–45°: cùng phương trình, người và xe hợp thành "con lắc" tự xếp dọc hợp lực.
+
+**Máy bay không có mặt đường** vẫn dùng đúng nguyên lý: muốn vòng, phi công
+**nghiêng cánh** — lực nâng nghiêng theo, thành phần ngang của nó làm lực
+hướng tâm. Cua của máy bay là đường cong nghiêng tự chế trên không, và hành
+khách cảm thấy bị "ấn xuống ghế" thay vì xô ngang — dấu hiệu hợp lực đang
+xuyên thẳng sàn máy bay, đúng như xe chạy đúng tốc độ thiết kế.
+
+## Một công thức, hai người quen
+
+Để ý `tanθ = v²/rg` chính là [góc trượt của mặt phẳng
+nghiêng](/vi/posts/mat-phang-nghieng-va-goc-bat-dau-truot/) mặc áo động lực
+học: bên kia tanθ đấu với hệ số ma sát μ, bên này tanθ đấu với tỉ số v²/rg.
+Và cũng như bên kia, **khối lượng xe biến mất khỏi công thức** — xe tải và xe
+máy chung một tốc độ thiết kế trên cùng khúc cua. Nặng hơn cần lực hướng tâm
+lớn hơn, nhưng phản lực nghiêng của nó cũng lớn hơn đúng tỉ lệ: mẫu chuyện
+m-triệt-tiêu quen thuộc, lần này cứu cả xe tải lẫn xe máy bằng một mặt đường.

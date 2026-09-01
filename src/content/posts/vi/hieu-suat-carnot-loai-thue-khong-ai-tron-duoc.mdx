@@ -1,0 +1,65 @@
+---
+title: "Hiệu suất Carnot: loại thuế không cỗ máy nào trốn được"
+description: "Không máy nhiệt nào — dù hoàn hảo tuyệt đối — biến hết nhiệt thành công. Mức thuế tối thiểu là Tc/Th, thu bằng nhiệt độ tuyệt đối, và hai phần ba điện năng thế giới đang nộp nó mỗi ngày."
+pubDate: 2026-09-02
+tags: ["vat-ly", "nhiet-hoc", "javascript"]
+translationId: "hieu-suat-carnot-loai-thue-khong-ai-tron-duoc"
+---
+
+import CarnotEfficiency from '../../../components/demos/CarnotEfficiency.astro';
+
+Năm 1824, kỹ sư Pháp 28 tuổi Sadi Carnot hỏi một câu nghe rất kỹ thuật: máy
+hơi nước tốt nhất *có thể* tốt đến đâu? Câu trả lời của ông hoá ra không nói
+về hơi nước, về thép hay ma sát — nó là một định luật của tự nhiên:
+
+```
+η_max = 1 − T_c/T_h      (nhiệt độ tuyệt đối, kelvin)
+```
+
+Kéo hai nguồn nhiệt và xem dòng năng lượng chia đôi:
+
+<CarnotEfficiency />
+
+## Phần thải ra không phải là lỗi
+
+Trực giác kỹ sư nói: hao hụt đến từ ma sát, rò nhiệt, chế tạo vụng — cứ hoàn
+thiện mãi sẽ về 100%. Carnot chứng minh điều ngược lại: kể cả cỗ máy **không
+một khiếm khuyết nào**, phần nhiệt `T_c/T_h` vẫn *bắt buộc* phải đổ xuống
+nguồn lạnh. Vì máy nhiệt sống bằng **dòng chảy** của nhiệt từ nóng xuống lạnh
+— như guồng nước sống nhờ nước chảy từ cao xuống thấp — và dòng chảy nào cũng
+cần chỗ đổ về. Giữ hết nhiệt làm công tức là chặn dòng; chặn dòng thì máy
+đứng. Nhiệt thải là **giá vé của việc vận hành**, không phải tiền rơi vãi.
+
+Muốn η = 100%? Công thức trả lời tỉnh khô: cần nguồn lạnh ở **0 kelvin tuyệt
+đối** — nơi vật lý cấm đến nốt. Cái trần này vì thế không bao giờ chạm.
+
+## Đọc hoá đơn của các nhà máy quanh ta
+
+| Máy | T_h / T_c | Trần Carnot | Thực tế |
+|---|---|---|---|
+| Máy hơi nước thế kỷ 19 | 400 / 300 K | 25% | ~5–10% |
+| Nhiệt điện than–khí hiện đại | ~800 / 300 K | ~63% | 35–45% |
+| Động cơ ô tô xăng | ~1000 / 300 K | ~70% | 25–30% |
+
+Hai bài học từ bảng. Một: máy thật luôn dưới trần thêm một khoảng — ma sát và
+truyền nhiệt vội vã ăn nốt phần đó — nhưng **trần mới là ranh giới cứng**, và
+mọi tiến bộ hai thế kỷ qua chỉ là bò gần nó hơn. Hai: cách duy nhất nâng trần
+là kéo giãn cặp nhiệt độ, và vì T_c bị ghim ở nhiệt độ môi trường (~300 K,
+sông và khí trời của hành tinh này), toàn bộ cuộc chơi nằm ở **đẩy T_h lên** —
+lịch sử vật liệu chịu nhiệt của tuabin chính là lịch sử hiệu suất điện lực.
+
+Hệ quả nhìn thấy được: các tháp giải nhiệt khổng lồ nhả "khói" trắng (thực ra
+là hơi nước) cạnh mọi nhà máy nhiệt điện chính là **nơi nộp thuế Carnot** —
+hơn nửa năng lượng của than vào lò bay lên trời ở đó, đúng định luật, không
+ai biển thủ.
+
+## Chạy ngược chiếc máy
+
+Đảo chiều dòng chảy — bơm nhiệt từ lạnh lên nóng — và công thức Carnot đổi
+phe, thành đồng minh bất ngờ: máy lạnh và điều hoà hai chiều có "hiệu suất"
+**trên 100%** thoải mái. Một số điện bơm được 3–4 phần nhiệt vào nhà mùa
+đông, vì bạn không *tạo* nhiệt mà chỉ *dọn* nhiệt sẵn có ngoài trời vào — và
+thuế Carnot cho việc dọn thấp hơn nhiều so với việc đốt. Cùng một phương
+trình: thu thuế khi nhiệt sinh công, trả trợ cấp khi công dời nhiệt. Ít định
+luật nào 200 tuổi mà vẫn đứng tên trên cả tháp giải nhiệt lẫn hoá đơn điều
+hoà nhà bạn.

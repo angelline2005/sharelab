@@ -1,0 +1,59 @@
+---
+title: "Giao thoa màng mỏng: bong bóng xà phòng không có màu — nó có phép trừ"
+description: "Nước xà phòng trong suốt, vậy màu cầu vồng trên bong bóng từ đâu ra? Từ hai tia phản xạ lệch pha nhau. Và khoảnh khắc bong bóng chuyển đen là đồng hồ đếm ngược tới lúc nổ."
+pubDate: 2026-09-02
+tags: ["vat-ly", "quang-hoc", "song", "javascript"]
+translationId: "mang-mong-giao-thoa-mau-cua-bong-xa-phong"
+---
+
+import ThinFilm from '../../../components/demos/ThinFilm.astro';
+
+Nước xà phòng trong veo không màu. Thổi thành bong bóng, nó lập tức loang
+những dải màu chảy như dầu. Màu ấy không nằm trong chất — nhuộm cả xô nước
+cũng không thấy — nó nằm trong **bề dày**: màng bong bóng mỏng cỡ vài trăm
+nanomét, ngang hàng với bước sóng ánh sáng, và ở cỡ đó ánh sáng bắt đầu tự
+cộng trừ với chính mình.
+
+<ThinFilm />
+
+## Hai tấm gương cách nhau vài trăm nanomét
+
+Ánh sáng gặp màng bị phản xạ **hai lần**: một ở mặt trước, một ở mặt sau. Hai
+tia dội về mắt lệch nhau đúng quãng đường khứ hồi trong màng, `2nt` — và như
+mọi [bài toán giao thoa](/vi/posts/khe-doi-young-do-buoc-song-bang-thuoc-ke/),
+lệch nguyên bước sóng thì tăng cường, lệch nửa thì triệt nhau. (Kèm một chi
+tiết hay bị quên: tia phản xạ ở mặt trước bị **lật pha nửa chu kỳ** vì đi từ
+môi trường loãng vào đặc — nên điều kiện sáng/tối đảo chỗ so với phản xạ
+thường.)
+
+Mấu chốt của màu nằm ở chỗ điều kiện triệt tiêu **chọn lọc theo λ**: một bề
+dày cho trước chỉ giết được vài bước sóng nhất định. Màng 200 nm triệt đúng
+vùng lục — ánh trắng trừ lục còn **hồng cánh sen**. Màng dày hơn giết màu
+khác, ra màu bù khác. Màu của bong bóng là **ánh sáng trắng bị đục lỗ**, và
+demo cho xem cả phổ bị đục ở từng bề dày.
+
+## Đọc bong bóng như đọc bản đồ độ dày
+
+Trên bong bóng thật, trọng lực kéo nước dồn xuống: màng **mỏng dần từ dưới
+lên**. Các dải màu uốn lượn bạn thấy chính là các **đường đồng mức bề dày** —
+mỗi ranh giới màu là một bước vài chục nanomét. Bạn đang nhìn một bản đồ địa
+hình có độ phân giải mà kính hiển vi quang học không với tới, vẽ miễn phí
+bằng chính hiện tượng cần giải thích.
+
+Và khoảnh khắc đáng xem nhất: ngay trước khi nổ, **đỉnh bong bóng chuyển đen**.
+Màng ở đó đã mỏng dưới ~50 nm — mỏng hơn mọi bước sóng nhìn thấy — cú lật pha
+ở mặt trước khiến hai tia phản xạ triệt nhau ở *mọi* màu: màng ngừng phản xạ
+hoàn toàn. Màu đen ấy là đồng hồ đếm ngược; thấy nó, bong bóng còn sống vài
+giây. Kéo thanh trượt của demo về tận cùng bên trái để gặp đúng trạng thái đó.
+
+## Phép trừ được đem đi bán
+
+Công nghiệp dùng hiện tượng này theo cả hai chiều. **Lớp khử phản xạ** trên
+kính cận và ống kính máy ảnh là màng mỏng được tính bề dày để hai tia phản xạ
+*triệt nhau* ở giữa phổ — ánh phản xạ còn sót màu tím nhạt đặc trưng chính là
+phần rìa phổ trừ không hết. Ngược lại, **lớp phủ đổi màu theo góc nhìn** trên
+tiền polymer và một số vỏ xe là màng mỏng làm việc chiều tăng cường — góc
+nhìn đổi làm quãng đường trong màng đổi, màu trượt theo, thứ máy photocopy
+không tài nào giả được. Cánh bướm xanh Morpho không có hạt sắc tố xanh nào:
+màu của nó là vi cấu trúc màng mỏng xếp lớp — tự nhiên đã bán "màu cấu trúc"
+này từ trước loài người hàng chục triệu năm.

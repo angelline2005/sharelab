@@ -1,0 +1,112 @@
+---
+// The banked curve: at design speed v = √(rg·tanθ) the road needs no friction
+// at all — the normal force's horizontal component IS the centripetal force.
+// Sliders for bank angle and speed; the readout says which way friction must
+// act, and the force diagram tilts with the road.
+---
+
+<figure class="demo" data-demo="banked">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Góc nghiêng mặt đường <output data-out="th"></output>
+      <input type="range" data-in="th" min="0" max="40" step="0.5" value="20" /></label>
+    <label>Tốc độ xe <output data-out="v"></output>
+      <input type="range" data-in="v" min="10" max="130" step="1" value="48" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Khúc cua bán kính 50 m nhìn từ phía sau xe. Ở đúng tốc độ thiết kế, phản
+    lực mặt đường tự cung cấp trọn lực hướng tâm — mặt đường đóng băng trơn
+    tuyệt đối cũng không sao.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const R = 50, G = 9.81;
+  const CAR = '#dc2626', FORCE = '#2563eb';
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (n: string) => root.querySelector(`[data-in="${n}"]`) as HTMLInputElement;
+    const output = (n: string) => root.querySelector(`[data-out="${n}"]`) as HTMLOutputElement;
+
+    function draw() {
+      const deg = Number(input('th').value);
+      const vKmh = Number(input('v').value);
+      output('th').textContent = `${deg.toFixed(1)}°`;
+      output('v').textContent = `${vKmh} km/h`;
+      const th = (deg * Math.PI) / 180;
+      const v = vKmh / 3.6;
+      const vDesign = Math.sqrt(R * G * Math.tan(th));
+      const need = (v * v) / R; // required centripetal accel
+      const fromBank = G * Math.tan(th); // what the bank supplies (per m, small-angle exact for no-friction case)
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.44);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+
+      // Banked road seen from behind; centre of the curve to the left.
+      const cx = cssW * 0.52, cy = cssH * 0.66, roadL = cssW * 0.34;
+      ctx.save();
+      ctx.translate(cx, cy); ctx.rotate(-th);
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.7; ctx.lineWidth = 3;
+      ctx.beginPath(); ctx.moveTo(-roadL / 2, 0); ctx.lineTo(roadL / 2, 0); ctx.stroke();
+      ctx.lineWidth = 1; ctx.globalAlpha = 1;
+      // Car.
+      ctx.fillStyle = CAR;
+      ctx.fillRect(-22, -18, 44, 18);
+      // Normal force arrow (perpendicular to road).
+      ctx.strokeStyle = FORCE; ctx.fillStyle = FORCE; ctx.lineWidth = 2.4;
+      const nLen = 44 / Math.cos(th);
+      ctx.beginPath(); ctx.moveTo(0, -18); ctx.lineTo(0, -18 - nLen); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(0, -22 - nLen);
+      ctx.lineTo(-5, -14 - nLen); ctx.lineTo(5, -14 - nLen); ctx.fill();
+      ctx.lineWidth = 1;
+      ctx.restore();
+
+      // Gravity arrow, always straight down from the car.
+      const carX = cx + 0 * Math.cos(th), carY = cy - 9;
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.8; ctx.lineWidth = 2.4;
+      ctx.beginPath(); ctx.moveTo(carX, carY); ctx.lineTo(carX, carY + 44); ctx.stroke();
+      ctx.fillStyle = fg;
+      ctx.beginPath(); ctx.moveTo(carX, carY + 50);
+      ctx.lineTo(carX - 5, carY + 42); ctx.lineTo(carX + 5, carY + 42); ctx.fill();
+      ctx.globalAlpha = 1; ctx.lineWidth = 1;
+      ctx.fillStyle = fg; ctx.globalAlpha = 0.55;
+      ctx.font = '11px system-ui,sans-serif'; ctx.textAlign = 'left';
+      ctx.fillText('tâm cua ←', 12, cssH * 0.2);
+      ctx.globalAlpha = 1;
+
+      const diff = need - fromBank;
+      const state = Math.abs(v - vDesign) < 0.6
+        ? `<b>đúng tốc độ thiết kế</b> — không cần một chút ma sát nào`
+        : diff > 0
+          ? `nhanh hơn thiết kế — ma sát phải <b>ghì xe xuống dốc nghiêng</b> (chống trượt lên ngoài)`
+          : `chậm hơn thiết kế — ma sát phải <b>đỡ xe khỏi tuột vào trong</b>`;
+      readout.innerHTML =
+        `v thiết kế = √(rg·tanθ) = <b>${(vDesign * 3.6).toFixed(0)} km/h</b> · bạn đang chạy ${vKmh} km/h: ${state}`;
+    }
+
+    root.querySelectorAll('input').forEach((el) => el.addEventListener('input', draw));
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="banked"]').forEach(setup);
+</script>
