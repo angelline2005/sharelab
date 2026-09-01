@@ -1,0 +1,271 @@
+---
+// Two in-phase point sources on a water surface, rendered as a live ripple
+// field. Two views:
+//
+//   "sóng chạy"    u(P,t) = sin(ωt − 2πd₁/λ) + sin(ωt − 2πd₂/λ), animated
+//   "vân biên độ"  A(P)   = |2·cos(π(d₁−d₂)/λ)|, static — the exam picture
+//
+// The readout counts maxima and minima on the segment between the sources by
+// direct enumeration with strict inequality (|kλ| < d), not by the textbook
+// closed formula — because the formula overcounts by two whenever d/λ lands
+// exactly on an integer, and the article this demo sits in is about precisely
+// that trap.
+//
+// Rendering: distances are precomputed per grid cell whenever geometry
+// changes; each frame then only evaluates the two sines. The field is drawn
+// into a small ImageData and scaled up, which keeps the per-frame work at
+// ~50k cells.
+---
+
+<figure class="demo" data-demo="interference">
+  <canvas></canvas>
+
+  <div class="controls">
+    <label>
+      Khoảng cách hai nguồn <output data-out="d"></output>
+      <input type="range" data-in="d" min="6" max="24" step="0.5" value="16" />
+    </label>
+    <label>
+      Bước sóng λ <output data-out="lam"></output>
+      <input type="range" data-in="lam" min="1.5" max="6" step="0.1" value="3" />
+    </label>
+    <label class="inline">
+      <input type="checkbox" data-in="mode" />
+      Xem vân biên độ (ảnh tĩnh)
+    </label>
+  </div>
+
+  <p class="readout" data-readout></p>
+
+  <figcaption>
+    Hai nguồn dao động cùng pha. Vân cực đại là những đường hyperbol nơi hai
+    sóng luôn tăng cường nhau; vân cực tiểu nằm xen giữa, nơi chúng triệt tiêu.
+  </figcaption>
+</figure>
+
+<style>
+  .demo {
+    margin: 2rem 0;
+    padding: 1rem;
+    border: 1px solid rgba(128, 128, 128, 0.3);
+    border-radius: 10px;
+  }
+  .demo canvas {
+    width: 100%;
+    height: auto;
+    display: block;
+    border-radius: 6px;
+  }
+  .controls {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+    gap: 0.75rem 1.25rem;
+    margin-top: 1rem;
+    align-items: end;
+  }
+  .controls label {
+    display: flex;
+    flex-direction: column;
+    font-size: 0.85rem;
+    gap: 0.3rem;
+  }
+  .controls label.inline {
+    flex-direction: row;
+    align-items: center;
+    gap: 0.4rem;
+  }
+  .controls output {
+    font-variant-numeric: tabular-nums;
+    opacity: 0.7;
+  }
+  .controls input[type='range'] {
+    width: 100%;
+  }
+  .readout {
+    margin: 0.9rem 0 0;
+    font-size: 0.9rem;
+    font-variant-numeric: tabular-nums;
+    line-height: 1.6;
+  }
+  figcaption {
+    margin-top: 0.75rem;
+    font-size: 0.8rem;
+    opacity: 0.7;
+    line-height: 1.5;
+  }
+</style>
+
+<script>
+  // Field units are "cm" of simulated water; SCALE maps them to grid cells.
+  const OMEGA = 2 * Math.PI * 0.8; // 0.8 Hz — slow enough to watch crests move
+  const RES = 3; // css pixels per field cell
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (n: string) => root.querySelector(`[data-in="${n}"]`) as HTMLInputElement;
+    const output = (n: string) => root.querySelector(`[data-out="${n}"]`) as HTMLOutputElement;
+
+    let gw = 0;
+    let gh = 0;
+    let d1: Float32Array = new Float32Array(0);
+    let d2: Float32Array = new Float32Array(0);
+    let field: HTMLCanvasElement | null = null;
+    let img: ImageData | null = null;
+    let raf = 0;
+    let simTime = 0;
+    let last = 0;
+    let cmPerCell = 0.1;
+
+    // Strict inequality on the open segment between the sources — the
+    // endpoints are the sources themselves, not interference points.
+    function countFringes(d: number, lam: number) {
+      let maxima = 0;
+      let minima = 0;
+      for (let k = -200; k <= 200; k++) {
+        if (Math.abs(k * lam) < d) maxima++;
+        if (Math.abs((k + 0.5) * lam) < d) minima++;
+      }
+      return { maxima, minima };
+    }
+
+    function rebuildGeometry() {
+      const cssW = root.clientWidth - 32;
+      const cssH = Math.round(cssW * 0.5);
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      canvas.width = cssW * dpr;
+      canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.imageSmoothingEnabled = true;
+
+      gw = Math.max(2, Math.floor(cssW / RES));
+      gh = Math.max(2, Math.floor(cssH / RES));
+      d1 = new Float32Array(gw * gh);
+      d2 = new Float32Array(gw * gh);
+      field = document.createElement('canvas');
+      field.width = gw;
+      field.height = gh;
+      img = field.getContext('2d')!.createImageData(gw, gh);
+
+      // The field spans 32 "cm" horizontally regardless of pixel size.
+      cmPerCell = 32 / gw;
+      const d = Number(input('d').value);
+      const cy = gh / 2;
+      const sx1 = gw / 2 - d / 2 / cmPerCell;
+      const sx2 = gw / 2 + d / 2 / cmPerCell;
+      for (let y = 0; y < gh; y++) {
+        for (let x = 0; x < gw; x++) {
+          const i = y * gw + x;
+          d1[i] = Math.hypot(x - sx1, y - cy) * cmPerCell;
+          d2[i] = Math.hypot(x - sx2, y - cy) * cmPerCell;
+        }
+      }
+    }
+
+    function paint() {
+      if (!img || !field) return;
+      const lam = Number(input('lam').value);
+      const d = Number(input('d').value);
+      const staticMode = input('mode').checked;
+      const data = img.data;
+      const k = (2 * Math.PI) / lam;
+
+      for (let i = 0; i < gw * gh; i++) {
+        let v: number; // 0..1 brightness
+        if (staticMode) {
+          // Local oscillation amplitude: bright bands are the maxima
+          // hyperbolas, dark bands the minima.
+          v = Math.abs(Math.cos((Math.PI * (d1[i] - d2[i])) / lam));
+        } else {
+          const u =
+            Math.sin(simTime * OMEGA - k * d1[i]) + Math.sin(simTime * OMEGA - k * d2[i]);
+          v = (u + 2) / 4;
+        }
+        const p = i * 4;
+        // Deep-water palette; self-contained so it reads on light and dark
+        // themes alike.
+        data[p] = 10 + 60 * v;
+        data[p + 1] = 40 + 130 * v;
+        data[p + 2] = 90 + 150 * v;
+        data[p + 3] = 255;
+      }
+      field.getContext('2d')!.putImageData(img, 0, 0);
+
+      const cssW = canvas.width / Math.min(window.devicePixelRatio || 1, 2);
+      const cssH = canvas.height / Math.min(window.devicePixelRatio || 1, 2);
+      ctx.drawImage(field, 0, 0, gw, gh, 0, 0, cssW, cssH);
+
+      // Sources.
+      const sx1 = cssW / 2 - ((d / 2) * cssW) / 32;
+      const sx2 = cssW / 2 + ((d / 2) * cssW) / 32;
+      ctx.fillStyle = '#f59e0b';
+      for (const sx of [sx1, sx2]) {
+        ctx.beginPath();
+        ctx.arc(sx, cssH / 2, 4, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+
+    function updateReadout() {
+      const d = Number(input('d').value);
+      const lam = Number(input('lam').value);
+      output('d').textContent = `${d.toFixed(1)} cm`;
+      output('lam').textContent = `${lam.toFixed(1)} cm`;
+      const { maxima, minima } = countFringes(d, lam);
+      const ratio = d / lam;
+      // Slider steps are decimal, so compare against the nearest (half-)integer
+      // with a loose epsilon rather than exact equality.
+      const onIntBoundary = Math.abs(ratio - Math.round(ratio)) < 1e-6;
+      const onHalfBoundary =
+        !onIntBoundary && Math.abs(ratio * 2 - Math.round(ratio * 2)) < 1e-6;
+      readout.innerHTML =
+        `d/λ = <b>${ratio.toFixed(2)}</b> · trên đoạn nối hai nguồn: ` +
+        `<b>${maxima}</b> cực đại, <b>${minima}</b> cực tiểu` +
+        (onIntBoundary
+          ? ` — <b>trường hợp biên</b>: d chia hết cho λ, công thức 2⌊d/λ⌋+1 đếm thừa 2 cực đại`
+          : onHalfBoundary
+            ? ` — <b>trường hợp biên</b>: d/λ bán nguyên, công thức 2⌊d/λ+½⌋ đếm thừa 2 cực tiểu`
+            : '');
+    }
+
+    function frame(now: number) {
+      raf = requestAnimationFrame(frame);
+      if (!last) last = now;
+      simTime += Math.min((now - last) / 1000, 0.05);
+      last = now;
+      if (!input('mode').checked) paint();
+    }
+
+    function onGeometryChange() {
+      rebuildGeometry();
+      updateReadout();
+      paint();
+    }
+
+    input('d').addEventListener('input', onGeometryChange);
+    input('lam').addEventListener('input', () => {
+      updateReadout();
+      paint();
+    });
+    input('mode').addEventListener('change', paint);
+    window.addEventListener('resize', onGeometryChange);
+
+    const observer = new IntersectionObserver((entries) => {
+      for (const entry of entries) {
+        if (entry.isIntersecting) {
+          last = 0;
+          raf = requestAnimationFrame(frame);
+        } else {
+          cancelAnimationFrame(raf);
+        }
+      }
+    });
+    observer.observe(root);
+
+    onGeometryChange();
+  }
+
+  document.querySelectorAll<HTMLElement>('[data-demo="interference"]').forEach(setup);
+</script>

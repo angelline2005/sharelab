@@ -1,0 +1,87 @@
+---
+title: "Giao thoa sóng: công thức đếm vân và cái bẫy trường hợp biên"
+description: "Công thức 2⌊d/λ⌋+1 mà học sinh nào cũng thuộc sẽ đếm thừa 2 vân đúng lúc d chia hết cho λ. Demo tương tác để thấy vân hyperbol thật, và cách đếm không bao giờ sai."
+pubDate: 2026-09-02
+tags: ["vat-ly", "song", "javascript"]
+translationId: "giao-thoa-song-va-cai-bay-truong-hop-bien"
+---
+
+import WaveInterference from '../../../components/demos/WaveInterference.astro';
+
+Thả hai viên sỏi xuống mặt nước cùng lúc, cách nhau một đoạn. Hai họ sóng tròn
+lan ra, chồng lên nhau — và trên mặt nước hiện ra thứ mà cả hai viên sỏi riêng
+lẻ đều không tạo nổi: những **dải đứng yên**, nơi mặt nước hoặc dao động dữ dội
+gấp đôi, hoặc phẳng lặng như chưa có gì xảy ra.
+
+Đây là demo của hiện tượng đó. Hai nguồn cùng pha, bạn chỉnh khoảng cách và bước
+sóng. Tick "vân biên độ" để xem ảnh tĩnh — đúng bức tranh trong đề thi.
+
+<WaveInterference />
+
+Các dải sáng là **vân cực đại**: quỹ tích những điểm mà hiệu đường đi từ hai
+nguồn bằng nguyên lần bước sóng, `d₂ − d₁ = kλ`, nên hai sóng tới luôn cùng pha
+và tăng cường nhau. Các dải tối xen giữa là **vân cực tiểu**, `d₂ − d₁ = (k + ½)λ`,
+hai sóng ngược pha và triệt tiêu. Mỗi vân là một nhánh hyperbol nhận hai nguồn
+làm tiêu điểm — điều demo cho thấy rõ hơn bất kỳ hình vẽ tĩnh nào.
+
+## Công thức ai cũng thuộc
+
+Câu hỏi kinh điển của vật lý 12: *trên đoạn nối hai nguồn có bao nhiêu cực đại?*
+
+Lập luận chuẩn: trên đoạn nối, hiệu đường đi `d₂ − d₁` chạy từ `−d` đến `+d`.
+Cực đại ứng với `kλ` nằm trong khoảng đó, nên:
+
+```
+số cực đại = 2⌊d/λ⌋ + 1
+số cực tiểu = 2⌊d/λ + ½⌋
+```
+
+Thử với demo: `d = 20 cm, λ = 3 cm` → `d/λ ≈ 6,67` → công thức cho **13 cực
+đại, 14 cực tiểu**. Đếm trực tiếp cũng ra đúng thế. Ổn.
+
+## Và đây là chỗ nó gãy
+
+Kéo về `d = 16 cm, λ = 4 cm`. Bây giờ `d/λ = 4` tròn trịa. Công thức cho
+`2·4 + 1 = 9` cực đại. Đếm thật: **7**.
+
+Công thức đếm thừa hai vân. Không phải lỗi làm tròn — nó thừa đúng 2, và thừa
+**mỗi khi `d` chia hết cho `λ`**.
+
+Lý do nằm ở một chữ "trong khoảng" bị đọc ẩu. Hiệu đường đi trên đoạn nối hai
+nguồn chạy trong khoảng **mở** `(−d, d)`: giá trị `±d` chỉ đạt được tại chính
+hai nguồn, mà nguồn là nơi phát sóng chứ không phải điểm giao thoa. Khi `d/λ`
+không nguyên thì chẳng có `kλ` nào rơi đúng biên, khoảng mở hay đóng cho cùng
+kết quả, và công thức sống khoẻ. Khi `d/λ = 4` thì `k = ±4` cho `kλ = ±16` —
+rơi **đúng lên hai nguồn** — và công thức gộp cả hai đường "cực đại" không tồn
+tại đó vào đáp số.
+
+Cực tiểu dính bẫy hệt như vậy khi `d/λ` là bán nguyên: `d = 18, λ = 4` cho
+`d/λ = 4,5`, công thức cực tiểu ra 10 nhưng đếm thật chỉ 8.
+
+## Cách đếm không bao giờ sai
+
+Bỏ công thức đóng, quay về định nghĩa với **bất đẳng thức ngặt**:
+
+```
+cực đại:  đếm các số nguyên k thoả  |k|·λ < d
+cực tiểu: đếm các số nguyên k thoả  |k + ½|·λ < d
+```
+
+Ba dòng vòng lặp nếu bạn viết code, mười giây nhẩm nếu bạn ngồi trong phòng
+thi. Demo ở trên đếm đúng bằng cách này — chỉnh về trường hợp biên, phần số
+liệu sẽ tự chỉ ra chỗ công thức quen thuộc bắt đầu nói dối.
+
+Đây cũng là mẫu chuyện lặp lại trên site này, từ [công thức ném
+xiên](/vi/posts/cong-thuc-nem-xien-sai-bao-nhieu/) đến [cách kiểm tra đáp án
+AI](/vi/posts/ai-giai-bai-vat-ly-va-cach-kiem-tra/): công thức không sai —
+**phạm vi áp dụng của nó hẹp hơn cách nó được ghi nhớ**. Người ra đề biết rõ
+điều đó, và trường hợp biên là mỏ câu hỏi bẫy lâu đời của các kỳ thi.
+
+## Nơi bạn gặp nó ngoài phòng thi
+
+Hai loa cùng phát một tần số trong phòng chính là hai nguồn giao thoa: có những
+chỗ ngồi nghe âm trầm dày gấp đôi và những "điểm chết" âm gần như biến mất — di
+chuyển ghế vài chục centimet đôi khi đổi hẳn chất âm là vì bạn vừa bước từ vân
+cực đại sang vân cực tiểu. Tai nghe chống ồn chủ động làm điều ngược lại một
+cách có chủ đích: phát ra sóng ngược pha với tiếng ồn để đặt tai bạn vào đúng
+vân cực tiểu nhân tạo.
