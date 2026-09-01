@@ -42,6 +42,12 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 const gscToken = import.meta.env.PUBLIC_GSC_VERIFICATION as string | undefined;
 const gscValid = typeof gscToken === 'string' && /^[A-Za-z0-9_-]{20,128}$/.test(gscToken);
 
+// AdSense loader. Doubles as the site-verification snippet during AdSense
+// review and as the script Auto ads / AdSlot units need at runtime. Unset —
+// or malformed — renders nothing, same policy as the GSC token above.
+const adsClient = import.meta.env.PUBLIC_ADSENSE_CLIENT as string | undefined;
+const adsValid = typeof adsClient === 'string' && /^ca-pub-\d{10,20}$/.test(adsClient);
+
 const absolute = (path: string) => new URL(path, Astro.site).href;
 const OG_LOCALES: Record<Locale, string> = { vi: 'vi_VN', en: 'en_US' };
 const hreflangs = Object.entries(alternates ?? {}) as [Locale, string][];
@@ -60,6 +66,14 @@ const ogImage = absolute(withBase('/og-default.png'));
     {/* High in <head> as Google asks, and ahead of everything else so the
         consent defaults are set before any tag can fire. */}
     <GoogleTagManager />
+    {adsValid && (
+      <script
+        is:inline
+        async
+        src={`https://pagead2.googleapis.com/pagead/js/adsbygoogle.js?client=${adsClient}`}
+        crossorigin="anonymous"
+      />
+    )}
     <link rel="icon" type="image/svg+xml" href={withBase('/favicon.svg')} />
     <link rel="canonical" href={canonicalURL} />
     {hreflangs.map(([lang, href]) => (
