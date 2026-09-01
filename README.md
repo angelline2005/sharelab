@@ -38,20 +38,36 @@ All commands are run from the root of the project, from a terminal:
 | `npm run astro ...`       | Run CLI commands like `astro add`, `astro check` |
 | `npm run astro -- --help` | Get help using the Astro CLI                     |
 
-## 📰 Republishing from The Conversation
+## 📰 Republishing
 
-`scripts/import-the-conversation.mjs` turns a CC BY-ND article from
-[The Conversation](https://theconversation.com) into a post, with the byline, credit link,
-logo and view-counter pixel their licence requires.
+Two sources are licensed for republication here. Both importers emit the byline, credit
+link and logo their licences require.
+
+### The Conversation — CC BY-ND
 
 ```sh
 node scripts/import-the-conversation.mjs --list   # see what's in the feed
 node scripts/import-the-conversation.mjs 288792   # import one by ID
 ```
 
-Read [docs/republishing-the-conversation.md](docs/republishing-the-conversation.md) first —
-it covers the three rules the script can't enforce (no bulk imports, translations need the
-author's approval, images aren't automatically cleared).
+English only: CC BY-ND forbids derivative works, so a Vietnamese translation needs the
+author's written approval first. See
+[docs/republishing-the-conversation.md](docs/republishing-the-conversation.md).
+
+### SciDev.Net — CC BY
+
+```sh
+node scripts/import-scidev-net.mjs --list
+node scripts/import-scidev-net.mjs https://www.scidev.net/global/news/<slug>/
+node scripts/import-scidev-net.mjs <url> --lang vi   # translation is allowed here
+```
+
+Plain CC BY permits derivatives, so this is the one source that can be translated into
+Vietnamese without asking. See
+[docs/republishing-scidev-net.md](docs/republishing-scidev-net.md).
+
+Read either doc before importing — between them they cover the rules the scripts can't
+enforce: no bulk imports, and images are never automatically cleared for reuse.
 
 ## 👀 Want to learn more?
 
