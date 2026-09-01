@@ -1,6 +1,7 @@
 ---
 import LangSwitcher from '../components/LangSwitcher.astro';
 import CookieConsent from '../components/CookieConsent.astro';
+import GoogleTagManager from '../components/GoogleTagManager.astro';
 import { useTranslations, defaultLocale, type Locale } from '../i18n';
 import { withBase } from '../utils/url';
 
@@ -49,6 +50,9 @@ const ogImage = absolute(withBase('/og-default.png'));
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    {/* High in <head> as Google asks, and ahead of everything else so the
+        consent defaults are set before any tag can fire. */}
+    <GoogleTagManager />
     <link rel="icon" type="image/svg+xml" href={withBase('/favicon.svg')} />
     <link rel="canonical" href={canonicalURL} />
     {hreflangs.map(([lang, href]) => (

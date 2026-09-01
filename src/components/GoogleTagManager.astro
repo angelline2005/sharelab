@@ -1,0 +1,80 @@
+---
+// Loads Google Tag Manager once PUBLIC_GTM_ID is configured (see .env.example).
+// Renders nothing at all until then, so a fresh clone ships no trackers.
+//
+// Consent is handled with Google Consent Mode v2 rather than by withholding the
+// container: everything starts denied, GTM loads but holds its cookie-setting
+// tags, and the grant arrives only when the visitor accepts in CookieConsent.
+// Declining leaves the defaults in place. This is what AdSense expects for EEA
+// traffic, and it means tags added from the GTM console later inherit the gate
+// without anyone having to remember it.
+//
+// The <noscript> iframe from Google's standard snippet is deliberately left out.
+// It fires GTM before any script can run, which is exactly a bypass of the
+// consent banner — and a visitor without JavaScript cannot answer that banner
+// in the first place.
+
+const gtmId = import.meta.env.PUBLIC_GTM_ID as string | undefined;
+
+// The id is interpolated into a script URL, so only accept the shape Google
+// issues rather than trusting whatever lands in the environment.
+const enabled = typeof gtmId === 'string' && /^GTM-[A-Z0-9]{4,12}$/.test(gtmId);
+---
+
+{
+  enabled && (
+    <Fragment>
+      <script is:inline>
+        window.dataLayer = window.dataLayer || [];
+        function gtag() {
+          window.dataLayer.push(arguments);
+        }
+
+        gtag('consent', 'default', {
+          ad_storage: 'denied',
+          ad_user_data: 'denied',
+          ad_personalization: 'denied',
+          analytics_storage: 'denied',
+          wait_for_update: 500,
+        });
+
+        (function () {
+          var granted = {
+            ad_storage: 'granted',
+            ad_user_data: 'granted',
+            ad_personalization: 'granted',
+            analytics_storage: 'granted',
+          };
+
+          // Someone who accepted on an earlier visit should not be asked again.
+          // localStorage throws in some privacy modes, hence the guard.
+          try {
+            if (localStorage.getItem('cookie-consent') === 'accepted') {
+              gtag('consent', 'update', granted);
+            }
+          } catch (err) {
+            /* no stored choice available; defaults stay denied */
+          }
+
+          document.addEventListener('cookie-consent-changed', function (event) {
+            if (event.detail === 'accepted') {
+              gtag('consent', 'update', granted);
+            }
+          });
+        })();
+      </script>
+
+      <script is:inline set:html={`
+        (function (w, d, s, l, i) {
+          w[l] = w[l] || [];
+          w[l].push({ 'gtm.start': new Date().getTime(), event: 'gtm.js' });
+          var f = d.getElementsByTagName(s)[0],
+            j = d.createElement(s);
+          j.async = true;
+          j.src = 'https://www.googletagmanager.com/gtm.js?id=' + i;
+          f.parentNode.insertBefore(j, f);
+        })(window, document, 'script', 'dataLayer', '${gtmId}');
+      `} />
+    </Fragment>
+  )
+}
