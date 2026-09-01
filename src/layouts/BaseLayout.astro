@@ -36,6 +36,12 @@ const {
 const t = useTranslations(locale);
 const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 
+// Google Search Console ownership token. Optional: unset simply omits the tag.
+// Validated rather than trusted so a stray value cannot end up in the markup —
+// Google's tokens are a run of URL-safe base64 characters.
+const gscToken = import.meta.env.PUBLIC_GSC_VERIFICATION as string | undefined;
+const gscValid = typeof gscToken === 'string' && /^[A-Za-z0-9_-]{20,128}$/.test(gscToken);
+
 const absolute = (path: string) => new URL(path, Astro.site).href;
 const OG_LOCALES: Record<Locale, string> = { vi: 'vi_VN', en: 'en_US' };
 const hreflangs = Object.entries(alternates ?? {}) as [Locale, string][];
@@ -50,6 +56,7 @@ const ogImage = absolute(withBase('/og-default.png'));
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    {gscValid && <meta name="google-site-verification" content={gscToken} />}
     {/* High in <head> as Google asks, and ahead of everything else so the
         consent defaults are set before any tag can fire. */}
     <GoogleTagManager />

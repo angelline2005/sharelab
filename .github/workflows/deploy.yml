@@ -33,13 +33,14 @@ jobs:
       - name: Build
         run: npm run build
         env:
-          # Repository variables, not secrets: all three end up visible in the
-          # page source anyway. Set them under Settings → Secrets and variables
-          # → Actions → Variables. Unset means empty, and the components that
-          # read them render nothing — which is the safe default.
+          # Repository variables, not secrets: every one of these ends up
+          # visible in the page source anyway. Set them under Settings → Secrets
+          # and variables → Actions → Variables. Unset means empty, and whatever
+          # reads them renders nothing — which is the safe default.
           PUBLIC_GTM_ID: ${{ vars.PUBLIC_GTM_ID }}
           PUBLIC_ADSENSE_CLIENT: ${{ vars.PUBLIC_ADSENSE_CLIENT }}
           PUBLIC_ADSENSE_SLOT: ${{ vars.PUBLIC_ADSENSE_SLOT }}
+          PUBLIC_GSC_VERIFICATION: ${{ vars.PUBLIC_GSC_VERIFICATION }}
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
