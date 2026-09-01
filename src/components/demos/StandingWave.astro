@@ -1,0 +1,115 @@
+---
+// Standing wave on a string fixed at both ends: y(x,t) = A·sin(nπx/L)·cos(ωt).
+// The harmonic slider picks n, the animation shows the parts of the string
+// that never move — the nodes — and the readout maps n to the frequency ladder
+// of a real guitar low-E string (f₁ = 82.4 Hz).
+---
+
+<figure class="demo" data-demo="standing-wave">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Họa âm thứ n <output data-out="n"></output>
+      <input type="range" data-in="n" min="1" max="6" step="1" value="1" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Dây đàn hai đầu cố định chỉ chấp nhận những sóng có số nguyên lần nửa bước
+    sóng vừa khít chiều dài — mọi tần số khác tự triệt tiêu. Chấm đậm là các nút,
+    những điểm đứng yên tuyệt đối giữa một sợi dây đang rung.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const F1 = 82.4; // Hz — guitar low E, L = 0.65 m
+  const WAVE = '#2563eb', NODE = '#dc2626';
+  const NOTE_NAMES = ['E2 (Mì trầm)', 'E3', 'B3 (Si)', 'E4', 'G#4 (Sol#)', 'B4'];
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const slider = root.querySelector('[data-in="n"]') as HTMLInputElement;
+    const out = root.querySelector('[data-out="n"]') as HTMLOutputElement;
+
+    let simTime = 0, raf = 0, last = 0;
+
+    function draw() {
+      const n = Number(slider.value);
+      out.textContent = `${n}`;
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.34);
+      if (canvas.width !== cssW * dpr) { canvas.width = cssW * dpr; canvas.height = cssH * dpr; canvas.style.height = `${cssH}px`; }
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+
+      const x0 = 20, x1 = cssW - 20, midY = cssH / 2;
+      const A = cssH * 0.36;
+      // Every mode oscillates on screen at the same visual tempo so high
+      // harmonics stay watchable; the real frequency lives in the readout.
+      const phase = Math.cos(simTime * 2 * Math.PI * 0.6);
+
+      // Envelope (faint) and the live string.
+      for (const [alpha, ph] of [[0.15, 1], [0.15, -1], [1, phase]] as const) {
+        ctx.strokeStyle = WAVE; ctx.globalAlpha = alpha;
+        ctx.lineWidth = alpha === 1 ? 2 : 1;
+        ctx.beginPath();
+        for (let i = 0; i <= 200; i++) {
+          const u = i / 200;
+          const y = midY - A * Math.sin(n * Math.PI * u) * ph;
+          i ? ctx.lineTo(x0 + u * (x1 - x0), y) : ctx.moveTo(x0 + u * (x1 - x0), y);
+        }
+        ctx.stroke();
+      }
+      ctx.globalAlpha = 1; ctx.lineWidth = 1;
+
+      // Fixed ends + interior nodes.
+      ctx.fillStyle = NODE;
+      for (let k = 0; k <= n; k++) {
+        const u = k / n;
+        ctx.beginPath();
+        ctx.arc(x0 + u * (x1 - x0), midY, 4, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.fillStyle = fg; ctx.globalAlpha = 0.5;
+      ctx.font = '11px system-ui,sans-serif'; ctx.textAlign = 'center';
+      ctx.fillText('nút', x0, midY + 18);
+      ctx.globalAlpha = 1;
+
+      readout.innerHTML =
+        `f<sub>${n}</sub> = ${n} × 82,4 = <b>${(n * F1).toFixed(1)} Hz</b> (${NOTE_NAMES[n - 1]}) · ` +
+        `${n + 1} nút, ${n} bụng · nửa bước sóng vừa khít <b>${n}</b> lần`;
+    }
+
+    function frame(now: number) {
+      raf = requestAnimationFrame(frame);
+      if (!last) last = now;
+      simTime += Math.min((now - last) / 1000, 0.05); last = now;
+      draw();
+    }
+
+    slider.addEventListener('input', draw);
+    addEventListener('resize', draw);
+    const io = new IntersectionObserver((es) => {
+      for (const e of es) {
+        if (e.isIntersecting) { last = 0; raf = requestAnimationFrame(frame); }
+        else cancelAnimationFrame(raf);
+      }
+    });
+    io.observe(root);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="standing-wave"]').forEach(setup);
+</script>

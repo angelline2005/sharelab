@@ -1,0 +1,63 @@
+---
+title: "Va chạm đàn hồi và va chạm mềm: ba trường hợp đáng nhớ"
+description: "Hai vật bằng nhau thì trao đổi vận tốc trọn vẹn. Đâm vào vật nặng gấp nghìn lần thì bật ngược gần như nguyên tốc độ. Và va chạm mềm giữa hai vật bằng nhau nuốt đúng một nửa động năng."
+pubDate: 2026-09-02
+tags: ["vat-ly", "co-hoc", "javascript"]
+translationId: "va-cham-dan-hoi-va-va-cham-mem"
+---
+
+import ElasticCollision from '../../../components/demos/ElasticCollision.astro';
+
+Bài toán va chạm một chiều có hai công thức chuẩn. Đàn hồi (giữ cả động lượng
+lẫn động năng):
+
+```
+v₁' = (m₁ − m₂)·v₁ / (m₁ + m₂)
+v₂' = 2m₁·v₁ / (m₁ + m₂)
+```
+
+Mềm hoàn toàn — hai vật dính làm một — chỉ giữ động lượng:
+
+```
+v' = m₁·v₁ / (m₁ + m₂)
+```
+
+Demo dưới đây tính bằng đúng hai công thức đó rồi chiếu lại; kéo hai khối
+lượng và xem kết quả đổi vai.
+
+<ElasticCollision />
+
+## Ba trường hợp đáng thuộc lòng
+
+**m₁ = m₂, đàn hồi: trao đổi vận tốc trọn vẹn.** Xe đỏ dừng phắt tại chỗ, xe
+xanh mang đi đúng 5 m/s. Đây là cú đánh billiard thẳng tâm kinh điển — bi cái
+khựng lại, bi mục tiêu chạy tiếp thay nó. Công thức nói rõ tại sao: `m₁ − m₂ = 0`
+nên `v₁' = 0`, không cần nhớ gì thêm.
+
+**m₂ ≫ m₁: bật ngược gần nguyên tốc độ.** Cho xe đỏ 1 kg đâm khối 10 kg (hay
+tưởng tượng quả bóng bàn đập vào quả bowling): nó bật lại với gần đúng −5 m/s,
+còn khối nặng chỉ nhúc nhích. Giới hạn `m₂ → ∞` cho `v₁' → −v₁` — đó chính là
+"phản xạ khỏi bức tường", và là lý do bóng nảy khỏi tường được coi như đổi dấu
+vận tốc.
+
+**m₁ ≫ m₂: xuyên qua như không.** Ngược lại, vật nặng đâm vật nhẹ thì gần như
+giữ nguyên vận tốc, còn vật nhẹ bị hất đi với **gần gấp đôi** tốc độ tới —
+`v₂' → 2v₁`. Con số 2 này gây ngạc nhiên lần đầu gặp, và nó là nguyên lý của cú
+hích trọng lực (gravity assist): tàu vũ trụ "đập đàn hồi" vào một hành tinh
+đang chuyển động để được ném đi nhanh hơn.
+
+## Va chạm mềm: đếm phần động năng biến mất
+
+Tick "va chạm mềm" với hai xe bằng nhau: cặp xe dính nhau đi tiếp với 2,5 m/s,
+và readout báo động năng còn **50%**. Đúng một nửa biến mất — thành nhiệt, âm
+thanh, biến dạng — dù không có gì rời khỏi hệ.
+
+Tỉ lệ tổng quát gọn không ngờ: phần động năng còn lại sau va chạm mềm là
+`m₁/(m₁+m₂)`. Xe 1 kg đâm khối 9 kg đứng yên: còn 10%. **Chín phần mười năng
+lượng cú đâm tiêu tán tại chỗ** — trước khi bàn tới bất cứ chi tiết nào về vật
+liệu hay hình dạng, chỉ từ hai định luật bảo toàn.
+
+Đây là chỗ nhiều người trượt trong phòng thi: đề cho va chạm mềm mà vẫn viết
+phương trình bảo toàn động năng. Bảo toàn động lượng sống qua **mọi** va chạm;
+bảo toàn động năng là đặc quyền riêng của va chạm đàn hồi, và "dính nhau" là
+tín hiệu chắc chắn nhất rằng đặc quyền đó đã mất.

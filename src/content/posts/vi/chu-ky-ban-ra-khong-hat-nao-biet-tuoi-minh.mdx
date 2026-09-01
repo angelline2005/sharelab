@@ -1,0 +1,66 @@
+---
+title: "Chu kỳ bán rã: không hạt nào biết tuổi của mình"
+description: "Định luật phóng xạ mượt mà N = N₀·2^(−t/T) thực ra là hàng nghìn cú gieo xúc xắc cộng lại. Với 16 hạt, 'định luật' chỉ là lời gợi ý — với 4096 hạt, nó thành khắc đá."
+pubDate: 2026-09-02
+tags: ["vat-ly", "hat-nhan", "javascript"]
+translationId: "chu-ky-ban-ra-khong-hat-nao-biet-tuoi-minh"
+---
+
+import HalfLife from '../../../components/demos/HalfLife.astro';
+
+Định luật phóng xạ trong sách trơn tru như một lời hứa:
+
+```
+N(t) = N₀ · 2^(−t/T)
+```
+
+Cứ mỗi chu kỳ bán rã T, một nửa số hạt biến mất. Nhưng câu hỏi ít được hỏi
+là: **nửa nào?** Ai chọn? Các hạt xếp hàng theo tuổi chăng?
+
+Demo dưới đây chạy phóng xạ đúng như tự nhiên chạy nó: mỗi bước thời gian,
+**từng hạt tự gieo xúc xắc**, độc lập, không ghi nhớ. Đường đỏ là định luật
+trơn; các chấm là chuyện thật sự xảy ra.
+
+<HalfLife />
+
+## Không có tuổi già trong thế giới hạt nhân
+
+Điểm khác người sâu nhất của phóng xạ: một hạt nhân **không già đi**. Xác suất
+phân rã của nó trong giây tới không phụ thuộc chuyện nó đã tồn tại một giây hay
+một tỷ năm. Con người không như vậy — sống tới 90 thì "xác suất hỏng" cao hơn
+hẳn lúc 20. Hạt nhân thì mãi mãi như mới, cho tới khoảnh khắc nó không còn nữa.
+
+Định luật `2^(−t/T)` không được cài vào từng hạt — nó **nổi lên** từ đám đông.
+Mỗi chu kỳ T, mỗi hạt còn sống có đúng 50% cơ hội sống tiếp; với N hạt cùng
+gieo, gần một nửa rời đi. "Một nửa" của định luật là trung bình thống kê, không
+phải danh sách điểm danh.
+
+## Kéo thanh trượt và xem định luật thành hình
+
+Đây là lý do demo có ba mức số hạt:
+
+**16 hạt:** các chấm nhảy loạn quanh đường đỏ, lệch vài chục phần trăm là
+thường; thỉnh thoảng "nửa đầu" rã sạch trong khi lý thuyết còn hứa 8 hạt. Với
+mẫu bé, định luật chỉ là lời gợi ý.
+
+**256 hạt:** đường chấm đã ôm sát đường đỏ, còn run nhẹ.
+
+**4096 hạt:** hai đường gần như một. Định luật "chính xác" của sách chính là
+diện mạo của ngẫu nhiên khi được nhân lên đủ nhiều — và một mẫu vật thật chứa
+cỡ 10²⁰ hạt, nên chẳng ai từng thấy nó run.
+
+Sai lệch tương đối co lại theo `1/√N` — quy luật căn bậc hai quen mặt của mọi
+thống kê, từ thăm dò ý kiến tới nhiễu ảnh chụp thiếu sáng. Phóng xạ là nơi
+hiếm hoi bạn nhìn thấy nó vận hành bằng mắt thường, từng chấm một.
+
+## Đồng hồ chạy bằng xúc xắc
+
+Nghịch lý dễ chịu nhất của chủ đề: thứ ngẫu nhiên tuyệt đối ở mức từng hạt lại
+làm nên **đồng hồ đáng tin nhất** ta có cho quá khứ sâu. Carbon-14 (T = 5730
+năm) định tuổi xác ướp và than bếp cổ; uranium–chì định tuổi 4,5 tỷ năm của
+Trái Đất. Người định tuổi không cần hỏi hạt nào sẽ rã — chỉ cần đếm tỉ lệ còn
+lại và chia bậc: còn 50% là một chu kỳ, 25% là hai, 12,5% là ba.
+
+Không dự đoán nổi một hạt, nhưng đọc được tuổi một hành tinh — đó là món quà
+của số lớn, và là bài học đáng mang theo ra ngoài vật lý: **cá thể ngẫu nhiên,
+đám đông tuân luật.**

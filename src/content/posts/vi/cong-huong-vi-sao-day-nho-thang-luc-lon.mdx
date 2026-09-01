@@ -1,0 +1,55 @@
+---
+title: "Cộng hưởng: vì sao cú đẩy nhỏ đúng nhịp thắng cú đẩy lớn sai nhịp"
+description: "Đẩy xích đu đúng nhịp, biên độ nhân lên hàng chục lần so với đẩy tĩnh. Đường cong cộng hưởng cho thấy lý do — và vì sao tắt dần là thứ duy nhất chặn nó lại."
+pubDate: 2026-09-02
+tags: ["vat-ly", "dao-dong", "javascript"]
+translationId: "cong-huong-vi-sao-day-nho-thang-luc-lon"
+---
+
+import Resonance from '../../../components/demos/Resonance.astro';
+
+Ai đẩy xích đu cho trẻ con đều biết bí quyết: không cần đẩy mạnh, chỉ cần đẩy
+**đúng lúc**. Mỗi cú đẩy nhỏ cộng dồn vào chuyển động sẵn có, và biên độ lớn
+dần tưởng như từ hư không. Đẩy sai nhịp thì ngược lại — có lúc bạn đang hãm
+chính cái xích đu mình vừa đẩy.
+
+Đường cong dưới đây là toàn bộ câu chuyện đó nén lại: biên độ ổn định của một
+hệ dao động (tần số riêng f₀ = 2 Hz) theo tần số của lực kích thích.
+
+<Resonance />
+
+Ba vùng của đường cong:
+
+**Kích rất chậm** (f → 0): hệ chỉ đơn giản đi theo lực — biên độ bằng đáp ứng
+với lực tĩnh, hệ số nhân ×1. Đây là mốc so sánh.
+
+**Kích đúng tần số riêng**: biên độ vọt lên. Với tắt dần γ = 1,5 như mặc định,
+đỉnh cao gấp **hơn 8 lần** đẩy tĩnh — cùng một lực, chỉ khác nhịp. Kéo γ xuống
+0,3 và đỉnh phóng lên **hơn 40 lần**.
+
+**Kích quá nhanh**: hệ không kịp phản ứng, biên độ tụt về gần không. Lắc một
+con lắc bằng tay rung thật nhanh — nó gần như đứng im.
+
+## Tắt dần là người duy nhất giữ trần
+
+Công thức biên độ:
+
+```
+A(ω) = (F/m) / √((ω₀² − ω²)² + (γω)²)
+```
+
+Nhìn vào mẫu số tại đúng cộng hưởng `ω = ω₀`: ngoặc thứ nhất **bằng không
+tròn trĩnh**, chỉ còn lại `γω₀`. Nghĩa là tại đúng nhịp, độ lớn của đỉnh do một
+mình tắt dần quyết định — và nếu γ → 0, mẫu số → 0: biên độ không có trần.
+
+Đây là trường-hợp-biên quen thuộc của site này, lần này mang hậu quả kỹ thuật
+nặng ký nhất: một hệ ít tắt dần bị kích đúng tần số riêng sẽ nạp năng lượng
+**không giới hạn** cho tới khi cái gì đó gãy. Ly rượu vỡ vì giọng hát đúng cao
+độ; cầu treo Tacoma Narrows (1940) xoắn mình rồi sập; binh lính được lệnh **đi
+lệch nhịp** khi qua cầu — tất cả cùng một mẫu số ấy.
+
+Hệ số Q = ω₀/γ trong readout là thước đo chuyện này: Q cao nghĩa là đỉnh cao
+và nhọn — nhạy tuyệt vời quanh đúng một tần số, gần như điếc với mọi tần số
+khác. Đó là tính năng chứ không phải lỗi: mạch chọn kênh radio và cái âm thoa
+lên dây đàn sống nhờ Q cao. Cây cầu thì cần điều ngược lại — kỹ sư *chủ động
+mua* thêm γ bằng các khối giảm chấn, đổi độ nhạy lấy cái trần an toàn.

@@ -1,0 +1,63 @@
+---
+title: "Sóng dừng trên dây đàn: vì sao một sợi dây chỉ chịu hát vài nốt"
+description: "Hai đầu bị ghim chết, sợi dây chỉ chấp nhận những sóng có nửa bước sóng vừa khít số nguyên lần. Đó là lý do nhạc cụ có cao độ — và là bài tuyển sinh của cơ học lượng tử."
+pubDate: 2026-09-02
+tags: ["vat-ly", "song", "am-thanh", "javascript"]
+translationId: "song-dung-tren-day-dan"
+---
+
+import StandingWave from '../../../components/demos/StandingWave.astro';
+
+Gảy một sợi dây đàn, sóng chạy về hai phía, dội lại từ hai đầu bị ghim chết,
+rồi chồng lên chính mình. Hầu hết các đợt chồng ấy tự phá nhau tan tành. Chỉ
+những sóng thoả một điều kiện hình học sống sót: **nửa bước sóng phải vừa khít
+chiều dài dây một số nguyên lần.**
+
+```
+L = n·λ/2   →   fₙ = n·v/(2L),  n = 1, 2, 3, …
+```
+
+Những kẻ sống sót ấy là sóng dừng. Kéo thanh trượt để duyệt qua chúng:
+
+<StandingWave />
+
+Điều đáng nhìn nhất không phải chỗ rung mạnh, mà là các **nút** — những điểm
+đứng yên tuyệt đối trên một sợi dây đang rung dữ dội. Hai họ sóng chạy ngược
+chiều triệt tiêu nhau tại đó, mãi mãi, chừng nào họa âm còn kêu.
+
+## Thang tần số của một sợi dây thật
+
+Số liệu trong demo là dây Mì trầm của guitar (L = 65 cm, f₁ = 82,4 Hz). Các
+họa âm xếp thành cấp số cộng — và rơi đúng vào các nốt nhạc:
+
+| n | Tần số | Nốt |
+|---|---|---|
+| 1 | 82,4 Hz | E2 — nốt bạn nghe |
+| 2 | 164,8 Hz | E3, cao đúng một quãng tám |
+| 3 | 247,2 Hz | B3 |
+| 4 | 329,6 Hz | E4 |
+
+Khi gảy, dây không chọn một họa âm — nó rung **tất cả cùng lúc**, mỗi cái một
+liều lượng. Nốt nhạc bạn nghe là f₁; *chất* âm thanh — thứ khiến guitar không
+lẫn với violin chơi cùng nốt — là công thức pha trộn các họa âm phía trên.
+
+Nghệ sĩ guitar khai thác trực tiếp bức tranh nút-bụng này: chạm nhẹ ngón tay
+vào **đúng giữa dây** rồi gảy. Điểm chạm ép chỗ đó thành nút, giết mọi họa âm
+lẻ (chúng cần bụng ở giữa), và dây chỉ còn kêu từ n = 2 trở lên — tiếng
+"harmonic" trong veo cao hơn quãng tám. Chạm ở 1/3 chiều dài thì được n = 3.
+Bàn tay đang giải phương trình sóng.
+
+## Từ dây đàn đến nguyên tử
+
+Câu "hai đầu bị ghim nên chỉ số nguyên được phép tồn tại" đáng giá hơn mọi công
+thức trong bài, vì nó dùng lại được ở nơi bất ngờ nhất.
+
+Electron trong nguyên tử cũng là một sóng bị giam — không phải giữa hai cái
+ghim mà trong hố thế của hạt nhân. Cùng logic hình học ấy áp vào: chỉ những
+"kiểu rung" nguyên vẹn được tồn tại, mỗi kiểu một mức năng lượng. **Các mức
+năng lượng gián đoạn của nguyên tử — nền móng của cơ học lượng tử — là sóng
+dừng ba chiều.** Vạch quang phổ mà kính thiên văn đọc được từ một ngôi sao xa
+là tiếng "họa âm" của electron, đúng nghĩa như tiếng harmonic trên dây đàn.
+
+Một sợi dây guitar, nhìn đủ lâu, là bài học vỡ lòng về vì sao thế giới vi mô
+đếm được từng bậc.

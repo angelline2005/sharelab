@@ -1,0 +1,146 @@
+---
+// Converging lens ray diagram, driven by the thin-lens equation
+//   1/f = 1/d_o + 1/d_i,  magnification m = −d_i/d_o.
+// Drag the object distance through the focal point and watch the image flip
+// from real-inverted to virtual-upright — the magnifying-glass regime. The
+// three principal rays are constructed geometrically; the image position they
+// intersect at is the equation's prediction, so the drawing IS the check.
+---
+
+<figure class="demo" data-demo="lens">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Khoảng cách vật (f = 10 cm) <output data-out="d"></output>
+      <input type="range" data-in="d" min="3" max="35" step="0.1" value="20" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Ba tia đặc biệt: song song trục → qua tiêu điểm; qua quang tâm → đi thẳng;
+    qua tiêu điểm trước → ló song song. Ảnh nằm nơi chúng gặp nhau — hoặc nơi
+    phần kéo dài của chúng gặp nhau, khi ảnh là ảo.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const F = 10; // cm
+  const OBJ = '#2563eb', IMG = '#dc2626', RAYC = '#f59e0b';
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const slider = root.querySelector('[data-in="d"]') as HTMLInputElement;
+    const out = root.querySelector('[data-out="d"]') as HTMLOutputElement;
+
+    function draw() {
+      const dO = Number(slider.value);
+      out.textContent = `${dO.toFixed(1)} cm`;
+      const atFocus = Math.abs(dO - F) < 0.05;
+      const dI = atFocus ? Infinity : 1 / (1 / F - 1 / dO);
+      const mag = -dI / dO;
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.46);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+
+      // World: x in cm, lens at 0. Scale fits object side and image side.
+      const span = Math.max(38, Math.abs(Number.isFinite(dI) ? dI : 0) + 6, dO + 6);
+      const scale = cssW / (2 * span);
+      const cx = cssW / 2, axisY = cssH * 0.55;
+      const px = (x: number) => cx + x * scale;
+      const H = 26; // object height, px
+
+      // Axis, lens, focal points.
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.3;
+      ctx.beginPath(); ctx.moveTo(0, axisY); ctx.lineTo(cssW, axisY); ctx.stroke();
+      ctx.globalAlpha = 0.65;
+      ctx.beginPath(); ctx.moveTo(cx, axisY - cssH * 0.36); ctx.lineTo(cx, axisY + cssH * 0.36); ctx.stroke();
+      ctx.fillStyle = fg;
+      for (const s of [-1, 1]) {
+        ctx.beginPath(); ctx.arc(px(s * F), axisY, 3, 0, Math.PI * 2); ctx.fill();
+        ctx.font = '11px system-ui,sans-serif'; ctx.textAlign = 'center'; ctx.globalAlpha = 0.6;
+        ctx.fillText('F', px(s * F), axisY + 16); ctx.globalAlpha = 0.65;
+      }
+      ctx.globalAlpha = 1;
+
+      // Object arrow at x = −d_o.
+      const ox = px(-dO);
+      const arrow = (x: number, hPx: number, colour: string, alpha = 1) => {
+        ctx.strokeStyle = colour; ctx.fillStyle = colour; ctx.globalAlpha = alpha; ctx.lineWidth = 2.2;
+        ctx.beginPath(); ctx.moveTo(x, axisY); ctx.lineTo(x, axisY - hPx); ctx.stroke();
+        const s = Math.sign(hPx);
+        ctx.beginPath(); ctx.moveTo(x, axisY - hPx);
+        ctx.lineTo(x - 4, axisY - hPx + 7 * s); ctx.lineTo(x + 4, axisY - hPx + 7 * s); ctx.fill();
+        ctx.globalAlpha = 1; ctx.lineWidth = 1;
+      };
+      arrow(ox, H, OBJ);
+
+      // Principal rays from the object's tip.
+      const tipY = axisY - H;
+      const seg = (x0: number, y0: number, x1: number, y1: number, dashed = false, alpha = 0.9) => {
+        ctx.strokeStyle = RAYC; ctx.globalAlpha = alpha;
+        if (dashed) ctx.setLineDash([4, 4]);
+        ctx.beginPath(); ctx.moveTo(x0, y0); ctx.lineTo(x1, y1); ctx.stroke();
+        ctx.setLineDash([]); ctx.globalAlpha = 1;
+      };
+      // Draw from (x0,y0) through (x1,y1), extended to the right edge.
+      const through = (x0: number, y0: number, x1: number, y1: number) => {
+        const k = (y1 - y0) / (x1 - x0);
+        seg(x0, y0, cssW, y0 + k * (cssW - x0));
+      };
+
+      if (Number.isFinite(dI)) {
+        const ix = px(dI);
+        const tip = axisY - mag * H; // image tip; mag<0 puts it below the axis
+        if (dI > 0) {
+          // Real image: parallel ray refracts to the tip; the centre ray's
+          // straight line passes through it too — thin-lens geometry.
+          seg(ox, tipY, cx, tipY);
+          through(cx, tipY, ix, tip);
+          through(ox, tipY, cx, axisY);
+        } else {
+          // Virtual image: forward rays diverge — parallel ray bends through
+          // the far focus, centre ray goes straight. Their backward dashed
+          // extensions meet at the upright virtual tip behind the object.
+          seg(ox, tipY, cx, tipY);
+          through(cx, tipY, px(F), axisY);
+          through(ox, tipY, cx, axisY);
+          seg(ix, tip, cx, tipY, true, 0.5);
+          seg(ix, tip, cx, axisY, true, 0.5);
+        }
+        arrow(ix, mag * H, IMG, dI < 0 ? 0.65 : 1);
+      } else {
+        // Object at the focus: both rays leave parallel — no image.
+        seg(ox, tipY, cx, tipY);
+        through(cx, tipY, px(F), axisY);
+        through(ox, tipY, cx, axisY);
+      }
+
+      readout.innerHTML = atFocus
+        ? `Vật đặt <b>đúng tiêu điểm</b> — các tia ló song song, ảnh chạy ra vô cực. Ranh giới giữa hai chế độ.`
+        : dI > 0
+          ? `Ảnh <b>thật, ngược chiều</b>, cách thấu kính <b>${dI.toFixed(1)} cm</b> · phóng đại <b>${Math.abs(mag).toFixed(2)}×</b>`
+          : `Ảnh <b>ảo, cùng chiều</b> phía sau vật, cách <b>${Math.abs(dI).toFixed(1)} cm</b> · phóng đại <b>${Math.abs(mag).toFixed(2)}×</b> — chế độ kính lúp`;
+    }
+
+    slider.addEventListener('input', draw);
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="lens"]').forEach(setup);
+</script>

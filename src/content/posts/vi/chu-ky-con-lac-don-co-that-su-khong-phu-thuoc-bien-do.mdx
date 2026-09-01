@@ -1,0 +1,66 @@
+---
+title: "Chu kỳ con lắc đơn có thật sự không phụ thuộc biên độ?"
+description: "T = 2π√(L/g) nói biên độ không thành vấn đề — di sản của Galileo. Đúng đến 30° thì sai chưa tới 2%, nhưng thả từ 90° thì đồng hồ chậm 18%, và gần 180° chu kỳ phình vô hạn."
+pubDate: 2026-09-02
+tags: ["vat-ly", "dao-dong", "javascript"]
+translationId: "chu-ky-con-lac-don-co-that-su-khong-phu-thuoc-bien-do"
+---
+
+import PendulumPeriod from '../../../components/demos/PendulumPeriod.astro';
+
+Chuyện kể rằng Galileo ngồi trong nhà thờ Pisa, nhìn ngọn đèn chùm đung đưa và
+bấm nhịp bằng mạch đập của mình: dù vòng lắc rộng hay hẹp dần, thời gian mỗi
+vòng **không đổi**. Quan sát ấy thành công thức mọi học sinh thuộc lòng:
+
+```
+T = 2π·√(L/g)
+```
+
+Không có biên độ trong công thức. Nhưng phía sau nó có một bước mà sách thường
+đi lướt: phương trình con lắc chứa `sin θ`, và để giải đẹp người ta thay
+`sin θ ≈ θ`. Phép thay đó là một món nợ — demo dưới đây đòi lại nó.
+
+<PendulumPeriod />
+
+## Món nợ được tính đến từng phần trăm
+
+Đường cong là **chu kỳ thật** chia cho chu kỳ sách, tính bằng tích phân
+elliptic — không xấp xỉ thêm lần nào:
+
+| Biên độ thả | Chu kỳ dài hơn sách |
+|---|---|
+| 5° | 0,05% |
+| 30° | 1,74% |
+| 60° | 7,32% |
+| 90° | 18,03% |
+| 150° | 76% |
+| 179° | 290% |
+
+Galileo không sai — đèn chùm nhà thờ lắc trong vùng vài độ, nơi món nợ chỉ vài
+phần vạn, dưới mọi khả năng đo bằng mạch đập. Nhưng "không phụ thuộc biên độ"
+là tính chất của **phép xấp xỉ**, không phải của con lắc.
+
+## Chiếc đồng hồ tự chậm dần... rồi tự đúng lại
+
+Hệ quả từng là vấn đề kỹ nghệ nghiêm túc: đồng hồ quả lắc chạy bằng đúng hiện
+tượng này. Quả lắc thả rộng hơn thì mỗi nhịp *dài* ra — biên độ đổi 1° quanh
+mốc vài độ đã đủ làm đồng hồ sai vài giây mỗi ngày, con số lớn với hàng hải thế
+kỷ 18. Người làm đồng hồ giải bằng hai đường: giữ biên độ thật nhỏ và thật ổn
+định, hoặc — như Huygens — uốn hai má chặn hình cycloid ép quả lắc chạy trên
+đường cong đẳng thời *thật sự*, nơi chu kỳ không phụ thuộc biên độ một cách
+chính xác chứ không phải gần đúng.
+
+## Biên phải của đường cong
+
+Kéo thanh trượt về sát 180° và nhìn đường cong dựng đứng: chu kỳ **phình không
+giới hạn**. Vật lý ở đó trong suốt: thả từ đúng 180° là đặt con lắc lộn ngược
+thăng bằng trên đỉnh — về nguyên tắc nó đứng đó mãi mãi, tức "chu kỳ vô hạn".
+Càng gần đỉnh, con lắc càng lề mề ở đoạn cao nhất, và mỗi vòng lắc kéo dài ra
+tuỳ ý.
+
+Bảng ở trên vì thế đọc như một [ranh giới áp dụng](/vi/posts/cong-thuc-nem-xien-sai-bao-nhieu/)
+quen thuộc của site này: công thức sách là tầng một của một khai triển,
+`T ≈ T₀·(1 + θ₀²/16 + …)`, và câu hỏi đúng không phải "công thức đúng hay sai"
+mà là **"bao nhiêu phần trăm thì mình chấp nhận được"**. Đo g trong phòng thí
+nghiệm với biên độ 5°? Cứ dùng, sai số nhỏ hơn thước đo của bạn. Thả từ 60° mà
+vẫn dùng? Kết quả g của bạn vừa lệch đi 15% — và không dụng cụ nào có lỗi cả.

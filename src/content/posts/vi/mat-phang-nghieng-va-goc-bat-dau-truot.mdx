@@ -1,0 +1,60 @@
+---
+title: "Mặt phẳng nghiêng: góc bắt đầu trượt không quan tâm vật nặng bao nhiêu"
+description: "Nghiêng dần một tấm ván, vật trượt đúng tại tanθ = μ — xe tải hay bao diêm cũng cùng một góc. Đó cũng là cách đo hệ số ma sát chỉ bằng một cái thước đo góc."
+pubDate: 2026-09-02
+tags: ["vat-ly", "co-hoc", "javascript"]
+translationId: "mat-phang-nghieng-va-goc-bat-dau-truot"
+---
+
+import InclineFriction from '../../../components/demos/InclineFriction.astro';
+
+Đặt một vật lên tấm ván rồi nâng dần một đầu. Có một góc chính xác mà tại đó
+vật buông tay — và góc đó chứa một điều bất ngờ: **khối lượng của vật không có
+mặt trong đáp số.**
+
+<InclineFriction />
+
+Hai lực đấu nhau dọc mặt nghiêng:
+
+- Thành phần trọng lực kéo xuống: `mg·sinθ` — tăng khi nghiêng thêm
+- Ma sát nghỉ giữ lại, tối đa: `μ·N = μ·mg·cosθ` — *giảm* khi nghiêng thêm, vì
+  mặt ván càng dựng thì lực ép vuông góc càng yếu
+
+Kéo thanh góc trong demo và nhìn hai cột lực: một cột leo lên, một cột tụt
+xuống. Vật trượt đúng lúc chúng gặp nhau:
+
+```
+mg·sinθ = μ·mg·cosθ   →   tanθ = μ
+```
+
+`mg` triệt tiêu ở hai vế. Xe tải chở đầy hàng và bao diêm trên cùng tấm ván
+trượt ở **cùng một góc**. Vật nặng hơn bị kéo mạnh hơn — nhưng cũng được ghì
+xuống mạnh hơn đúng bằng chừng ấy, nên ma sát giữ khoẻ hơn theo cùng tỉ lệ.
+
+## Cái thước đo góc thay cho bộ cảm biến lực
+
+Hệ quả thực dụng: `μ = tanθ_trượt`. Muốn đo hệ số ma sát giữa hai vật liệu,
+không cần lực kế — nghiêng dần và đọc góc lúc vật bắt đầu đi:
+
+| Góc bắt đầu trượt | μ |
+|---|---|
+| 16,7° | 0,30 |
+| 26,6° | 0,50 |
+| 35,0° | 0,70 |
+
+Đây là một trong những phép đo vật lý ít dụng cụ nhất còn dùng nghiêm túc: các
+tiêu chuẩn chống trơn cho sàn nhà và độ dốc an toàn của đường vẫn xoay quanh
+đúng phép `tan` này.
+
+## Sau ngưỡng, đổi người cầm lái
+
+Chi tiết hay bị bỏ qua: ngưỡng trượt do **μ nghỉ** quyết định, nhưng chuyện xảy
+ra *sau đó* thuộc về **μ động** — hầu như luôn nhỏ hơn. Vật vừa nhúc nhích thì
+lực giữ tụt xuống một bậc, nên nó không trượt từ tốn mà **vọt đi**: gia tốc
+`a = g(sinθ − μ_k·cosθ)` dương ngay và không quay lại được.
+
+Cú "gãy" đột ngột tại ranh giới này — đứng im tuyệt đối rồi lập tức tăng tốc —
+là họ hàng của nhiều hiện tượng thật: phấn rít trên bảng, bản lề cọt kẹt, và ở
+quy mô địa chất, đứt gãy tích ứng suất rồi giải phóng thành động đất. Tất cả
+cùng một kịch bản: ma sát nghỉ gồng quá ngưỡng, rồi chuyển giao cho ma sát động
+yếu hơn.

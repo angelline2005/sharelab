@@ -1,0 +1,59 @@
+---
+title: "Hiện tượng phách: phép trừ mà bạn nghe được"
+description: "Hai âm 440 và 444 Hz đánh cùng lúc không ra hai nốt — ra một nốt phập phồng đúng 4 lần mỗi giây. Người lên dây đàn đã dùng phép trừ này hàng thế kỷ trước khi có máy đo."
+pubDate: 2026-09-02
+tags: ["vat-ly", "song", "am-thanh", "javascript"]
+translationId: "hien-tuong-phach-len-day-dan-bang-tai"
+---
+
+import Beats from '../../../components/demos/Beats.astro';
+
+Đánh hai âm thoa lệch nhau vài hertz, tai không nghe ra hai nốt riêng — chúng
+quá gần nhau. Thay vào đó là **một** nốt, nhưng âm lượng phập phồng nhịp nhàng:
+oa… oa… oa. Đó là phách, và nhịp phập phồng tuân theo công thức ngắn nhất
+chương sóng:
+
+```
+f_phách = |f₁ − f₂|
+```
+
+Bật loa và kéo nguồn thứ hai quanh mốc 440 Hz:
+
+<Beats />
+
+Cơ chế nằm trọn trong hình: hai sóng gần tần số lúc này cùng pha — cộng nhau
+thành to gấp đôi — rồi vì một sóng nhích nhanh hơn chút xíu, vài phần giây sau
+chúng trượt sang ngược pha và triệt nhau gần sạch. Đường bao nét đứt chính là
+"âm lượng" mà tai bạn bám theo.
+
+## Máy đo tần số chạy bằng tai
+
+Điều đáng giá của phách: nó biến một khác biệt **quá nhỏ để nghe trực tiếp**
+thành một nhịp điệu **quá rõ để bỏ lỡ**. Không tai người nào phân biệt được
+440 với 441 Hz đặt cạnh nhau; nhưng đánh cùng lúc, cái phập phồng 1 lần mỗi
+giây thì ai cũng đếm được.
+
+Người lên dây piano khai thác đúng điều đó, từ hàng thế kỷ trước khi có thiết
+bị đo: đánh âm thoa chuẩn cùng dây đàn, nghe nhịp phách, rồi vặn chốt cho nhịp
+**chậm dần** — phách 4 Hz còn 2, còn 1, còn nửa lần mỗi giây… Khi phách chậm
+tới mức biến mất, hai tần số đã trùng nhau, chính xác hơn cả giới hạn phân biệt
+cao độ của tai. Kéo thanh trượt trong demo về đúng 440 và xem "máy đo" này tự
+tắt.
+
+## Cùng phép trừ đó, ở những nơi đắt tiền hơn
+
+Trộn hai tín hiệu để lấy tần số hiệu không ở lại trong phòng nhạc:
+
+- **Radar cảnh sát** trộn sóng phát đi với sóng dội về từ xe đang chạy — tần số
+  bị xê dịch bởi [hiệu ứng Doppler](/vi/posts/hieu-ung-doppler-nghe-duoc/).
+  Tần số phách giữa hai sóng tỉ lệ thẳng với tốc độ xe: máy bắn tốc độ là một
+  cái máy đếm phách.
+- **Máy thu radio** (nguyên lý siêu ngoại sai, trong mọi máy thu hiện đại) trộn
+  tín hiệu trời với một dao động nội bộ để kéo tần số cao ngất xuống vùng dễ
+  xử lý — "beat" trong tiếng Anh kỹ thuật của mạch trộn tần chính là chữ phách
+  này.
+
+Một công thức một dấu trừ, trải từ chỉnh dây guitar tới biên bản phạt tốc độ.
+Trong demo, mọi thứ bạn nghe đều do hai `OscillatorNode` hình sin thuần cộng
+lại — không có hiệu ứng nào được thêm vào, vì phách không phải hiệu ứng: nó là
+phép cộng hai sóng, trung thực đến từng chu kỳ.

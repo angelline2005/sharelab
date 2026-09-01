@@ -1,0 +1,117 @@
+---
+// The pendulum period against release amplitude. The textbook
+// T = 2π√(L/g) is amplitude-free — but that is the small-angle approximation
+// sin θ ≈ θ. The exact ratio T(θ₀)/T₀ = 1/AGM(1, cos(θ₀/2)) is computed with
+// the arithmetic–geometric mean, machine-accurate in a dozen iterations, and
+// drawn so the reader sees where "amplitude doesn't matter" stops being true.
+---
+
+<figure class="demo" data-demo="pendulum-period">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Biên độ thả <output data-out="a"></output>
+      <input type="range" data-in="a" min="1" max="175" step="1" value="30" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Đường cong: chu kỳ thật chia cho chu kỳ sách T₀ = 2π√(L/g), tính bằng tích
+    phân elliptic (thuật toán trung bình cộng–nhân của Gauss). Sách nói tỉ số
+    này bằng 1 với mọi biên độ — đường cong nói khác.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const CURVE = '#2563eb', MARK = '#dc2626';
+
+  // Exact period ratio via Gauss's AGM: T/T₀ = 1/AGM(1, cos(θ₀/2)).
+  function ratio(theta0: number) {
+    let a = 1, b = Math.cos(theta0 / 2);
+    for (let i = 0; i < 30; i++) { const an = (a + b) / 2; b = Math.sqrt(a * b); a = an; }
+    return 1 / a;
+  }
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const slider = root.querySelector('[data-in="a"]') as HTMLInputElement;
+    const out = root.querySelector('[data-out="a"]') as HTMLOutputElement;
+
+    function draw() {
+      const deg = Number(slider.value);
+      out.textContent = `${deg}°`;
+      const r = ratio((deg * Math.PI) / 180);
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.52);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+
+      // Left: the pendulum at its release angle, for scale.
+      const pl = cssW * 0.2, ply = 24, plen = cssH * 0.5;
+      const th = (deg * Math.PI) / 180;
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.7;
+      ctx.beginPath(); ctx.moveTo(pl, ply);
+      ctx.lineTo(pl + plen * Math.sin(th), ply + plen * Math.cos(th)); ctx.stroke();
+      ctx.setLineDash([3, 5]); ctx.globalAlpha = 0.3;
+      ctx.beginPath(); ctx.moveTo(pl, ply); ctx.lineTo(pl, ply + plen); ctx.stroke();
+      ctx.setLineDash([]); ctx.globalAlpha = 1;
+      ctx.fillStyle = MARK;
+      ctx.beginPath();
+      ctx.arc(pl + plen * Math.sin(th), ply + plen * Math.cos(th), 7, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Right: T/T₀ against amplitude.
+      const gx = cssW * 0.4, gw = cssW - gx - 12, gy = 14, gh = cssH - 52;
+      const MAXDEG = 175, yMax = ratio((MAXDEG * Math.PI) / 180) * 1.04;
+      const X = (d: number) => gx + (d / MAXDEG) * gw;
+      const Y = (v: number) => gy + gh - ((v - 1) / (yMax - 1)) * gh;
+
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.3;
+      ctx.beginPath(); ctx.moveTo(gx, gy); ctx.lineTo(gx, gy + gh); ctx.lineTo(gx + gw, gy + gh); ctx.stroke();
+      // The textbook's claim: a flat line at 1.
+      ctx.setLineDash([4, 4]);
+      ctx.beginPath(); ctx.moveTo(gx, Y(1)); ctx.lineTo(gx + gw, Y(1)); ctx.stroke();
+      ctx.setLineDash([]); ctx.globalAlpha = 0.55;
+      ctx.fillStyle = fg; ctx.font = '11px system-ui,sans-serif';
+      ctx.textAlign = 'left'; ctx.fillText('sách: T/T₀ = 1', gx + 6, Y(1) - 5);
+      ctx.textAlign = 'center';
+      ctx.fillText('biên độ thả (°)', gx + gw / 2, cssH - 8);
+      ctx.globalAlpha = 1;
+
+      ctx.strokeStyle = CURVE; ctx.lineWidth = 2; ctx.beginPath();
+      for (let d = 1; d <= MAXDEG; d++) {
+        const v = ratio((d * Math.PI) / 180);
+        d === 1 ? ctx.moveTo(X(d), Y(v)) : ctx.lineTo(X(d), Y(v));
+      }
+      ctx.stroke(); ctx.lineWidth = 1;
+
+      ctx.fillStyle = MARK;
+      ctx.beginPath(); ctx.arc(X(deg), Y(r), 5, 0, Math.PI * 2); ctx.fill();
+
+      readout.innerHTML =
+        `Thả từ <b>${deg}°</b>: chu kỳ thật dài hơn công thức sách <b>${((r - 1) * 100).toFixed(2)}%</b>` +
+        (deg <= 10 ? ` — vùng "góc nhỏ", công thức gần như hoàn hảo` :
+         deg >= 170 ? ` — sát điểm lộn ngược, chu kỳ phình không giới hạn` : '');
+    }
+
+    slider.addEventListener('input', draw);
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="pendulum-period"]').forEach(setup);
+</script>

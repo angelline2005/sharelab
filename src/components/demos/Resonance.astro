@@ -1,0 +1,109 @@
+---
+// Driven, damped oscillator: the amplitude response curve
+//   A(ω) = (F/m) / √((ω₀² − ω²)² + (γω)²)
+// drawn against drive frequency, with a marker at the current drive. Damping
+// slider reshapes the peak; the readout tracks the resonance amplification.
+// Closed form, static redraw — no integration needed.
+---
+
+<figure class="demo" data-demo="resonance">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Tần số lực kích thích <output data-out="f"></output>
+      <input type="range" data-in="f" min="0.2" max="5" step="0.01" value="1.2" /></label>
+    <label>Hệ số tắt dần γ <output data-out="g"></output>
+      <input type="range" data-in="g" min="0.3" max="8" step="0.1" value="1.5" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Hệ dao động có tần số riêng f₀ = 2 Hz. Đường cong là biên độ ổn định theo
+    tần số kích thích; đỉnh của nó là cộng hưởng. Tắt dần càng nhỏ, đỉnh càng
+    cao và càng nhọn.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const F0 = 2; // Hz, natural frequency
+  const W0 = 2 * Math.PI * F0;
+  const CURVE = '#2563eb', MARK = '#dc2626';
+
+  const amp = (w: number, gam: number) =>
+    1 / Math.sqrt((W0 * W0 - w * w) ** 2 + (gam * w) ** 2);
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (n: string) => root.querySelector(`[data-in="${n}"]`) as HTMLInputElement;
+    const output = (n: string) => root.querySelector(`[data-out="${n}"]`) as HTMLOutputElement;
+
+    function draw() {
+      const f = Number(input('f').value);
+      const gam = Number(input('g').value);
+      output('f').textContent = `${f.toFixed(2)} Hz`;
+      output('g').textContent = gam.toFixed(1);
+
+      const w = 2 * Math.PI * f;
+      const a = amp(w, gam);
+      const aStatic = amp(0, gam); // response to a constant force
+      const fPeak = Math.sqrt(Math.max(W0 * W0 - (gam * gam) / 2, 0)) / (2 * Math.PI);
+      const aPeak = amp(2 * Math.PI * fPeak, gam);
+      const q = W0 / gam;
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.5);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+
+      const pad = 36, FMAX = 5;
+      // Y scale is fixed to the lightest damping so the peak growth is visible.
+      const yMax = amp(2 * Math.PI * F0, 0.3) * 1.06;
+      const X = (fr: number) => pad + (fr / FMAX) * (cssW - pad - 10);
+      const Y = (v: number) => cssH - pad - (v / yMax) * (cssH - pad - 12);
+
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.3;
+      ctx.beginPath(); ctx.moveTo(pad, 8); ctx.lineTo(pad, cssH - pad); ctx.lineTo(cssW - 8, cssH - pad); ctx.stroke();
+      ctx.setLineDash([3, 4]);
+      ctx.beginPath(); ctx.moveTo(X(F0), cssH - pad); ctx.lineTo(X(F0), 10); ctx.stroke();
+      ctx.setLineDash([]); ctx.globalAlpha = 0.6;
+      ctx.fillStyle = fg; ctx.font = '11px system-ui,sans-serif'; ctx.textAlign = 'center';
+      ctx.fillText('f₀ = 2 Hz', X(F0), 12 + 10);
+      ctx.fillText('tần số kích (Hz)', cssW / 2, cssH - 8);
+      ctx.globalAlpha = 1;
+
+      ctx.strokeStyle = CURVE; ctx.lineWidth = 2; ctx.beginPath();
+      for (let i = 0; i <= 300; i++) {
+        const fr = (FMAX * i) / 300;
+        const v = amp(2 * Math.PI * fr, gam);
+        i ? ctx.lineTo(X(fr), Y(v)) : ctx.moveTo(X(fr), Y(v));
+      }
+      ctx.stroke(); ctx.lineWidth = 1;
+
+      ctx.fillStyle = MARK;
+      ctx.beginPath(); ctx.arc(X(f), Y(a), 5, 0, Math.PI * 2); ctx.fill();
+
+      readout.innerHTML =
+        `Biên độ tại ${f.toFixed(2)} Hz: <b>×${(a / aStatic).toFixed(1)}</b> lần so với đẩy tĩnh · ` +
+        `đỉnh cộng hưởng <b>×${(aPeak / aStatic).toFixed(1)}</b> tại <b>${fPeak.toFixed(2)} Hz</b> · Q ≈ <b>${q.toFixed(1)}</b>`;
+    }
+
+    root.querySelectorAll('input').forEach((el) => el.addEventListener('input', draw));
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="resonance"]').forEach(setup);
+</script>

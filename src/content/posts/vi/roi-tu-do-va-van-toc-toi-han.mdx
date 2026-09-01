@@ -1,0 +1,56 @@
+---
+title: "Rơi tự do dừng tăng tốc ở đâu: vận tốc tới hạn"
+description: "v = gt của sách chỉ đúng vài giây đầu. Người nhảy dù không rơi nhanh mãi — họ dừng ở ~200 km/h, và một con mèo rơi từ tầng cao sống sót nhiều hơn ta tưởng cũng vì cùng công thức."
+pubDate: 2026-09-02
+tags: ["vat-ly", "co-hoc", "javascript"]
+translationId: "roi-tu-do-va-van-toc-toi-han"
+---
+
+import TerminalVelocity from '../../../components/demos/TerminalVelocity.astro';
+
+Công thức rơi tự do `v = gt` nói rằng cứ mỗi giây rơi, vận tốc tăng thêm
+9,8 m/s — mãi mãi. Sau một phút, theo công thức, bạn phải bay 588 m/s, nhanh
+hơn máy bay chở khách. Người nhảy dù thật thì đạt khoảng **55 m/s rồi đứng
+nguyên ở đó**, dù có rơi thêm bao lâu.
+
+<TerminalVelocity />
+
+Đường nét đứt là `v = gt`. Đường liền là chuyện thật: lực cản không khí tăng
+theo **bình phương** vận tốc, nên càng nhanh thì lực ghì lại càng mạnh, cho tới
+lúc nó cân đúng trọng lực. Từ đó gia tốc bằng không — rơi đều. Tốc độ cân bằng
+đó là **vận tốc tới hạn**:
+
+```
+v_t = √(2mg / (ρ·C·A))
+```
+
+Nghiệm đầy đủ của phương trình chuyển động gọn bất ngờ: `v(t) = v_t·tanh(gt/v_t)`
+— demo vẽ đúng hàm này, không phải mô phỏng gần đúng.
+
+## Đọc công thức bằng ba nhân vật
+
+**Người nhảy dù nằm sấp** — m = 80 kg, C·A ≈ 0,42 m²: `v_t ≈ 55 m/s` (198 km/h),
+đạt 99% sau chừng 15 giây rơi. Đây là lý do các cảnh quay nhảy dù trông "lơ
+lửng": mọi người trong nhóm đều đã hết gia tốc, rơi đều cạnh nhau.
+
+**Chính người đó, dù đã mở** — C·A vọt lên ~25 m²: `v_t ≈ 5,8 m/s`, cỡ nhảy từ
+tường cao mét rưỡi. Cái dù không "đỡ" ai cả — nó chỉ đổi chỗ điểm cân bằng.
+
+**Con mèo** — nhẹ (m nhỏ) mà diện tích so với cân nặng lại lớn, nên `v_t` chỉ
+cỡ 25 m/s, chưa kể mèo xoè người làm C·A tăng thêm khi rơi. Thống kê thú y từng
+ghi nhận mèo rơi từ tầng rất cao có tỉ lệ sống đáng kinh ngạc: nó đạt vận tốc
+tới hạn sớm, và từ đó rơi thêm bao nhiêu tầng cũng **không nhanh hơn nữa**.
+
+## Ranh giới của v = gt
+
+Như [bài ném xiên](/vi/posts/cong-thuc-nem-xien-sai-bao-nhieu/) đã gặp, công
+thức sách không sai — nó chỉ có hạn dùng. So `gt` với `v_t·tanh(gt/v_t)`: hai
+đường trùng nhau khi `gt ≪ v_t`, tức vài giây đầu. Thả vật từ ban công, `v = gt`
+tuyệt vời. Ba giây sau khi rời máy bay, nó đã lệch hàng chục phần trăm, và càng
+lâu càng vô nghĩa.
+
+Quy tắc thô rút ra từ demo: **thời gian công thức sách còn dùng được xấp xỉ
+v_t/g** — với người là ~5,6 giây, với tờ giấy là chưa đầy một cái chớp mắt. Đó
+cũng chính là lý do Galileo cần mặt phẳng nghiêng và quả cầu kim loại đặc để
+"pha loãng" trọng lực: ông chọn khéo những vật mà `v_t` nằm rất xa vùng thí
+nghiệm, để cái ranh giới này không kịp chen vào dữ liệu.

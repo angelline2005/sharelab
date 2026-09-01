@@ -1,0 +1,62 @@
+---
+title: "Khúc xạ và cái gương hoàn hảo duy nhất: phản xạ toàn phần"
+description: "Gương tốt nhất loài người tráng được vẫn nuốt mất chút ánh sáng. Mặt nước nhìn từ dưới lên, quá góc 48,8°, phản xạ đúng 100% — và toàn bộ internet chạy trên sự thật đó."
+pubDate: 2026-09-02
+tags: ["vat-ly", "quang-hoc", "javascript"]
+translationId: "khuc-xa-va-phan-xa-toan-phan"
+---
+
+import SnellRefraction from '../../../components/demos/SnellRefraction.astro';
+
+Định luật khúc xạ của Snell gọn một dòng:
+
+```
+n₁·sinθ₁ = n₂·sinθ₂
+```
+
+Nhưng công thức này giấu một quả bom nhỏ. Cho ánh sáng đi từ môi trường chiết
+suất cao (nước, n₁ = 1,33) ra môi trường thấp (không khí, n₂ = 1): giải ra
+`sinθ₂ = 1,33·sinθ₁` — và khi θ₁ đủ lớn, vế phải **vượt quá 1**. Phương trình
+đòi một góc có sin lớn hơn 1, thứ không tồn tại.
+
+<SnellRefraction />
+
+Kéo góc tới qua mốc 48,8° và xem điều toán học "không giải được" trở thành
+hiện tượng vật lý: tia khúc xạ không còn chỗ để tồn tại, nên **toàn bộ** ánh
+sáng quay ngược lại. Đó là phản xạ toàn phần, xảy ra từ góc tới hạn:
+
+```
+sinθ_c = n₂/n₁    →   nước→không khí: 48,8°, thuỷ tinh→không khí: 41,8°
+```
+
+Đây là mẫu chuyện quen của site này — [công thức gãy ở biên](/vi/posts/giao-thoa-song-va-cai-bay-truong-hop-bien/)
+— nhưng lần này chỗ gãy không phải cái bẫy đề thi, mà là một món quà công nghệ.
+
+## Gương hoàn hảo duy nhất
+
+Điều demo cho thấy trước cả khi tới góc tới hạn: độ đậm của tia phản xạ (tính
+bằng công thức Fresnel thật, không vẽ trang trí) tăng dần theo góc — vài phần
+trăm khi nhìn thẳng, đậm dần khi nhìn xiên. Nhưng chỉ **quá góc tới hạn** con
+số mới chạm đúng 100,000…%.
+
+Không tấm gương tráng bạc hay nhôm nào làm được điều đó — kim loại tốt nhất
+vẫn hấp thụ cỡ vài phần trăm mỗi lần phản xạ. Phản xạ toàn phần thì không phải
+"rất tốt": nó **tuyệt đối**, vì chẳng có phía bên kia nào để ánh sáng rò sang.
+
+Phép thử tại nhà: lặn xuống hồ bơi và nhìn lên. Ngay trên đầu là "cửa sổ tròn"
+nhìn thấu bầu trời; ngoài vành cửa sổ đó, mặt nước là một tấm gương soi rõ đáy
+hồ. Vành tròn ấy chính là góc 48,8° vẽ quanh mắt bạn.
+
+## Internet chạy trong một cái gương cuộn tròn
+
+Sợi quang là phản xạ toàn phần được sản xuất công nghiệp: lõi thuỷ tinh chiết
+suất cao bọc trong lớp vỏ chiết suất thấp hơn, để ánh sáng bên trong luôn đập
+vào thành ở góc quá tới hạn. Mỗi cú nảy trả lại đúng 100% — và điều đó không
+phải chi tiết trang trí, mà là điều kiện sống còn: tín hiệu xuyên đại dương
+nảy **hàng tỷ lần**. Gương "rất tốt" 99% qua một tỷ lần nảy còn lại đúng số 0;
+gương tuyệt đối qua một tỷ lần vẫn là chính nó. Ánh sáng trong cáp quang mờ đi
+chủ yếu vì tạp chất của thuỷ tinh, chứ không phải vì những cú nảy.
+
+Trang này đến trình duyệt của bạn gần như chắc chắn đã đi qua một đoạn "gương
+cuộn tròn" như thế — hàng nghìn cây số ánh sáng bị giam bằng đúng cái công thức
+sin không giải được ở trên.

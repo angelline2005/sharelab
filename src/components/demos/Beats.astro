@@ -1,0 +1,143 @@
+---
+// Beats: two tones a few hertz apart, summed. The canvas shows the slow
+// envelope riding on the fast carrier; Web Audio plays the two oscillators so
+// the wah-wah-wah you hear is the |f₁ − f₂| the readout predicts. Same audio
+// conventions as the Doppler demo: explicit toggle, suspend when out of view.
+---
+
+<figure class="demo" data-demo="beats">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Nguồn thứ hai <output data-out="f2"></output>
+      <input type="range" data-in="f2" min="430" max="450" step="0.5" value="444" /></label>
+    <button type="button" data-btn="sound">🔊 Bật âm thanh</button>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Nguồn thứ nhất ghim ở 440 Hz. Hai âm gần nhau lúc cùng pha thì cộng nhau,
+    trượt dần sang ngược pha thì triệt nhau — âm lượng phập phồng đúng
+    |f₁ − f₂| lần mỗi giây.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; align-items: end; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input[type='range'] { width: 100%; }
+  .controls button { border: 1px solid rgba(128,128,128,.5); background: transparent; color: inherit; border-radius: 6px; padding: .45rem .9rem; cursor: pointer; font-size: .85rem; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const F1 = 440;
+  const SUM = '#2563eb', ENV = '#dc2626';
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const slider = root.querySelector('[data-in="f2"]') as HTMLInputElement;
+    const out = root.querySelector('[data-out="f2"]') as HTMLOutputElement;
+    const btn = root.querySelector('[data-btn="sound"]') as HTMLButtonElement;
+
+    let audio: { ctx: AudioContext; o1: OscillatorNode; o2: OscillatorNode; gain: GainNode } | null = null;
+    let soundOn = false;
+
+    function ensureAudio() {
+      if (audio) return audio;
+      const actx = new AudioContext();
+      const gain = actx.createGain();
+      gain.gain.value = 0;
+      const mk = (f: number) => {
+        const o = actx.createOscillator();
+        o.type = 'sine'; o.frequency.value = f;
+        o.connect(gain); o.start();
+        return o;
+      };
+      const o1 = mk(F1), o2 = mk(Number(slider.value));
+      gain.connect(actx.destination);
+      audio = { ctx: actx, o1, o2, gain };
+      return audio;
+    }
+
+    function setSound(on: boolean) {
+      soundOn = on;
+      btn.textContent = on ? '🔇 Tắt âm thanh' : '🔊 Bật âm thanh';
+      if (on) {
+        const a = ensureAudio();
+        a.ctx.resume();
+        a.gain.gain.setTargetAtTime(0.08, a.ctx.currentTime, 0.05);
+      } else if (audio) {
+        audio.gain.gain.setTargetAtTime(0, audio.ctx.currentTime, 0.05);
+      }
+    }
+    btn.addEventListener('click', () => setSound(!soundOn));
+
+    function draw() {
+      const f2 = Number(slider.value);
+      out.textContent = `${f2.toFixed(1)} Hz`;
+      if (audio) audio.o2.frequency.setTargetAtTime(f2, audio.ctx.currentTime, 0.02);
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.4);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+
+      const midY = cssH / 2, A = cssH * 0.4;
+      const T = 1.0; // seconds of signal on screen
+      const df = Math.abs(F1 - f2);
+
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.2;
+      ctx.beginPath(); ctx.moveTo(0, midY); ctx.lineTo(cssW, midY); ctx.stroke();
+      ctx.globalAlpha = 1;
+
+      // Envelope ±2·|cos(π·Δf·t)| — the shape the ear hears as loudness.
+      for (const sign of [1, -1]) {
+        ctx.strokeStyle = ENV; ctx.globalAlpha = 0.7; ctx.setLineDash([4, 4]);
+        ctx.beginPath();
+        for (let i = 0; i <= 400; i++) {
+          const t = (T * i) / 400;
+          const e = Math.abs(Math.cos(Math.PI * df * t)) * A * sign;
+          i ? ctx.lineTo((i / 400) * cssW, midY - e) : ctx.moveTo(0, midY - e);
+        }
+        ctx.stroke(); ctx.setLineDash([]);
+      }
+      ctx.globalAlpha = 1;
+
+      // The summed signal itself, drawn at a reduced carrier so the wiggles
+      // stay resolvable on screen; the envelope keeps the true beat rate.
+      const CARRIER = 30; // Hz drawn instead of 440 — screen-resolution honesty
+      ctx.strokeStyle = SUM; ctx.lineWidth = 1.4; ctx.beginPath();
+      for (let i = 0; i <= 900; i++) {
+        const t = (T * i) / 900;
+        const y = Math.cos(Math.PI * df * t) * Math.sin(2 * Math.PI * CARRIER * t) * A;
+        i ? ctx.lineTo((i / 900) * cssW, midY - y) : ctx.moveTo(0, midY - y);
+      }
+      ctx.stroke(); ctx.lineWidth = 1;
+
+      readout.innerHTML = df < 0.05
+        ? `Hai nguồn trùng tần số — không còn phách, chỉ một âm to đều.`
+        : `f phách = |440 − ${f2.toFixed(1)}| = <b>${df.toFixed(1)} Hz</b> · ` +
+          `âm lượng phập phồng mỗi <b>${(1 / df).toFixed(2)} s</b>`;
+    }
+
+    slider.addEventListener('input', draw);
+    addEventListener('resize', draw);
+    const io = new IntersectionObserver((es) => {
+      for (const e of es) {
+        if (e.isIntersecting) { if (audio && soundOn) audio.ctx.resume(); }
+        else if (audio) audio.ctx.suspend();
+      }
+    });
+    io.observe(root);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="beats"]').forEach(setup);
+</script>

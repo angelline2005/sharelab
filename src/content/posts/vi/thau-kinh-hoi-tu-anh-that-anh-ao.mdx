@@ -1,0 +1,67 @@
+---
+title: "Thấu kính hội tụ: kéo vật qua tiêu điểm và xem ảnh lộn ngược đời"
+description: "Cùng một thấu kính là máy chiếu khi vật ở xa và kính lúp khi vật ở gần — ranh giới là đúng tiêu điểm, nơi ảnh chạy ra vô cực rồi quay về từ phía bên kia."
+pubDate: 2026-09-02
+tags: ["vat-ly", "quang-hoc", "javascript"]
+translationId: "thau-kinh-hoi-tu-anh-that-anh-ao"
+---
+
+import ConvergingLens from '../../../components/demos/ConvergingLens.astro';
+
+Phương trình thấu kính mỏng học trong một tiết:
+
+```
+1/f = 1/d_vật + 1/d_ảnh,   độ phóng đại m = −d_ảnh/d_vật
+```
+
+Nhưng con số chui ra từ nó thì đáng ngạc nhiên hơn nhiều so với vẻ ngoài. Demo
+dưới đây dùng thấu kính f = 10 cm; việc của bạn là **kéo vật từ xa về sát**, và
+để ý kỹ lúc đi ngang mốc 10 cm.
+
+<ConvergingLens />
+
+## Hành trình một cú kéo
+
+**Vật ở xa (d = 30 cm):** ảnh thật, ngược chiều, nhỏ hơn vật, hiện bên kia thấu
+kính. Đây là chế độ máy ảnh — thế giới to lớn nén vào cảm biến bé.
+
+**Vật ở đúng 2f (d = 20 cm):** khoảnh khắc đối xứng đẹp nhất của quang học: ảnh
+cũng nằm đúng 2f phía bên kia, **to đúng bằng vật**. Đây là mốc thợ máy ảnh gọi
+là chụp tỉ lệ 1:1.
+
+**Vật lọt vào giữa f và 2f (d = 15 cm):** ảnh thật vọt ra xa (30 cm) và **to
+gấp đôi** vật. Đảo vai của trường hợp đầu — và là chế độ của máy chiếu: phim
+nhỏ, ảnh khổng lồ trên tường.
+
+**Vật tiến sát tiêu điểm (d = 10,1 cm):** ảnh thật văng ra **hàng chục mét**,
+phóng đại hàng trăm lần. Mẫu số `1/f − 1/d` đang tiến về không.
+
+**Vật đúng tiêu điểm:** mẫu số chạm không — ảnh ở vô cực, các tia ló song song.
+Không có ảnh nào để hứng. Đây là trường-hợp-biên của bài, và cũng là cách đèn
+pin và hải đăng dùng thấu kính: đặt nguồn sáng **đúng tiêu điểm** để ném một
+chùm song song đi xa.
+
+**Vật lọt vào trong tiêu điểm (d = 7 cm):** phương trình trả về d_ảnh **âm** —
+và thay vì vô nghĩa, dấu âm mang nghĩa mới: ảnh **ảo**, cùng chiều, to hơn vật,
+nằm *cùng phía* với vật. Không hứng được lên màn, nhưng mắt nhìn xuyên thấu
+kính thì thấy rõ. Bạn vừa biến máy chiếu thành **kính lúp**.
+
+## Một thấu kính, hai nhân cách
+
+Điều đáng nhớ không phải sáu trường hợp — mà là ranh giới chia chúng làm hai:
+
+| | d > f | d < f |
+|---|---|---|
+| Ảnh | thật, ngược chiều | ảo, cùng chiều |
+| Hứng lên màn | được | không |
+| Ứng dụng | máy ảnh, máy chiếu, mắt người | kính lúp |
+
+Cùng một miếng thuỷ tinh. Thứ quyết định nó là máy chiếu hay kính lúp không nằm
+trong thuỷ tinh mà nằm ở **chỗ bạn đặt vật** — và cú "lộn ngược" từ ảnh thật
+sang ảnh ảo xảy ra qua vô cực: ảnh thật chạy ra xa vô hạn ở một phía, rồi hiện
+về từ phía bên kia dưới dạng ảo. Trong demo, cú vòng qua vô cực đó chỉ là hai
+cái nhích của thanh trượt quanh mốc 10 cm.
+
+Mắt người là bản lắp cố định của trường hợp đầu tiên: một thấu kính hội tụ và
+màn hứng (võng mạc), vật luôn ngoài tiêu cự, ảnh trên võng mạc **luôn ngược
+chiều** — não lật lại giúp bạn từng giây trong đời.

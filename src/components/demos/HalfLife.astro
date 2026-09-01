@@ -1,0 +1,151 @@
+---
+// Radioactive decay as what it actually is: a coin flip per atom per tick.
+// Each animation step, every surviving atom decays with probability
+// p = 1 − 2^(−dt/T). The smooth N₀·2^(−t/T) curve is drawn on top, so the
+// demo shows the law AND the statistical scatter around it — with few atoms
+// the "law" is barely a suggestion, with many it looks carved in stone.
+---
+
+<figure class="demo" data-demo="half-life">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Số hạt ban đầu <output data-out="n0"></output>
+      <input type="range" data-in="n0" min="1" max="3" step="1" value="2" /></label>
+    <button type="button" data-btn="run">Chạy lại</button>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Chấm xanh: hạt chưa phân rã. Mỗi bước thời gian, từng hạt tự gieo xúc xắc —
+    không hạt nào biết tuổi mình, không hạt nào "đến lượt". Đường đỏ là dự đoán
+    trơn N₀·2^(−t/T); vùng chênh giữa chấm và đường là thống kê đang lên tiếng.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; align-items: end; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input[type='range'] { width: 100%; }
+  .controls button { border: 1px solid rgba(128,128,128,.5); background: transparent; color: inherit; border-radius: 6px; padding: .4rem .9rem; cursor: pointer; font-size: .85rem; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const T_HALF = 2; // s of sim time per half-life — watchable
+  const ALIVE = '#2563eb', LAW = '#dc2626';
+  const N_CHOICES = [16, 256, 4096];
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const slider = root.querySelector('[data-in="n0"]') as HTMLInputElement;
+    const out = root.querySelector('[data-out="n0"]') as HTMLOutputElement;
+
+    let n0 = 256, alive: boolean[] = [], t = 0, raf = 0, last = 0;
+    let history: { t: number; n: number }[] = [];
+
+    function reset() {
+      n0 = N_CHOICES[Number(slider.value) - 1];
+      out.textContent = `${n0}`;
+      alive = Array(n0).fill(true);
+      t = 0; last = 0;
+      history = [{ t: 0, n: n0 }];
+    }
+
+    function step(dt: number) {
+      t += dt;
+      const p = 1 - Math.pow(2, -dt / T_HALF);
+      let n = 0;
+      for (let i = 0; i < alive.length; i++) {
+        if (alive[i] && Math.random() < p) alive[i] = false;
+        if (alive[i]) n++;
+      }
+      history.push({ t, n });
+    }
+
+    function draw() {
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.52);
+      if (canvas.width !== cssW * dpr) { canvas.width = cssW * dpr; canvas.height = cssH * dpr; canvas.style.height = `${cssH}px`; }
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+
+      // Left: the atom grid.
+      const gridW = cssW * 0.44;
+      const cols = Math.ceil(Math.sqrt(n0 * (gridW / cssH)));
+      const rows = Math.ceil(n0 / cols);
+      const cell = Math.min(gridW / cols, (cssH - 16) / rows);
+      const r = Math.max(cell * 0.32, 0.8);
+      for (let i = 0; i < n0; i++) {
+        if (!alive[i]) continue;
+        const x = 8 + (i % cols) * cell + cell / 2;
+        const y = 8 + Math.floor(i / cols) * cell + cell / 2;
+        ctx.fillStyle = ALIVE;
+        ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill();
+      }
+
+      // Right: survivors vs time, dots against the smooth law.
+      const gx = cssW * 0.5, gw = cssW - gx - 10, gy = 12, gh = cssH - 44;
+      const TMAX = 5 * T_HALF;
+      const X = (tt: number) => gx + (Math.min(tt, TMAX) / TMAX) * gw;
+      const Y = (n: number) => gy + gh - (n / n0) * gh;
+
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.3;
+      ctx.beginPath(); ctx.moveTo(gx, gy); ctx.lineTo(gx, gy + gh); ctx.lineTo(gx + gw, gy + gh); ctx.stroke();
+      // Half-life gridlines.
+      ctx.setLineDash([3, 5]);
+      for (let k = 1; k <= 5; k++) {
+        ctx.beginPath(); ctx.moveTo(X(k * T_HALF), gy); ctx.lineTo(X(k * T_HALF), gy + gh); ctx.stroke();
+      }
+      ctx.setLineDash([]); ctx.globalAlpha = 0.55;
+      ctx.fillStyle = fg; ctx.font = '10px system-ui,sans-serif'; ctx.textAlign = 'center';
+      for (let k = 1; k <= 5; k++) ctx.fillText(`${k}T`, X(k * T_HALF), gy + gh + 13);
+      ctx.globalAlpha = 1;
+
+      ctx.strokeStyle = LAW; ctx.lineWidth = 1.6; ctx.beginPath();
+      for (let i = 0; i <= 200; i++) {
+        const tt = (TMAX * i) / 200;
+        i ? ctx.lineTo(X(tt), Y(n0 * Math.pow(2, -tt / T_HALF))) : ctx.moveTo(X(tt), Y(n0));
+      }
+      ctx.stroke(); ctx.lineWidth = 1;
+
+      ctx.fillStyle = ALIVE;
+      for (const h of history) {
+        if (h.t > TMAX) break;
+        ctx.fillRect(X(h.t) - 1, Y(h.n) - 1, 2, 2);
+      }
+
+      const now = history[history.length - 1];
+      const law = n0 * Math.pow(2, -Math.min(now.t, TMAX) / T_HALF);
+      readout.innerHTML =
+        `t = <b>${(now.t / T_HALF).toFixed(1)}</b> chu kỳ bán rã · còn <b>${now.n}</b>/${n0} hạt ` +
+        `(luật trơn dự đoán ${law.toFixed(1)}) · lệch <b>${law > 0 ? Math.abs(((now.n - law) / law) * 100).toFixed(0) : 0}%</b>`;
+    }
+
+    function frame(now: number) {
+      raf = requestAnimationFrame(frame);
+      if (!last) last = now;
+      const dt = Math.min((now - last) / 1000, 0.05); last = now;
+      if (t < 5.4 * T_HALF) step(dt);
+      draw();
+    }
+
+    slider.addEventListener('input', () => { reset(); draw(); });
+    (root.querySelector('[data-btn="run"]') as HTMLButtonElement).addEventListener('click', () => { reset(); draw(); });
+    addEventListener('resize', draw);
+    const io = new IntersectionObserver((es) => {
+      for (const e of es) {
+        if (e.isIntersecting) { last = 0; raf = requestAnimationFrame(frame); }
+        else cancelAnimationFrame(raf);
+      }
+    });
+    io.observe(root);
+    reset(); draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="half-life"]').forEach(setup);
+</script>
