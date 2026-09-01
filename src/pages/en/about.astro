@@ -9,8 +9,19 @@ const t = useTranslations('en');
 <BaseLayout locale="en" title={t('nav.about')} description={t('site.tagline')} langHrefs={sameSlugLangHrefs('/about/')} alternates={sameSlugLangHrefs('/about/')}>
   <h1>{t('nav.about')}</h1>
   <p>
-    <!-- TODO: write a real bio/about here -->
-    sharelab is where I write up how I build small everyday projects — from planning a trip to automating a
-    repetitive chore — mostly built together with Claude Code.
+    sharelab tells school physics through <strong>interactive demos</strong>: drag a slider, poke the
+    parameters, and watch the textbook formula actually run — projectile motion with drag, the chaotic
+    double pendulum, a Doppler effect you can hear.
+  </p>
+  <p>
+    Every article follows one rule: <strong>the numbers are verified by independent computation before
+    publishing</strong>. The recurring theme is the boundary case — the place where a familiar formula is
+    still correct, but its range of validity is narrower than the way we memorised it.
+  </p>
+  <p>
+    In between are Creative Commons–licensed science articles republished from The Conversation,
+    SciDev.Net, Global Voices and Mongabay, plus occasional notes from personal projects built with
+    Claude Code. Most posts are in Vietnamese; every demo is plain Canvas with no external libraries,
+    open source on <a href="https://github.com/angelline2005/sharelab" rel="noopener">GitHub</a>.
   </p>
 </BaseLayout>
