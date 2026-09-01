@@ -40,8 +40,16 @@ All commands are run from the root of the project, from a terminal:
 
 ## 📰 Republishing
 
-Three sources are licensed for republication here. Each importer emits the byline, credit
-link and logo its licence requires.
+Four sources are licensed for republication here. Each importer emits the byline, credit
+link and logo its licence requires, and strips images by default — no licence here covers
+third-party photographs.
+
+| Source | Licence | Vietnamese translation |
+|---|---|---|
+| The Conversation | CC BY-ND 4.0 | needs the author's approval |
+| SciDev.Net | CC BY 2.0 | allowed |
+| Mongabay | CC BY-ND 4.0 | needs written permission |
+| Global Voices | CC BY 3.0 | allowed |
 
 ### The Conversation — CC BY-ND
 
@@ -77,6 +85,19 @@ Environment, forests and biodiversity reporting. English only. Mongabay also car
 Associated Press wire copy that its licence does not cover — the importer refuses news
 agency bylines, but check yourself too. See
 [docs/republishing-mongabay.md](docs/republishing-mongabay.md).
+
+### Global Voices — CC BY
+
+```sh
+node scripts/import-global-voices.mjs --list
+node scripts/import-global-voices.mjs https://globalvoices.org/2026/08/31/<slug>/
+node scripts/import-global-voices.mjs <url> --lang vi --slug <slug-tiếng-việt>
+```
+
+International reporting from a volunteer newsroom. Plain CC BY, so translation is allowed.
+Global Voices also republishes partner outlets under separate agreements its licence does
+not cover — the importer refuses those. See
+[docs/republishing-global-voices.md](docs/republishing-global-voices.md).
 
 Read the relevant doc before importing — between them they cover the rules the scripts
 can't enforce: no bulk imports, and images are never automatically cleared for reuse.

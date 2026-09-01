@@ -303,7 +303,9 @@ function buildPost(article, { tags, draft, withImages }) {
     `title: ${yamlString(article.title)}`,
     `description: ${yamlString(article.description)}`,
     `pubDate: ${article.published}`,
-    ...(article.modified && article.modified !== article.published
+    // An "updated" date earlier than the publication date reads as a mistake,
+    // so only a genuinely later one is emitted.
+    ...(article.modified && article.modified > article.published
       ? [`updatedDate: ${article.modified}`]
       : []),
     `tags: [${tags.map((t) => yamlString(t)).join(', ')}]`,
