@@ -1,0 +1,105 @@
+---
+// Elevator counterweight: cabin 1000 kg, counterweight 1300 kg (cabin + half
+// max load of 600 kg). Slider = passengers; the motor only lifts the
+// imbalance. Bars compare with a counterweight-less design. Static redraw.
+---
+
+<figure class="demo" data-demo="counterweight">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Số người trong cabin (75 kg/người) <output data-out="p"></output>
+      <input type="range" data-in="p" min="0" max="8" step="1" value="4" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Cabin 1 000 kg đấu với đối trọng 1 300 kg (= cabin + nửa tải tối đa)
+    qua puli đỉnh giếng thang. Động cơ không nâng cả cabin — nó chỉ bù phần
+    CHÊNH giữa hai bên, như người chơi bập bênh chỉ cần một ngón tay khi hai
+    đầu gần cân.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const CABIN = 1000, CW = 1300, PAX = 75;
+  const CAB = '#2563eb', CWC = '#f59e0b', MOT = '#dc2626';
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const slider = root.querySelector('[data-in="p"]') as HTMLInputElement;
+    const out = root.querySelector('[data-out="p"]') as HTMLOutputElement;
+
+    function draw() {
+      const p = Number(slider.value);
+      out.textContent = String(p);
+      const side = CABIN + p * PAX;
+      const diff = side - CW; // + : cabin heavier
+      const noCw = side;
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.4);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+
+      // Pulley at top, two hanging boxes; heavier side drawn lower.
+      const px = cssW * 0.32, py = 20, r = 14;
+      ctx.strokeStyle = fg; ctx.lineWidth = 2; ctx.globalAlpha = 0.6;
+      ctx.beginPath(); ctx.arc(px, py, r, 0, Math.PI * 2); ctx.stroke();
+      ctx.globalAlpha = 1;
+      const drop = Math.max(-30, Math.min(30, diff / 15));
+      const cabY = cssH * 0.42 + drop, cwY = cssH * 0.42 - drop;
+      ctx.beginPath(); ctx.moveTo(px - r, py); ctx.lineTo(px - r, cabY); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(px + r, py); ctx.lineTo(px + r, cwY); ctx.stroke();
+      ctx.lineWidth = 1;
+      // Cabin with passengers.
+      ctx.fillStyle = CAB; ctx.globalAlpha = 0.8;
+      ctx.fillRect(px - r - 34, cabY, 52, 44);
+      ctx.globalAlpha = 1; ctx.fillStyle = '#ffffffcc'; ctx.font = '10px system-ui,sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(`${side} kg`, px - r - 8, cabY + 18);
+      ctx.fillText(`${p} người`, px - r - 8, cabY + 32);
+      // Counterweight.
+      ctx.fillStyle = CWC; ctx.globalAlpha = 0.85;
+      ctx.fillRect(px + r - 14, cwY, 32, 40);
+      ctx.globalAlpha = 1; ctx.fillStyle = '#00000090';
+      ctx.fillText('1300', px + r + 2, cwY + 24);
+
+      // Comparison bars: motor load with vs without counterweight.
+      const bx = cssW * 0.62, bw = cssW * 0.3, byA = cssH * 0.3, byB = cssH * 0.62, bh = 18;
+      const maxW = 1700;
+      ctx.fillStyle = MOT; ctx.globalAlpha = 0.85;
+      ctx.fillRect(bx, byA, (Math.abs(diff) / maxW) * bw, bh);
+      ctx.globalAlpha = 0.45;
+      ctx.fillRect(bx, byB, (noCw / maxW) * bw, bh);
+      ctx.globalAlpha = 1; ctx.fillStyle = fg; ctx.globalAlpha = 0.7; ctx.textAlign = 'left';
+      ctx.fillText(`có đối trọng: ${Math.abs(diff)} kg`, bx, byA - 6);
+      ctx.fillText(`không đối trọng: ${noCw} kg`, bx, byB - 6);
+      ctx.globalAlpha = 1;
+
+      readout.innerHTML =
+        `Cabin ${side} kg đấu 1 300 kg: động cơ chỉ ${diff >= 0 ? 'kéo giúp' : 'ghìm lại'} ` +
+        `<b>${Math.abs(diff)} kg</b> thay vì ${noCw} kg — nhẹ việc ${(noCw / Math.max(1, Math.abs(diff))).toFixed(0)} lần` +
+        (diff === 0 ? ' · <b>cân bằng tuyệt đối: chở 4 người là chuyến "miễn phí"</b>' : '');
+    }
+
+    slider.addEventListener('input', draw);
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="counterweight"]').forEach(setup);
+</script>

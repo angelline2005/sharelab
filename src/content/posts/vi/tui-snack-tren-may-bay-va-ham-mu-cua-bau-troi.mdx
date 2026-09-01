@@ -1,0 +1,66 @@
+---
+title: "Túi snack phồng căng trên máy bay: hàm mũ của bầu trời"
+description: "Khí quyển giảm nửa áp suất sau mỗi 5,8 km — nên túi bim bim lên Đà Lạt đã phồng, lên cabin máy bay phồng 1,3 lần, còn tai bạn ù đúng lịch. Một hàm e mũ trừ h chi phối từ gói snack tới quy trình cấp cứu giảm áp."
+pubDate: 2026-09-02
+tags: ["vat-ly", "chat-luu", "nhiet-hoc", "javascript"]
+translationId: "tui-snack-tren-may-bay-va-ham-mu-cua-bau-troi"
+---
+
+import CabinPressure from '../../../components/demos/CabinPressure.astro';
+
+Gói bim bim mua ở đồng bằng, mang lên Đà Lạt đã thấy căng; bóc trên máy
+bay thì phồng như gối. Không ai bơm gì vào túi — **bầu trời bên ngoài đã
+xẹp đi**, và mức xẹp tuân một hàm quen mặt:
+
+<CabinPressure />
+
+## Vì sao là hàm mũ chứ không phải đường thẳng
+
+Áp suất tại mỗi độ cao bằng **trọng lượng cột không khí phía trên**. Nhưng
+không khí nén được: lớp dưới bị cả cột đè nên đặc, lớp trên loãng — mật độ
+tỉ lệ với áp suất ([phương trình khí lý
+tưởng](/vi/posts/phuong-trinh-khi-ly-tuong-va-cai-bay-do-c)), tức là *tốc
+độ giảm của P tỉ lệ với chính P*. Phàm cái gì giảm theo tỉ lệ chính mình
+thì [rơi kiểu hàm mũ](/vi/posts/chu-ky-ban-ra-khong-hat-nao-biet-tuoi-minh)
+— khí quyển có "chu kỳ bán áp" **~5,8 km**: Everest 8 848 m còn 35%,
+độ cao bay 11 km còn 27%, và không có ranh giới "hết khí quyển" — chỉ có
+loãng dần mãi (trạm ISS ở 400 km vẫn gặp đủ không khí để [tụt quỹ
+đạo](/vi/posts/toc-do-vu-tru-va-khau-dai-bac-cua-newton) cỡ cây số mỗi
+tháng, phải nổ máy nâng bù định kỳ).
+
+Máy bay hành trình trong vùng 27% ấy — người không thể thở. Giải pháp
+không phải bơm cabin lên 100% (chênh áp trong-ngoài sẽ bắt vỏ máy bay dày
+nặng như nồi hơi) mà là **thoả hiệp 75 kPa, tương đương ~2 400 m**: đủ dễ
+thở, đủ nhẹ vỏ. Chính khoảng nén-xả 100 ⇄ 75 ấy điều khiển đôi tai bạn: cất
+cánh, khí trong hòm nhĩ thành "túi snack" nở ra — phải nuốt/ngáp cho nó xì
+qua vòi nhĩ; hạ cánh là chiều ngược, khó chịu hơn vì vòi nhĩ mở kiểu van
+một chiều ưu tiên xả. Trẻ sơ sinh khóc ré khi máy bay hạ độ cao không phải
+vì hư — vòi nhĩ của bé nằm ngang, xì kém: cho bú hoặc ngậm ti giả chính là
+"kỹ thuật cân bằng áp suất" phiên bản sơ sinh.
+
+## Đọc thêm vài trạm trên trục cao độ
+
+**Sa Pa 1 500 m (85 kPa)**: nước [sôi ở ~95
+°C](/vi/posts/nhiet-an-hai-quang-nhiet-ke-dung-im) — luộc trứng lâu hơn
+hẳn; lên trạm Everest Base Camp nước sôi 83 °C, mì tôm mãi không chín —
+nồi áp suất được phát minh cho đúng nỗi khổ này (chạy ngược: tăng áp để
+sôi 120 °C). **Fansipan 3 143 m (69 kPa)**: du khách đi cáp treo lên
+thẳng thấy váng đầu nhẹ — ôxy mỗi hơi thở ít hơn 30% dù tỉ lệ 21% không
+đổi. **Vùng chết trên 8 000 m (< 36 kPa)**: phổi người không nạp đủ ôxy để
+sống lâu dù nghỉ ngơi — dân leo núi phải "thích nghi độ cao" hàng tuần cho
+cơ thể sản xuất thêm hồng cầu, và các đội bóng Nam Mỹ đá sân La Paz 3 600
+m luôn có lợi thế chủ nhà đo được bằng vật lý.
+
+## Trường hợp biên: cửa sổ máy bay và 30 giây hữu ích
+
+Chênh 100 − 27 = ~74 kPa nghe ôn hoà, nhưng nhân diện tích: mỗi mét vuông
+vỏ máy bay chịu **7,4 tấn lực đẩy ra** — cửa sổ máy bay nhỏ, tròn và dày
+vì thế (góc vuông tập trung ứng suất từng gây chuỗi tai nạn Comet thập
+niên 1950 — bài học viết lại toàn ngành). Nếu cabin thủng ở 11 km: không
+phải cảnh phim người bị hút bay — là sương mù tức thời (không khí giãn
+đột ngột [lạnh đi đoạn
+nhiệt](/vi/posts/vi-sao-len-nui-thi-lanh-du-gan-mat-troi-hon), hơi nước
+ngưng), và đồng hồ ôxy não bắt đầu đếm: ở 27 kPa, người tỉnh táo hữu ích
+chỉ ~30–60 giây. Vì thế thứ tự trong hướng dẫn an toàn là mệnh lệnh vật
+lý chứ không phải phép lịch sự: **đeo mặt nạ cho mình trước, rồi mới giúp
+người bên cạnh** — hàm mũ của bầu trời không chờ ai lịch sự xong.

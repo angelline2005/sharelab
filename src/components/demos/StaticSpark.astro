@@ -1,0 +1,95 @@
+---
+// Static electricity: air breaks down at ~30 kV/cm, so spark length reveals
+// the voltage; the body is ~150 pF, so energy = ½CV² stays in millijoules.
+// Slider = body voltage; readout gives spark gap and energy vs references.
+---
+
+<figure class="demo" data-demo="static-spark">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Điện áp tĩnh điện trên người (kV) <output data-out="v"></output>
+      <input type="range" data-in="v" min="1" max="30" step="0.5" value="15" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Không khí chịu được ~30 kV mỗi xăng-ti-mét rồi "thủng" thành tia lửa —
+    nên độ dài tia lửa là chiếc vôn kế miễn phí. Cơ thể là tụ điện ~150 pF:
+    điện áp thì khổng lồ, năng lượng ½CV² lại chỉ vài mili-jun.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const C = 150e-12, BREAK = 30; // kV per cm
+  const SPARK = '#f59e0b', FING = '#2563eb', KNOB = '#dc2626';
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const slider = root.querySelector('[data-in="v"]') as HTMLInputElement;
+    const out = root.querySelector('[data-out="v"]') as HTMLOutputElement;
+
+    function draw() {
+      const kv = Number(slider.value);
+      out.textContent = kv.toFixed(1).replace('.', ',');
+      const gapMm = (kv / BREAK) * 10;
+      const mJ = 0.5 * C * (kv * 1000) ** 2 * 1000;
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.3);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+      const midY = cssH / 2;
+
+      // Finger (left) and door knob (right); gap scaled: 10 mm → 120 px.
+      const gapPx = 12 + gapMm * 11;
+      const fx = cssW / 2 - gapPx / 2, kx = cssW / 2 + gapPx / 2;
+      ctx.strokeStyle = FING; ctx.lineWidth = 10; ctx.lineCap = 'round';
+      ctx.beginPath(); ctx.moveTo(30, midY + 20); ctx.lineTo(fx, midY); ctx.stroke();
+      ctx.lineWidth = 1; ctx.lineCap = 'butt';
+      ctx.fillStyle = KNOB;
+      ctx.beginPath(); ctx.arc(kx + 16, midY, 16, 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.5;
+      ctx.beginPath(); ctx.moveTo(kx + 32, midY); ctx.lineTo(cssW - 20, midY); ctx.stroke();
+      ctx.globalAlpha = 1;
+
+      // Jagged spark.
+      ctx.strokeStyle = SPARK; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.moveTo(fx, midY);
+      const segs = 6;
+      for (let i = 1; i <= segs; i++) {
+        const x = fx + ((kx - fx) * i) / segs;
+        const y = midY + (i === segs ? 0 : (i % 2 ? -1 : 1) * (4 + gapMm));
+        ctx.lineTo(x, y);
+      }
+      ctx.stroke(); ctx.lineWidth = 1;
+      ctx.fillStyle = fg; ctx.globalAlpha = 0.65; ctx.font = '10px system-ui,sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(`tia lửa ${gapMm.toFixed(1).replace('.', ',')} mm`, (fx + kx) / 2, midY - 16 - gapMm);
+      ctx.globalAlpha = 1;
+
+      readout.innerHTML =
+        `${kv.toFixed(1).replace('.', ',')} kV phóng qua khe <b>${gapMm.toFixed(1).replace('.', ',')} mm</b>` +
+        ` · năng lượng ½CV² = <b>${mJ.toFixed(1).replace('.', ',')} mJ</b> — bằng 1/${Math.round(200000 / mJ).toLocaleString('vi-VN')} cú sốc khử rung tim`;
+    }
+
+    slider.addEventListener('input', draw);
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="static-spark"]').forEach(setup);
+</script>

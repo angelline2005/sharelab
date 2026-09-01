@@ -1,0 +1,94 @@
+---
+// Lightning energy: E ≈ Q·V. Sliders for charge transferred and potential;
+// readout converts to kWh, đồng, and instantaneous power over ~30 µs.
+---
+
+<figure class="demo" data-demo="lightning">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Điện tích chuyển Q (coulomb) <output data-out="q"></output>
+      <input type="range" data-in="q" min="5" max="50" step="1" value="15" /></label>
+    <label>Hiệu điện thế mây–đất V (triệu vôn) <output data-out="v"></output>
+      <input type="range" data-in="v" min="50" max="500" step="10" value="100" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Năng lượng một cú sét ≈ Q·V. Con số gây ngạc nhiên theo chiều... khiêm
+    tốn: cả tia sét thường chỉ đáng vài trăm nghìn tiền điện — cái đáng sợ
+    là nó chi trọn trong ba mươi phần triệu giây.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const BOLT = '#f59e0b', CLOUD = '#2563eb';
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (k: string) => root.querySelector(`[data-in="${k}"]`) as HTMLInputElement;
+    const output = (k: string) => root.querySelector(`[data-out="${k}"]`) as HTMLOutputElement;
+
+    function draw() {
+      const Q = Number(input('q').value), MV = Number(input('v').value);
+      output('q').textContent = String(Q);
+      output('v').textContent = String(MV);
+      const E = Q * MV * 1e6;         // J
+      const kwh = E / 3.6e6;
+      const dong = kwh * 3000;
+      const TW = E / 30e-6 / 1e12;
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.34);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+
+      // Cloud, ground, jagged bolt whose thickness tracks energy.
+      ctx.fillStyle = CLOUD; ctx.globalAlpha = 0.5;
+      for (const [dx, r] of [[-40, 26], [0, 34], [42, 24]] as Array<[number, number]>) {
+        ctx.beginPath(); ctx.arc(cssW / 2 + dx, 34, r, 0, Math.PI * 2); ctx.fill();
+      }
+      ctx.globalAlpha = 1;
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.4;
+      ctx.beginPath(); ctx.moveTo(20, cssH - 16); ctx.lineTo(cssW - 20, cssH - 16); ctx.stroke();
+      ctx.globalAlpha = 1;
+
+      const w = 1.5 + (E / 2.5e10) * 6;
+      ctx.strokeStyle = BOLT; ctx.lineWidth = w;
+      ctx.beginPath();
+      const x0 = cssW / 2, y0 = 60, y1 = cssH - 16;
+      ctx.moveTo(x0, y0);
+      const pts = [[x0 - 14, 0.3], [x0 + 8, 0.5], [x0 - 6, 0.7], [x0 + 12, 0.85], [x0, 1]];
+      for (const [x, f] of pts) ctx.lineTo(x, y0 + (y1 - y0) * f);
+      ctx.stroke(); ctx.lineWidth = 1;
+      ctx.fillStyle = fg; ctx.globalAlpha = 0.6; ctx.font = '10px system-ui,sans-serif';
+      ctx.textAlign = 'left';
+      ctx.fillText(`${MV} triệu vôn`, cssW / 2 + 50, (y0 + y1) / 2);
+      ctx.globalAlpha = 1;
+
+      readout.innerHTML =
+        `E ≈ Q·V = <b>${(E / 1e9).toFixed(1).replace('.', ',')} GJ</b> = ${Math.round(kwh).toLocaleString('vi-VN')} kWh` +
+        ` ≈ <b>${Math.round(dong / 1000).toLocaleString('vi-VN')} nghìn đồng tiền điện</b>` +
+        ` · nhưng dồn trong 30 µs: công suất <b>${TW.toFixed(0)} TW</b> — gấp nhiều lần cả lưới điện thế giới`;
+    }
+
+    root.querySelectorAll('input').forEach((el) => el.addEventListener('input', draw));
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="lightning"]').forEach(setup);
+</script>

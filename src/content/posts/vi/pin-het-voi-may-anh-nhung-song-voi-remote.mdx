@@ -1,0 +1,73 @@
+---
+title: "Pin \"hết\" với máy ảnh nhưng vẫn sống với remote: điện trở trong — linh kiện giấu tên"
+description: "Mọi cục pin là nguồn lý tưởng cộng một điện trở giấu bên trong, và điện trở ấy tăng dần theo tuổi. Nó giải thích pin 'hồi sinh' khi đổi thiết bị, đèn pha ô tô tối đi lúc đề máy, và vì sao điện thoại sập nguồn giữa trời rét ở 30% pin."
+pubDate: 2026-09-02
+tags: ["vat-ly", "dien-tu", "javascript"]
+translationId: "pin-het-voi-may-anh-nhung-song-voi-remote"
+---
+
+import BatterySag from '../../../components/demos/BatterySag.astro';
+
+Kinh nghiệm dân gian ai cũng có: cặp pin bị máy ảnh chê "hết pin", lắp
+sang remote TV lại chạy thêm... nửa năm. Pin không hồi sinh — nó chưa từng
+"chết". Nó chỉ thua một bài kiểm tra mà remote không bắt làm:
+
+<BatterySag />
+
+## Nguồn thật = nguồn lý tưởng + kẻ ăn chặn nối tiếp
+
+Bên trong pin, dòng điện phải đi qua chính hoá chất và các điện cực — đoạn
+đường có điện trở thật, gọi là **điện trở trong r**. Mạch tương đương chỉ
+là [cầu phân áp](/vi/posts/cau-phan-ap-num-volume-va-moi-cam-bien) tối
+giản: suất điện động 1,5 V chia đôi giữa r (ẩn) và thiết bị (hiện). Điện
+áp "ra tới cực":
+
+```
+V = EMF − I·r
+```
+
+Pin AA mới: r ≈ 0,15 Ω — remote rút 20 mA làm rơi 3 mV, không ai nhận ra;
+máy ảnh đòi 2 A làm rơi 0,3 V, vẫn sống. Pin già đi, hoá chất cạn và khô
+dần: **r tăng gấp chục lần trong khi EMF gần như giữ nguyên** — đo pin
+"chết" bằng vôn kế không tải vẫn thấy 1,4 V ngon lành! Nhưng r = 1 Ω gặp
+máy ảnh 2 A là rơi 2 V — sập tại chỗ; gặp remote 20 mA chỉ rơi 0,02 V —
+chạy phây phây. "Pin hết" hoá ra là mệnh đề **hai ngôi**: hết-với-thiết-bị-
+nào. Mẹo đo pin đúng của thợ: đo *dưới tải*, hoặc bấm đèn pin xem có lụi
+dần — vôn kế thảnh thơi là kẻ dễ bị pin già lừa nhất.
+
+## Đèn pha tối đi nửa giây: chẩn đoán xe bằng một cái liếc
+
+Bình ắc-quy ô tô là bậc thầy dòng lớn: r chỉ vài **mili-ôm**, vì củ đề
+xoay máy nguội ngốn 100–200 A. Nhưng vài mili-ôm nhân 200 A vẫn là ~1–2 V:
+khoảnh khắc vặn chìa, cả hệ 12 V sụt xuống 10 — **đèn pha tối đi, radio
+reset** — rồi bừng lại khi máy nổ. Cú nháy ấy là bài đo điện trở trong
+miễn phí: bình già r tăng, đèn tối sâu hơn và lâu hơn, và một sáng mùa
+lạnh nào đó chỉ còn tiếng tạch tạch — hoá chất chưa cạn, nhưng r đã cao
+tới mức [I²R nuốt trọn công
+suất](/vi/posts/vi-sao-duong-day-tai-dien-phai-cao-the) trước khi ra tới
+củ đề. Trời rét làm mọi chuyện tệ gấp bội: phản ứng hoá học chậm lại
+([Maxwell-Boltzmann ít phân tử đủ
+nhanh](/vi/posts/phan-bo-maxwell-khong-khi-nhanh-hon-am-thanh)), r vọt lên
+— cùng lý do **điện thoại của bạn sập nguồn ở 30% pin giữa trời lạnh**:
+đồng hồ phần trăm đo lượng hoá chất còn lại, nhưng CPU đòi dòng xung cao,
+và V = EMF − I·r tụt xuyên ngưỡng sập trước khi hoá chất kịp hết. Đút máy
+vào túi áo ấm, r hạ, máy "hồi sinh 30%" — không có phép màu nào ngoài một
+phép trừ.
+
+Cùng phép trừ ấy quy định cả **vì sao không được nối tắt pin**: thiết bị
+duy nhất giới hạn dòng lúc đó là chính r — pin lithium r vài chục mili-ôm
+xả trăm ampe vào chính mình, [I²R thành lò
+nướng](/vi/posts/dun-mot-am-nuoc-het-bao-nhieu-tien) — đó là lý do pin
+điện thoại phồng và các hãng bay cấm pin rời trong hành lý ký gửi.
+
+## Trường hợp biên: đo một cục pin cho ra hai con số
+
+Chốt bài bằng thí nghiệm bàn học đúng chuẩn phòng lab: vôn kế đo pin
+không tải cho **EMF** (dòng gần 0, r không kịp ăn chặn); nối thêm điện
+trở 10 Ω rồi đo lại — điện áp tụt một khoản, và từ khoản tụt tính ngược
+ra **r** bằng đúng công thức của demo. Hai con số ấy là "hồ sơ sức khoẻ"
+đầy đủ của cục pin: EMF nói còn bao nhiêu hoá chất, r nói tuổi già đến
+đâu — và mọi bộ sạc thông minh, hệ quản lý pin xe điện (BMS) đang làm
+chính xác thí nghiệm này hàng nghìn lần mỗi ngày trên từng viên cell,
+quyết định sạc nhanh hay chậm, cắt hay chạy. Chiếc xe điện lăn bánh trên
+một phép trừ lớp chín, đo đi đo lại không ngừng.

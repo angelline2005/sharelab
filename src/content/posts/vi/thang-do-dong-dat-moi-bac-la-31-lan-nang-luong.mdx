@@ -1,0 +1,74 @@
+---
+title: "Thang đo động đất: vì sao M7 không phải \"hơn M6 một tí\" mà là hơn 31 lần"
+description: "Thang độ lớn động đất là logarit: mỗi bậc nhân biên độ 10 lần và năng lượng 31,6 lần. Hiểu sai điều này là hiểu sai mọi bản tin — M9 Tohoku không mạnh gấp rưỡi M6, nó mạnh gấp ba mươi nghìn lần."
+pubDate: 2026-09-02
+tags: ["vat-ly", "song", "khi-hau", "javascript"]
+translationId: "thang-do-dong-dat-moi-bac-la-31-lan-nang-luong"
+---
+
+import EarthquakeEnergy from '../../../components/demos/EarthquakeEnergy.astro';
+
+Bản tin đọc "động đất 7,8 độ" và não ta lặng lẽ hiểu như thang điểm 10 —
+"khá mạnh, gần kịch". Đó là cú hiểu nhầm phổ biến nhất của mọi thang đo
+khoa học, vì thang này **không cộng — nó nhân**:
+
+<EarthquakeEnergy />
+
+## Một thang đo sinh ra đã cong
+
+Charles Richter (1935) đối mặt vấn đề in ấn theo đúng nghĩa đen: trận nhỏ
+nhất máy ghi được và trận lớn nhất California từng chịu chênh nhau hàng
+triệu lần biên độ — trục tuyến tính nào chứa nổi? Giải pháp là mượn [chiêu
+của thang decibel](/vi/posts/thang-decibel-vi-sao-tai-nguoi-dem-bang-logarit):
+lấy **logarit**. Mỗi bậc = biên độ rung ×10. Mà năng lượng sóng không tỉ
+lệ thẳng với biên độ — quy luật thực nghiệm Gutenberg–Richter cho hệ số
+1,5 trên thang mũ: **mỗi bậc độ lớn = năng lượng ×10^1,5 ≈ 31,6 lần**.
+
+Từ đó, phép trừ ngây thơ giữa hai bản tin trở thành phép luỹ thừa:
+
+- M5,0 → M6,0: không phải "hơn một điểm" — hơn **31 lần** năng lượng.
+- M6,0 ≈ trọn một quả bom Hiroshima toả ra dưới lòng đất.
+- M7,8 (Thổ Nhĩ Kỳ 2023) so với M6,8: chênh "một độ" = 31 lần; so với M5
+  mà nhiều người từng "trải nghiệm cho biết": **~16 000 lần**.
+- M9,1 (Tohoku 2011): gấp Hiroshima ba chục nghìn lần — cú giật làm
+  [ngày Trái Đất ngắn đi 1,8
+  micro-giây](/vi/posts/bao-toan-momen-dong-luong-cu-xoay-khong-mien-phi)
+  vì khối lượng vỏ hành tinh xê dịch về gần trục quay, đúng bài mô-men
+  động lượng của vũ công.
+
+(Ngày nay các nhà địa chấn dùng thang **moment** M_w — đo trực tiếp
+diện tích đứt gãy × độ trượt × độ cứng đá, vật lý hơn hẳn biên độ kim máy
+ghi của Richter — nhưng được thiết kế khớp số với thang cũ, nên "độ
+Richter" trên báo vẫn đọc như xưa.)
+
+## Vì sao không có "M12" — thang đo bị vỏ Trái Đất áp trần
+
+Thang logarit không có trần toán học, nhưng có **trần địa chất**: năng
+lượng động đất chứa trong đoạn đứt gãy bị khoá — muốn M lớn hơn cần đứt
+gãy *dài và sâu hơn*. M9,5 Chile 1960 — kỷ lục từng ghi — xé toạc đoạn
+đứt gãy **1 000 km**, cỡ chiều dài đất nước Việt Nam. M10 đòi đường đứt
+vòng nửa hành tinh liền mạch tích đủ ứng suất — cấu trúc không tồn tại
+trên Trái Đất. Các "dự báo M12 phá huỷ địa cầu" lan truyền mạng vì thế
+sai từ tiên đề: thang đo còn chỗ, **vỏ hành tinh hết hàng**.
+
+Cũng nhờ tính chất nhân của thang mà một sự thật an ủi xuất hiện: mỗi
+năm Trái Đất có ~1 500 trận M5+ nhưng năng lượng địa chấn toàn cầu do
+**vài trận lớn nhất** chiếm gần trọn — hàng vạn trận nhỏ cộng lại không
+bằng một cú M9 (kiểm tra bằng demo: một triệu trận M5 mới bằng một M9).
+Hệ quả buồn cho một hy vọng dân gian: các trận nhỏ **không "xả van" thay
+được** trận lớn — muốn xả năng lượng của một M8 cần ba chục nghìn trận
+M5, tức đứt gãy phải rung chuông hàng ngày trong nhiều thế hệ.
+
+## Trường hợp biên: đầu kia của thang đo
+
+Kéo thanh trượt về M3 — mức "xe tải chạy ngang nhà, máy ghi được, người
+hầu như không cảm thấy". Thang còn chạy tiếp xuống dưới: M0, thậm chí M
+**âm** — búa tạ nện xuống đất cỡ M~−0,5; các trạm địa chấn nhạy tới mức
+nghe được [sóng biển vỗ bờ đại
+dương](/vi/posts/nghe-tieng-tau-hai-lan-am-thanh-trong-vat-ran) như tiếng
+ồn nền không dứt, và mùa COVID-19 phong toả năm 2020, mạng địa chấn toàn
+cầu ghi nhận hành tinh... *lặng đi* rõ rệt — tiếng ồn nhân loại (giao
+thông, nhà máy) giảm tới nửa ở dải tần cao. Một thang đo sinh ra để đếm
+thảm hoạ, cuối cùng đủ tinh để nghe thấy cả sự vắng mặt của con người —
+sức mạnh của logarit là nhét được cả hai đầu câu chuyện ấy lên cùng một
+trục.

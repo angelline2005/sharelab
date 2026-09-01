@@ -1,0 +1,104 @@
+---
+// Equal temperament: n semitones = ratio 2^(n/12). The demo compares each
+// tempered interval against the nearest just-intonation ratio and reports the
+// gap in cents. A4 = 440 Hz reference. Static redraw.
+---
+
+<figure class="demo" data-demo="temperament">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Quãng: số nửa cung n <output data-out="n"></output>
+      <input type="range" data-in="n" min="0" max="12" step="1" value="7" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Đàn piano chia quãng tám thành 12 nấc NHÂN đều nhau — mỗi nửa cung nhân
+    2^(1/12) ≈ 1,0595. Tai người lại thích các tỉ số nguyên đẹp (3/2, 5/4...).
+    Hai hệ không trùng nhau — âm nhạc hiện đại là một thoả hiệp được tính
+    bằng cent (1 nửa cung = 100 cent).
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const NAMES = ['đồng âm', 'nửa cung', 'quãng 2', 'quãng 3 thứ', 'quãng 3 trưởng', 'quãng 4', 'tritone', 'quãng 5', 'quãng 6 thứ', 'quãng 6 trưởng', 'quãng 7 thứ', 'quãng 7 trưởng', 'quãng tám'];
+  const JUST: Array<[number, number]> = [[1, 1], [16, 15], [9, 8], [6, 5], [5, 4], [4, 3], [45, 32], [3, 2], [8, 5], [5, 3], [9, 5], [15, 8], [2, 1]];
+  const ET = '#2563eb', JT = '#f59e0b';
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const slider = root.querySelector('[data-in="n"]') as HTMLInputElement;
+    const out = root.querySelector('[data-out="n"]') as HTMLOutputElement;
+
+    function draw() {
+      const n = Number(slider.value);
+      out.textContent = `${n} (${NAMES[n]})`;
+      const rEt = Math.pow(2, n / 12);
+      const [a, b] = JUST[n];
+      const rJust = a / b;
+      const cents = 1200 * Math.log2(rEt / rJust);
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.3);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+
+      // Keyboard strip: 13 keys, played keys highlighted.
+      const kw = (cssW - 24) / 13;
+      for (let k = 0; k <= 12; k++) {
+        const x = 12 + k * kw;
+        const active = k === 0 || k === n;
+        ctx.fillStyle = active ? ET : fg;
+        ctx.globalAlpha = active ? 0.85 : 0.12;
+        ctx.fillRect(x + 1, 10, kw - 2, cssH * 0.4);
+        ctx.globalAlpha = 1;
+      }
+      // Two frequency bars from A4.
+      const f1 = 440, f2 = 440 * rEt, fJ = 440 * rJust;
+      const barY = cssH * 0.62, bh = 12;
+      const X = (f: number) => 12 + ((f - 400) / 500) * (cssW - 24);
+      ctx.fillStyle = fg; ctx.globalAlpha = 0.4;
+      ctx.fillRect(X(440), barY - 18, 2, bh); // root marker
+      ctx.globalAlpha = 1;
+      ctx.fillStyle = ET;
+      ctx.fillRect(X(f2), barY, 3, bh);
+      ctx.fillStyle = JT;
+      ctx.fillRect(X(fJ), barY + bh + 4, 3, bh);
+      ctx.fillStyle = fg; ctx.globalAlpha = 0.7; ctx.font = '10px system-ui,sans-serif';
+      ctx.textAlign = 'left';
+      ctx.fillText(`piano: ${f2.toFixed(2).replace('.', ',')} Hz`, X(f2) + 8, barY + 10);
+      ctx.fillText(`tỉ số đẹp ${a}/${b}: ${fJ.toFixed(2).replace('.', ',')} Hz`, X(fJ) + 8, barY + bh + 14);
+      ctx.textAlign = 'left';
+      ctx.fillText('A4 = 440 Hz', X(440) + 6, barY - 8);
+      ctx.globalAlpha = 1;
+
+      const verdict = Math.abs(cents) < 1 ? 'trùng khớp tuyệt đối' :
+        Math.abs(cents) < 4 ? 'lệch không tai nào bắt được' :
+        Math.abs(cents) < 10 ? 'lệch nhẹ — tai tinh nghe ra "phách chậm"' :
+        'lệch rõ — hợp âm hơi "rung"';
+      readout.innerHTML =
+        `Piano: 2^(${n}/12) = <b>${rEt.toFixed(4).replace('.', ',')}</b> · tỉ số đẹp gần nhất ${a}/${b} = ${rJust.toFixed(4).replace('.', ',')}` +
+        ` → lệch <b>${cents >= 0 ? '+' : ''}${cents.toFixed(1).replace('.', ',')} cent</b> — ${verdict}`;
+    }
+
+    slider.addEventListener('input', draw);
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="temperament"]').forEach(setup);
+</script>

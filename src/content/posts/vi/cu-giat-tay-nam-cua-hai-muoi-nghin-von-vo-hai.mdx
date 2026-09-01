@@ -1,0 +1,62 @@
+---
+title: "Cú giật tay nắm cửa: hai mươi nghìn vôn hoàn toàn vô hại — và bài học vôn không giết người"
+description: "Tia lửa 5 mm từ ngón tay bạn mang 15 000 vôn — gấp 68 lần ổ điện — nhưng chỉ vài mili-jun, bằng một phần vạn cú sốc khử rung tim. Điện áp đo độ CAO của thác; giết người hay không là ở LƯU LƯỢNG nước."
+pubDate: 2026-09-02
+tags: ["vat-ly", "dien-tu", "javascript"]
+translationId: "cu-giat-tay-nam-cua-hai-muoi-nghin-von-vo-hai"
+---
+
+import StaticSpark from '../../../components/demos/StaticSpark.astro';
+
+Đi thảm len, chạm tay nắm cửa: *tách* — đau nhói, có khi thấy cả tia lửa.
+Con số đằng sau cú tách ấy gây sốc hơn chính nó: bạn vừa phóng điện ở
+**hàng chục nghìn vôn**, gấp gần trăm lần ổ cắm 220 V từng được dặn là chết
+người. Sao bạn còn đứng đây đọc bài?
+
+<StaticSpark />
+
+## Chiếc vôn kế miễn phí dài một tia lửa
+
+Không khí là chất cách điện có giới hạn: quá **~30 kV mỗi xăng-ti-mét**,
+electron bị xé khỏi phân tử, không khí "thủng" thành kênh dẫn — tia lửa.
+Luật ấy biến mọi tia lửa thành vôn kế: thấy tia 1 mm là biết mình mang ~3
+kV; ngày hanh khô cởi áo len nghe lách tách và *thấy sáng* trong bóng tối
+là các cú 5–15 kV. (Cùng thước đo ấy đo được [sét: kênh phóng dài hàng
+kilômét đòi hàng trăm triệu
+vôn](/vi/posts/tia-set-gia-bao-nhieu-tien-dien) — không khí ẩm và điện
+trường méo hạ ngưỡng xuống, nhưng bậc đại lượng đúng như vậy.)
+
+Vậy sao 15 kV không giết bạn mà 220 V thì có thể? Vì **vôn chưa bao giờ là
+thứ giết người** — nó chỉ là "độ cao của thác nước". Thứ nguy hiểm là
+*năng lượng trút xuống* và *dòng chảy duy trì*. Cơ thể tích điện là [chiếc
+tụ ~150 pF](/vi/posts/tu-dien-thung-nuoc-nong-cua-the-gioi-dien) — tí hon.
+Nạp nó tới 15 kV: E = ½CV² = **17 mJ**. So sánh cho vui: máy khử rung tim
+cần ~200 J để can thiệp vào tim — cú giật tay nắm cửa nhỏ hơn **một vạn
+lần**, và xả sạch trong nano-giây, không có nguồn nào bơm tiếp. Ổ cắm 220 V
+"hiền" hơn 68 lần về vôn nhưng đứng sau nó là cả lưới điện: dòng chục
+mili-ampe chảy **liên tục** qua lồng ngực mới là kịch bản chết người. Quy
+tắc bỏ túi: *tĩnh điện — vôn to, jun bé, một phát rồi thôi; điện lưới —
+vôn bé, jun vô hạn, không buông*.
+
+Cùng logic ấy giải oan cho quả cầu plasma và máy Van de Graaff trong bảo
+tàng khoa học: sờ vào, tóc dựng đứng ở 200–400 kV — vẫn chỉ là màn trình
+diễn mili-jun. Và giải thích luôn cú giật *chỉ đau* mà ngành công nghiệp
+sợ *chết khiếp*: 17 mJ không hại người nhưng **thừa để nướng một con
+chip** (linh kiện bán dẫn chết từ mức phần nghìn mJ) — vì thế công nhân
+lắp ráp điện tử đeo vòng tay nối đất, còn xe bồn xăng kéo lê dây xích: một
+tia lửa vô hại với da người là quá đủ để mồi hơi xăng.
+
+## Trường hợp biên: vì sao chỉ mùa hanh mới bị giật
+
+Câu hỏi còn lại: điện tích ở đâu ra và sao có mùa? Cọ xát hai vật liệu
+khác nhau (đế giày với thảm len) là vài phần tỉ electron đổi chủ — hiệu
+ứng ma sát điện. Chuyện xảy ra quanh năm; khác nhau ở **đường rò**: không
+khí ẩm phủ lên mọi bề mặt một màng nước mỏng dẫn điện yếu, điện tích vừa
+gom đã rò rỉ về đất êm ái. Mùa hanh (hay phòng máy lạnh khô), màng nước
+biến mất — cơ thể thành tụ điện cách ly tốt, gom đủ chục kV chỉ sau chục
+bước chân, đợi tay nắm cửa đầu tiên. Muốn hết bị giật không cần hết đi
+thảm: chạm tay nắm bằng **chìa khoá kim loại** trước — tia lửa vẫn phóng,
+nhưng qua đầu chìa thay vì qua đầu dây thần kinh dày đặc ở ngón tay; hoặc
+tăng độ ẩm phòng lên. Cú *tách* mùa đông, rốt cuộc, là một bài kiểm tra
+nhỏ về [điểm sương](/vi/posts/diem-suong-vi-sao-coc-bia-do-mo-hoi) — trượt
+bài ấy thì làm lại bằng đầu ngón tay.

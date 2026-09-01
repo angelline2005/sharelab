@@ -1,0 +1,68 @@
+---
+title: "Vì sao đàn piano cố ý chỉnh sai mọi nốt — và tại sao không ai nhận ra"
+description: "Tai người mê các tỉ số nguyên 3/2, 5/4 — nhưng toán học chứng minh không thể lên dây đàn cho MỌI giọng cùng đẹp. Giải pháp của phương Tây: chia đều quãng tám theo 2^(1/12), làm mọi quãng sai một tí để không quãng nào sai nhiều. Âm nhạc hiện đại chạy trên một thoả hiệp vô tỉ."
+pubDate: 2026-09-02
+tags: ["vat-ly", "song", "javascript"]
+translationId: "vi-sao-dan-piano-co-y-chinh-sai-moi-not"
+---
+
+import EqualTemperament from '../../../components/demos/EqualTemperament.astro';
+
+Hai nốt nghe "thuận tai" khi tần số của chúng lập **tỉ số nguyên nhỏ**:
+2/1 là quãng tám, 3/2 là quãng năm ngọt lịm, 5/4 là quãng ba trưởng — họ
+hàng trực tiếp của [chuỗi hoạ âm trên dây
+đàn](/vi/posts/song-dung-tren-day-dan), Pythagoras đã nghe ra từ 2 500 năm
+trước. Vậy mà cây piano — nhạc cụ chuẩn mực của phương Tây — được lên dây
+**sai lệch một cách có chủ đích khỏi gần hết các tỉ số ấy**. Kéo qua từng
+quãng mà xem:
+
+<EqualTemperament />
+
+## Món nợ không trả nổi của Pythagoras
+
+Thử lên dây "chuẩn đẹp" bằng cách xếp chồng quãng năm 3/2: từ Đô đi 12
+quãng năm liên tiếp, về lý thuyết phải quay đúng lại Đô (cao hơn 7 quãng
+tám). Làm phép tính: (3/2)¹² = 129,75 trong khi 2⁷ = 128. **Lệch 1,4%** —
+khoảng 23,5 cent, gọi là *dấu phẩy Pythagoras*. Đây không phải sai số đo
+đạc; đây là số học: **lũy thừa của 3 không bao giờ bằng lũy thừa của 2**.
+Hệ quả tàn nhẫn: lên dây cho giọng Đô nghe thiên đường thì giọng Fa thăng
+thành địa ngục — các "quãng năm sói" hú rít nằm chờ ở những giọng xa. Nhạc
+cổ chỉ dám viết ở vài giọng "an toàn"; chuyển giọng tự do là điều bất khả.
+
+Giải pháp chốt hạ (phổ biến từ thời Bach) là một nước cờ rất... kỹ sư:
+**chia đều lỗi cho tất cả**. Quãng tám cắt thành 12 nấc *nhân* đều nhau,
+mỗi nửa cung đúng 2^(1/12) ≈ 1,05946 — một số **vô tỉ**, nghĩa là trừ
+quãng tám ra, *không quãng nào* còn là tỉ số nguyên. Quãng năm thành
+1,4983 thay vì 1,5 — lệch vỏn vẹn **2 cent**, dưới ngưỡng tai người. Quãng
+ba trưởng chịu thiệt nhất: +13,7 cent, đủ cho tai luyện nghe thấy hợp âm
+hơi "rung" (chính là [hiện tượng
+phách](/vi/posts/hien-tuong-phach-len-day-dan-bang-tai) giữa các hoạ âm
+suýt trùng). Đổi lại: **mười hai giọng bình đẳng tuyệt đối**, chuyển giọng
+thoải mái — Bach viết ngay 48 prelude & fugue đi đủ 24 giọng trưởng thứ
+như một tuyên ngôn. Âm nhạc phương Tây từ đó chạy trên căn bậc mười hai
+của số 2.
+
+## Cái giá và những kẻ không chịu trả
+
+Thoả hiệp nào cũng có người từ chối. Dàn hợp xướng không đàn đệm và tứ tấu
+đàn dây **tự động hát/kéo về tỉ số đẹp** — họ không bị phím đàn trói, và
+hợp âm của họ "khoá" vào nhau thuần khiết theo cách piano không bao giờ
+đạt được. Nhạc truyền thống nhiều nền văn hoá — trong đó có hệ điệu thức
+Việt, Ấn, Ả Rập — dùng những thang âm không chia đều quãng tám, giữ các
+quãng "chênh" đầy chủ ý mà tai quen bình quân luật nghe thành "lạ". Không
+hệ nào "đúng" hơn hệ nào: bình quân là tối ưu cho *chuyển giọng*, thang
+tự nhiên tối ưu cho *độ thuận từng hợp âm* — hai hàm mục tiêu khác nhau
+trên cùng một bài toán số học vô nghiệm.
+
+## Trường hợp biên: người chỉnh đàn piano còn cố ý sai thêm một tầng
+
+Tưởng 2^(1/12) đã là thoả hiệp cuối? Người chỉnh piano chuyên nghiệp còn
+**kéo giãn thêm**: các quãng tám trên piano thật được chỉnh *rộng hơn* 2/1
+một chút (đường cong Railsback — cộng dồn tới vài chục cent ở hai đầu
+đàn). Vì dây đàn thật có độ cứng, [hoạ âm của nó không nằm đúng bội số
+nguyên](/vi/posts/song-dung-tren-day-dan) mà nhọn dần lên — chỉnh quãng
+tám "đúng toán" thì hoạ âm bậc hai của nốt trầm sẽ đánh phách với nốt cao,
+nghe *sai*; chỉnh theo hoạ âm thật thì "sai toán" mà **nghe đúng**. Cây
+đàn piano, rốt cuộc, là hai tầng thoả hiệp chồng lên nhau: một tầng cho số
+học của các tỉ số, một tầng cho vật lý của sợi dây thép — và bản nhạc bạn
+nghe mỗi ngày đứng vững trên cả hai cú "sai có tính toán" ấy.

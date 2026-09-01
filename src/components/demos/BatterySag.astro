@@ -1,0 +1,91 @@
+---
+// Battery internal resistance: terminal voltage V = EMF − I·r (clamped ≥ 0,
+// with a note when the model collapses). Sliders: r (ages with the cell) and
+// load current. Verdicts for common devices. Static redraw.
+---
+
+<figure class="demo" data-demo="battery-sag">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Điện trở trong r (Ω) — pin già thì r tăng <output data-out="r"></output>
+      <input type="range" data-in="r" min="0.1" max="2" step="0.05" value="0.15" /></label>
+    <label>Dòng thiết bị đòi I (A) <output data-out="i"></output>
+      <input type="range" data-in="i" min="0.01" max="3" step="0.01" value="0.02" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Pin AA lý tưởng 1,5 V thực ra là nguồn 1,5 V nối tiếp một điện trở giấu
+    bên trong. Rút dòng càng mạnh, điện áp rơi trên điện trở ấy càng nhiều —
+    phần "ra tới cực" mới là thứ thiết bị nhận được. Remote TV ăn 20 mA;
+    đèn pin ~0,5 A; máy ảnh đèn flash đời cũ ngốn 2 A.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const EMF = 1.5;
+  const OK = '#2563eb', BAD = '#dc2626', RIN = '#f59e0b';
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (k: string) => root.querySelector(`[data-in="${k}"]`) as HTMLInputElement;
+    const output = (k: string) => root.querySelector(`[data-out="${k}"]`) as HTMLOutputElement;
+
+    function draw() {
+      const r = Number(input('r').value), I = Number(input('i').value);
+      output('r').textContent = r.toFixed(2).replace('.', ',');
+      output('i').textContent = I < 0.1 ? `${(I * 1000).toFixed(0)} mA` : `${I.toFixed(2).replace('.', ',')} A`;
+      const drop = I * r;
+      const V = Math.max(0, EMF - drop);
+      const collapsed = EMF - drop <= 0.05;
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.28);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+
+      // Stacked bar: EMF split into "lost inside" and "delivered".
+      const bx = 20, bw = cssW - 40, by = cssH * 0.3, bh = 26;
+      const fracLost = Math.min(1, drop / EMF);
+      ctx.fillStyle = RIN; ctx.globalAlpha = 0.8;
+      ctx.fillRect(bx, by, bw * fracLost, bh);
+      ctx.fillStyle = collapsed ? BAD : OK;
+      ctx.fillRect(bx + bw * fracLost, by, bw * (1 - fracLost), bh);
+      ctx.globalAlpha = 1;
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.4; ctx.strokeRect(bx, by, bw, bh);
+      ctx.globalAlpha = 1;
+      ctx.fillStyle = fg; ctx.globalAlpha = 0.75; ctx.font = '11px system-ui,sans-serif';
+      ctx.textAlign = 'left';
+      ctx.fillText(`mất bên trong: ${(drop > EMF ? EMF : drop).toFixed(2).replace('.', ',')} V`, bx, by - 8);
+      ctx.textAlign = 'right';
+      ctx.fillText(`ra tới thiết bị: ${V.toFixed(2).replace('.', ',')} V`, bx + bw, by + bh + 16);
+      ctx.globalAlpha = 1;
+
+      const verdict = collapsed
+        ? '<b>sập nguồn — pin "chết" với thiết bị này</b> (nhưng chưa chắc hết hoá chất!)'
+        : V >= 1.1 ? 'thiết bị chạy ngon' : 'lờ đờ, đèn báo pin yếu';
+      readout.innerHTML =
+        `V = 1,5 − I·r = <b>${V.toFixed(2).replace('.', ',')} V</b> — ${verdict}`;
+    }
+
+    root.querySelectorAll('input').forEach((el) => el.addEventListener('input', draw));
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="battery-sag"]').forEach(setup);
+</script>

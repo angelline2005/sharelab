@@ -1,0 +1,71 @@
+---
+title: "Điện mặt trời mái nhà: tự tính bằng tay trong năm phút"
+description: "Mỗi mét vuông nắng Việt Nam rơi 4–5 kWh mỗi ngày; tấm pin gặt được 20%. Từ hai con số ấy, tự tính được nhà mình cần bao nhiêu mét vuông, bao nhiêu kWp, hồi vốn mấy năm — trước khi nghe bất kỳ bên bán hàng nào."
+pubDate: 2026-09-02
+tags: ["vat-ly", "dien-tu", "khi-hau", "javascript"]
+translationId: "dien-mat-troi-mai-nha-tinh-bang-tay-trong-nam-phut"
+---
+
+import RooftopSolar from '../../../components/demos/RooftopSolar.astro';
+
+Điện mặt trời là món kỹ thuật hiếm hoi mà **người mua tự kiểm tra được
+toàn bộ lời chào hàng bằng số học lớp bảy** — chỉ cần biết hai con số đầu
+vào. Demo này là tờ nháp:
+
+<RooftopSolar />
+
+## Hai con số làm nên tất cả
+
+**Thứ nhất — nắng rơi bao nhiêu.** Giữa trưa quang mây, mỗi mét vuông
+hứng ~1 000 W. Nhưng mặt trời [mọc lặn và chiếu
+xiên](/vi/posts/vi-sao-mua-dong-lanh-du-trai-dat-gan-mat-troi-hon), cộng
+mây mù, nên khí tượng gộp cả ngày thành "giờ nắng đỉnh": miền Nam và Tây
+Nguyên ~4,8–5,3 kWh/m²/ngày (thuộc hạng tốt của thế giới), miền Bắc
+~3,6–4,2 vì mùa nồm âm u. **Thứ hai — gặt được bao nhiêu**: pin silicon
+thương mại đổi ~20% nắng thành điện ([hiệu ứng quang điện thu tiền
+lẻ](/vi/posts/hieu-ung-quang-dien-anh-sang-tra-tien-le): mỗi photon chỉ
+nộp phần năng lượng vượt ngưỡng, phần dư thành nhiệt — trần lý thuyết
+cho một lớp bán dẫn là ~33%).
+
+Nhân hai số: mỗi mét vuông tấm pin ở Việt Nam gặt **0,8–1 kWh mỗi ngày**.
+Phần còn lại là chia: nhà dùng 10 kWh/ngày (hoá đơn ~900 nghìn/tháng) cần
+**~11 m² ≈ 6 tấm chuẩn**, công suất ~2,2 kWp — vừa xinh một góc mái. Giá
+lắp hiện hành cỡ 12–15 triệu đồng mỗi kWp: hệ 2,2 kWp tốn ~30 triệu, gặt
+~11 triệu đồng điện mỗi năm → **hồi vốn 3–4 năm**, trong khi tấm pin bảo
+hành hiệu năng 25 năm. Số học ấy — không trợ giá, không quảng cáo — giải
+thích vì sao mái nhà miền Nam lợp kín pin nhanh đến vậy.
+
+## Ba cái bẫy khi nghe chào hàng
+
+**"kWp" là đỉnh, không phải trung bình**: hệ 5 kWp không phát 5 kW cả
+ngày — nó phát *tối đa* 5 kW lúc trưa đứng nắng, cả ngày gặt ~5 × 4,5 ≈ 22
+kWh. Nghe "một ngày 40 điện" từ hệ 5 kWp là nghe chuyện cổ tích. **Nóng
+là kẻ thù, không phải bạn**: pin mặt trời ăn *ánh sáng* chứ không ăn
+*nhiệt* — mỗi độ nóng lên trên 25 °C, hiệu suất **giảm** ~0,4%; trưa hè
+mái tôn 60 °C, tấm pin mất hơn chục phần trăm công suất danh định. Ngày
+nắng mà mát trời mới là ngày bội thu. **Bóng che là phi tuyến**: các tấm
+pin đấu [nối tiếp như chuỗi
+đèn](/vi/posts/dien-tro-song-song-nho-hon-ca-nhanh-nho-nhat) — một góc
+tấm bị bóng ống khói che có thể kéo tụt cả dàn chứ không chỉ mất đúng
+diện tích ấy; khảo sát bóng che nghiêm túc đáng tiền hơn mọi lời hứa
+thương hiệu.
+
+Còn góc lắp — [nghiêng bằng vĩ độ, mặt về xích
+đạo](/vi/posts/vi-sao-mua-dong-lanh-du-trai-dat-gan-mat-troi-hon) — ở
+Việt Nam vĩ độ thấp nghĩa là mái gần phẳng cũng đã gần tối ưu: sai góc
+10° chỉ mất vài phần trăm. Đừng để ai bán thêm "khung chỉnh góc cao cấp"
+bằng nỗi sợ đó.
+
+## Trường hợp biên: vì sao không phủ pin kín sa mạc là xong chuyện điện?
+
+Phép nhân dễ gây ảo tưởng quy mô: cả nước dùng ~270 tỉ kWh/năm — chia cho
+0,9 kWh/m²/ngày ra ~800 km², một ô vuông 29 km mỗi cạnh. Nghe khả thi!
+Nhưng điện mặt trời giao hàng **theo lịch của mặt trời**, không theo lịch
+của con người: đỉnh phát lúc trưa, đỉnh dùng lúc chập tối — lệch pha vài
+giờ mà chưa có kho chứa nào đủ rẻ ở quy mô quốc gia (pin lưu trữ hiện đắt
+gấp nhiều lần chính tấm pin, [thuỷ điện tích năng và pin trọng
+lực](/vi/posts/thang-may-va-nguoi-ban-vo-hinh-treo-sau-vach) mới gánh được
+một phần). Bài toán năng lượng sạch, hoá ra, không nằm ở *sản xuất* —
+mét vuông và phần trăm đã giải xong trong demo trên — mà nằm ở *cất giữ
+vài tiếng đồng hồ*. Ai giải được cái két sắt ấy rẻ như tấm pin, người đó
+đổi thế kỷ.

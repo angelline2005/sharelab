@@ -1,0 +1,67 @@
+---
+title: "Tia sét giá bao nhiêu tiền điện? Rẻ đến mức khó tin — và vì sao vẫn không ai hứng nổi"
+description: "Cả một cú sét trung bình chứa ~1,5 GJ = hơn 400 kWh — cỡ một triệu đồng tiền điện, chạy tủ lạnh một năm. Cái khủng khiếp không phải năng lượng mà là CÔNG SUẤT: 50 terawatt trong ba mươi phần triệu giây."
+pubDate: 2026-09-02
+tags: ["vat-ly", "dien-tu", "khi-hau", "javascript"]
+translationId: "tia-set-gia-bao-nhieu-tien-dien"
+---
+
+import LightningEnergy from '../../../components/demos/LightningEnergy.astro';
+
+Sét trông như hiện thân của năng lượng vô hạn — người ta vẫn hỏi "sao
+không thu điện từ sét mà dùng?". Hãy làm điều ít ai làm với câu hỏi ấy:
+**tính ra tiền**.
+
+<LightningEnergy />
+
+## Hoá đơn gây thất vọng
+
+Cú sét mây–đất điển hình chuyển ~15 coulomb qua hiệu điện thế ~100 triệu
+vôn: E ≈ Q·V = **1,5 GJ ≈ 420 kWh** — nhân giá điện sinh hoạt là **cỡ một
+triệu đồng**: chạy tủ lạnh nhà bạn một năm, [đun được bốn nghìn ấm
+nước](/vi/posts/dun-mot-am-nuoc-het-bao-nhieu-tien). Cả cơn dông trút vài
+chục cú sét xuống một vùng — tổng lại vẫn thua sản lượng *một giờ* của một
+nhà máy điện cỡ vừa. Sét không phải mỏ năng lượng; nó là **màn trình diễn
+công suất**: 1,5 GJ dồn trong ~30 micro-giây là **50 terawatt** tức thời —
+gấp nhiều lần công suất tiêu thụ của toàn nhân loại, trong một sợi plasma
+nóng 30 000 K (nóng gấp năm lần [bề mặt Mặt
+Trời](/vi/posts/dinh-luat-wien-mau-cua-nhiet-do)) — chính cú nổ giãn khí
+quanh sợi ấy là tiếng sấm.
+
+"Thu điện từ sét" vì thế vỡ mộng ba tầng: năng lượng ít (một triệu đồng
+mỗi cú), giao hàng trong micro-giây (không tụ điện nào [nuốt kịp mà không
+nổ](/vi/posts/tu-dien-thung-nuoc-nong-cua-the-gioi-dien)), và địa điểm
+giao ngẫu nhiên. Cột thu lôi khiêm tốn hơn và khôn hơn: không "hút" sét
+như đồn đại — nó chỉ đứng cao nhất, **nhận thay** rồi dẫn 30 000 ampe
+xuống đất qua dây đồng to, để dòng ấy không chọn đường qua tường nhà hay
+ống nước. Franklin không chống được trời; ông chỉ mở sẵn một [đường điện
+trở thấp nhất](/vi/posts/dien-tro-song-song-nho-hon-ca-nhanh-nho-nhat) cho
+trời đi.
+
+## Đếm giây đo kilômét
+
+Con số phụ hữu ích nhất của sét nằm ở khoảng chờ giữa chớp và sấm: ánh
+sáng đến gần tức thời, âm thanh lê 343 m/s — **mỗi 3 giây đếm được là 1
+kilômét**. Chớp-đến-sấm 6 giây: cú đánh cách 2 km. Quy tắc an toàn "30
+giây" của khí tượng thế giới xây trên phép chia này: dưới 30 giây (10 km)
+là dông đã trong tầm với — sét có thể đánh xa mép mây cả chục kilômét,
+"trời quang trên đầu" không phải giấy miễn tội. Và [tia sét cũng chỉ là
+người anh khổng lồ của cú giật tay nắm
+cửa](/vi/posts/cu-giat-tay-nam-cua-hai-muoi-nghin-von-vo-hai): cùng ngưỡng
+đánh thủng không khí, chỉ khác nhau mười bậc đại lượng ở năng lượng.
+
+## Trường hợp biên: đứng cạnh nơi sét đánh còn nguy hơn bị đánh
+
+Phần ít người biết nhất nằm ở *mặt đất*. 30 000 A đổ vào một điểm phải
+loang ra mọi hướng qua đất — vật liệu dẫn điện xoàng — tạo **thang điện áp
+trên mặt đất**: hai điểm cách nhau một sải chân có thể chênh hàng nghìn
+vôn trong khoảnh khắc ấy. Bò sát đứng bốn chân dạng rộng chết hàng đàn
+dưới gốc cây bị sét vì "điện áp bước" này — dòng chui chân trước, ra chân
+sau, xuyên qua tim. Người trú mưa *cạnh* gốc cây trúng đòn theo cùng cơ
+chế dù sét không hề chạm vào họ. Khuyến cáo chính thức nghe kỳ khôi mà
+đúng vật lý từng chữ: không nằm xoài, không đứng dạng chân — **chụm hai
+bàn chân sát nhau, ngồi thấp**: thu hẹp "hai đầu que đo" của bạn trên
+thang điện áp xuống gần không. Giữa cơn dông, hình học của đôi bàn chân
+là mạch điện — và bài [cầu phân
+áp](/vi/posts/cau-phan-ap-num-volume-va-moi-cam-bien) hôm nào bỗng thành
+kỹ năng sinh tồn.

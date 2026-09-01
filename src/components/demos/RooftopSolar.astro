@@ -1,0 +1,95 @@
+---
+// Rooftop solar sizing: panels at 20% efficiency, peak sun converted through
+// daily insolation (kWh/m²/day). Sliders: household daily use and local
+// insolation. Readout: panel area, kWp, and yearly savings. Static redraw.
+---
+
+<figure class="demo" data-demo="rooftop-solar">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Nhà dùng mỗi ngày (kWh) <output data-out="u"></output>
+      <input type="range" data-in="u" min="3" max="30" step="0.5" value="10" /></label>
+    <label>Nắng nơi bạn ở (kWh/m²/ngày) <output data-out="s"></output>
+      <input type="range" data-in="s" min="3.5" max="5.5" step="0.1" value="4.5" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Mỗi mét vuông tấm pin hiệu suất 20% gặt được 20% lượng nắng rơi lên nó.
+    Miền Nam ~5 kWh/m²/ngày, miền Bắc ~3,8. Kết quả tính cho dùng-bao-nhiêu-
+    gặt-bấy-nhiêu; chưa tính pin lưu trữ.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const EFF = 0.2, PRICE = 3000;
+  const PANEL = '#2563eb', ROOF = '#f59e0b';
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (k: string) => root.querySelector(`[data-in="${k}"]`) as HTMLInputElement;
+    const output = (k: string) => root.querySelector(`[data-out="${k}"]`) as HTMLOutputElement;
+
+    function draw() {
+      const use = Number(input('u').value), sun = Number(input('s').value);
+      output('u').textContent = use.toFixed(1).replace('.', ',');
+      output('s').textContent = sun.toFixed(1).replace('.', ',');
+      const perM2 = sun * EFF;              // kWh per m² per day
+      const area = use / perM2;             // m²
+      const kwp = area * EFF;               // 1 kW/m² peak × area × eff
+      const yearly = use * 365 * PRICE;
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.32);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+
+      // A 60 m² roof outline with the needed panel area shaded.
+      const roofW = cssW * 0.7, roofH = cssH * 0.62;
+      const rx = (cssW - roofW) / 2, ry = cssH * 0.16;
+      ctx.strokeStyle = ROOF; ctx.lineWidth = 2; ctx.globalAlpha = 0.7;
+      ctx.strokeRect(rx, ry, roofW, roofH);
+      ctx.globalAlpha = 1; ctx.lineWidth = 1;
+      const frac = Math.min(1, area / 60);
+      ctx.fillStyle = PANEL; ctx.globalAlpha = 0.55;
+      ctx.fillRect(rx, ry, roofW * frac, roofH);
+      ctx.globalAlpha = 1;
+      // Panel grid lines.
+      ctx.strokeStyle = '#ffffff'; ctx.globalAlpha = 0.35;
+      const cols = Math.max(1, Math.round((60 * frac) / 2));
+      for (let i = 1; i < cols; i++) {
+        const x = rx + (roofW * frac * i) / cols;
+        ctx.beginPath(); ctx.moveTo(x, ry); ctx.lineTo(x, ry + roofH); ctx.stroke();
+      }
+      ctx.globalAlpha = 1;
+      ctx.fillStyle = fg; ctx.globalAlpha = 0.65; ctx.font = '10px system-ui,sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(`mái 60 m² — cần ${area.toFixed(1).replace('.', ',')} m² tấm pin${frac >= 1 ? ' (KHÔNG ĐỦ MÁI!)' : ''}`, cssW / 2, ry + roofH + 16);
+      ctx.globalAlpha = 1;
+
+      readout.innerHTML =
+        `Cần <b>${area.toFixed(1).replace('.', ',')} m²</b> tấm pin (≈ ${Math.ceil(area / 2)} tấm chuẩn 2 m², ` +
+        `<b>${kwp.toFixed(1).replace('.', ',')} kWp</b>) · điện gặt được trị giá ~<b>${(yearly / 1e6).toFixed(1).replace('.', ',')} triệu đ/năm</b>`;
+    }
+
+    root.querySelectorAll('input').forEach((el) => el.addEventListener('input', draw));
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="rooftop-solar"]').forEach(setup);
+</script>

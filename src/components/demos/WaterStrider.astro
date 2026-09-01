@@ -1,0 +1,107 @@
+---
+// Surface tension support: max upward force ≈ γ·L along the contact line
+// (γ = 0.0728 N/m for clean water). Sliders: creature mass and total contact
+// line. Verdict: floats or sinks. Static redraw.
+---
+
+<figure class="demo" data-demo="water-strider">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Khối lượng con vật (miligam) <output data-out="m"></output>
+      <input type="range" data-in="m" min="1" max="1000" step="1" value="10" /></label>
+    <label>Tổng đường tiếp xúc chân–nước (mm) <output data-out="l"></output>
+      <input type="range" data-in="l" min="1" max="200" step="1" value="60" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Mặt nước là tấm màng đàn hồi: mỗi milimét "đường mép" nơi chân chạm
+    nước đỡ được tối đa γ ≈ 73 micro-newton. Nhện nước 10 mg với sáu chân
+    dài không ướt có cả 60 mm mép — dư sức. Trọng lượng tăng theo khối,
+    đường mép chỉ tăng theo chiều dài: to xác là thua.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const GAM = 0.0728, G = 9.81;
+  const WATER = '#2563eb', BUG = '#f59e0b', SINK = '#dc2626';
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (k: string) => root.querySelector(`[data-in="${k}"]`) as HTMLInputElement;
+    const output = (k: string) => root.querySelector(`[data-out="${k}"]`) as HTMLOutputElement;
+
+    function draw() {
+      const mg = Number(input('m').value), Lmm = Number(input('l').value);
+      output('m').textContent = String(mg);
+      output('l').textContent = String(Lmm);
+      const W = (mg / 1e6) * G;         // N
+      const F = GAM * (Lmm / 1000);     // N
+      const floats = F >= W;
+      const margin = F / W;
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.3);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+
+      const surfY = cssH * 0.5;
+      const sag = floats ? Math.min(14, 4 + 8 / margin) : 26;
+      // Water surface with dimples under 3 leg points.
+      ctx.strokeStyle = WATER; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.moveTo(0, surfY);
+      const legs = [cssW * 0.35, cssW * 0.5, cssW * 0.65];
+      let px = 0;
+      for (const lx of legs) {
+        ctx.lineTo(lx - 22, surfY);
+        ctx.quadraticCurveTo(lx, surfY + sag * 2, lx + 22, surfY);
+        px = lx + 22;
+      }
+      ctx.lineTo(cssW, surfY); ctx.stroke(); ctx.lineWidth = 1;
+      ctx.fillStyle = WATER; ctx.globalAlpha = 0.12;
+      ctx.fillRect(0, surfY, cssW, cssH - surfY);
+      ctx.globalAlpha = 1;
+
+      // Bug body + legs.
+      const bodyY = floats ? surfY - 16 : surfY + 14;
+      ctx.fillStyle = floats ? BUG : SINK;
+      ctx.beginPath(); ctx.ellipse(cssW * 0.5, bodyY, 20 + Math.cbrt(mg), 8 + Math.cbrt(mg) / 2, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle = floats ? BUG : SINK; ctx.lineWidth = 2;
+      for (const lx of legs) {
+        ctx.beginPath(); ctx.moveTo(cssW * 0.5, bodyY);
+        ctx.lineTo(lx, surfY + (floats ? sag : 20)); ctx.stroke();
+      }
+      ctx.lineWidth = 1;
+      ctx.fillStyle = fg; ctx.globalAlpha = 0.65; ctx.font = '10px system-ui,sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(floats ? 'màng nước võng xuống nhưng giữ được' : 'mép màng đứt — chìm', cssW * 0.5, cssH - 8);
+      ctx.globalAlpha = 1;
+
+      readout.innerHTML =
+        `Trọng lượng ${(W * 1e6).toFixed(0)} µN đấu sức đỡ tối đa γ·L = <b>${(F * 1e6).toFixed(0)} µN</b>` +
+        (floats
+          ? ` → <b>nổi</b>, dư an toàn ${margin.toFixed(1).replace('.', ',')}×`
+          : ` → <b>chìm</b> — thiếu ${((W - F) * 1e6).toFixed(0)} µN`);
+    }
+
+    root.querySelectorAll('input').forEach((el) => el.addEventListener('input', draw));
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="water-strider"]').forEach(setup);
+</script>

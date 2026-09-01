@@ -1,0 +1,69 @@
+---
+title: "Nhện nước đi trên mặt hồ — và luật chơi khắc nghiệt của kích thước"
+description: "Mặt nước là tấm màng đỡ được 73 micro-newton mỗi milimét mép chân. Nhện nước 10 mg dư sức gấp 45 lần; người 60 kg cần 8 km đường mép. Sức căng bề mặt không chê ai — nó chỉ tính theo chiều dài, mà cơ thể lại nặng theo khối."
+pubDate: 2026-09-02
+tags: ["vat-ly", "chat-luu", "javascript"]
+translationId: "nhen-nuoc-di-tren-mat-ho-va-luat-choi-cua-kich-thuoc"
+---
+
+import WaterStrider from '../../../components/demos/WaterStrider.astro';
+
+Con nhện nước đứng thảnh thơi trên mặt hồ, mặt nước chỉ võng nhẹ dưới chân
+như tấm bạt lò xo. Không có phép dính nào ở đây — chỉ có một tấm màng vô
+hình mà bạn cũng chạm vào mỗi ngày, cùng một phép so sánh lực:
+
+<WaterStrider />
+
+## Tấm màng 73 micro-newton mỗi milimét
+
+Phân tử nước [ưa bám nhau](/vi/posts/mao-dan-nuoc-leo-cao-va-bi-mat-cua-cay-100-met)
+— phân tử ở mặt thoáng thiếu hàng xóm phía trên nên bị kéo ròng vào trong:
+mặt nước hành xử như **tấm da căng**, luôn tìm cách co về diện tích nhỏ
+nhất (vì thế giọt nước tròn). Sức căng ấy — γ = 0,0728 N/m — nghĩa là dọc
+mỗi mét "mép" nơi vật chạm nước, màng kéo được tối đa 73 mili-newton;
+mỗi milimét: **73 µN**.
+
+Nhện nước chơi đúng luật ấy: thân 10 mg (98 µN trọng lượng), sáu chân dài
+phủ lông sáp **không thấm nước** — chân không xuyên màng mà *đè* lên, tạo
+tổng đường mép ~60 mm → sức đỡ hơn 4 300 µN, **dư 45 lần**. Khoản dư ấy
+không thừa: nó cho phép con vật *nhảy* trên mặt nước và đứng vững dưới
+mưa. Trò này bạn tự làm được trên bàn: **kim khâu nổi trên nước** — đặt
+nằm ngang thật nhẹ (mượn mảnh giấy ăn cho công bằng), kim thép nặng gấp
+bảy lần nước vẫn nằm gọn trong võng màng, vì mép dài 3 cm đỡ được hơn
+gấp rưỡi trọng lượng kim. Nhỏ **một giọt nước rửa chén** vào chậu: γ sụp
+còn một phần ba — kim chìm nghỉm tức thì. (Đó cũng chính là nghề của xà
+phòng: phá màng để nước chui vào kẽ vải thay vì đứng ngoài vo tròn.)
+
+## Luật bình phương–lập phương: to xác là thua
+
+Vì sao chỉ côn trùng chơi được trò này? Nhìn hai vế của demo lần nữa:
+sức đỡ tăng theo **chiều dài** mép chân; trọng lượng tăng theo **khối**
+— phóng to con vật gấp 10: mép nhân 10, trọng lượng nhân **1 000**. Đây
+là luật bình phương–lập phương, người phân xử thầm lặng của cả sinh giới:
+nó cho phép ruồi đậu trần nhà (lực bám bề mặt ∝ diện tích, thắng trọng
+lượng ở cỡ nhỏ), buộc voi phải có chân cột đình, và chặn đứng mọi quái
+vật phim ảnh — con kiến phóng đại nghìn lần sập gãy dưới chính nó trước
+khi kịp doạ ai. Người 60 kg muốn "đi trên mặt nước" theo kiểu nhện cần
+**8 kilômét đường mép chân** — tức là không cần phép màu, chỉ cần đôi giày
+rộng tám cây số.
+
+Với sinh vật cỡ trung gian, tấm màng đổi vai từ sàn diễn thành **cạm
+bẫy**: ruồi rơi vào giọt nước không thoát nổi — với nó, sức căng bề mặt
+mạnh tương đương một người bị màng nhựa dẻo trùm chặt; côn trùng nhỏ
+"chết đuối" trong sương là chuyện thường ngày. Cùng một hằng số γ: dưới
+một cỡ là mặt đường, trên một cỡ là không đáng nhắc, đúng cỡ là án tử.
+
+## Trường hợp biên: chạy đủ nhanh thì luật đổi
+
+Còn một lối đi trên mặt nước không cần màng: thằn lằn Basiliscus — biệt
+danh "thằn lằn Chúa" — nặng tới 100 g, **chạy** băng qua mặt hồ. Nó không
+nhờ sức căng (100 g cần hơn chục mét mép chân — vô vọng) mà nhờ **quán
+tính của nước**: mỗi bước đạp sập bàn chân xuống nhanh tới mức nước chưa
+kịp dạt ra ([bài Reynolds](/vi/posts/so-reynolds-vi-khuan-boi-trong-mat-ong)
+— ở tốc độ cao, nước hành xử như vật cứng), nhận phản lực đủ cho bước
+tiếp theo trước khi chìm. Các nhà cơ sinh học đã tính cho người: muốn
+chạy trên nước kiểu ấy cần đạp ~30 m/s — gấp ba vận động viên chạy nước
+rút, với công suất cơ chân gấp mười lăm lần người thường. Vậy nên trên
+mặt hồ chỉ có hai loại khách bộ hành hợp pháp: đủ nhẹ để màng đỡ, hoặc
+đủ nhanh để nước không kịp nhường đường — còn chúng ta, đứng giữa hai
+cửa, đành đi vòng qua cầu.

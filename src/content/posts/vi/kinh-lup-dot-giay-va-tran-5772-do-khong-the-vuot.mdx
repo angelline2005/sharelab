@@ -1,0 +1,67 @@
+---
+title: "Kính lúp đốt giấy — và cái trần 5772 độ không kính nào vượt nổi"
+description: "Kính lúp không gom nắng thành một điểm: nó tạo ảnh của Mặt Trời, to đúng f·θ. Từ đó suy ra trò đốt giấy, lò mặt trời 3500 độ của Pháp — và một định luật cấm: không hệ thấu kính nào nung vật NÓNG HƠN chính Mặt Trời."
+pubDate: 2026-09-02
+tags: ["vat-ly", "quang-hoc", "nhiet-hoc", "javascript"]
+translationId: "kinh-lup-dot-giay-va-tran-5772-do-khong-the-vuot"
+---
+
+import BurningGlass from '../../../components/demos/BurningGlass.astro';
+
+Trò tuổi thơ: nghiêng kính lúp cho chấm sáng nhỏ lại hết cỡ, giấy bốc
+khói. "Nhỏ lại hết cỡ" — nhưng không bao giờ thành *điểm*. Chấm sáng ấy có
+kích thước tối thiểu, và con số đó mở ra một trong những định luật cấm đẹp
+nhất của quang học:
+
+<BurningGlass />
+
+## Chấm sáng là bức ảnh, không phải mũi kim
+
+Mặt Trời không phải nguồn sáng điểm — nó là cái đĩa trông dưới góc **0,53°**.
+[Thấu kính hội tụ](/vi/posts/thau-kinh-hoi-tu-anh-that-anh-ao) làm đúng
+nghề của nó: **chụp ảnh** cái đĩa ấy tại tiêu diện, đường kính ảnh = f·θ.
+Kính lúp f = 10 cm cho ảnh Mặt Trời **0,93 mm** — chấm sáng bạn di trên
+giấy chính là bức ảnh Mặt Trời thu nhỏ.
+
+Độ "khét" là phép chia diện tích: kính D = 5 cm hứng nắng của vòng tròn 5
+cm rồi nén vào chấm 0,93 mm — đậm gấp **~2 900 lần**, gần 3 W đè lên mỗi
+milimét vuông: giấy đen cháy trong vài giây. Muốn hơn? Công thức chỉ ra hai
+nút vặn: **D to** (hứng nhiều) và **f ngắn** (ảnh nhỏ) — mọi thứ quy về tỉ
+số D/f. Đỉnh cao của trò chơi là lò mặt trời Odeillo trên dãy Pyrénées:
+mặt gương parabol cao bằng toà nhà mười tầng đạt cỡ 10 000 lần nắng, nung
+vật liệu tới **3 500 °C** — luyện gốm chịu nhiệt cho tàu vũ trụ bằng nhiên
+liệu sạch tuyệt đối.
+
+## Định luật cấm: không được nóng hơn ông chủ
+
+Đến đây là câu hỏi bẫy: cứ tăng D/f mãi, nung vật lên trăm nghìn độ được
+không? **Không — và không phải vì kỹ thuật.** Trần nằm ở ~46 000 lần nén
+(đúng bằng 1/θ²), tương ứng nhiệt độ tối đa bằng **bề mặt Mặt Trời, 5772 K**
+([con số của định luật Wien](/vi/posts/dinh-luat-wien-mau-cua-nhiet-do)).
+Lý do sâu là nhiệt động lực học: nếu một hệ thấu kính — thụ động, không
+tốn công — nung được vật nóng hơn nguồn, nhiệt sẽ tự chảy từ lạnh sang
+nóng và [chu trình Carnot](/vi/posts/hieu-suat-carnot-loai-thue-khong-ai-tron-duoc)
+bị qua mặt: động cơ vĩnh cửu ra đời. Quang học phát biểu lệnh cấm bằng
+định lý riêng của mình — bảo toàn étendue: không hệ quang nào làm ảnh
+"sáng bề mặt" hơn vật — nhưng gốc rễ là một: kính chỉ được phép đưa tờ
+giấy *tới sát* bề mặt Mặt Trời về mặt nhiệt, không hơn một độ nào. Odeillo
+dừng ở 3 500 °C không phải vì nước Pháp hết tiền làm gương to.
+
+Cùng lệnh cấm ấy trả lời câu đố ngược đời: vì sao **không thể đốt giấy
+bằng ánh trăng**, kể cả với thấu kính to như sân bóng? Bề mặt trăng rằm,
+xét theo độ chói, chỉ tương đương một vật ấm cỡ trăm độ — mọi hệ thấu kính
+chỉ đưa tờ giấy về "sát bề mặt" nguồn, mà mức ấy chưa chạm nhiệt độ cháy
+của giấy. Câu hỏi tưởng của trẻ con, trả lời bằng nguyên lý hai nhiệt động
+lực học.
+
+## Trường hợp biên: khi tiêu điểm rơi nhầm chỗ
+
+Định luật hoạt động cả chiều tai nạn. Bể cá tròn, quả cầu pha lê chặn
+giấy, chai nước bỏ quên trên ghế ô tô — đều là thấu kính hội tụ f ngắn;
+nắng vào đúng góc là chúng vẽ ảnh Mặt Trời lên rèm cửa, lên ghế nỉ: các
+đội cứu hoả nhiều nước ghi nhận hoả hoạn từ cả bình cá lẫn quả cầu thuỷ
+tinh mỗi năm. Phiên bản có chủ đích thì nằm ở các vùng thiếu điện: **bếp
+mặt trời** parabol đun sôi ấm nước trong nửa giờ, chi phí nhiên liệu bằng
+không — cùng công thức D/f của trò đốt giấy, đổi mục tiêu từ nghịch ngợm
+sang nồi cơm. Vật lý không phân biệt trò chơi với công cụ; nó chỉ giữ đúng
+một cái trần cho tất cả.

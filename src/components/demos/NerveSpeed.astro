@@ -1,0 +1,96 @@
+---
+// Nerve conduction: three fibre classes race over the same distance —
+// A-alpha touch/muscle ~100 m/s, A-delta fast pain ~15 m/s, C slow pain
+// ~1 m/s. Slider = distance to the brain; timeline bars show arrivals.
+---
+
+<figure class="demo" data-demo="nerve">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Quãng đường tín hiệu phải đi (m) <output data-out="d"></output>
+      <input type="range" data-in="d" min="0.1" max="4.5" step="0.05" value="1.8" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Ba loại "dây" cùng chạy về não: sợi A-alpha bọc myelin (cảm giác chạm,
+    ~100 m/s), A-delta (đau nhói đầu tiên, ~15 m/s) và sợi C trần không vỏ
+    (đau âm ỉ, ~1 m/s). 1,8 m là ngón chân → não; 4,5 m là chân hươu cao cổ.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const FIBRES: Array<[string, number, string]> = [
+    ['chạm (A-α, 100 m/s)', 100, '#2563eb'],
+    ['đau nhói (A-δ, 15 m/s)', 15, '#f59e0b'],
+    ['đau âm ỉ (C, 1 m/s)', 1, '#dc2626'],
+  ];
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const slider = root.querySelector('[data-in="d"]') as HTMLInputElement;
+    const out = root.querySelector('[data-out="d"]') as HTMLOutputElement;
+
+    const fmtT = (s: number) => s >= 1 ? `${s.toFixed(2).replace('.', ',')} s` : `${(s * 1000).toFixed(0)} ms`;
+
+    function draw() {
+      const d = Number(slider.value);
+      out.textContent = d.toFixed(2).replace('.', ',');
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.3);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+
+      // Log time axis from 1 ms to 10 s.
+      const padL = 150, padR = 16;
+      const X = (s: number) => padL + ((Math.log10(s) + 3) / 4) * (cssW - padL - padR);
+      const axisY = cssH - 18;
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.3;
+      ctx.beginPath(); ctx.moveTo(padL, axisY); ctx.lineTo(cssW - padR, axisY); ctx.stroke();
+      ctx.globalAlpha = 0.55; ctx.fillStyle = fg; ctx.font = '10px system-ui,sans-serif';
+      ctx.textAlign = 'center';
+      for (const [s, lab] of [[0.001, '1 ms'], [0.01, '10 ms'], [0.1, '0,1 s'], [1, '1 s'], [10, '10 s']] as Array<[number, string]>)
+        ctx.fillText(lab, X(s), axisY + 13);
+      ctx.globalAlpha = 1;
+
+      FIBRES.forEach(([name, v, colour], i) => {
+        const t = d / v;
+        const y = 14 + i * ((cssH - 44) / FIBRES.length);
+        ctx.fillStyle = colour; ctx.globalAlpha = 0.85;
+        ctx.fillRect(padL, y, Math.max(2, X(t) - padL), 12);
+        ctx.globalAlpha = 1;
+        ctx.fillStyle = fg; ctx.globalAlpha = 0.75; ctx.textAlign = 'right';
+        ctx.fillText(name, padL - 8, y + 10);
+        ctx.textAlign = 'left';
+        ctx.fillText(fmtT(t), X(t) + 6, y + 10);
+        ctx.globalAlpha = 1;
+      });
+
+      readout.innerHTML =
+        `Quãng ${d.toFixed(2).replace('.', ',')} m: chạm về não sau <b>${fmtT(d / 100)}</b>, ` +
+        `đau nhói sau ${fmtT(d / 15)}, đau âm ỉ lê lết <b>${fmtT(d / 1)}</b> —` +
+        ` đúng cú "một nhịp sau mới thấm" khi dập ngón chân`;
+    }
+
+    slider.addEventListener('input', draw);
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="nerve"]').forEach(setup);
+</script>

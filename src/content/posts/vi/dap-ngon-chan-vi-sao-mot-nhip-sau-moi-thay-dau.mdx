@@ -1,0 +1,70 @@
+---
+title: "Dập ngón chân: vì sao một nhịp sau mới thấy đau — vật lý đường truyền của hệ thần kinh"
+description: "Cảm giác chạm phóng 100 m/s, cơn đau âm ỉ bò 1 m/s — cùng một bàn chân, hai tín hiệu về não cách nhau gần hai giây. Dây thần kinh là đường truyền có băng thông, độ trễ, và cả bài toán chi phí cáp quang."
+pubDate: 2026-09-02
+tags: ["vat-ly", "dien-tu", "javascript"]
+translationId: "dap-ngon-chan-vi-sao-mot-nhip-sau-moi-thay-dau"
+---
+
+import NerveSpeed from '../../../components/demos/NerveSpeed.astro';
+
+Ai cũng từng trải nghiệm thí nghiệm này ngoài ý muốn: dập ngón chân vào
+chân bàn — biết *ngay* là vừa va (và biết sắp toi), nhưng cơn đau thật sự
+ập đến **một nhịp thở sau**, đau lần hai còn muộn hơn nữa. Khoảng trễ ấy
+không phải ảo giác — nó đo được, và demo này là chiếc đồng hồ bấm giờ:
+
+<NerveSpeed />
+
+## Cơ thể đi ba loại cáp, trả ba mức cước
+
+Tín hiệu thần kinh không phải dòng điện chạy trong dây đồng (điện trường
+lan gần tốc độ ánh sáng) — nó là **làn sóng đóng-mở kênh ion** dọc màng
+tế bào, một hiệu ứng domino điện hoá, chậm hơn triệu lần. Tốc độ domino
+phụ thuộc đường kính sợi và — quyết định nhất — lớp vỏ **myelin**: sợi có
+vỏ cho tín hiệu "nhảy cóc" giữa các khe hở thay vì bò từng milimét.
+
+- **Sợi A-alpha** (chạm, vị trí cơ khớp): bọc myelin dày, phóng **~100
+  m/s** — ngón chân về não trong 18 ms. Nhờ nó bạn biết mình *vừa va*.
+- **Sợi A-delta** (đau nhói định vị): vỏ mỏng, ~15 m/s — 120 ms: cú "NHÓI"
+  đầu tiên.
+- **Sợi C** (đau âm ỉ, rát, ngứa): **trần không vỏ**, bò ~1 m/s — gần
+  **2 giây** mới về tới nơi. Đó chính là đợt đau dâng lên "một nhịp sau",
+  và nó ở lại lâu.
+
+Cùng bảng cước ấy giải thích chuỗi phản ứng quen thuộc: rụt tay khỏi bếp
+nóng *trước khi thấy đau* — vòng phản xạ đi tắt qua tuỷ sống bằng cáp
+nhanh, không chờ hỏi ý kiến não; cơn đau chỉ là báo cáo gửi sau. Và giải
+thích luôn vì sao **xoa chỗ đau thấy đỡ**: tín hiệu chạm (cáp 100 m/s) về
+trước chen kín "cổng" xử lý ở tuỷ sống, chặn bớt tín hiệu đau lê lết phía
+sau — gọi là cơ chế cổng kiểm soát, cơ sở khoa học của việc thổi phù phù
+vào chỗ trẻ con vấp.
+
+## Myelin: phát minh cáp quang của tiến hoá
+
+Vì sao không bọc myelin tất cho nhanh? Vì **đắt** — đúng nghĩa kỹ sư viễn
+thông: vỏ myelin tốn không gian (dây to gấp trăm lần), tốn vật liệu, tốn
+năng lượng bảo trì. Tiến hoá phân bổ như nhà mạng phân cáp: đường trục
+khẩn cấp (cơ bắp, thăng bằng, rụt tay) đi cáp quang A-alpha; tin "tham
+khảo" như đau âm ỉ, ngứa — vốn không cần phản ứng trong mili-giây — đi
+cáp đồng loại C rẻ tiền. Con mực khổng lồ không phát minh ra myelin nên
+phải chơi kiểu thô: sợi trục **to 1 mm** (gấp nghìn lần sợi người) để
+phóng xung trốn chạy — và chính sợi khổng lồ ấy, vừa vặn cắm được điện
+cực thập niên 1950, đã dạy loài người toàn bộ điện sinh lý học.
+
+Khi lớp vỏ ấy hỏng — bệnh đa xơ cứng (MS) — tín hiệu 100 m/s tụt xuống
+hàng chục lần hoặc đứt quãng: nhìn mờ, tê bì, mất điều phối. Bác sĩ thần
+kinh chẩn đoán bằng cách **đo đúng con số của demo này**: gắn điện cực hai
+đầu cánh tay, kích xung, bấm giờ — "đo tốc độ dẫn truyền thần kinh" là
+xét nghiệm thường quy, một bài vật lý v = d/t tính bằng đơn thuốc.
+
+## Trường hợp biên: sinh vật càng to, hiện tại càng cũ
+
+Kéo thanh trượt tới 4,5 m — chân hươu cao cổ: tín hiệu đau âm ỉ mất **bốn
+giây rưỡi** mới lên não. Khủng long cổ dài 30 m sống với độ trễ chục giây
+từ đuôi (giả thuyết "não thứ hai" ở hông ra đời từ đúng nỗi băn khoăn
+này). Cá voi xanh: sợi C từ đuôi về não dài hơn 20 mét. Mọi sinh vật lớn
+đều sống trong một "hiện tại" đã cũ vài trăm mili-giây — não bạn cũng
+đang khâu các tín hiệu trễ khác nhau (mắt nhanh, tai nhanh, ngón chân
+chậm) thành một *bây giờ* giả lập mượt mà, lùi sau thực tại chừng một
+phần mười giây. Cú đau đến muộn khi dập ngón chân chỉ là lần hiếm hoi
+đường khâu lộ chỉ — khoảnh khắc bạn nhìn thấy độ trễ của chính mình.

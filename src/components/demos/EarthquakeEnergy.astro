@@ -1,0 +1,108 @@
+---
+// Earthquake radiated energy: log10(E) = 1.5·M + 4.8 (Gutenberg–Richter).
+// Each whole magnitude step multiplies energy ×31.6. Slider = magnitude;
+// log-scale bar with TNT-equivalent landmarks. Static redraw.
+---
+
+<figure class="demo" data-demo="quake">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Độ lớn M (moment magnitude) <output data-out="m"></output>
+      <input type="range" data-in="m" min="3" max="9.5" step="0.1" value="7" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Thang độ lớn động đất là thang LOGARIT kép: mỗi bậc là biên độ rung ×10
+    nhưng năng lượng ×31,6. Khoảng cách M5 (rung ghế) tới M9 (dịch cả trục
+    Trái Đất) là một triệu lần năng lượng — thang đo nào tuyến tính sẽ
+    không in nổi lên một tờ báo.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const BAR = '#2563eb', MARK = '#dc2626', LM = '#f59e0b';
+  const E = (M: number) => Math.pow(10, 1.5 * M + 4.8); // joules
+  const LANDMARKS: Array<[number, string]> = [
+    [3, 'M3: xe tải chạy ngang'],
+    [6.0, 'M6 ≈ bom Hiroshima'],
+    [7.8, 'M7,8: Thổ Nhĩ Kỳ 2023'],
+    [9.1, 'M9,1: Tohoku 2011'],
+  ];
+
+  function fmtE(j: number): string {
+    const t = j / 4.184e9; // tonnes TNT
+    if (t < 1) return `${(t * 1000).toFixed(0)} kg TNT`;
+    if (t < 1e3) return `${t.toFixed(0)} tấn TNT`;
+    if (t < 1e6) return `${(t / 1e3).toFixed(1).replace('.', ',')} nghìn tấn TNT`;
+    return `${(t / 1e6).toFixed(1).replace('.', ',')} triệu tấn TNT`;
+  }
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const slider = root.querySelector('[data-in="m"]') as HTMLInputElement;
+    const out = root.querySelector('[data-out="m"]') as HTMLOutputElement;
+
+    function draw() {
+      const M = Number(slider.value);
+      out.textContent = M.toFixed(1).replace('.', ',');
+      const j = E(M);
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.32);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+
+      // Log energy axis 10^9 … 10^19 J.
+      const padL = 20, padR = 20, axisY = cssH * 0.55;
+      const X = (lj: number) => padL + ((lj - 9) / 10) * (cssW - padL - padR);
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.3; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.moveTo(padL, axisY); ctx.lineTo(cssW - padR, axisY); ctx.stroke();
+      ctx.lineWidth = 1; ctx.globalAlpha = 0.55; ctx.fillStyle = fg;
+      ctx.font = '10px system-ui,sans-serif'; ctx.textAlign = 'center';
+      for (const lj of [9, 12, 15, 18]) ctx.fillText(`10^${lj} J`, X(lj), axisY + 16);
+      ctx.globalAlpha = 1;
+
+      // Energy bar up to current M.
+      ctx.fillStyle = BAR; ctx.globalAlpha = 0.35;
+      ctx.fillRect(padL, axisY - 12, X(Math.log10(j)) - padL, 12);
+      ctx.globalAlpha = 1;
+
+      LANDMARKS.forEach(([m, lab], k) => {
+        const x = X(Math.log10(E(m)));
+        ctx.fillStyle = LM;
+        ctx.beginPath(); ctx.arc(x, axisY, 4, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = fg; ctx.globalAlpha = 0.7;
+        ctx.fillText(lab, x, axisY - 20 - (k % 2) * 13);
+        ctx.globalAlpha = 1;
+      });
+
+      ctx.fillStyle = MARK;
+      ctx.beginPath(); ctx.arc(X(Math.log10(j)), axisY, 6, 0, Math.PI * 2); ctx.fill();
+
+      readout.innerHTML =
+        `M${M.toFixed(1).replace('.', ',')}: năng lượng phát tán ≈ <b>${j.toExponential(1).replace('.', ',').replace('e+', '×10^')} J</b>` +
+        ` = <b>${fmtE(j)}</b> · thêm 1 bậc là ×31,6 lần`;
+    }
+
+    slider.addEventListener('input', draw);
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="quake"]').forEach(setup);
+</script>

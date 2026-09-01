@@ -1,0 +1,65 @@
+---
+title: "Ròng rọc: chia nhỏ trọng lực thành từng nhánh dây"
+description: "Treo vật lên 4 nhánh dây là mỗi nhánh chỉ gánh một phần tư — và tay bạn cầm đúng một nhánh. Từ giếng nước làng tới cần cẩu tháp và dây phanh xe đạp: cùng một phép chia, chỉ khác số nhánh."
+pubDate: 2026-09-02
+tags: ["vat-ly", "co-hoc", "javascript"]
+translationId: "rong-roc-chia-nho-trong-luc-thanh-tung-nhanh-day"
+---
+
+import PulleySystem from '../../../components/demos/PulleySystem.astro';
+
+[Đòn bẩy](/vi/posts/don-bay-cho-toi-mot-diem-tua) đổi lực lấy đường đi bằng
+tay đòn cứng. Ròng rọc làm cùng nghề bằng thứ mềm oặt nhất: **sợi dây** —
+và mưu của nó gói trong một câu: *sức căng dọc một sợi dây liền là như nhau
+ở mọi điểm*.
+
+<PulleySystem />
+
+## Một sợi dây, n lần gánh
+
+Ròng rọc **cố định** đơn lẻ (kéo cờ, múc giếng) không lợi lực chút nào —
+nó chỉ đổi hướng: kéo xuống dễ chịu hơn nhấc lên, vì bạn được mượn cả
+trọng lượng cơ thể. Phép màu bắt đầu khi ròng rọc **động** đi theo vật:
+giờ vật treo trên *hai* nhánh của cùng một sợi dây, mỗi nhánh — theo câu
+thần chú sức căng — gánh đúng một nửa. Luồn dây qua lại thành palăng
+(block and tackle) n nhánh: **mỗi nhánh gánh 1/n**, và tay bạn chỉ cầm một
+nhánh. Vật 100 kg trên 4 nhánh: kéo như xách 25 kg.
+
+Hoá đơn quen thuộc đến ngay sau đó: nâng vật 1 mét thì **cả n nhánh** cùng
+phải ngắn đi 1 mét — n mét dây chui qua tay bạn. Lực chia n, đường nhân n,
+công bất biến: cùng bản hợp đồng mà [đòn bẩy đã
+ký](/vi/posts/don-bay-cho-toi-mot-diem-tua), in trên giấy khác. Người xưa
+hiểu hợp đồng này bằng cơ bắp: palăng gỗ 5–6 nhánh từng dựng cột buồm
+chiến thuyền, kéo chuông lên tháp nhà thờ — những khối vài tấn nhấc bằng
+sức hai ba người đàn ông, trả giá bằng hàng chục mét dây thu về chầm chậm.
+
+Ngày nay phép chia ấy giấu trong máy: móc **cần cẩu tháp** ở công trường
+treo trên 4–8 nhánh cáp (đếm thử lần tới đi ngang!), palăng xích trong ga
+ra nhấc động cơ ô tô bằng một tay kéo nhịp nhàng, và giàn dây phức tạp
+trên buồm du thuyền hiện đại cho phép một người điều khiển cánh buồm chịu
+lực cả tấn gió.
+
+## Ma sát: kẻ ăn chặn — và người bạn bất ngờ
+
+Palăng lý thuyết chia đều tăm tắp; palăng thật mất vài phần trăm mỗi lần
+dây vòng qua puli — 6 nhánh là 5–6 khúc ngoặt, hao 15–25% nếu bạc đạn xoàng.
+Nhưng ma sát trên dây có mặt tốt bất ngờ, và dân leo núi sống nhờ nó:
+quấn dây quanh trụ hay qua thiết bị hãm, ma sát tăng **theo cấp số nhân
+với góc quấn** (công thức capstan e^(µθ) — họ hàng hàm mũ của [mạch
+RC](/vi/posts/mach-rc-va-chiec-thang-63-phan-tram)): vài vòng quấn là một
+bàn tay giữ nổi con thuyền đang trôi. Thuỷ thủ neo tàu vạn tấn bằng ba
+vòng dây quanh cọc bích — không phải sức người giữ tàu, mà là hàm mũ giữ.
+
+## Trường hợp biên: chia mãi thì sao?
+
+Đẩy n lên trời: palăng 20 nhánh cho tay kéo 100 kg chỉ bằng 5 kg — nhưng
+nâng vật một mét phải thu **20 mét dây**, cộng ma sát của 19 khúc ngoặt ăn
+gần nửa thành quả. Palăng thực dụng dừng quanh 6–8 nhánh: quá số đó, cách
+văn minh hơn là đổi công nghệ — tời điện, hay **palăng vi sai** dùng hai
+puli khác cỡ một chút để đạt tỉ số vài chục lần trong một cụm gọn (chiếc
+palăng xích kéo tay trong mọi xưởng cơ khí chính là nó). Và ở thái cực
+tinh tế nhất, phép chia lực bằng dây quay về... phòng mổ: hệ dây chằng và
+ròng rọc xương-gân trong bàn tay người — gân gấp ngón tay bạn chạy qua các
+"puli" bao gân thật sự, được giải phẫu học gọi đúng bằng tên ấy (pulley
+A1–A5) — đang chia lực cho bạn cầm cốc nước ngay lúc này. Máy móc mượn của
+cơ thể, hay cơ thể đã phát minh trước: câu hỏi để ngỏ, phép chia thì chung.
