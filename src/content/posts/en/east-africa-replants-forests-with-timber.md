@@ -1,10 +1,9 @@
 ---
-title: "Growing Indigenous food trees in East Africa fights malnutrition and biodiversity loss"
-description: "When the sugary-sweet masuku plum is in season in Malawi, locals go wild over it."
+title: "East Africa replants its forests with timber. The trees that feed people lose out."
+description: "Native fruit trees in Malawi would ease malnutrition and biodiversity loss at once. Replanting programmes choose fast-growing foreign timber instead — because the native ones are slower, riskier, and have nowhere to be sold."
 pubDate: 2026-08-31
 tags: ["mongabay", "environment"]
 translationId: "mongabay-growing-indigenous-food-trees-in-east-africa-fights-malnutrition-and-biodiversity-loss"
-draft: true
 ---
 
 <p class="republished-from">
