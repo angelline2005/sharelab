@@ -1,0 +1,214 @@
+---
+// Malus's law, I = I₀·cos²θ, as something you turn rather than something you
+// read. Rotating the second polariser dims the beam and walks a marker along
+// the cos² curve at the same time, so the formula and the effect stay tied
+// together.
+---
+
+<figure class="demo" data-demo="malus">
+  <canvas></canvas>
+
+  <div class="controls">
+    <label>
+      Góc giữa hai kính phân cực <output data-out="angle"></output>
+      <input type="range" data-in="angle" min="0" max="180" step="1" value="30" />
+    </label>
+  </div>
+
+  <p class="readout" data-readout></p>
+
+  <figcaption>
+    Ánh sáng chưa phân cực qua kính thứ nhất còn lại một nửa cường độ. Qua kính
+    thứ hai đặt lệch góc θ, cường độ còn <b>I = I₀·cos²θ</b>. Ở θ = 90° hai kính
+    vuông góc và ánh sáng tắt hoàn toàn.
+  </figcaption>
+</figure>
+
+<style>
+  .demo {
+    margin: 2rem 0;
+    padding: 1rem;
+    border: 1px solid rgba(128, 128, 128, 0.3);
+    border-radius: 10px;
+  }
+  .demo canvas {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+  .controls {
+    margin-top: 1rem;
+  }
+  .controls label {
+    display: flex;
+    flex-direction: column;
+    font-size: 0.85rem;
+    gap: 0.3rem;
+  }
+  .controls output {
+    font-variant-numeric: tabular-nums;
+    opacity: 0.7;
+  }
+  .controls input {
+    width: 100%;
+  }
+  .readout {
+    margin: 0.9rem 0 0;
+    font-size: 0.9rem;
+    font-variant-numeric: tabular-nums;
+  }
+  figcaption {
+    margin-top: 0.75rem;
+    font-size: 0.8rem;
+    opacity: 0.7;
+    line-height: 1.5;
+  }
+</style>
+
+<script>
+  const BEAM = '#f59e0b';
+  const CURVE = '#2563eb';
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const slider = root.querySelector('[data-in="angle"]') as HTMLInputElement;
+    const out = root.querySelector('[data-out="angle"]') as HTMLOutputElement;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+
+    function draw() {
+      const deg = Number(slider.value);
+      const rad = (deg * Math.PI) / 180;
+      const transmitted = Math.cos(rad) ** 2;
+      out.textContent = `${deg}°`;
+
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32;
+      const cssH = Math.round(cssW * 0.46);
+      canvas.width = cssW * dpr;
+      canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+
+      const fg = getComputedStyle(root).color;
+      const midY = cssH * 0.38;
+      const splitX = cssW * 0.56;
+
+      // --- left half: the two polarisers and the beam between them ---
+      const p1x = splitX * 0.32;
+      const p2x = splitX * 0.72;
+      const plateH = cssH * 0.4;
+
+      const beam = (x0: number, x1: number, alpha: number, width: number) => {
+        ctx.globalAlpha = alpha;
+        ctx.strokeStyle = BEAM;
+        ctx.lineWidth = width;
+        ctx.lineCap = 'round';
+        ctx.beginPath();
+        ctx.moveTo(x0, midY);
+        ctx.lineTo(x1, midY);
+        ctx.stroke();
+        ctx.globalAlpha = 1;
+      };
+
+      beam(8, p1x, 0.45, 16);
+      beam(p1x, p2x, 0.75, 12);
+      beam(p2x, splitX - 8, Math.max(transmitted, 0.02) * 0.95, 12);
+
+      const plate = (x: number, angleDeg: number, label: string) => {
+        ctx.save();
+        ctx.translate(x, midY);
+        ctx.strokeStyle = fg;
+        ctx.globalAlpha = 0.5;
+        ctx.lineWidth = 1.5;
+        ctx.strokeRect(-7, -plateH / 2, 14, plateH);
+        // Slits showing the transmission axis.
+        ctx.globalAlpha = 0.85;
+        ctx.lineWidth = 1.5;
+        const a = (angleDeg * Math.PI) / 180;
+        for (let i = -2; i <= 2; i++) {
+          const off = i * 7;
+          ctx.beginPath();
+          ctx.moveTo(off * Math.cos(a) - 11 * Math.sin(a), off * Math.sin(a) + 11 * Math.cos(a));
+          ctx.lineTo(off * Math.cos(a) + 11 * Math.sin(a), off * Math.sin(a) - 11 * Math.cos(a));
+          ctx.stroke();
+        }
+        ctx.globalAlpha = 0.75;
+        ctx.fillStyle = fg;
+        ctx.font = '12px system-ui, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(label, 0, plateH / 2 + 18);
+        ctx.restore();
+        ctx.globalAlpha = 1;
+      };
+
+      plate(p1x, 90, 'Kính 1');
+      plate(p2x, 90 - deg, 'Kính 2');
+
+      // --- right half: the cos² curve with the current angle marked ---
+      const gx = splitX + 26;
+      const gw = cssW - gx - 14;
+      const gy = cssH * 0.12;
+      const gh = cssH * 0.6;
+
+      ctx.strokeStyle = fg;
+      ctx.globalAlpha = 0.3;
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(gx, gy);
+      ctx.lineTo(gx, gy + gh);
+      ctx.lineTo(gx + gw, gy + gh);
+      ctx.stroke();
+      ctx.globalAlpha = 1;
+
+      ctx.strokeStyle = CURVE;
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      for (let d = 0; d <= 180; d++) {
+        const x = gx + (d / 180) * gw;
+        const y = gy + gh - Math.cos((d * Math.PI) / 180) ** 2 * gh;
+        d ? ctx.lineTo(x, y) : ctx.moveTo(x, y);
+      }
+      ctx.stroke();
+
+      const mx = gx + (deg / 180) * gw;
+      const my = gy + gh - transmitted * gh;
+      ctx.strokeStyle = fg;
+      ctx.globalAlpha = 0.35;
+      ctx.setLineDash([3, 3]);
+      ctx.beginPath();
+      ctx.moveTo(mx, gy + gh);
+      ctx.lineTo(mx, my);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.globalAlpha = 1;
+
+      ctx.fillStyle = BEAM;
+      ctx.beginPath();
+      ctx.arc(mx, my, 5, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.fillStyle = fg;
+      ctx.globalAlpha = 0.6;
+      ctx.font = '11px system-ui, sans-serif';
+      ctx.textAlign = 'left';
+      ctx.fillText('I / I₀', gx + 2, gy - 4);
+      ctx.textAlign = 'center';
+      ctx.fillText('0°', gx, gy + gh + 15);
+      ctx.fillText('90°', gx + gw / 2, gy + gh + 15);
+      ctx.fillText('180°', gx + gw, gy + gh + 15);
+      ctx.globalAlpha = 1;
+
+      readout.innerHTML =
+        `cos²(${deg}°) = <b>${transmitted.toFixed(3)}</b> · ` +
+        `còn lại <b>${(transmitted * 100).toFixed(1)}%</b> cường độ sau kính thứ nhất`;
+    }
+
+    slider.addEventListener('input', draw);
+    window.addEventListener('resize', draw);
+    draw();
+  }
+
+  document.querySelectorAll<HTMLElement>('[data-demo="malus"]').forEach(setup);
+</script>

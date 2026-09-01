@@ -1,0 +1,56 @@
+---
+title: "Ba demo vật lý tương tác viết bằng JavaScript"
+description: "Ném xiên có lực cản, định luật Malus, và bốn cách kiểm tra một đáp án vật lý mà bạn không tự giải ra."
+pubDate: 2026-09-01
+tags: ["vat-ly", "javascript", "mo-phong"]
+translationId: "ba-demo-vat-ly-tuong-tac"
+draft: true
+---
+
+import ProjectileDrag from '../../../components/demos/ProjectileDrag.astro';
+import MalusLaw from '../../../components/demos/MalusLaw.astro';
+import VerifyPhysics from '../../../components/demos/VerifyPhysics.astro';
+
+Bài này là bộ khung để thử ba dạng nội dung: mô phỏng bằng code, trực quan hoá
+hiện tượng, và dùng máy để kiểm tra một đáp án. Cả ba demo đều là Canvas thuần,
+không dùng thư viện ngoài.
+
+## 1. Ném xiên: sách giáo khoa tính thừa bao nhiêu?
+
+Công thức tầm xa `R = v₀²sin(2θ)/g` được dạy như thể nó luôn đúng. Nó chỉ đúng
+trong chân không. Kéo hệ số cản lên và xem khoảng cách giữa hai đường.
+
+<ProjectileDrag />
+
+Điều đáng nói không phải là "sách sai", mà là **góc ném tối ưu không còn là 45°**
+khi có lực cản. Thử giữ nguyên vận tốc và quét góc để tìm tầm xa lớn nhất.
+
+## 2. Định luật Malus: công thức mà bạn xoay được
+
+Ánh sáng qua hai kính phân cực lệch nhau góc θ còn lại cường độ `I = I₀cos²θ`.
+Đọc công thức thì khô khan; xoay kính rồi nhìn điểm chạy trên đường cong thì
+khác hẳn.
+
+<MalusLaw />
+
+Ở θ = 90° hai kính vuông góc, ánh sáng tắt hoàn toàn. Nhưng nếu chèn thêm một
+kính thứ ba ở giữa, lệch 45°, ánh sáng lại xuất hiện — kết quả phản trực giác
+đáng làm thành demo tiếp theo.
+
+## 3. Bốn cách kiểm tra một đáp án bạn không tự giải
+
+Mô hình ngôn ngữ dựng phương trình khá tốt nhưng tính toán nhiều bước thì hay
+sai. Vấn đề là đáp án sai thường *trông* rất hợp lý. Dưới đây là ba đáp án cho
+cùng một bài con lắc — một đúng, hai sai theo kiểu dễ mắc — và bốn cách kiểm tra
+chạy trên chúng.
+
+<VerifyPhysics />
+
+Kết luận đáng nhớ: **không cách nào đủ một mình.** Phân tích thứ nguyên cho cả
+ba đáp án đi qua. Trường hợp θ₀ = 90° còn bỏ lọt đáp án `sin θ₀` vì ở đúng góc
+đó nó trùng với đáp án đúng. Chỉ khi kiểm tra giới hạn góc nhỏ và đối chiếu mô
+phỏng số thì lỗi mới lộ ra.
+
+Đây cũng là quy trình dùng AI giải bài vật lý một cách có trách nhiệm: để mô
+hình dựng phương trình và sinh code, còn phần kiểm chứng thì giao cho máy tính
+chứ đừng tin vào số học của nó.

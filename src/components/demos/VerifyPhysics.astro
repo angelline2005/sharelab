@@ -1,0 +1,234 @@
+---
+// Four ways to check a physics answer you did not derive yourself.
+//
+// The setup: a pendulum of length L released from rest at angle θ₀. What is
+// its maximum speed? Pick one of three candidate answers — one right, two
+// wrong in ways a language model plausibly gets wrong — and watch which checks
+// catch which error. The lesson is that no single check is enough: the
+// dimensional check clears all three, and the θ₀ = 90° case clears one of the
+// wrong ones too.
+---
+
+<figure class="demo" data-demo="verify">
+  <div class="problem">
+    <p>
+      <b>Bài toán.</b> Con lắc đơn dài <i>L</i>, thả không vận tốc đầu từ góc lệch <i>θ₀</i>.
+      Tính tốc độ lớn nhất khi qua vị trí cân bằng.
+    </p>
+    <label class="pick">
+      Đáp án cần kiểm tra
+      <select data-in="formula">
+        <option value="correct">v = √(2gL(1 − cos θ₀))</option>
+        <option value="sin" selected>v = √(2gL · sin θ₀)</option>
+        <option value="linear">v = √(2gL · θ₀)</option>
+      </select>
+    </label>
+  </div>
+
+  <div class="controls">
+    <label>
+      Chiều dài L <output data-out="L"></output>
+      <input type="range" data-in="L" min="0.2" max="3" step="0.1" value="1" />
+    </label>
+    <label>
+      Góc thả θ₀ <output data-out="theta"></output>
+      <input type="range" data-in="theta" min="5" max="90" step="1" value="30" />
+    </label>
+  </div>
+
+  <table class="checks">
+    <thead>
+      <tr><th>Cách kiểm tra</th><th>Kết quả</th></tr>
+    </thead>
+    <tbody data-checks></tbody>
+  </table>
+
+  <figcaption>
+    Không cách nào trong bốn cách này đủ một mình. Phân tích thứ nguyên cho cả ba
+    đáp án đi qua, vì sin, cos và radian đều không có đơn vị. Trường hợp θ₀ = 90°
+    còn bỏ lọt đáp án <i>sin θ₀</i> vì ở đúng góc đó nó trùng với đáp án đúng.
+  </figcaption>
+</figure>
+
+<style>
+  .demo {
+    margin: 2rem 0;
+    padding: 1rem;
+    border: 1px solid rgba(128, 128, 128, 0.3);
+    border-radius: 10px;
+  }
+  .problem p {
+    margin: 0 0 0.75rem;
+    font-size: 0.92rem;
+    line-height: 1.6;
+  }
+  .pick {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    font-size: 0.85rem;
+    max-width: 22rem;
+  }
+  .pick select {
+    font-size: 0.95rem;
+    padding: 0.35rem;
+  }
+  .controls {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+    gap: 0.75rem 1.25rem;
+    margin: 1rem 0;
+  }
+  .controls label {
+    display: flex;
+    flex-direction: column;
+    font-size: 0.85rem;
+    gap: 0.3rem;
+  }
+  .controls output {
+    font-variant-numeric: tabular-nums;
+    opacity: 0.7;
+  }
+  .controls input {
+    width: 100%;
+  }
+  .checks {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.87rem;
+  }
+  .checks th,
+  .checks td {
+    text-align: left;
+    padding: 0.5rem 0.6rem;
+    border-bottom: 1px solid rgba(128, 128, 128, 0.2);
+    vertical-align: top;
+  }
+  .checks th {
+    font-weight: 600;
+    opacity: 0.75;
+  }
+  .checks th:first-child,
+  .checks td:first-child {
+    white-space: nowrap;
+    width: 1%;
+  }
+  .verdict {
+    font-weight: 600;
+  }
+  .pass { color: #16a34a; }
+  .fail { color: #dc2626; }
+  figcaption {
+    margin-top: 0.9rem;
+    font-size: 0.8rem;
+    opacity: 0.7;
+    line-height: 1.55;
+  }
+</style>
+
+<script>
+  const G = 9.81;
+
+  type Formula = (L: number, theta: number) => number;
+
+  const FORMULAS: Record<string, Formula> = {
+    correct: (L, t) => Math.sqrt(2 * G * L * (1 - Math.cos(t))),
+    sin: (L, t) => Math.sqrt(2 * G * L * Math.sin(t)),
+    linear: (L, t) => Math.sqrt(2 * G * L * t),
+  };
+
+  // Ground truth that assumes nothing about the answer: integrate
+  // θ'' = -(g/L)·sin θ from rest and read off the speed at the bottom.
+  function simulate(L: number, theta0: number): number {
+    let theta = theta0;
+    let omega = 0;
+    const dt = 1e-5;
+    let peak = 0;
+    for (let i = 0; i < 4_000_000; i++) {
+      omega += -(G / L) * Math.sin(theta) * dt;
+      theta += omega * dt;
+      peak = Math.max(peak, Math.abs(omega) * L);
+      if (theta <= 0) break;
+    }
+    return peak;
+  }
+
+  function setup(root: HTMLElement) {
+    const input = (n: string) => root.querySelector(`[data-in="${n}"]`) as HTMLInputElement;
+    const output = (n: string) => root.querySelector(`[data-out="${n}"]`) as HTMLOutputElement;
+    const select = root.querySelector('[data-in="formula"]') as HTMLSelectElement;
+    const tbody = root.querySelector('[data-checks]') as HTMLElement;
+
+    function row(name: string, ok: boolean, detail: string) {
+      return `<tr>
+        <td class="verdict ${ok ? 'pass' : 'fail'}">${ok ? '✓ qua' : '✗ trượt'}</td>
+        <td><b>${name}</b><br />${detail}</td>
+      </tr>`;
+    }
+
+    function render() {
+      const L = Number(input('L').value);
+      const deg = Number(input('theta').value);
+      const theta = (deg * Math.PI) / 180;
+      const f = FORMULAS[select.value];
+
+      output('L').textContent = `${L.toFixed(1)} m`;
+      output('theta').textContent = `${deg}°`;
+
+      const v = f(L, theta);
+      const truth = simulate(L, theta);
+
+      // 1. Dimensions. Every candidate is √(g·L·[dimensionless]), so all pass —
+      // which is exactly the point worth showing.
+      const dims = true;
+
+      // 2. Small-angle scaling. 1 − cos θ ≈ θ²/2, so the true speed is linear in
+      // θ₀; both wrong answers go as √θ₀. Doubling θ₀ separates them.
+      const small1 = f(L, 0.01);
+      const small2 = f(L, 0.02);
+      const ratio = small2 / small1;
+      const scalesLinearly = Math.abs(ratio - 2) < 0.05;
+
+      // 3. The θ₀ = 90° case, a value most people know by heart.
+      const at90 = f(L, Math.PI / 2);
+      const truth90 = Math.sqrt(2 * G * L);
+      const matches90 = Math.abs(at90 - truth90) / truth90 < 0.01;
+
+      // 4. Independent numerical check at the angle actually being asked about.
+      const err = Math.abs(v - truth) / truth;
+      const matchesSim = err < 0.01;
+
+      tbody.innerHTML = [
+        row(
+          'Phân tích thứ nguyên',
+          dims,
+          `Cả ba đáp án đều có dạng √(g·L·[không đơn vị]) → m/s. Cách này ` +
+            `<b>không phân biệt được</b> đáp án đúng hay sai.`,
+        ),
+        row(
+          'Giới hạn góc nhỏ',
+          scalesLinearly,
+          `Gấp đôi θ₀ từ 0,01 → 0,02 rad thì v nhân lên <b>${ratio.toFixed(3)}</b> lần. ` +
+            `Đáp án đúng phải tỉ lệ tuyến tính với θ₀ nên tỉ số là 2,000.`,
+        ),
+        row(
+          'Trường hợp θ₀ = 90°',
+          matches90,
+          `Công thức cho <b>${at90.toFixed(3)} m/s</b>, giá trị đã biết là ` +
+            `√(2gL) = <b>${truth90.toFixed(3)} m/s</b>.`,
+        ),
+        row(
+          'Đối chiếu mô phỏng số',
+          matchesSim,
+          `Giải số θ'' = −(g/L)·sin θ cho <b>${truth.toFixed(4)} m/s</b>, ` +
+            `công thức cho <b>${v.toFixed(4)} m/s</b> — lệch <b>${(err * 100).toFixed(2)}%</b>.`,
+        ),
+      ].join('');
+    }
+
+    root.querySelectorAll('input, select').forEach((el) => el.addEventListener('input', render));
+    render();
+  }
+
+  document.querySelectorAll<HTMLElement>('[data-demo="verify"]').forEach(setup);
+</script>

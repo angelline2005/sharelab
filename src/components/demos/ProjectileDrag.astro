@@ -1,0 +1,193 @@
+---
+// Projectile motion with and without air resistance, drawn side by side.
+//
+// The point of the demo is the gap between the two curves: school physics
+// teaches the vacuum formula, and this shows how far off it gets once the
+// projectile is fast enough for drag to matter.
+---
+
+<figure class="demo" data-demo="projectile">
+  <canvas></canvas>
+
+  <div class="controls">
+    <label>
+      Vận tốc đầu <output data-out="v0"></output>
+      <input type="range" data-in="v0" min="10" max="120" step="1" value="60" />
+    </label>
+    <label>
+      Góc ném <output data-out="angle"></output>
+      <input type="range" data-in="angle" min="5" max="85" step="1" value="45" />
+    </label>
+    <label>
+      Hệ số cản <output data-out="drag"></output>
+      <input type="range" data-in="drag" min="0" max="60" step="1" value="20" />
+    </label>
+  </div>
+
+  <p class="readout" data-readout></p>
+
+  <figcaption>
+    Đường nét đứt là quỹ đạo lý tưởng trong sách giáo khoa (bỏ qua không khí).
+    Đường liền là quỹ đạo có lực cản tỉ lệ với bình phương vận tốc.
+  </figcaption>
+</figure>
+
+<style>
+  .demo {
+    margin: 2rem 0;
+    padding: 1rem;
+    border: 1px solid rgba(128, 128, 128, 0.3);
+    border-radius: 10px;
+  }
+  .demo canvas {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+  .controls {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+    gap: 0.75rem 1.25rem;
+    margin-top: 1rem;
+  }
+  .controls label {
+    display: flex;
+    flex-direction: column;
+    font-size: 0.85rem;
+    gap: 0.3rem;
+  }
+  .controls output {
+    font-variant-numeric: tabular-nums;
+    opacity: 0.7;
+  }
+  .controls input {
+    width: 100%;
+  }
+  .readout {
+    margin: 0.9rem 0 0;
+    font-size: 0.9rem;
+    font-variant-numeric: tabular-nums;
+  }
+  figcaption {
+    margin-top: 0.75rem;
+    font-size: 0.8rem;
+    opacity: 0.7;
+    line-height: 1.5;
+  }
+</style>
+
+<script>
+  const G = 9.81;
+  const IDEAL = '#2563eb';
+  const DRAGGED = '#dc2626';
+
+  type Point = { x: number; y: number };
+
+  // Vacuum trajectory, sampled from the closed-form solution.
+  function idealPath(v0: number, angleDeg: number): Point[] {
+    const a = (angleDeg * Math.PI) / 180;
+    const flight = (2 * v0 * Math.sin(a)) / G;
+    const pts: Point[] = [];
+    for (let i = 0; i <= 200; i++) {
+      const t = (flight * i) / 200;
+      pts.push({ x: v0 * Math.cos(a) * t, y: v0 * Math.sin(a) * t - 0.5 * G * t * t });
+    }
+    return pts;
+  }
+
+  // Quadratic drag has no closed form, so this integrates the motion instead:
+  // a = -g ĵ - b|v|v, stepped with semi-implicit Euler at a small dt.
+  function draggedPath(v0: number, angleDeg: number, b: number): Point[] {
+    const a = (angleDeg * Math.PI) / 180;
+    let x = 0;
+    let y = 0;
+    let vx = v0 * Math.cos(a);
+    let vy = v0 * Math.sin(a);
+    const dt = 0.002;
+    const pts: Point[] = [{ x, y }];
+    for (let i = 0; i < 60000 && (y >= 0 || i === 0); i++) {
+      const speed = Math.hypot(vx, vy);
+      vx += -b * speed * vx * dt;
+      vy += (-G - b * speed * vy) * dt;
+      x += vx * dt;
+      y += vy * dt;
+      if (i % 5 === 0) pts.push({ x, y });
+    }
+    return pts;
+  }
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (name: string) => root.querySelector(`[data-in="${name}"]`) as HTMLInputElement;
+    const output = (name: string) => root.querySelector(`[data-out="${name}"]`) as HTMLOutputElement;
+
+    function draw() {
+      const v0 = Number(input('v0').value);
+      const angle = Number(input('angle').value);
+      // The slider is a plain 0-60 dial; scale it to a drag coefficient that
+      // spans "barely noticeable" to "obviously wrong" for these speeds.
+      const b = Number(input('drag').value) / 10000;
+
+      output('v0').textContent = `${v0} m/s`;
+      output('angle').textContent = `${angle}°`;
+      output('drag').textContent = b === 0 ? 'không có' : b.toFixed(4);
+
+      const ideal = idealPath(v0, angle);
+      const dragged = draggedPath(v0, angle, b);
+
+      const maxX = Math.max(...ideal.map((p) => p.x), 1);
+      const maxY = Math.max(...ideal.map((p) => p.y), 1);
+
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32;
+      const cssH = Math.round(cssW * 0.5);
+      canvas.width = cssW * dpr;
+      canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+
+      const pad = 28;
+      const sx = (x: number) => pad + (x / maxX) * (cssW - pad * 2);
+      const sy = (y: number) => cssH - pad - (y / maxY) * (cssH - pad * 2);
+
+      const fg = getComputedStyle(root).color;
+      ctx.strokeStyle = fg;
+      ctx.globalAlpha = 0.25;
+      ctx.beginPath();
+      ctx.moveTo(pad, cssH - pad);
+      ctx.lineTo(cssW - pad, cssH - pad);
+      ctx.stroke();
+      ctx.globalAlpha = 1;
+
+      const trace = (pts: Point[], colour: string, dashed: boolean) => {
+        ctx.strokeStyle = colour;
+        ctx.lineWidth = 2;
+        ctx.setLineDash(dashed ? [6, 5] : []);
+        ctx.beginPath();
+        pts.forEach((p, i) => (i ? ctx.lineTo(sx(p.x), sy(p.y)) : ctx.moveTo(sx(p.x), sy(p.y))));
+        ctx.stroke();
+        ctx.setLineDash([]);
+      };
+
+      trace(ideal, IDEAL, true);
+      trace(dragged, DRAGGED, false);
+
+      const rIdeal = ideal[ideal.length - 1].x;
+      const rDrag = dragged[dragged.length - 1].x;
+      const lost = rIdeal > 0 ? ((rIdeal - rDrag) / rIdeal) * 100 : 0;
+      readout.innerHTML =
+        `Tầm xa lý tưởng <b>${rIdeal.toFixed(1)} m</b> · ` +
+        `có lực cản <b>${rDrag.toFixed(1)} m</b> · ` +
+        `sách giáo khoa tính thừa <b>${lost.toFixed(1)}%</b>`;
+    }
+
+    root.querySelectorAll('input').forEach((el) => el.addEventListener('input', draw));
+    window.addEventListener('resize', draw);
+    draw();
+  }
+
+  document.querySelectorAll<HTMLElement>('[data-demo="projectile"]').forEach(setup);
+</script>
