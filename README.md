@@ -38,6 +38,21 @@ All commands are run from the root of the project, from a terminal:
 | `npm run astro ...`       | Run CLI commands like `astro add`, `astro check` |
 | `npm run astro -- --help` | Get help using the Astro CLI                     |
 
+## 📰 Republishing from The Conversation
+
+`scripts/import-the-conversation.mjs` turns a CC BY-ND article from
+[The Conversation](https://theconversation.com) into a post, with the byline, credit link,
+logo and view-counter pixel their licence requires.
+
+```sh
+node scripts/import-the-conversation.mjs --list   # see what's in the feed
+node scripts/import-the-conversation.mjs 288792   # import one by ID
+```
+
+Read [docs/republishing-the-conversation.md](docs/republishing-the-conversation.md) first —
+it covers the three rules the script can't enforce (no bulk imports, translations need the
+author's approval, images aren't automatically cleared).
+
 ## 👀 Want to learn more?
 
 Feel free to check [our documentation](https://docs.astro.build) or jump into our [Discord server](https://astro.build/chat).
