@@ -1,0 +1,121 @@
+---
+// Charged particle in a uniform magnetic field (into the screen): circular
+// motion with r = mv/(qB), integrated with the Boris-like exact rotation per
+// frame so the circle never spirals from numeric drift. Two particles at
+// different speeds share one clock — the readout's point is that the PERIOD
+// T = 2πm/(qB) ignores speed entirely.
+---
+
+<figure class="demo" data-demo="cyclotron">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Tốc độ hạt đỏ <output data-out="v"></output>
+      <input type="range" data-in="v" min="0.3" max="1" step="0.01" value="0.5" /></label>
+    <label>Từ trường B <output data-out="b"></output>
+      <input type="range" data-in="b" min="0.5" max="2" step="0.05" value="1" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Từ trường hướng vào màn hình; lực Lorentz F = qv×B luôn vuông góc vận tốc
+    nên chỉ bẻ hướng, không đổi tốc độ. Hạt xanh luôn chạy nhanh gấp đôi hạt
+    đỏ — hãy xem hạt nào về vạch xuất phát trước.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const P1 = '#dc2626', P2 = '#2563eb';
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (n: string) => root.querySelector(`[data-in="${n}"]`) as HTMLInputElement;
+    const output = (n: string) => root.querySelector(`[data-out="${n}"]`) as HTMLOutputElement;
+
+    let phase = 0, raf = 0, last = 0;
+
+    function draw() {
+      const v = Number(input('v').value);
+      const B = Number(input('b').value);
+      output('v').textContent = `${v.toFixed(2)} v₀`;
+      output('b').textContent = `${B.toFixed(2)} B₀`;
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.52);
+      if (canvas.width !== cssW * dpr) { canvas.width = cssW * dpr; canvas.height = cssH * dpr; canvas.style.height = `${cssH}px`; }
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+
+      // Field markers: × into the screen.
+      ctx.fillStyle = fg; ctx.globalAlpha = 0.16;
+      ctx.font = '12px system-ui,sans-serif'; ctx.textAlign = 'center';
+      for (let gx = 24; gx < cssW; gx += 46)
+        for (let gy = 20; gy < cssH; gy += 42) ctx.fillText('×', gx, gy);
+      ctx.globalAlpha = 1;
+
+      // r ∝ v/B, ω ∝ B. Both particles enter at the bottom of their circle.
+      const K = Math.min(cssW, cssH) * 0.42;
+      const parts = [
+        { v, colour: P1 },
+        { v: 2 * v, colour: P2 }, // always twice as fast
+      ];
+      const cx = cssW / 2, cy = cssH / 2;
+      // The rotation angle is the SAME for both — that is the whole lesson.
+      const ang = phase * B;
+
+      for (const p of parts) {
+        const r = (K * p.v) / B;
+        // Circle guide.
+        ctx.strokeStyle = p.colour; ctx.globalAlpha = 0.22;
+        ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.stroke();
+        ctx.globalAlpha = 1;
+        // Particle: starts at angle −90° (bottom), advances with ang.
+        const a = -Math.PI / 2 + ang;
+        const x = cx + r * Math.cos(a), y = cy + r * Math.sin(a);
+        ctx.fillStyle = p.colour;
+        ctx.beginPath(); ctx.arc(x, y, 6, 0, Math.PI * 2); ctx.fill();
+      }
+      // Shared start line: centre down to the larger circle's rim.
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.4; ctx.setLineDash([3, 4]);
+      ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(cx, cy + (K * 2 * v) / B); ctx.stroke();
+      ctx.setLineDash([]); ctx.globalAlpha = 1;
+
+      const laps = ang / (2 * Math.PI);
+      readout.innerHTML =
+        `Bán kính r = mv/(qB): hạt xanh đi vòng <b>to gấp đôi</b> hạt đỏ · ` +
+        `nhưng cả hai đã quay <b>${laps.toFixed(2)}</b> vòng — chu kỳ T = 2πm/(qB) ` +
+        `<b>không chứa v</b>: nhanh hơn chỉ được vòng to hơn, không được về sớm hơn.`;
+    }
+
+    function frame(now: number) {
+      raf = requestAnimationFrame(frame);
+      if (!last) last = now;
+      phase += Math.min((now - last) / 1000, 0.05) * 1.4; last = now;
+      draw();
+    }
+
+    root.querySelectorAll('input').forEach((el) => el.addEventListener('input', draw));
+    addEventListener('resize', draw);
+    const io = new IntersectionObserver((es) => {
+      for (const e of es) {
+        if (e.isIntersecting) { last = 0; raf = requestAnimationFrame(frame); }
+        else cancelAnimationFrame(raf);
+      }
+    });
+    io.observe(root);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="cyclotron"]').forEach(setup);
+</script>

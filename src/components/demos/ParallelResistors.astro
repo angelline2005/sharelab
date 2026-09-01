@@ -1,0 +1,117 @@
+---
+// Two resistors, series versus parallel, with the current split drawn to
+// scale. The counterintuitive half — the parallel total is smaller than the smallest
+// branch — is the readout's whole job.
+---
+
+<figure class="demo" data-demo="resistors">
+  <canvas></canvas>
+  <div class="controls">
+    <label>R₁ <output data-out="r1"></output>
+      <input type="range" data-in="r1" min="1" max="100" step="1" value="100" /></label>
+    <label>R₂ <output data-out="r2"></output>
+      <input type="range" data-in="r2" min="1" max="100" step="1" value="25" /></label>
+    <label class="inline"><input type="checkbox" data-in="par" checked /> Mắc song song</label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Nguồn 12 V. Bề dày mỗi nhánh vẽ theo dòng điện chạy qua nó. Song song:
+    thêm đường cho dòng chảy thì tổng trở chỉ có thể giảm — mỗi nhánh mới là
+    một cánh cửa mở thêm, kể cả khi cửa hẹp.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; align-items: end; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls label.inline { flex-direction: row; align-items: center; gap: .4rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input[type='range'] { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const V = 12;
+  const W1 = '#dc2626', W2 = '#2563eb';
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (n: string) => root.querySelector(`[data-in="${n}"]`) as HTMLInputElement;
+    const output = (n: string) => root.querySelector(`[data-out="${n}"]`) as HTMLOutputElement;
+
+    function draw() {
+      const r1 = Number(input('r1').value);
+      const r2 = Number(input('r2').value);
+      const par = input('par').checked;
+      output('r1').textContent = `${r1} Ω`;
+      output('r2').textContent = `${r2} Ω`;
+
+      const rTot = par ? (r1 * r2) / (r1 + r2) : r1 + r2;
+      const iTot = V / rTot;
+      const i1 = par ? V / r1 : iTot;
+      const i2 = par ? V / r2 : iTot;
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.4);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+
+      const lw = (i: number) => 1.5 + i * 1.6; // px per amp
+      const midY = cssH / 2, x0 = 30, x1 = cssW - 30;
+      const box = (x: number, y: number, colour: string, label: string) => {
+        ctx.strokeStyle = colour; ctx.lineWidth = 2;
+        ctx.strokeRect(x - 26, y - 11, 52, 22);
+        ctx.fillStyle = fg; ctx.globalAlpha = 0.75;
+        ctx.font = '11px system-ui,sans-serif'; ctx.textAlign = 'center';
+        ctx.fillText(label, x, y + 4);
+        ctx.globalAlpha = 1; ctx.lineWidth = 1;
+      };
+      const wire = (pts: [number, number][], i: number, colour: string) => {
+        ctx.strokeStyle = colour; ctx.lineWidth = lw(i); ctx.lineJoin = 'round';
+        ctx.globalAlpha = 0.8;
+        ctx.beginPath();
+        pts.forEach(([x, y], k) => (k ? ctx.lineTo(x, y) : ctx.moveTo(x, y)));
+        ctx.stroke(); ctx.globalAlpha = 1; ctx.lineWidth = 1;
+      };
+
+      if (par) {
+        const dy = cssH * 0.2, xm = cssW / 2;
+        wire([[x0, midY], [x0 + 40, midY]], iTot, fg);
+        wire([[x1 - 40, midY], [x1, midY]], iTot, fg);
+        wire([[x0 + 40, midY], [x0 + 40, midY - dy], [xm - 30, midY - dy]], i1, W1);
+        wire([[xm + 30, midY - dy], [x1 - 40, midY - dy], [x1 - 40, midY]], i1, W1);
+        wire([[x0 + 40, midY], [x0 + 40, midY + dy], [xm - 30, midY + dy]], i2, W2);
+        wire([[xm + 30, midY + dy], [x1 - 40, midY + dy], [x1 - 40, midY]], i2, W2);
+        box(xm, midY - dy, W1, `R₁ · ${i1.toFixed(2)} A`);
+        box(xm, midY + dy, W2, `R₂ · ${i2.toFixed(2)} A`);
+      } else {
+        const xa = cssW * 0.36, xb = cssW * 0.64;
+        wire([[x0, midY], [xa - 26, midY]], iTot, fg);
+        wire([[xa + 26, midY], [xb - 26, midY]], iTot, fg);
+        wire([[xb + 26, midY], [x1, midY]], iTot, fg);
+        box(xa, midY, W1, `R₁`);
+        box(xb, midY, W2, `R₂`);
+      }
+
+      const minR = Math.min(r1, r2);
+      readout.innerHTML =
+        `Tổng trở <b>${rTot.toFixed(2)} Ω</b> · dòng tổng <b>${iTot.toFixed(2)} A</b>` +
+        (par
+          ? ` — <b>nhỏ hơn cả nhánh nhỏ nhất</b> (${minR} Ω), vì thêm nhánh là thêm lối cho dòng`
+          : ` — bằng tổng hai điện trở, dòng buộc đi qua cả hai`);
+    }
+
+    root.querySelectorAll('input').forEach((el) => el.addEventListener('input', draw));
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="resistors"]').forEach(setup);
+</script>

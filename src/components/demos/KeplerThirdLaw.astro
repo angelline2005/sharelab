@@ -1,0 +1,114 @@
+---
+// Kepler's third law from real data: the six classical planets plotted as
+// T against a on log–log axes, where T² ∝ a³ becomes a straight line of slope
+// 3/2. The slider drops a "test planet" at any distance and reads its year off
+// the law. Static redraw; the data are in the source, not fetched.
+---
+
+<figure class="demo" data-demo="kepler">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Hành tinh thử — bán trục lớn <output data-out="a"></output>
+      <input type="range" data-in="a" min="0.3" max="12" step="0.01" value="2.77" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Sáu hành tinh cổ điển trên trục log–log. T² = a³ (năm, AU) hiện thành đường
+    thẳng hệ số góc 3/2 — dữ liệu thật bám đường thẳng tới bốn chữ số. Mặc định
+    thanh trượt đặt ở 2,77 AU: vành đai tiểu hành tinh.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const PLANETS: [string, number, number][] = [
+    ['Thuỷ', 0.387, 0.241],
+    ['Kim', 0.723, 0.615],
+    ['Trái Đất', 1, 1],
+    ['Hoả', 1.524, 1.881],
+    ['Mộc', 5.203, 11.86],
+    ['Thổ', 9.537, 29.45],
+  ];
+  const LINE = '#2563eb', TEST = '#dc2626';
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const slider = root.querySelector('[data-in="a"]') as HTMLInputElement;
+    const out = root.querySelector('[data-out="a"]') as HTMLOutputElement;
+
+    function draw() {
+      const a = Number(slider.value);
+      out.textContent = `${a.toFixed(2)} AU`;
+      const T = Math.pow(a, 1.5);
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.55);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+
+      // log–log axes: a ∈ [0.3, 12], T ∈ [0.15, 45].
+      const pad = 40;
+      const lgA = (v: number) => Math.log10(v);
+      const X = (v: number) => pad + ((lgA(v) - lgA(0.3)) / (lgA(12) - lgA(0.3))) * (cssW - pad - 12);
+      const Y = (v: number) => cssH - pad - ((lgA(v) - lgA(0.15)) / (lgA(45) - lgA(0.15))) * (cssH - pad - 12);
+
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.3;
+      ctx.beginPath(); ctx.moveTo(pad, 8); ctx.lineTo(pad, cssH - pad); ctx.lineTo(cssW - 8, cssH - pad); ctx.stroke();
+      ctx.globalAlpha = 0.55; ctx.fillStyle = fg;
+      ctx.font = '11px system-ui,sans-serif'; ctx.textAlign = 'center';
+      ctx.fillText('bán trục lớn a (AU, log)', cssW / 2, cssH - 10);
+      ctx.save(); ctx.translate(12, cssH / 2); ctx.rotate(-Math.PI / 2);
+      ctx.fillText('chu kỳ T (năm, log)', 0, 0); ctx.restore();
+      ctx.globalAlpha = 1;
+
+      // The law: T = a^1.5, a straight line here.
+      ctx.strokeStyle = LINE; ctx.lineWidth = 1.6; ctx.globalAlpha = 0.7;
+      ctx.beginPath();
+      ctx.moveTo(X(0.3), Y(Math.pow(0.3, 1.5)));
+      ctx.lineTo(X(12), Y(Math.pow(12, 1.5)));
+      ctx.stroke(); ctx.globalAlpha = 1; ctx.lineWidth = 1;
+
+      for (const [name, pa, pT] of PLANETS) {
+        ctx.fillStyle = LINE;
+        ctx.beginPath(); ctx.arc(X(pa), Y(pT), 4.5, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = fg; ctx.globalAlpha = 0.7;
+        ctx.textAlign = 'left';
+        ctx.fillText(name, X(pa) + 7, Y(pT) - 5);
+        ctx.globalAlpha = 1;
+      }
+
+      ctx.fillStyle = TEST;
+      ctx.beginPath(); ctx.arc(X(a), Y(T), 6, 0, Math.PI * 2); ctx.fill();
+
+      // Context for a few interesting radii.
+      const near = (x: number, y: string, eps: number) => (Math.abs(a - x) < eps ? y : '');
+      const note =
+        near(2.77, ' — vành đai tiểu hành tinh: "năm" của Ceres dài 4,6 năm Trái Đất', 0.12) ||
+        near(1, ' — chính là Trái Đất: 1 AU, 1 năm. Định luật chuẩn hoá quanh ta', 0.04) ||
+        near(9.54, ' — trùng sao Thổ: 29,5 năm mỗi vòng', 0.15) || '';
+
+      readout.innerHTML =
+        `Hành tinh ở <b>${a.toFixed(2)} AU</b> → chu kỳ T = a^1,5 = <b>${T.toFixed(2)} năm</b>${note}`;
+    }
+
+    slider.addEventListener('input', draw);
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="kepler"]').forEach(setup);
+</script>

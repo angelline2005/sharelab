@@ -1,0 +1,103 @@
+---
+// RC charging: V(t) = V₀(1 − e^(−t/RC)), closed form, static redraw. The two
+// sliders move R and C; the curve keeps its shape and only the time axis
+// stretches — which is the point: τ = RC is the circuit's entire personality.
+---
+
+<figure class="demo" data-demo="rc">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Điện trở R <output data-out="r"></output>
+      <input type="range" data-in="r" min="100" max="10000" step="100" value="1000" /></label>
+    <label>Tụ điện C <output data-out="c"></output>
+      <input type="range" data-in="c" min="100" max="2000" step="10" value="1000" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Tụ nạp qua điện trở từ nguồn V₀. Vạch dọc là các mốc τ, 3τ, 5τ — chiếc
+    thang 63% → 95% → 99% mà mọi mạch RC đều leo, bất kể R và C là bao nhiêu.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const CURVE = '#dc2626', MARKS = '#2563eb';
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (n: string) => root.querySelector(`[data-in="${n}"]`) as HTMLInputElement;
+    const output = (n: string) => root.querySelector(`[data-out="${n}"]`) as HTMLOutputElement;
+
+    function draw() {
+      const R = Number(input('r').value);
+      const C = Number(input('c').value) * 1e-6; // µF → F
+      output('r').textContent = R >= 1000 ? `${(R / 1000).toFixed(1)} kΩ` : `${R} Ω`;
+      output('c').textContent = `${(C * 1e6).toFixed(0)} µF`;
+      const tau = R * C;
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.5);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+
+      const pad = 36, T = 6 * tau;
+      const X = (t: number) => pad + (t / T) * (cssW - pad - 10);
+      const Y = (v: number) => cssH - pad - v * (cssH - pad - 14); // v in 0..1
+
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.3;
+      ctx.beginPath(); ctx.moveTo(pad, 8); ctx.lineTo(pad, cssH - pad); ctx.lineTo(cssW - 8, cssH - pad); ctx.stroke();
+      ctx.setLineDash([3, 4]);
+      ctx.beginPath(); ctx.moveTo(pad, Y(1)); ctx.lineTo(cssW - 8, Y(1)); ctx.stroke();
+      ctx.setLineDash([]); ctx.globalAlpha = 0.55;
+      ctx.fillStyle = fg; ctx.font = '11px system-ui,sans-serif'; ctx.textAlign = 'left';
+      ctx.fillText('V₀', pad + 4, Y(1) - 4);
+      ctx.globalAlpha = 1;
+
+      // τ ladder.
+      for (const [k, label] of [[1, 'τ'], [3, '3τ'], [5, '5τ']] as const) {
+        const v = 1 - Math.exp(-k);
+        ctx.strokeStyle = MARKS; ctx.globalAlpha = 0.6; ctx.setLineDash([4, 4]);
+        ctx.beginPath(); ctx.moveTo(X(k * tau), cssH - pad); ctx.lineTo(X(k * tau), Y(v)); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(pad, Y(v)); ctx.lineTo(X(k * tau), Y(v)); ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.fillStyle = MARKS; ctx.textAlign = 'center';
+        ctx.fillText(`${label} · ${(v * 100).toFixed(k === 5 ? 1 : 0)}%`, X(k * tau), Y(v) - 6);
+        ctx.globalAlpha = 1;
+      }
+
+      ctx.strokeStyle = CURVE; ctx.lineWidth = 2; ctx.beginPath();
+      for (let i = 0; i <= 240; i++) {
+        const t = (T * i) / 240;
+        i ? ctx.lineTo(X(t), Y(1 - Math.exp(-t / tau))) : ctx.moveTo(X(t), Y(0));
+      }
+      ctx.stroke(); ctx.lineWidth = 1;
+      ctx.fillStyle = fg; ctx.globalAlpha = 0.55; ctx.textAlign = 'center';
+      ctx.fillText('t (s)', cssW / 2, cssH - 8);
+      ctx.globalAlpha = 1;
+
+      readout.innerHTML =
+        `τ = R·C = <b>${tau >= 1 ? tau.toFixed(2) + ' s' : (tau * 1000).toFixed(0) + ' ms'}</b> · ` +
+        `nạp "đầy" (99,3%) sau 5τ = <b>${(5 * tau).toFixed(2)} s</b>`;
+    }
+
+    root.querySelectorAll('input').forEach((el) => el.addEventListener('input', draw));
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="rc"]').forEach(setup);
+</script>

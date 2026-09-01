@@ -1,0 +1,58 @@
+---
+title: "Phân bố Maxwell: không khí quanh bạn bay nhanh hơn âm thanh"
+description: "Phân tử nitơ ở nhiệt độ phòng lao đi trung bình 476 m/s — vượt tường âm. Và cái đuôi dài của phân bố tốc độ lý giải hai chuyện tưởng chừng xa nhau: nước bay hơi làm mát, và Mặt Trăng không giữ nổi khí quyển."
+pubDate: 2026-09-02
+tags: ["vat-ly", "nhiet-hoc", "javascript"]
+translationId: "phan-bo-maxwell-khong-khi-nhanh-hon-am-thanh"
+---
+
+import MaxwellBoltzmann from '../../../components/demos/MaxwellBoltzmann.astro';
+
+Không khí trong phòng bạn trông tĩnh lặng. Sự thật ở cấp phân tử: mỗi phân tử
+nitơ đang lao đi với tốc độ **trung bình 476 m/s** — nhanh hơn cả tốc độ âm
+thanh nó truyền tải, và va chạm hàng tỷ lần mỗi giây. "Tĩnh lặng" chỉ là các
+hướng bay triệt tiêu nhau.
+
+Nhưng "trung bình" mới là nửa câu chuyện. Câu chuyện đầy đủ là một **phân bố**:
+
+<MaxwellBoltzmann />
+
+## Ba con số hay bị nhầm làm một
+
+Đường cong lệch phải này sinh ra ba "tốc độ đại diện" khác nhau, và đề thi rất
+thích đánh tráo chúng:
+
+| | Công thức | N₂, 300 K |
+|---|---|---|
+| Đỉnh phân bố v_p | √(2kT/m) | 422 m/s |
+| Trung bình v̄ | √(8kT/πm) | 476 m/s |
+| Căn quân phương v_rms | √(3kT/m) | 517 m/s |
+
+Thứ tự **luôn cố định** v_p < v̄ < v_rms (tỉ lệ √2 : √(8/π) : √3), và lý do
+nằm ở hình dạng: cái đuôi phải dài kéo trung bình lệch khỏi đỉnh, còn v_rms —
+vì bình phương ưu ái kẻ nhanh — bị kéo xa hơn nữa. Chính v_rms mới là gương
+mặt trong công thức động năng `(3/2)kT`, nên "tốc độ trong đề nhiệt học" hầu
+như luôn là con số lớn nhất trong ba.
+
+## Cái đuôi làm được những việc lớn
+
+Kéo nhiệt độ và nhìn kỹ: đỉnh dịch theo √T — khiêm tốn — nhưng **cái đuôi
+phải phình ra dữ dội hơn nhiều**. Phần trăm phân tử "nhanh gấp đôi trung bình"
+tăng vọt theo nhiệt độ. Hai hiện tượng quen thuộc sống nhờ cái đuôi đó:
+
+**Nước bay hơi làm mát.** Ở mặt thoáng, chỉ những phân tử thuộc đuôi nhanh đủ
+sức bứt khỏi lực giữ của khối nước. Chúng ra đi mang theo phần động năng trên
+trung bình — đám ở lại vì thế *nghèo đi*, tức nguội đi. Mồ hôi làm mát da bạn
+bằng cách trục xuất có chọn lọc tầng lớp giàu năng lượng nhất; đó cũng là lý
+do nước bay hơi được ở 30 °C chứ chẳng cần chờ sôi.
+
+**Mặt Trăng trọc đầu.** Tốc độ thoát của Mặt Trăng chỉ 2,4 km/s. So với 476 m/s
+trung bình thì tưởng an toàn — nhưng khí quyển không thất thoát bằng trung
+bình, nó thất thoát bằng **đuôi**. Mỗi khoảnh khắc luôn có một nhúm phân tử
+vượt 2,4 km/s ở rìa khí quyển, và nhúm ấy rò rỉ ra không gian, đời này qua đời
+khác, cho tới sạch. Trái Đất giữ được N₂ vì 11,2 km/s đẩy ngưỡng vào vùng đuôi
+loãng đến vô vọng — nhưng với hydro nhẹ (tốc độ gấp gần 4 lần nitơ ở cùng T),
+đuôi vẫn với tới, và đó là lý do khí quyển ta gần như không còn hydro tự do.
+
+Một đường cong, hai bài học trái dấu: đuôi phân bố lấy đi hơi nước của cốc trà
+— và lấy đi cả bầu trời của Mặt Trăng.

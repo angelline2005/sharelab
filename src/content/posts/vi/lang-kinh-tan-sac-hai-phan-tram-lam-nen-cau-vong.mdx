@@ -1,0 +1,62 @@
+---
+title: "Lăng kính và tán sắc: chênh lệch 1% làm nên cầu vồng"
+description: "Chiết suất thuỷ tinh với tia tím chỉ hơn tia đỏ khoảng 1% — mắt không đời nào thấy nổi. Lăng kính là bộ khuếch đại biến 1% ấy thành dải màu, và giọt mưa làm điều tương tự trên cả bầu trời."
+pubDate: 2026-09-02
+tags: ["vat-ly", "quang-hoc", "javascript"]
+translationId: "lang-kinh-tan-sac-hai-phan-tram-lam-nen-cau-vong"
+---
+
+import PrismDispersion from '../../../components/demos/PrismDispersion.astro';
+
+Bí mật của cầu vồng nằm trong một chi tiết kỹ thuật nghe rất chán: **chiết
+suất của vật liệu không phải một con số.** Nó phụ thuộc bước sóng. Với thuỷ
+tinh BK7:
+
+```
+n(đỏ 700 nm)  = 1,5132
+n(tím 400 nm) = 1,5308
+```
+
+Chênh nhau khoảng **1%**. Nếu tôi đưa bạn hai tấm kính có chiết suất lệch nhau
+1%, bạn không phân biệt nổi bằng bất kỳ giác quan nào. Vậy mà từ 1% đó, Newton
+kéo ra được cả dải màu.
+
+<PrismDispersion />
+
+## Lăng kính là một bộ khuếch đại
+
+Mánh của lăng kính là **bắt ánh sáng khúc xạ hai lần** ở hai mặt không song
+song. Mỗi lần khúc xạ, tia tím (n lớn hơn) gãy sâu hơn tia đỏ một chút; hai
+lần cộng dồn, và góc chiết quang càng lớn thì cú cộng càng đậm — kéo thanh
+trượt để xem quạt màu mở ra theo.
+
+Con số thật từ demo, với lăng kính 60°: tia đỏ lệch tổng cộng 38,3°, tia tím
+39,9° — **quạt màu mở khoảng 1,5°**. Nhỏ, nhưng đã đủ: chiếu qua căn
+phòng tối lên bức tường cách vài mét, 2° trải thành một bàn tay màu sắc.
+(Hình vẽ trong demo phóng đại độ mở ×4 để nhìn được ở cỡ màn hình — readout
+ghi rõ điều đó, vì demo trên site này không được phép nói dối kể cả để đẹp.)
+
+Kéo góc chiết quang quá lớn còn gặp một người quen: tia không ló ra nổi ở mặt
+thứ hai — [phản xạ toàn phần](/vi/posts/khuc-xa-va-phan-xa-toan-phan/) chặn
+cửa từ bên trong. Hai bài quang học của site gặp nhau trong một tam giác thuỷ
+tinh.
+
+## Từ tam giác thuỷ tinh đến vòm trời
+
+Giọt nước mưa là một "lăng kính" hình cầu: tia nắng khúc xạ khi vào, phản xạ ở
+mặt trong, khúc xạ lần nữa khi ra. Cùng kịch bản — hai lần khúc xạ khuếch đại
+chênh lệch n(λ) của nước — và phép tính cho ra góc kỳ diệu: ánh sáng quay lại
+tập trung quanh **42°** so với hướng nắng, đỏ ngoài tím trong. Cầu vồng không
+"ở" đâu cả; nó là tập hợp những giọt nước nằm đúng nón 42° quanh cái bóng đầu
+bạn — vì thế mỗi người nhìn một cầu vồng của riêng mình, và đi về phía nó thì
+nó lùi theo.
+
+## Khi 1% là kẻ thù
+
+Cùng hiện tượng đội mũ ác nhân trong ống kính máy ảnh: thấu kính đơn hội tụ
+tím gần hơn đỏ (sắc sai), viền tím tái quanh các cạnh sáng trong ảnh chính là
+"cầu vồng ngoài ý muốn". Ống kính tốt đắt tiền một phần vì phải **trả tiền dập
+tán sắc**: ghép nhiều loại thuỷ tinh có n(λ) ngược tính nhau để 1% của thành
+phần này khử 1% của thành phần kia. Một hiện tượng, hai nghề: người làm quang
+phổ trả tiền để phóng đại nó, người làm ống kính trả tiền để giết nó — và cả
+hai hoá đơn đều ghi cùng một dòng: *chiết suất không phải một con số.*

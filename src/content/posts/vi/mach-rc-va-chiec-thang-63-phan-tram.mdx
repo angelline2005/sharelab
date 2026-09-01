@@ -1,0 +1,63 @@
+---
+title: "Mạch RC: chiếc thang 63% mà mọi tụ điện đều leo"
+description: "Tụ nạp không bao giờ đầy — nó chỉ tiến gần V₀ mãi mãi. Nhưng cứ sau mỗi τ = RC, nó đi được 63% quãng đường còn lại, và quy ước '5τ là đầy' sinh ra từ đó."
+pubDate: 2026-09-02
+tags: ["vat-ly", "dien-hoc", "javascript"]
+translationId: "mach-rc-va-chiec-thang-63-phan-tram"
+---
+
+import RCCircuit from '../../../components/demos/RCCircuit.astro';
+
+Nối tụ điện với nguồn qua một điện trở và bấm giờ. Điện áp trên tụ leo theo:
+
+```
+V(t) = V₀ · (1 − e^(−t/RC))
+```
+
+Có một điều công thức nói mà ít ai để bụng: **tụ không bao giờ nạp đầy.** Hàm
+mũ chỉ tiệm cận V₀, không chạm. Cái ta gọi là "đầy" là một quy ước — và demo
+dưới đây cho thấy quy ước ấy đến từ đâu.
+
+<RCCircuit />
+
+## Một hằng số, ba bậc thang
+
+Tích `τ = R·C` — ohm nhân farad ra **giây**, một trong những phép nhân đơn vị
+gọn nhất của vật lý — quyết định toàn bộ nhịp độ:
+
+| Thời điểm | Tụ đạt |
+|---|---|
+| 1τ | 63,2% |
+| 3τ | 95,0% |
+| 5τ | 99,3% — "đầy" theo quy ước kỹ thuật |
+
+Con số 63,2% trông lẻ nhưng là gương mặt của `1 − 1/e`. Và tính chất đáng nhớ
+nhất: **mỗi τ trôi qua, tụ đi được 63% quãng đường còn lại** — từ 0 lên 63%,
+rồi 63% của phần thiếu, cứ thế. Cùng nhịp "còn lại bao nhiêu, lấy chừng đó
+phần trăm" như [phân rã phóng xạ](/vi/posts/chu-ky-ban-ra-khong-hat-nao-biet-tuoi-minh/)
+— chỉ khác chiều đi lên.
+
+Kéo hai thanh trượt và để ý một điều: **hình dạng đường cong không bao giờ
+đổi.** R và C chỉ kéo giãn trục thời gian. Mọi mạch RC trên đời là cùng một
+đường cong mặc những bộ quần áo thời gian khác nhau — đó là lý do dân điện tử
+chỉ cần hỏi nhau đúng một câu: "τ bao nhiêu?"
+
+## Chỗ bạn gặp chiếc thang này
+
+**Đèn flash máy ảnh** nạp tụ lớn qua điện trở — tiếng rít cao dần chính là âm
+thanh của đường cong này, và "chờ flash sẵn sàng" là chờ đủ vài τ.
+
+**Cần gạt mưa gián đoạn** trên ô tô đời trước: núm chỉnh tốc độ gạt là một
+biến trở đổi τ của mạch định thì RC.
+
+**Cảm ứng chạm** trên màn hình điện thoại: ngón tay đặt vào làm thay đổi điện
+dung C, mạch đo thấy τ đổi — bạn "bấm nút" bằng cách chỉnh một hằng số thời
+gian.
+
+## Phía xả cũng là chiếc thang ấy, đi xuống
+
+Rút nguồn và để tụ xả qua điện trở: `V(t) = V₀·e^(−t/RC)` — mỗi τ mất 63% của
+phần đang còn. Đây là lý do các bo mạch có ghi cảnh báo chờ vài phút sau khi
+rút điện: tụ nguồn lớn với R rò nhỏ cho τ hàng chục giây, và "5τ để coi như
+hết" hoạt động theo cả hai chiều. Chiếc thang không quan tâm bạn leo lên hay
+leo xuống — nó chỉ biết đếm 63%.

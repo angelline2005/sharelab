@@ -1,0 +1,67 @@
+---
+title: "Hiệu ứng quang điện: ánh sáng không cho góp tiền lẻ"
+description: "Chiếu đèn đỏ cực mạnh vào natri cả năm — không electron nào bật ra. Một tia tím yếu ớt — bật ra ngay. Nghịch lý chôn vùi vật lý sóng cổ điển và mở màn thuyết lượng tử."
+pubDate: 2026-09-02
+tags: ["vat-ly", "luong-tu", "javascript"]
+translationId: "hieu-ung-quang-dien-anh-sang-tra-tien-le"
+---
+
+import PhotoelectricEffect from '../../../components/demos/PhotoelectricEffect.astro';
+
+Cuối thế kỷ 19, ánh sáng là sóng — hồ sơ đã khép: giao thoa, nhiễu xạ, phương
+trình Maxwell, tất cả đều thuận. Rồi một thí nghiệm nhỏ mở lại hồ sơ: chiếu
+sáng vào kim loại và đếm electron bật ra.
+
+Theo lý thuyết sóng, năng lượng đến **liên tục** — chiếu càng mạnh, càng lâu,
+electron nhận càng nhiều, cuối cùng phải bật ra. Màu sắc chỉ là chi tiết.
+
+Thí nghiệm nói ngược lại toàn tập:
+
+<PhotoelectricEffect />
+
+Kéo bước sóng qua mốc **544 nm** (với natri) và xem quy tắc thật:
+
+- **Đỏ 700 nm, cường độ tối đa:** không một electron nào, chiếu bao lâu cũng
+  thế.
+- **Tím 400 nm, cường độ yếu nhất:** electron bật ra **ngay lập tức**.
+- Tăng cường độ tia tím: **nhiều** electron hơn, nhưng mỗi con **không nhanh
+  hơn** chút nào.
+
+## Lời giải 1905: ánh sáng đến theo gói
+
+Einstein đề xuất điều khi ấy nghe như dị giáo: ánh sáng trao năng lượng theo
+từng **gói không chia được** — photon — mỗi gói mang `E = hf`. Tần số càng cao
+(bước sóng càng ngắn), gói càng lớn. Và giao dịch ở bề mặt kim loại là luật
+**một-photon-một-electron**:
+
+```
+E_k = hf − A
+```
+
+Electron cần "tiền chuộc" A (công thoát, 2,28 eV với natri) để rời kim loại.
+Photon đỏ mang 1,77 eV — thiếu. Và đây là điểm chí mạng cho lý thuyết sóng:
+**hai photon thiếu không được góp chung.** Ánh sáng không nhận tiền lẻ; mỗi
+electron chỉ nhận đúng một gói, đủ thì đi, thiếu thì thôi. Cường độ chỉ là *số
+gói mỗi giây* — nó quyết định bao nhiêu electron, không quyết định electron
+nào nhanh bao nhiêu.
+
+Ba quan sát "vô lý" của thí nghiệm giờ thành ba dòng suy luận một bước. Giải
+Nobel 1921 của Einstein trao cho chính công thức này — không phải cho thuyết
+tương đối.
+
+## Đường thẳng đo được hằng số Planck
+
+Phần đẹp cho người làm thí nghiệm: vẽ động năng cực đại theo tần số, công thức
+là **đường thẳng** `E_k = hf − A` — hệ số góc chính là hằng số Planck `h`, giao
+điểm với trục hoành là tần số ngưỡng. Millikan, người vốn muốn *bác bỏ*
+Einstein, bỏ ra một thập kỷ đo đường thẳng này ngày càng chính xác — và nó
+thẳng đến mức chính ông phải công nhận. Ít lý thuyết nào được đối thủ của mình
+xác nhận kỹ đến vậy.
+
+## Gói ánh sáng quanh bạn
+
+Cánh cửa thang máy không kẹp người, pin mặt trời trên mái nhà, và cảm biến
+trong máy ảnh điện thoại đều là hậu duệ kỹ thuật của hiệu ứng này: photon vào,
+electron ra, đếm electron là "thấy" ánh sáng. Mỗi tấm ảnh bạn chụp là hàng tỷ
+lần giao dịch `hf − A` diễn ra trót lọt — thuyết lượng tử không ở phòng thí
+nghiệm; nó nằm trong túi quần.

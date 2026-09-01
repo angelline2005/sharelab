@@ -1,0 +1,115 @@
+---
+// LC resonance as radio tuning: f = 1/(2π√(LC)). The capacitor slider sweeps
+// the resonant frequency across a band with three fixed "stations"; the
+// response curve (series RLC magnitude with a small R for finite Q) shows
+// which station the circuit lets through. Static redraw.
+---
+
+<figure class="demo" data-demo="lc">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Tụ xoay C <output data-out="c"></output>
+      <input type="range" data-in="c" min="20" max="320" step="1" value="100" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Cuộn cảm L = 100 µH cố định; núm vặn dò đài của radio chính là cái tụ xoay
+    này. Ba vạch là ba "đài phát" trong vùng; mạch chỉ cho qua đài nào trùng
+    tần số cộng hưởng của nó.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const L = 100e-6; // H
+  const RQ = 12; // series resistance for finite Q, ohms
+  const CURVE = '#2563eb', STATION = '#dc2626';
+  const STATIONS: [number, string][] = [
+    [0.95e6, 'Đài A · 0,95 MHz'],
+    [1.4e6, 'Đài B · 1,40 MHz'],
+    [2.6e6, 'Đài C · 2,60 MHz'],
+  ];
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const slider = root.querySelector('[data-in="c"]') as HTMLInputElement;
+    const out = root.querySelector('[data-out="c"]') as HTMLOutputElement;
+
+    // Series RLC current magnitude vs frequency, normalised to 1 at resonance.
+    function response(f: number, C: number) {
+      const w = 2 * Math.PI * f;
+      const x = w * L - 1 / (w * C);
+      return RQ / Math.hypot(RQ, x);
+    }
+
+    function draw() {
+      const C = Number(slider.value) * 1e-12;
+      out.textContent = `${(C * 1e12).toFixed(0)} pF`;
+      const f0 = 1 / (2 * Math.PI * Math.sqrt(L * C));
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.48);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+
+      const pad = 36, FMIN = 0.5e6, FMAX = 4e6;
+      const X = (f: number) => pad + ((f - FMIN) / (FMAX - FMIN)) * (cssW - pad - 10);
+      const Y = (v: number) => cssH - pad - v * (cssH - pad - 14);
+
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.3;
+      ctx.beginPath(); ctx.moveTo(pad, 8); ctx.lineTo(pad, cssH - pad); ctx.lineTo(cssW - 8, cssH - pad); ctx.stroke();
+      ctx.globalAlpha = 0.55; ctx.fillStyle = fg;
+      ctx.font = '11px system-ui,sans-serif'; ctx.textAlign = 'center';
+      ctx.fillText('tần số (MHz)', cssW / 2, cssH - 8);
+      for (const f of [1e6, 2e6, 3e6]) ctx.fillText((f / 1e6).toFixed(0), X(f), cssH - pad + 14);
+      ctx.globalAlpha = 1;
+
+      // Stations with their pass-through strength.
+      for (const [fs, name] of STATIONS) {
+        const g = response(fs, C);
+        ctx.strokeStyle = STATION; ctx.globalAlpha = 0.35 + 0.65 * g; ctx.lineWidth = 1 + 2.5 * g;
+        ctx.beginPath(); ctx.moveTo(X(fs), cssH - pad); ctx.lineTo(X(fs), Y(0.92)); ctx.stroke();
+        ctx.lineWidth = 1;
+        ctx.fillStyle = STATION;
+        ctx.fillText(name, X(fs), Y(0.92) - 8);
+        ctx.globalAlpha = 1;
+      }
+
+      // The tuning curve.
+      ctx.strokeStyle = CURVE; ctx.lineWidth = 2; ctx.beginPath();
+      for (let i = 0; i <= 300; i++) {
+        const f = FMIN + ((FMAX - FMIN) * i) / 300;
+        i ? ctx.lineTo(X(f), Y(response(f, C))) : ctx.moveTo(X(f), Y(response(f, C)));
+      }
+      ctx.stroke(); ctx.lineWidth = 1;
+
+      const best = STATIONS.map(([fs, name]) => ({ name, g: response(fs, C) }))
+        .sort((a, b) => b.g - a.g)[0];
+      readout.innerHTML =
+        `f₀ = 1/(2π√(LC)) = <b>${(f0 / 1e6).toFixed(2)} MHz</b> · ` +
+        (best.g > 0.7
+          ? `đang bắt <b>${best.name}</b> (lọt qua ${(best.g * 100).toFixed(0)}%)`
+          : `chưa trùng đài nào — đài gần nhất chỉ lọt ${(best.g * 100).toFixed(0)}%`);
+    }
+
+    slider.addEventListener('input', draw);
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="lc"]').forEach(setup);
+</script>

@@ -1,0 +1,70 @@
+---
+title: "Định luật Kepler III: cả hệ Mặt Trời nằm trên một đường thẳng"
+description: "T² = a³ nghe như câu thần chú để thuộc lòng — cho tới khi vẽ sáu hành tinh lên trục log-log và thấy chúng xếp hàng thẳng tắp đến bốn chữ số. Kèm cách dùng nó làm cân đo khối lượng thiên hà."
+pubDate: 2026-09-02
+tags: ["vat-ly", "thien-van", "javascript"]
+translationId: "dinh-luat-kepler-iii-va-duong-thang-cua-he-mat-troi"
+---
+
+import KeplerThirdLaw from '../../../components/demos/KeplerThirdLaw.astro';
+
+Johannes Kepler mất gần một thập kỷ đào bới số liệu quan sát của Tycho Brahe
+để tìm một quy luật nối khoảng cách của hành tinh với "độ dài năm" của nó. Năm
+1618, ông tìm thấy:
+
+```
+T² = a³      (T tính bằng năm, a bằng AU)
+```
+
+Bình phương chu kỳ bằng lập phương bán trục lớn. Kiểm bằng dữ liệu thật:
+
+| Hành tinh | a (AU) | T (năm) | T²/a³ |
+|---|---|---|---|
+| Thuỷ | 0,387 | 0,241 | 1,0021 |
+| Kim | 0,723 | 0,615 | 1,0008 |
+| Trái Đất | 1 | 1 | 1,0000 |
+| Hoả | 1,524 | 1,881 | 0,9996 |
+| Mộc | 5,203 | 11,86 | 0,9986 |
+| Thổ | 9,537 | 29,45 | 0,9999 |
+
+Sáu thế giới, khoảng cách trải gần 25 lần — cột cuối lệch nhau chưa tới hai
+phần nghìn.
+
+<KeplerThirdLaw />
+
+Trên trục log–log, `T² = a³` thành đường thẳng hệ số góc 3/2, và sáu chấm dữ
+liệu bám nó như xâu vào chỉ. Kéo "hành tinh thử" tới đâu, luật trả về độ dài
+năm ở đó — mặc định thanh trượt đặt ở vành đai tiểu hành tinh, nơi mỗi "năm"
+của Ceres dài 4,6 năm của ta.
+
+## Từ mô tả thành cân
+
+Kepler chỉ biết *rằng* nó đúng. Sáu mươi năm sau Newton cho biết *vì sao*: cân
+bằng hấp dẫn với chuyển động tròn cho ngay
+
+```
+T² = (4π²/GM) · a³
+```
+
+— và cái hằng số "1" đẹp đẽ trong bảng trên hoá ra là **khối lượng Mặt Trời**
+đang ẩn danh. Điều này lộn ngược cách dùng định luật: đo được T và a của bất kỳ
+vật gì quay quanh một thiên thể, bạn **cân được thiên thể đó**.
+
+Đó là chiếc cân đo được những thứ không nhét vừa phòng thí nghiệm nào: khối
+lượng Mặt Trời (từ quỹ đạo Trái Đất), khối lượng Trái Đất (từ Mặt Trăng), khối
+lượng Sao Mộc (từ bốn vệ tinh Galileo — chính bảng số liệu thu nhỏ của định
+luật này quanh một hành tinh khác). Và thế kỷ 20, khi các ngôi sao vành ngoài
+thiên hà quay **nhanh hơn** mức chiếc cân này cho phép với lượng vật chất nhìn
+thấy, phép cân Kepler–Newton trở thành chứng cứ đầu tiên của **vật chất tối**:
+không phải định luật sai, mà là có khối lượng chưa ai thấy đặt trên đĩa cân.
+
+## Số 3/2 khiêm tốn
+
+Điều đáng dừng lại sau cùng: hệ số góc 3/2 ấy không được ai chọn. Nó rơi ra từ
+định luật nghịch đảo bình phương của hấp dẫn — lực giảm theo `1/r²` thì chu kỳ
+buộc phải tăng theo `a^1,5`, không có phiên bản nào khác. Nếu một ngày ta tìm
+thấy hệ hành tinh nơi đường thẳng log–log có hệ số góc khác, đó không phải
+chuyện lạ của các hành tinh — đó là hấp dẫn đang vận hành khác đi. Sáu chấm
+thẳng hàng trên đồ thị vì thế là một trong những bài kiểm tra `1/r²` cổ nhất
+và rẻ nhất còn hiệu lực: chỉ cần kính thiên văn nhỏ, đồng hồ, và vài chục năm
+kiên nhẫn.

@@ -1,0 +1,59 @@
+---
+title: "Mạch LC: núm vặn dò đài radio thực chất xoay cái gì"
+description: "Không gian quanh ăng-ten chứa đồng thời mọi đài phát. Radio không 'bắt' đài — nó lọc: một cuộn cảm, một tụ xoay, và công thức f = 1/(2π√LC) quyết định giọng nói nào sống sót."
+pubDate: 2026-09-02
+tags: ["vat-ly", "dien-tu", "dao-dong", "javascript"]
+translationId: "mach-lc-va-num-van-do-dai-radio"
+---
+
+import LCCircuit from '../../../components/demos/LCCircuit.astro';
+
+Ăng-ten của một chiếc radio nhận **tất cả các đài cùng lúc** — mọi tần số
+trong vùng chồng lên nhau thành một mớ tín hiệu hỗn độn. Việc "dò đài" vì thế
+không phải đi tìm; nó là **lọc bỏ tất cả trừ một**.
+
+Bộ lọc ấy chỉ gồm hai linh kiện: cuộn cảm L và tụ điện C, với tần số cộng
+hưởng
+
+```
+f₀ = 1/(2π√(LC))
+```
+
+Núm vặn dò đài trên radio đời cũ nối thẳng vào một **tụ xoay** — vặn núm là
+thay đổi C, tức trượt f₀ dọc dải tần. Demo dưới đây là đúng cơ chế đó:
+
+<LCCircuit />
+
+Vặn tụ và nhìn đỉnh cộng hưởng trườn qua ba đài: đài nào lọt vào đỉnh thì sáng
+đậm — lọt qua gần trọn — hai đài còn lại bị đè xuống vài phần trăm. Cùng lúc
+đó cả ba vẫn đập vào ăng-ten như cũ; thứ thay đổi chỉ là mạch *chịu rung* theo
+ai.
+
+## Vì sao LC biết chọn tần số
+
+Mạch LC là [con lắc](/vi/posts/cong-huong-vi-sao-day-nho-thang-luc-lon/) của
+thế giới điện: năng lượng lắc qua lại giữa điện trường trong tụ và từ trường
+trong cuộn, với nhịp riêng f₀. Tín hiệu từ ăng-ten là những cú đẩy tí hon —
+và như mọi hệ cộng hưởng, chỉ cú đẩy **đúng nhịp** mới cộng dồn lên thành dao
+động lớn. Đài trùng f₀ được khuếch đại hàng chục lần; đài lệch nhịp tự triệt
+tiêu. "Bắt sóng" là cộng hưởng, không hơn không kém.
+
+Độ nhọn của đỉnh — hệ số Q — là chất lượng của chiếc radio: Q thấp thì hai đài
+gần nhau nghe lẫn vào nhau, Q cao thì tách bạch. Trong demo, điện trở nhỏ giấu
+trong mạch quyết định độ nhọn ấy, đúng vai trò γ của bài cộng hưởng.
+
+## Từ tụ xoay đến con chip
+
+Chiếc tụ xoay cánh nhôm — vặn tay, nghe tiếng sột soạt của lá tụ trượt vào
+nhau — đã về hưu, nhưng nguyên lý thì thăng chức. Điện thoại của bạn dò
+"đài" WiFi ở 2,4 GHz, GPS ở 1,575 GHz, 4G ở hàng chục dải khác — mỗi dải một
+bộ lọc cộng hưởng, thu nhỏ ngàn lần và chỉnh bằng điện áp thay vì bằng ngón
+tay (varactor — tụ bán dẫn đổi điện dung theo điện áp đặt vào). Mỗi lần điện
+thoại "bắt được sóng" là một hậu duệ của f₀ = 1/(2π√LC) vừa xoay núm xong
+trong im lặng.
+
+Điều đáng mang theo: không gian quanh bạn lúc này đang chứa **đồng thời** hàng
+trăm cuộc trò chuyện, bản tin, gói dữ liệu — trên các tần số khác nhau, không
+chen lấn nhau. Thứ duy nhất tách chúng ra thành từng kênh sạch sẽ là các mạch
+biết rung đúng một nhịp và điếc với mọi nhịp còn lại. Sự "chật chội" của không
+gian sóng được giải quyết không phải bằng tường ngăn, mà bằng cộng hưởng.

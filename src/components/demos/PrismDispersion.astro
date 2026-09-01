@@ -1,0 +1,122 @@
+---
+// Dispersion through a prism: n(λ) from Cauchy's fit for BK7 glass,
+// n = 1.5046 + 0.0042/λ² (λ in µm), refraction at both faces via Snell.
+// The apex-angle slider changes how far the exit fan spreads; seven sampled
+// wavelengths draw the spectrum with their true deviation angles.
+---
+
+<figure class="demo" data-demo="prism">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Góc chiết quang của lăng kính <output data-out="a"></output>
+      <input type="range" data-in="a" min="20" max="70" step="0.5" value="60" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Thuỷ tinh BK7: chiết suất với tia tím lớn hơn tia đỏ chưa tới 2% — nhưng
+    hai lần khúc xạ nhân chênh lệch tí hon ấy thành cái quạt màu nhìn rõ bằng
+    mắt. Newton mua lăng kính ở hội chợ và tách được ánh sáng trắng năm 1666.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  // Cauchy fit for BK7; λ in µm.
+  const nOf = (lam: number) => 1.5046 + 0.0042 / (lam * lam);
+  const RAYS: [number, string][] = [
+    [0.40, '#7c3aed'], [0.45, '#4f46e5'], [0.48, '#2563eb'], [0.53, '#16a34a'],
+    [0.58, '#eab308'], [0.62, '#f97316'], [0.70, '#dc2626'],
+  ];
+
+  // Deviation through a prism of apex A at incidence i1 (radians):
+  // r1 from Snell in, r2 = A − r1, i2 from Snell out; D = i1 + i2 − A.
+  function deviation(A: number, i1: number, n: number): number | null {
+    const r1 = Math.asin(Math.sin(i1) / n);
+    const r2 = A - r1;
+    const s = n * Math.sin(r2);
+    if (s >= 1) return null; // total internal reflection at the exit face
+    return i1 + Math.asin(s) - A;
+  }
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const slider = root.querySelector('[data-in="a"]') as HTMLInputElement;
+    const out = root.querySelector('[data-out="a"]') as HTMLOutputElement;
+
+    function draw() {
+      const Adeg = Number(slider.value);
+      out.textContent = `${Adeg.toFixed(1)}°`;
+      const A = (Adeg * Math.PI) / 180;
+      const i1 = (50 * Math.PI) / 180; // fixed incidence
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.46);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+
+      // Prism triangle, apex up.
+      const cx = cssW * 0.45, baseY = cssH * 0.78, hgt = cssH * 0.55;
+      const half = hgt * Math.tan(A / 2);
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.6;
+      ctx.beginPath();
+      ctx.moveTo(cx, baseY - hgt);
+      ctx.lineTo(cx - half, baseY);
+      ctx.lineTo(cx + half, baseY);
+      ctx.closePath(); ctx.stroke();
+      ctx.globalAlpha = 1;
+
+      // Incoming white beam to the middle of the left face.
+      const mx = cx - half / 2, my = baseY - hgt / 2;
+      ctx.strokeStyle = fg; ctx.lineWidth = 2.4; ctx.globalAlpha = 0.85;
+      ctx.beginPath(); ctx.moveTo(mx - cssW * 0.3, my + cssW * 0.09); ctx.lineTo(mx, my); ctx.stroke();
+      ctx.globalAlpha = 1; ctx.lineWidth = 1;
+
+      // Exit fan: each wavelength leaves with its own total deviation. The
+      // white ray enters horizontally-ish; drawing uses deviation relative to
+      // the incoming direction for a faithful angular spread (scaled ×4 so the
+      // ~1.5° fan is visible at canvas size — noted in the readout).
+      const EXAGGERATE = 4;
+      const inAng = Math.atan2(-cssW * 0.09, cssW * 0.3); // incoming direction
+      const devs = RAYS.map(([lam, colour]) => ({ colour, D: deviation(A, i1, nOf(lam)) }))
+        .filter((d): d is { colour: string; D: number } => d.D !== null);
+      if (devs.length) {
+        const dMean = devs.reduce((s, d) => s + d.D, 0) / devs.length;
+        const ex = mx + half, ey = my;
+        for (const { colour, D } of devs) {
+          // True mean direction, spread exaggerated around it for visibility.
+          const drawAng = inAng + dMean + (D - dMean) * EXAGGERATE;
+          ctx.strokeStyle = colour; ctx.lineWidth = 2;
+          ctx.beginPath(); ctx.moveTo(ex, ey);
+          ctx.lineTo(ex + Math.cos(drawAng) * cssW * 0.5, ey + Math.sin(drawAng) * cssW * 0.5);
+          ctx.stroke(); ctx.lineWidth = 1;
+        }
+      }
+
+      const dRed = deviation(A, i1, nOf(0.7));
+      const dViolet = deviation(A, i1, nOf(0.4));
+      readout.innerHTML = dRed === null || dViolet === null
+        ? `Góc quá lớn — tia bị <b>phản xạ toàn phần</b> ở mặt ra, không ló được.`
+        : `n(đỏ) = ${nOf(0.7).toFixed(4)}, n(tím) = ${nOf(0.4).toFixed(4)} · góc lệch: đỏ <b>${((dRed * 180) / Math.PI).toFixed(1)}°</b>, tím <b>${((dViolet * 180) / Math.PI).toFixed(1)}°</b> · quạt màu mở <b>${(((dViolet - dRed) * 180) / Math.PI).toFixed(2)}°</b> (hình vẽ phóng đại ×4)`;
+    }
+
+    slider.addEventListener('input', draw);
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="prism"]').forEach(setup);
+</script>

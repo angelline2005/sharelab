@@ -1,0 +1,59 @@
+---
+title: "Hạt tích điện trong từ trường: chạy nhanh gấp đôi, về đích cùng lúc"
+description: "Lực Lorentz bẻ hạt thành vòng tròn bán kính mv/qB — nhưng chu kỳ quay thì gạch tên vận tốc khỏi công thức. Sự trùng hợp kỳ lạ đó là trái tim của máy gia tốc cyclotron."
+pubDate: 2026-09-02
+tags: ["vat-ly", "dien-tu", "javascript"]
+translationId: "hat-tich-dien-trong-tu-truong-chu-ky-khong-can-toc-do"
+---
+
+import CyclotronMotion from '../../../components/demos/CyclotronMotion.astro';
+
+Thả một hạt tích điện vào từ trường đều, lực Lorentz `F = qv×B` làm một việc
+rất kén chọn: **luôn đẩy vuông góc với vận tốc**. Không bao giờ tăng tốc, không
+bao giờ hãm — chỉ bẻ lái. Kết cục duy nhất của kiểu lái đó là đường tròn:
+
+```
+r = mv / (qB)        (bán kính)
+T = 2πm / (qB)       (chu kỳ)
+```
+
+Nhìn hai công thức cạnh nhau đủ lâu sẽ thấy điều lạ: bán kính có `v`, còn chu
+kỳ thì **không**. Demo dưới đây là điều lạ đó chạy trước mắt bạn.
+
+<CyclotronMotion />
+
+Hạt xanh luôn được cài chạy **nhanh gấp đôi** hạt đỏ. Nó vẽ vòng tròn to gấp
+đôi — đúng như `r ∝ v` — nhưng đếm vòng thì hai hạt **khoá chặt vào nhau**,
+vòng nào cũng cán vạch cùng lúc. Nhanh gấp đôi trên quãng đường dài gấp đôi:
+hai hiệu ứng triệt tiêu nhau tròn trịa, và tốc độ bị gạch tên khỏi chu kỳ.
+
+## Sự trùng hợp trị giá một giải Nobel
+
+Năm 1929, Ernest Lawrence nhận ra sự triệt tiêu này không phải chuyện bên lề —
+nó là một **cỗ máy** đang chờ được chế tạo.
+
+Vấn đề thời đó: muốn hạt nhanh, phải đẩy nó qua hiệu điện thế khổng lồ một
+lần — mà cách điện cho hàng triệu volt là ác mộng. Ý tưởng của Lawrence: đẩy
+**nhiều lần nhỏ** thay vì một lần lớn. Cho hạt quay vòng trong từ trường, mỗi
+nửa vòng lại hưởng một cú đẩy điện áp khiêm tốn.
+
+Cú đẩy phải đến **đúng nhịp** — và đây là chỗ phép màu xuất hiện: vì chu kỳ
+không phụ thuộc tốc độ, hạt càng được đẩy càng nhanh, vòng quay càng phình to,
+nhưng **nhịp về của nó không hề đổi**. Một nguồn xoay chiều tần số cố định đẩy
+trúng mãi mãi, từ vòng đầu chậm rãi tới vòng cuối sát tốc độ khủng khiếp. Quỹ
+đạo xoắn ốc nở dần của cyclotron chính là công thức `T` không có `v` được đúc
+thành thép và nam châm.
+
+## Và ranh giới của phép màu
+
+Theo thông lệ của site này, hỏi tiếp: sự triệt tiêu đẹp đẽ ấy gãy ở đâu?
+
+Nó gãy khi hạt chạm vùng tương đối tính. Gần tốc độ ánh sáng, khối lượng hiệu
+dụng của hạt tăng — `T = 2πm/(qB)` bắt đầu **dài ra**, hạt về trễ nhịp, cú đẩy
+đến sai lúc và bắt đầu hãm thay vì đẩy. Cyclotron cổ điển tự đặt trần cho mình
+ở cỡ vài chục MeV.
+
+Lời giải cho ranh giới đó là cả một thế hệ máy mới: synchrotron — thay vì đòi
+chu kỳ đứng yên, người ta cho **tần số đẩy và từ trường đuổi theo hạt**. Vòng
+tròn 27 km của LHC là hậu duệ trực tiếp của dòng chữ "T không chứa v"... cùng
+phần chú thích nhỏ ghi thêm: *chỉ đúng khi chưa chạy quá nhanh.*

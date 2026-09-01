@@ -1,0 +1,63 @@
+---
+title: "Điện trở song song: vì sao tổng lại nhỏ hơn cả nhánh nhỏ nhất"
+description: "Mắc thêm điện trở mà tổng trở giảm đi — nghe ngược đời cho tới khi bạn thôi nghĩ về 'trở' và bắt đầu nghĩ về 'lối đi'. Kèm mẹo tính nhẩm hai nhánh bằng tích chia tổng."
+pubDate: 2026-09-02
+tags: ["vat-ly", "dien-hoc", "javascript"]
+translationId: "dien-tro-song-song-nho-hon-ca-nhanh-nho-nhat"
+---
+
+import ParallelResistors from '../../../components/demos/ParallelResistors.astro';
+
+Hỏi nhanh: mắc **thêm** một điện trở 100 Ω vào mạch, tổng trở tăng hay giảm?
+
+Câu trả lời đúng là "tuỳ mắc kiểu gì" — và ở kiểu song song, câu trả lời làm
+nhiều người khựng lại: tổng trở **giảm**, thậm chí xuống **thấp hơn nhánh nhỏ
+nhất** đang có.
+
+<ParallelResistors />
+
+Kéo thử: 100 Ω song song 25 Ω cho tổng 20 Ω — nhỏ hơn cả 25. Thêm nhánh nào
+cũng chỉ kéo tổng xuống, kể cả nhánh "tệ" 100 Ω kia.
+
+## Đổi chữ "trở" thành chữ "lối"
+
+Nghịch lý tan ngay khi đổi cách nhìn. Điện trở đo mức độ **cản**; nghịch đảo
+của nó đo mức độ **dẫn** — cho dòng đi dễ đến đâu. Công thức song song:
+
+```
+1/R = 1/R₁ + 1/R₂ + …
+```
+
+chính là câu: **độ dẫn cộng lại được.** Hai cánh cửa mở cạnh nhau cho đám đông
+thoát nhanh hơn một cửa — kể cả khi cửa thứ hai hẹp. Nó không chặn ai; nó chỉ
+mở thêm lối. Trong demo, bề dày mỗi dây vẽ đúng theo dòng điện: nhánh nhỏ ôm
+phần lớn dòng, nhánh to góp thêm một dòng mảnh — nhưng **góp thêm**, không bao
+giờ trừ đi.
+
+Hệ quả kiểm tra được ngay: nhánh 1 Ω song song nhánh 100 Ω ra 0,99 Ω. Nhánh
+100 Ω gần như vô hình — song song với một lối rất thoáng, mọi lối hẹp chỉ là
+số lẻ. Giới hạn của chuyện này đáng nhớ: **đoản mạch là một nhánh 0 Ω mắc song
+song với tất cả**, và nó nuốt trọn dòng điện của cả mạch — vì 0 Ω song song với
+bất kỳ thứ gì vẫn là 0 Ω.
+
+## Mẹo hai nhánh: tích chia tổng
+
+Với đúng hai điện trở, công thức nghịch đảo rút gọn thành dạng nhẩm được:
+
+```
+R = R₁·R₂ / (R₁ + R₂)
+```
+
+100 và 25: tích 2500, tổng 125 → 20 Ω. Hai nhánh bằng nhau thì ra **một nửa**
+— hai lối giống hệt nhau, đông người đi nhanh gấp đôi, "cản" còn phân nửa.
+
+## Vì sao nhà bạn đi dây song song
+
+Mọi ổ cắm trong nhà mắc song song lên cùng 220 V — và giờ thì rõ tại sao. Thứ
+nhất, mỗi thiết bị nhận đủ điện áp bất kể hàng xóm của nó bật hay tắt; mắc nối
+tiếp thì bật thêm cái quạt là cái đèn tối đi. Thứ hai, rút một thiết bị không
+cắt mạch của những cái còn lại — chuỗi đèn nháy nối tiếp đời cũ chết cả dây vì
+một bóng cháy chính là phản ví dụ. Cái giá phải trả nằm ở điều demo vừa dạy:
+càng cắm nhiều, tổng trở căn nhà càng **tụt**, dòng tổng càng phình — và đó là
+lý do tồn tại của cầu dao: người gác cổng đứng đếm ampe ở đúng chỗ mọi lối đi
+nhập làm một.

@@ -1,0 +1,58 @@
+---
+title: "Định luật Coulomb: hai 'hạt bụi' kéo nhau gần một newton"
+description: "1 µC là lượng điện tích nhỏ tới mức vô hình — nhưng hai hạt như thế cách nhau gang tay hút nhau bằng trọng lượng quả táo. Điện mạnh khủng khiếp; ta không nhận ra chỉ vì vũ trụ đã trung hoà gần hết."
+pubDate: 2026-09-02
+tags: ["vat-ly", "dien-tu", "javascript"]
+translationId: "dinh-luat-coulomb-hai-hat-bui-keo-nhau-mot-newton"
+---
+
+import CoulombForce from '../../../components/demos/CoulombForce.astro';
+
+Định luật Coulomb sinh đôi với định luật hấp dẫn của Newton:
+
+```
+F = k·q₁q₂/r²
+```
+
+Cùng dạng nghịch đảo bình phương, cùng kiểu tích hai "nguồn" chia khoảng cách
+bình phương. Nhưng chỗ giống nhau dừng ở đó — và demo dưới đây để bạn sờ vào
+chỗ khác nhau.
+
+<CoulombForce />
+
+## Con số nên làm bạn giật mình
+
+Đặt mặc định: hai điện tích **1 µC** — một phần triệu coulomb, lượng điện bạn
+tích lên người khi kéo áo len — cách nhau 10 cm. Lực: **0,9 newton**, cỡ trọng
+lượng một quả táo. Từ hai "hạt bụi điện" vô hình.
+
+So sánh cho công bằng: lực *hấp dẫn* giữa hai vật 1 kg ở cùng khoảng cách là
+0,0000000067 N. Điện thắng hấp dẫn cỡ **10³⁶ lần** khi so proton với proton.
+Câu hỏi đúng không phải "sao điện mạnh vậy" mà là **"sao ta không thấy nó suốt
+ngày?"** — và câu trả lời là vũ trụ đã thanh toán gần hết: vật chất quanh ta
+trung hoà, mỗi điện tích dương đều có một âm đứng cạnh khử. Hấp dẫn yếu hơn
+nghìn tỷ tỷ tỷ lần nhưng **không có dấu trừ** để bị khử — nên nó, chứ không
+phải điện, xây thiên hà. Cái áo len dính tóc là khoảnh khắc hiếm hoi sổ sách
+lệch đi vài phần tỷ.
+
+## Định luật III Newton gài trong công thức
+
+Kéo q₁ lên 5 µC và để q₂ ở 0,5 µC — chênh nhau mười lần. Hai mũi tên lực vẫn
+**dài bằng nhau**. Công thức chỉ có tích `q₁q₂`, không có chỗ cho "ai to hơn":
+điện tích bé kéo điện tích lớn mạnh đúng bằng chiều ngược lại. Đây là câu hỏi
+bẫy kinh điển — "điện tích lớn tác dụng lực lớn hơn lên điện tích nhỏ?" —
+và demo trả lời bằng hình trước khi bạn kịp nhớ công thức.
+
+Còn dấu thì nằm ngoài độ lớn: đổi một bên sang âm, mũi tên lộn chiều từ đẩy
+sang hút, con số không đổi. Hấp dẫn không có được trò này — khối lượng chỉ có
+một dấu, nên hấp dẫn chỉ biết hút.
+
+## Nghịch đảo bình phương, lần thứ ba
+
+Kéo r từ 10 cm lên 20 cm: lực tụt còn **một phần tư**. Gấp đôi nữa: còn một
+phần mười sáu. Mẫu số r² này là người quen của site: nó làm [ánh sáng loãng
+đi](/vi/posts/hieu-ung-quang-dien-anh-sang-tra-tien-le/) theo khoảng cách, giữ
+[các hành tinh trên đường thẳng Kepler](/vi/posts/dinh-luat-kepler-iii-va-duong-thang-cua-he-mat-troi/),
+và ở đây phân phát lực điện. Ba hiện tượng, một mẫu số — trong vật lý, `1/r²`
+không hẳn là một công thức mà gần như một định lý hình học: đó là cách mọi thứ
+phát từ một điểm phải loãng ra khi chia đều lên mặt cầu ngày càng rộng.

@@ -1,0 +1,115 @@
+---
+// The Maxwell–Boltzmann speed distribution for N₂, drawn from the closed form
+//   f(v) ∝ v²·exp(−mv²/2kT)
+// with the three canonical markers (most probable, mean, rms) that students
+// mix up, in their fixed order v_p < v̄ < v_rms. Temperature slider reshapes
+// the curve; the area underneath stays 1 — heating spreads, it does not add.
+---
+
+<figure class="demo" data-demo="maxwell">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Nhiệt độ <output data-out="t"></output>
+      <input type="range" data-in="t" min="100" max="1000" step="5" value="300" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Phân bố tốc độ của phân tử N₂ (khí quyển của bạn). Diện tích dưới đường
+    cong luôn bằng 1 — nung nóng không tạo thêm phân tử, chỉ dàn chúng ra
+    những tốc độ cao hơn, kéo theo cái đuôi phải rất dài.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const KB = 1.380649e-23, M = 28 * 1.66054e-27; // N₂
+  const CURVE = '#2563eb', VP = '#dc2626', VMEAN = '#16a34a', VRMS = '#f59e0b';
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const slider = root.querySelector('[data-in="t"]') as HTMLInputElement;
+    const out = root.querySelector('[data-out="t"]') as HTMLOutputElement;
+
+    function draw() {
+      const T = Number(slider.value);
+      out.textContent = `${T} K (${(T - 273.15).toFixed(0)} °C)`;
+
+      const vp = Math.sqrt((2 * KB * T) / M);
+      const vMean = Math.sqrt((8 * KB * T) / (Math.PI * M));
+      const vRms = Math.sqrt((3 * KB * T) / M);
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.5);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+
+      const pad = 36, VMAX = 2000;
+      // Normalised f(v); y-scale fixed against the coldest slider value so the
+      // flattening with temperature is visible.
+      const f = (v: number, TT: number) =>
+        v * v * Math.exp((-M * v * v) / (2 * KB * TT));
+      let norm = 0;
+      for (let v = 0; v < VMAX; v += 5) norm += f(v, T) * 5;
+      let yMax = 0;
+      let normCold = 0;
+      for (let v = 0; v < VMAX; v += 5) normCold += f(v, 100) * 5;
+      for (let v = 0; v < VMAX; v += 5) yMax = Math.max(yMax, f(v, 100) / normCold);
+      yMax *= 1.05;
+
+      const X = (v: number) => pad + (v / VMAX) * (cssW - pad - 10);
+      const Y = (d: number) => cssH - pad - (d / yMax) * (cssH - pad - 12);
+
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.3;
+      ctx.beginPath(); ctx.moveTo(pad, 8); ctx.lineTo(pad, cssH - pad); ctx.lineTo(cssW - 8, cssH - pad); ctx.stroke();
+      ctx.globalAlpha = 0.55; ctx.fillStyle = fg;
+      ctx.font = '11px system-ui,sans-serif'; ctx.textAlign = 'center';
+      ctx.fillText('tốc độ phân tử (m/s)', cssW / 2, cssH - 8);
+      for (const v of [500, 1000, 1500]) ctx.fillText(String(v), X(v), cssH - pad + 14);
+      ctx.globalAlpha = 1;
+
+      ctx.strokeStyle = CURVE; ctx.lineWidth = 2; ctx.beginPath();
+      for (let i = 0; i <= 300; i++) {
+        const v = (VMAX * i) / 300;
+        const d = f(v, T) / norm;
+        i ? ctx.lineTo(X(v), Y(d)) : ctx.moveTo(X(v), Y(d));
+      }
+      ctx.stroke(); ctx.lineWidth = 1;
+
+      const mark = (v: number, colour: string, label: string, dy: number) => {
+        ctx.strokeStyle = colour; ctx.globalAlpha = 0.8; ctx.setLineDash([4, 4]);
+        ctx.beginPath(); ctx.moveTo(X(v), cssH - pad); ctx.lineTo(X(v), Y(f(v, T) / norm)); ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.fillStyle = colour; ctx.textAlign = 'left';
+        ctx.fillText(`${label} ${v.toFixed(0)}`, X(v) + 4, 20 + dy);
+        ctx.globalAlpha = 1;
+      };
+      mark(vp, VP, 'v_p', 0);
+      mark(vMean, VMEAN, 'v̄', 14);
+      mark(vRms, VRMS, 'v_rms', 28);
+
+      readout.innerHTML =
+        `N₂ ở ${T} K: đỉnh <b>${vp.toFixed(0)}</b> · trung bình <b>${vMean.toFixed(0)}</b> · ` +
+        `căn quân phương <b>${vRms.toFixed(0)} m/s</b> — thứ tự cố định v_p &lt; v̄ &lt; v_rms, tỉ lệ √2 : √(8/π) : √3`;
+    }
+
+    slider.addEventListener('input', draw);
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="maxwell"]').forEach(setup);
+</script>
