@@ -1,0 +1,75 @@
+---
+title: "Phương trình tên lửa: chế độ độc tài của một hàm logarit"
+description: "Tên lửa phải chở nhiên liệu để... đẩy chính nhiên liệu — nên Δv chỉ tăng theo logarit. Kết cục: 95% khối lượng con tàu là chất đốt, người và hàng là ghi chú bên lề. Tsiolkovsky viết bản án ấy từ 1903, trước cả máy bay có mặt ở Nga."
+pubDate: 2026-09-02
+tags: ["vat-ly", "co-hoc", "thien-van", "javascript"]
+translationId: "phuong-trinh-ten-lua-che-do-doc-tai-cua-logarit"
+---
+
+import RocketEquation from '../../../components/demos/RocketEquation.astro';
+
+Xe máy của bạn đi 100 km mang theo nhiên liệu bằng ~1% trọng lượng xe. Tên
+lửa lên quỹ đạo mang nhiên liệu bằng **90–95% trọng lượng chính nó** — và
+không kỹ sư nào làm khác được, vì bản thiết kế bị một hàm logarit cai trị:
+
+<RocketEquation />
+
+## Lời nguyền: chở nhiên liệu để đẩy nhiên liệu
+
+Tên lửa là [bài toán bảo toàn động
+lượng](/vi/posts/va-cham-dan-hoi-va-va-cham-mem) chạy liên tục: phụt khí về
+sau với tốc độ v_e, thân tàu nhận cú đẩy về trước. Nhưng có cái bẫy đệ quy:
+lít nhiên liệu đốt ở *phút cuối* đã phải được **nâng lên và tăng tốc suốt
+các phút trước** — bằng nhiên liệu khác, thứ đến lượt nó cũng phải được
+chở. Cộng sổ chuỗi ấy (Tsiolkovsky làm năm 1903, bằng giấy bút, 54 năm
+trước vệ tinh đầu tiên):
+
+```
+Δv = v_e · ln(m₀/m_f)
+```
+
+Chữ **ln** là cả bản án. Muốn Δv gấp đôi? Tỉ lệ khối lượng phải **bình
+phương**. Lên quỹ đạo thấp cần ~9,4 km/s (7,8 của [tốc độ vũ trụ cấp
+một](/vi/posts/toc-do-vu-tru-va-khau-dai-bac-cua-newton) cộng thuế khí
+quyển và trọng lực dọc đường); động cơ hydro lỏng đỉnh nhất cho v_e = 4,4
+km/s → m₀/m_f = e^2,14 ≈ 8,5: **88% con tàu là chất đốt**. Dùng dầu hoả
+(v_e = 3,0) như tầng một Falcon 9: cần 96%. Phần "khô" còn lại phải cõng
+vỏ, động cơ, cánh lái — hàng hoá thật sự thường chỉ **2–4%** khối lượng
+phóng. Saturn V nặng 2 900 tấn để đưa 120 tấn lên quỹ đạo: tỉ lệ ấy không
+phải kỹ thuật kém — nó là logarit đang thu tô.
+
+Vì thế mọi tên lửa thật đều **chia tầng**: vỏ thùng rỗng là m_f vô ích —
+vứt nó giữa đường là hạ m_f, tặng không một khoản Δv. Tầng một Falcon 9
+tách ở phút thứ ba không phải cho ngoạn mục; đó là cách duy nhất lách một
+phần lời nguyền mà không cãi được nó.
+
+## Vì sao không làm v_e to hẳn lên?
+
+Nhìn công thức thì v_e là đòn bẩy tuyến tính duy nhất — nhưng nó bị **hoá
+học** khoá trần: năng lượng mỗi kilôgam của phản ứng cháy chỉ đủ phụt khí
+~3–4,6 km/s, đã đụng nóc từ thập niên 1960. Muốn hơn phải bỏ hoá học: động
+cơ ion phụt xenon **20–50 km/s** — Δv dồi dào tới mức tàu Dawn một mình
+bay quanh *hai* thiên thể khác nhau; giá phải trả là lực đẩy yếu như [cánh
+buồm ánh sáng](/vi/posts/anh-sang-day-duoc-thuyen-ap-suat-buc-xa) — bằng
+trọng lượng tờ giấy, chỉ dùng được khi *đã* ở ngoài không gian. Bức tranh
+ngành vũ trụ hiện tại gói trong hai chế độ ấy: **hoá học** — khoẻ mà hoang
+phí — để đấm thủng 9,4 km/s đầu tiên; **ion** — yếu mà tằn tiện — cho mọi
+thứ sau đó.
+
+## Trường hợp biên: hai đầu bảng của cùng một phương trình
+
+Đầu dễ chịu: **đáp xuống có khí quyển là được giảm giá Δv**. Về Trái Đất
+hay xuống Sao Hoả, tấm chắn nhiệt phanh giúp hàng km/s miễn phí — nên tàu
+đổ bộ Sao Hoả nhẹ hơn hẳn phần "đi". Chiều về từ Mặt Trăng (không khí
+quyển để phanh khi *đáp*, nhưng Trái Đất phanh hộ khi *về*) cũng rẻ bất
+ngờ: module Apollo rời Mặt Trăng chỉ cần Δv ~2,7 km/s — trọng lực yếu là
+lý do "nhảy về" dễ hơn "nhảy đi" sáu lần.
+
+Đầu nghiệt ngã: thử phóng **từ Sao Mộc** giả định có bệ. Tốc độ thoát 59,5
+km/s; với v_e = 4,4: m₀/m_f = e^13,5 ≈ **740 000** — tên lửa nặng gấp bảy
+trăm nghìn lần hàng, tức là không tồn tại. Một nền văn minh sinh ra trên
+hành tinh khí khổng lồ có thể giỏi toán hơn ta mà **vĩnh viễn không rời
+nổi nhà bằng hoá học**. Loài người hay quên mình trúng số ở mục này: Trái
+Đất đủ nặng để [giữ khí quyển](/vi/posts/vi-sao-mat-trang-khong-co-khong-khi),
+đủ nhẹ để 9,4 km/s còn nằm trong tầm của ln — cánh cửa ra vũ trụ chỉ hé
+mở đúng một khe, và chúng ta vừa khít lách qua.

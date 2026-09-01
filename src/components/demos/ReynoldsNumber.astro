@@ -1,0 +1,121 @@
+---
+// Reynolds number Re = ρvL/µ in water, log sliders for size and speed.
+// The chart is log-log (L vs v) with iso-Re diagonals at 1 and 2000, and
+// swimmer landmarks. Static redraw.
+---
+
+<figure class="demo" data-demo="reynolds">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Kích thước vật bơi L = 10^x m, chọn x <output data-out="l"></output>
+      <input type="range" data-in="l" min="-6" max="1" step="0.1" value="0.3" /></label>
+    <label>Tốc độ bơi v = 10^y m/s, chọn y <output data-out="v"></output>
+      <input type="range" data-in="v" min="-6" max="1" step="0.1" value="0" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Re so sức quán tính với sức nhớt của nước. Re lớn: thế giới của đà và
+    dòng xoáy — kiểu bơi của cá và người. Re nhỏ hơn 1: quán tính vô nghĩa,
+    nước đặc như mật — thế giới nơi vi khuẩn phải phát minh kiểu bơi khác hẳn.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const LM: Array<[number, number, string]> = [
+    [Math.log10(2), 0, 'người bơi'],
+    [Math.log10(0.05), -1, 'cá vàng'],
+    [Math.log10(5e-5), -4, 'tinh trùng'],
+    [Math.log10(2e-6), Math.log10(3e-5), 'vi khuẩn'],
+  ];
+  const CURVE = '#f59e0b', MARK = '#dc2626', TXT = '#2563eb';
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (k: string) => root.querySelector(`[data-in="${k}"]`) as HTMLInputElement;
+    const output = (k: string) => root.querySelector(`[data-out="${k}"]`) as HTMLOutputElement;
+
+    const fmtLen = (m: number) =>
+      m >= 1 ? `${m.toFixed(1).replace('.', ',')} m` : m >= 1e-3 ? `${(m * 1000).toFixed(1).replace('.', ',')} mm` : `${(m * 1e6).toFixed(1).replace('.', ',')} µm`;
+    const fmtV = (v: number) =>
+      v >= 1 ? `${v.toFixed(1).replace('.', ',')} m/s` : v >= 1e-3 ? `${(v * 1000).toFixed(1).replace('.', ',')} mm/s` : `${(v * 1e6).toFixed(0)} µm/s`;
+
+    function draw() {
+      const lx = Number(input('l').value), vy = Number(input('v').value);
+      const L = Math.pow(10, lx), v = Math.pow(10, vy);
+      output('l').textContent = fmtLen(L);
+      output('v').textContent = fmtV(v);
+      const Re = (1000 * v * L) / 1e-3;
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.44);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+
+      const padL = 50, padB = 30, padT = 12, padR = 12;
+      const X = (l: number) => padL + ((l + 6) / 7) * (cssW - padL - padR);
+      const Y = (y: number) => cssH - padB - ((y + 6) / 7) * (cssH - padB - padT);
+
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.3;
+      ctx.beginPath(); ctx.moveTo(padL, padT); ctx.lineTo(padL, cssH - padB); ctx.lineTo(cssW - padR, cssH - padB); ctx.stroke();
+      ctx.globalAlpha = 0.55; ctx.fillStyle = fg; ctx.font = '10px system-ui,sans-serif';
+      ctx.textAlign = 'center';
+      for (const [l, lab] of [[-6, '1 µm'], [-3, '1 mm'], [0, '1 m']] as Array<[number, string]>)
+        ctx.fillText(lab, X(l), cssH - padB + 14);
+      ctx.fillText('kích thước →', (padL + cssW) / 2, cssH - padB + 26);
+      ctx.textAlign = 'right';
+      for (const [y, lab] of [[-6, '1 µm/s'], [-3, '1 mm/s'], [0, '1 m/s']] as Array<[number, string]>)
+        ctx.fillText(lab, padL - 4, Y(y) + 3);
+      ctx.globalAlpha = 1;
+
+      // Iso-Re lines: Re = 10^k → log v = k − 6 − log L (since ρ/µ = 1e6).
+      for (const [k, lab] of [[0, 'Re = 1'], [Math.log10(2000), 'Re ≈ 2000: rối bắt đầu']] as Array<[number, string]>) {
+        ctx.strokeStyle = CURVE; ctx.globalAlpha = 0.8; ctx.setLineDash([5, 4]);
+        ctx.beginPath();
+        const yAt = (l: number) => k - 6 - l;
+        ctx.moveTo(X(-6), Y(yAt(-6))); ctx.lineTo(X(1), Y(yAt(1))); ctx.stroke();
+        ctx.setLineDash([]); ctx.globalAlpha = 0.75; ctx.fillStyle = fg; ctx.textAlign = 'left';
+        ctx.fillText(lab, X(-5.9), Y(yAt(-5.9)) - 6);
+        ctx.globalAlpha = 1;
+      }
+
+      LM.forEach(([l, y, lab], k) => {
+        ctx.fillStyle = TXT;
+        ctx.beginPath(); ctx.arc(X(l), Y(y), 4, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = fg; ctx.globalAlpha = 0.7; ctx.textAlign = 'center';
+        ctx.fillText(lab, X(l), Y(y) - 8 - (k % 2) * 0);
+        ctx.globalAlpha = 1;
+      });
+
+      ctx.fillStyle = MARK;
+      ctx.beginPath(); ctx.arc(X(lx), Y(vy), 6, 0, Math.PI * 2); ctx.fill();
+
+      const regime =
+        Re < 1 ? 'thế giới nhớt — quán tính vô nghĩa, dừng quẫy là đứng phắt lại' :
+        Re < 2000 ? 'chảy tầng — nước lượn êm quanh vật' :
+        'chảy rối — xoáy cuộn, kiểu bơi lấy đà hoạt động tốt';
+      readout.innerHTML =
+        `Re = ρvL/µ = <b>${Re >= 100 ? Re.toExponential(1).replace('.', ',').replace('e+', '×10^') : Re.toPrecision(2).replace('.', ',')}</b> — ${regime}`;
+    }
+
+    root.querySelectorAll('input').forEach((el) => el.addEventListener('input', draw));
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="reynolds"]').forEach(setup);
+</script>

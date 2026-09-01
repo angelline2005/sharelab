@@ -1,0 +1,100 @@
+---
+// Adiabatic lapse rate: air cools as it rises and expands. Dry rate
+// g/cp ≈ 9.8 K/km; saturated air ~6.5 K/km (latent-heat brake). Slider =
+// altitude; readout gives both temperatures from a 30 °C sea-level start.
+---
+
+<figure class="demo" data-demo="lapse-rate">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Độ cao (m) <output data-out="h"></output>
+      <input type="range" data-in="h" min="0" max="4000" step="50" value="1500" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Khối không khí bốc lên gặp áp suất thấp hơn, nở ra — và trả tiền nở bằng
+    nội năng của chính nó: lạnh đi ~9,8 °C mỗi km (khô). Không khí ẩm được
+    hơi nước ngưng tụ "sưởi lại" nên chỉ mất ~6,5 °C/km. Xuất phát: 30 °C ở
+    mực biển.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const T0 = 30, DRY = 9.76, MOIST = 6.5;
+  const DRYC = '#dc2626', MOISTC = '#2563eb', MK = '#f59e0b';
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const slider = root.querySelector('[data-in="h"]') as HTMLInputElement;
+    const out = root.querySelector('[data-out="h"]') as HTMLOutputElement;
+
+    function draw() {
+      const h = Number(slider.value);
+      out.textContent = h.toLocaleString('vi-VN');
+      const tDry = T0 - (DRY * h) / 1000;
+      const tMoist = T0 - (MOIST * h) / 1000;
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.44);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+
+      const padL = 46, padB = 26, padT = 12, padR = 10;
+      // x: temperature −10..30, y: altitude 0..4000
+      const X = (t: number) => padL + ((t + 10) / 40) * (cssW - padL - padR);
+      const Y = (m: number) => cssH - padB - (m / 4000) * (cssH - padB - padT);
+
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.3;
+      ctx.beginPath(); ctx.moveTo(padL, padT); ctx.lineTo(padL, cssH - padB); ctx.lineTo(cssW - padR, cssH - padB); ctx.stroke();
+      ctx.globalAlpha = 0.55; ctx.fillStyle = fg; ctx.font = '10px system-ui,sans-serif';
+      ctx.textAlign = 'center';
+      for (const t of [-10, 0, 10, 20, 30]) ctx.fillText(`${t}°`, X(t), cssH - padB + 14);
+      ctx.textAlign = 'right';
+      for (const m of [1000, 2000, 3000, 4000]) ctx.fillText(`${m} m`, padL - 4, Y(m) + 3);
+      ctx.globalAlpha = 1;
+
+      // Two lapse lines.
+      for (const [rate, colour, label] of [[DRY, DRYC, 'khô 9,8°/km'], [MOIST, MOISTC, 'ẩm bão hoà 6,5°/km']] as Array<[number, string, string]>) {
+        ctx.strokeStyle = colour; ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.moveTo(X(T0), Y(0)); ctx.lineTo(X(T0 - rate * 4), Y(4000)); ctx.stroke();
+        ctx.lineWidth = 1; ctx.fillStyle = colour; ctx.textAlign = 'left';
+        ctx.fillText(label, X(T0 - rate * 4) + 6, Y(4000) + 12);
+      }
+
+      // Markers at chosen altitude.
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.35; ctx.setLineDash([3, 3]);
+      ctx.beginPath(); ctx.moveTo(padL, Y(h)); ctx.lineTo(cssW - padR, Y(h)); ctx.stroke();
+      ctx.setLineDash([]); ctx.globalAlpha = 1;
+      for (const [t, colour] of [[tDry, DRYC], [tMoist, MOISTC]] as Array<[number, string]>) {
+        ctx.fillStyle = colour;
+        ctx.beginPath(); ctx.arc(X(t), Y(h), 5, 0, Math.PI * 2); ctx.fill();
+      }
+
+      readout.innerHTML =
+        `Ở ${h.toLocaleString('vi-VN')} m: khối khí khô còn <b>${tDry.toFixed(1).replace('.', ',')} °C</b>, ` +
+        `khối khí ẩm bão hoà còn <b>${tMoist.toFixed(1).replace('.', ',')} °C</b>` +
+        ` (chênh nhau ${(tMoist - tDry).toFixed(1).replace('.', ',')} °C — phần hơi nước "trả lại" khi ngưng tụ)`;
+    }
+
+    slider.addEventListener('input', draw);
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="lapse-rate"]').forEach(setup);
+</script>

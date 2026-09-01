@@ -1,0 +1,105 @@
+---
+// Tsiolkovsky: Δv = ve·ln(m0/mf). Sliders: exhaust velocity and propellant
+// fraction. The curve shows Δv vs fuel fraction — the logarithmic wall —
+// with mission lines for LEO and the Moon. Static redraw.
+---
+
+<figure class="demo" data-demo="rocket">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Tốc độ phụt khí v_e (km/s) <output data-out="ve"></output>
+      <input type="range" data-in="ve" min="2" max="4.6" step="0.1" value="4.4" /></label>
+    <label>Nhiên liệu chiếm bao nhiêu phần trăm khối lượng <output data-out="f"></output>
+      <input type="range" data-in="f" min="10" max="97" step="1" value="88" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Tên lửa tự nâng nhiên liệu để đốt nhiên liệu — nên Δv chỉ tăng theo
+    LOGARIT của tỉ lệ nhiên liệu: đoạn cuối đường cong dựng đứng là bức
+    tường mà mọi kỹ sư vũ trụ húc đầu vào. v_e = 4,4 km/s là hydro lỏng
+    (động cơ tốt nhất); 3,0 là dầu hoả.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const CURVE = '#2563eb', MARK = '#dc2626', GOAL = '#f59e0b';
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (k: string) => root.querySelector(`[data-in="${k}"]`) as HTMLInputElement;
+    const output = (k: string) => root.querySelector(`[data-out="${k}"]`) as HTMLOutputElement;
+
+    function draw() {
+      const ve = Number(input('ve').value), fPct = Number(input('f').value);
+      output('ve').textContent = ve.toFixed(1).replace('.', ',');
+      output('f').textContent = `${fPct}%`;
+      const dv = ve * Math.log(1 / (1 - fPct / 100));
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.44);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+
+      const padL = 44, padB = 26, padT = 12, padR = 10;
+      const dvMax = 16;
+      const X = (f: number) => padL + ((f - 10) / 87) * (cssW - padL - padR);
+      const Y = (v: number) => cssH - padB - (Math.min(v, dvMax) / dvMax) * (cssH - padB - padT);
+
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.3;
+      ctx.beginPath(); ctx.moveTo(padL, padT); ctx.lineTo(padL, cssH - padB); ctx.lineTo(cssW - padR, cssH - padB); ctx.stroke();
+      ctx.globalAlpha = 0.55; ctx.fillStyle = fg; ctx.font = '10px system-ui,sans-serif';
+      ctx.textAlign = 'center';
+      for (const f of [25, 50, 75, 95]) ctx.fillText(`${f}%`, X(f), cssH - padB + 14);
+      ctx.textAlign = 'right';
+      for (const v of [4, 8, 12, 16]) ctx.fillText(`${v} km/s`, padL - 4, Y(v) + 3);
+      ctx.globalAlpha = 1;
+
+      // Mission lines.
+      for (const [v, lab] of [[9.4, 'lên quỹ đạo thấp (LEO)'], [12.6, 'LEO + phóng tới Mặt Trăng']] as Array<[number, string]>) {
+        ctx.strokeStyle = GOAL; ctx.globalAlpha = 0.6; ctx.setLineDash([5, 4]);
+        ctx.beginPath(); ctx.moveTo(padL, Y(v)); ctx.lineTo(cssW - padR, Y(v)); ctx.stroke();
+        ctx.setLineDash([]); ctx.fillStyle = fg; ctx.globalAlpha = 0.7; ctx.textAlign = 'left';
+        ctx.fillText(lab, padL + 6, Y(v) - 5);
+        ctx.globalAlpha = 1;
+      }
+
+      // Δv curve for the chosen ve.
+      ctx.strokeStyle = CURVE; ctx.lineWidth = 2; ctx.beginPath();
+      for (let i = 0; i <= 300; i++) {
+        const f = 10 + (87 * i) / 300;
+        const y = Y(ve * Math.log(1 / (1 - f / 100)));
+        i ? ctx.lineTo(X(f), y) : ctx.moveTo(X(f), y);
+      }
+      ctx.stroke(); ctx.lineWidth = 1;
+
+      ctx.fillStyle = MARK;
+      ctx.beginPath(); ctx.arc(X(fPct), Y(dv), 6, 0, Math.PI * 2); ctx.fill();
+
+      const verdict = dv >= 9.4 ? ' — <b>đủ lên quỹ đạo</b>' : ` — thiếu ${(9.4 - dv).toFixed(1).replace('.', ',')} km/s mới lên nổi quỹ đạo`;
+      readout.innerHTML =
+        `Δv = v_e·ln(m₀/m_f) = <b>${dv.toFixed(1).replace('.', ',')} km/s</b>${verdict}` +
+        ` · tỉ lệ khối lượng m₀/m_f = ${(1 / (1 - fPct / 100)).toFixed(1).replace('.', ',')}`;
+    }
+
+    root.querySelectorAll('input').forEach((el) => el.addEventListener('input', draw));
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="rocket"]').forEach(setup);
+</script>

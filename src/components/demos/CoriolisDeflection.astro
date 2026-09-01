@@ -1,0 +1,104 @@
+---
+// Coriolis deflection of a projectile: d ≈ Ω·sinφ·v·t² with t = range/v.
+// Sliders for muzzle speed, range, and latitude; top-view sketch with the
+// deflection exaggerated but labeled true. Static redraw.
+---
+
+<figure class="demo" data-demo="coriolis">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Tốc độ đạn v (m/s) <output data-out="v"></output>
+      <input type="range" data-in="v" min="200" max="1000" step="10" value="800" /></label>
+    <label>Tầm bắn (km) <output data-out="r"></output>
+      <input type="range" data-in="r" min="1" max="40" step="1" value="30" /></label>
+    <label>Vĩ độ φ (°) <output data-out="lat"></output>
+      <input type="range" data-in="lat" min="0" max="90" step="1" value="45" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Nhìn từ trên xuống ở Bắc bán cầu: viên đạn bay "thẳng" trong không gian,
+    nhưng mặt đất quay dưới chân nó — người đứng trên đất thấy quỹ đạo cong
+    sang PHẢI. (Độ cong trong hình được phóng đại cho dễ nhìn; con số là thật.)
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const OM = 7.292e-5;
+  const PATH = '#2563eb', AIM = '#94a3b8', HIT = '#dc2626';
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (k: string) => root.querySelector(`[data-in="${k}"]`) as HTMLInputElement;
+    const output = (k: string) => root.querySelector(`[data-out="${k}"]`) as HTMLOutputElement;
+
+    function draw() {
+      const v = Number(input('v').value), rangeKm = Number(input('r').value), lat = Number(input('lat').value);
+      output('v').textContent = String(v);
+      output('r').textContent = String(rangeKm);
+      output('lat').textContent = String(lat);
+      const range = rangeKm * 1000;
+      const t = range / v;
+      const d = OM * Math.sin((lat * Math.PI) / 180) * v * t * t; // metres
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.34);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+
+      const x0 = 30, x1 = cssW - 40, yMid = cssH * 0.42;
+      // Aim line.
+      ctx.strokeStyle = AIM; ctx.setLineDash([5, 4]); ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.moveTo(x0, yMid); ctx.lineTo(x1, yMid); ctx.stroke();
+      ctx.setLineDash([]);
+      // Curved actual path (parabolic in the rotating frame), exaggerated.
+      const dev = Math.min(cssH * 0.34, 10 + (d / (range * 0.02)) * cssH * 0.3);
+      ctx.strokeStyle = PATH; ctx.lineWidth = 2.5;
+      ctx.beginPath();
+      for (let i = 0; i <= 100; i++) {
+        const f = i / 100;
+        const x = x0 + f * (x1 - x0);
+        const y = yMid + dev * f * f;
+        i ? ctx.lineTo(x, y) : ctx.moveTo(x, y);
+      }
+      ctx.stroke(); ctx.lineWidth = 1;
+      // Gun, aim point, hit point.
+      ctx.fillStyle = fg;
+      ctx.fillRect(x0 - 8, yMid - 5, 10, 10);
+      ctx.fillStyle = AIM;
+      ctx.beginPath(); ctx.arc(x1, yMid, 5, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = HIT;
+      ctx.beginPath(); ctx.arc(x1, yMid + dev, 6, 0, Math.PI * 2); ctx.fill();
+      ctx.font = '10px system-ui,sans-serif'; ctx.fillStyle = fg; ctx.globalAlpha = 0.7;
+      ctx.textAlign = 'left';
+      ctx.fillText('điểm ngắm', x1 - 60, yMid - 10);
+      ctx.fillText(`điểm chạm (lệch phải ${d.toFixed(0)} m)`, x1 - 170, yMid + dev + 18);
+      ctx.textAlign = 'left'; ctx.fillText('pháo', x0 - 8, yMid - 12);
+      ctx.globalAlpha = 1;
+
+      readout.innerHTML =
+        `Bay ${t.toFixed(1).replace('.', ',')} s ở vĩ độ ${lat}°: lệch phải <b>${d.toFixed(0)} m</b>` +
+        ` · công thức d = Ω·sinφ·v·t² — tại xích đạo (φ=0) hiệu ứng ngang bằng 0`;
+    }
+
+    root.querySelectorAll('input').forEach((el) => el.addEventListener('input', draw));
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="coriolis"]').forEach(setup);
+</script>

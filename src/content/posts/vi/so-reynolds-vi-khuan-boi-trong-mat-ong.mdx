@@ -1,0 +1,73 @@
+---
+title: "Số Reynolds: vì sao vi khuẩn bơi như người kẹt trong mật ong"
+description: "Cùng một thứ nước, cá lướt băng băng còn vi khuẩn thấy đặc quánh như nhựa đường — khác nhau ở một tỉ số không thứ nguyên. Re nhỏ hơn 1 là thế giới không có đà, nơi kiểu bơi của mọi sinh vật lớn đều vô dụng."
+pubDate: 2026-09-02
+tags: ["vat-ly", "chat-luu", "javascript"]
+translationId: "so-reynolds-vi-khuan-boi-trong-mat-ong"
+---
+
+import ReynoldsNumber from '../../../components/demos/ReynoldsNumber.astro';
+
+Nước là nước — nhưng "bơi trong nước" là hai môn thể thao khác hẳn nhau tuỳ
+bạn to cỡ nào. Toàn bộ sự khác biệt nén trong một tỉ số không có đơn vị,
+được in lên mọi ống khí động học và mọi giáo trình vi sinh:
+
+<ReynoldsNumber />
+
+## Quán tính đấu độ nhớt
+
+```
+Re = ρvL/µ
+```
+
+Tử số là phe **quán tính** — xu hướng giữ đà của khối nước bị vật xô đi;
+mẫu số là phe **nhớt** — ma sát nội bộ dập tắt mọi chuyển động. Người bơi
+(L = 2 m, v = 1 m/s): Re ≈ **2 000 000** — quán tính thắng tuyệt đối: bạn
+đạp một cú rồi *lướt*, nước cuộn xoáy sau lưng. Vi khuẩn E. coli (2 µm, 30
+µm/s): Re ≈ **0,00006** — phe nhớt thắng 30 tỉ lần đậm hơn. Cùng một bể
+nước, hai vũ trụ cơ học.
+
+Sống ở Re nhỏ nghĩa là gì? Nhà vật lý Edward Purcell tính con số làm mọi
+sinh viên sững người: vi khuẩn đang bơi hết tốc lực mà ngừng quẫy, nó dừng
+hẳn sau quãng đường cỡ **một phần mười nguyên tử** — không tồn tại khái
+niệm "lướt". Không đà, không xoáy, không ném-nước-về-sau-để-tiến-lên. Với
+vi khuẩn, nước của chúng ta đặc như nhựa đường nóng với người bơi — không
+phải vì nước đổi tính, mà vì **ở kích thước ấy, độ nhớt là toàn bộ câu
+chuyện**.
+
+## Định lý con sò: kiểu bơi đối xứng bị cấm cửa
+
+Hệ quả sâu nhất mang tên ngộ nghĩnh — **định lý con sò** (Purcell, 1977).
+Ở Re nhỏ, phương trình chất lưu mất hẳn số hạng quán tính và trở nên **thuận
+nghịch theo thời gian**: mọi cú quẫy kiểu "mở ra rồi khép lại" (như con sò
+há–ngậm vỏ) đưa nước về đúng chỗ cũ — và đưa *bạn* về đúng chỗ cũ. Đập
+chân kiểu người, vẫy đuôi qua lại kiểu cá — toàn chuyển động đối xứng —
+đều bị vô hiệu. Muốn tiến, phải có chu trình quẫy **không giống chính nó
+khi tua ngược**: E. coli xoay chiếc đuôi xoắn ốc như mở nút chai — xoắn ốc
+quay chiều nào cũng không phải ảnh ngược của chính nó; tinh trùng đánh
+sóng lan dọc đuôi — sóng chạy có hướng, tua ngược là khác. Hình dạng của
+mọi sinh vật bơi cỡ micron là **lời giải bắt buộc của một định lý** — tiến
+hoá không có lựa chọn nào khác.
+
+Ngành y đang học lại bài ấy: robot y sinh cỡ micron bơm thuốc trong mạch
+máu không thể "bơi" như tàu ngầm thu nhỏ của phim viễn tưởng — các mẫu
+thật đều mang đuôi xoắn quay bằng từ trường ngoài, đúng kiểu vi khuẩn, vì
+định lý con sò không nhân nhượng cho công nghệ.
+
+## Trường hợp biên: hai đầu thang đo và một tin vui cho ngành mô hình
+
+Kéo cả hai thanh trượt lên góc phải: Re vượt ~2 000, dòng chảy **rối** —
+xoáy cuộn hỗn loạn, [lực cản nhảy sang chế độ
+v²](/vi/posts/cong-thuc-nem-xien-sai-bao-nhieu). Đó là thế giới của cá heo,
+tàu thuyền, máu phun trong động mạch chủ. Kéo xuống góc trái: thế giới
+thuận nghịch — nơi có thể **khuấy rồi khuấy ngược để "gỡ khuấy"**: thí
+nghiệm nổi tiếng bơm giọt mực vào glycerin giữa hai ống lồng, xoay chục
+vòng cho mực loang thành mây, xoay ngược đúng chục vòng — giọt mực **tụ
+lại nguyên hình** như tua băng.
+
+Còn món quà thực dụng nhất của Re: nó là số **không thứ nguyên** — hai hệ
+cùng Re thì chảy *giống hệt nhau* bất kể kích cỡ. Muốn thử máy bay, khỏi
+xây máy bay: mô hình 1/20 thổi trong ống gió tốc độ cao (hay trong ống
+*nước*, mật độ đền bù kích thước) cho đúng bức tranh dòng chảy của máy bay
+thật. Cả ngành hàng không, đóng tàu, và những chú robot-vi-khuẩn tương lai
+— đều đứng trên một tỉ số mà bạn vừa kéo bằng hai ngón tay.

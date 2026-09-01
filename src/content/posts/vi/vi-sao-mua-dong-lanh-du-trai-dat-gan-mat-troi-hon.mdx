@@ -1,0 +1,77 @@
+---
+title: "Vì sao mùa đông lạnh — dù tháng Một Trái Đất ở GẦN Mặt Trời nhất?"
+description: "Sự thật ít ai tin: đầu tháng Một, Trái Đất gần Mặt Trời hơn tháng Bảy 5 triệu km — đúng giữa mùa đông Bắc bán cầu. Mùa không do khoảng cách; nó do cái trục nghiêng 23,4° và một hàm sin trải mỏng nắng."
+pubDate: 2026-09-02
+tags: ["vat-ly", "thien-van", "khi-hau", "javascript"]
+translationId: "vi-sao-mua-dong-lanh-du-trai-dat-gan-mat-troi-hon"
+---
+
+import Seasons from '../../../components/demos/Seasons.astro';
+
+Khảo sát sinh viên tốt nghiệp Harvard năm 1987 hỏi một câu tiểu học: "Vì
+sao có mùa?" — đa số trả lời "mùa hè Trái Đất gần Mặt Trời hơn". Sai toàn
+tập, và sai *ngược*: Trái Đất qua **cận nhật vào ~4 tháng Một** — gần hơn
+tháng Bảy tận 5 triệu km — đúng lúc Hà Nội cắt da cắt thịt. Thủ phạm thật
+nằm trong demo này:
+
+<Seasons />
+
+## Nắng xiên là nắng bị trải mỏng
+
+Khoảng cách chỉ chênh 3,3% ([vis-viva ghi
+sổ](/vi/posts/sao-choi-halley-luc-phong-54-km-moi-giay-luc-bo-di-bo) đầy
+đủ), nắng mạnh hơn ~7% — quá còm để làm nên mùa. Thế lực thật là **trục
+nghiêng 23,4°**: suốt vòng quanh năm, trục Trái Đất trỏ cố định một hướng
+(về sao Bắc Cực — [con quay khổng lồ giữ
+hướng](/vi/posts/con-quay-hoi-chuyen-vi-sao-khong-chiu-do)), nên nửa năm
+Bắc bán cầu *ngả về* Mặt Trời, nửa năm *ngả đi*.
+
+Ngả đi thì sao? Mặt trời giữa trưa **thấp xuống**, và tia nắng xiên bị
+trải trên diện đất rộng hơn — demo vẽ đúng cảnh đó: cùng một chùm tia,
+mùa đông phết lên gấp rưỡi, gấp đôi diện tích. Mỗi mét vuông nhận theo
+**sin của góc cao**:
+
+- Hà Nội (21°B): hạ chí mặt trời gần thẳng đỉnh (87,6°) — 100% liều nắng;
+  đông chí còn 45,6° — **71%**. Chênh 29%: đủ làm nên gió mùa, chưa đủ làm
+  tuyết.
+- London (51,5°B): hè 61,9° (88%) nhưng đông chí mặt trời lết ở **15°** —
+  còn 26%. Nắng trưa yếu hơn hè **3,4 lần**, *chưa kể* ngày ngắn còn 8
+  tiếng. Vĩ độ càng cao, biên độ hàm sin càng dữ — đó là toàn bộ lý do
+  "xứ ôn đới" tồn tại như một khái niệm.
+
+Còn khoản "gần hơn 5 triệu km" tháng Một? Nó có thật và có việc: làm mùa
+của **Nam bán cầu** (hè rơi đúng cận nhật) hơi gắt hơn, mùa Bắc bán cầu
+hơi dịu hơn — một hiệu chỉnh 7% đè lên cơ chế chính, không phải cơ chế
+chính.
+
+## Vành đai nhiệt của hành tinh là đồ thị của một hàm sin
+
+Nhìn lại demo lần nữa với con mắt bản đồ: xích đạo quanh năm mặt trời cao
+— sin sát 1, nắng đậm đều, "mùa" chỉ còn là mưa/khô. Hai chí tuyến
+(±23,4° — đúng bằng độ nghiêng trục, không trùng hợp) là ranh nơi mặt
+trời còn lên được thiên đỉnh. Hai vòng cực (±66,6° = 90 − 23,4) là ranh
+của [đêm trắng và ngày không mặt
+trời](/vi/posts/vi-sao-mat-trang-khong-co-khong-khi). Các đường kẻ trên
+quả địa cầu treo tường không phải quy ước trang trí — chúng là **nghiệm
+hình học của trục nghiêng**, vẽ sẵn từ trước khi ai đặt tên.
+
+Nông nghiệp đọc đồ thị này bằng lịch: tổ tiên đo bóng cây nêu thấy ngày
+đông chí bóng dài nhất — mặt trời thấp nhất — và đặt Tết ngay sau đó,
+đón mặt trời "quay lại". Tấm pin mặt trời hiện đại đọc đúng chỗ ấy: lắp
+nghiêng **bằng vĩ độ** là chĩa vuông góc với mặt trời trung bình năm —
+người lắp điện mặt trời ở Việt Nam nghiêng ~15–21°, ở Đức nghiêng ~35°,
+tất cả đang giải cùng bài sin của demo.
+
+## Trường hợp biên: hành tinh nằm ngửa
+
+Muốn thấy trục nghiêng quan trọng cỡ nào, chỉnh nó tới cực đoan — vũ trụ
+đã làm thí nghiệm hộ: **Sao Thiên Vương nghiêng 98°**, nằm ngửa hẳn ra mà
+lăn quanh Mặt Trời. Mỗi cực của nó hưởng **42 năm ngày liên tục rồi 42
+năm đêm liên tục**; "vòng cực" của nó lan gần tới xích đạo. Ngược lại,
+một hành tinh trục thẳng đứng 0° sẽ **không có mùa nào** — mỗi vĩ độ một
+khí hậu đóng đinh vĩnh viễn. Trái Đất nghiêng 23,4° là nằm giữa hai thái
+cực: đủ nghiêng để có bốn mùa gieo gặt, đủ thẳng để mùa không thành thảm
+hoạ — và Mặt Trăng, bằng [lực triều của
+mình](/vi/posts/thuy-trieu-mat-trang-thang-kien-mat-troi), đang giữ cho
+cái trục ấy khỏi lắc lư hỗn loạn qua hàng tỉ năm. Câu hỏi tiểu học, hoá
+ra, chấm điểm được cả một hệ hành tinh.

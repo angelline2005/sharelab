@@ -1,0 +1,67 @@
+---
+title: "Hiệu ứng Coriolis: thứ lái được bão và đạn pháo — nhưng vô can với bồn cầu nhà bạn"
+description: "Đạn pháo bắn 30 km lệch phải 58 mét, bão cuộn ngược chiều kim đồng hồ ở Bắc bán cầu — cùng một hiệu ứng. Nhưng nước xoáy trong bồn rửa thì không: làm phép chia là thấy huyền thoại thua kém sự thật 300 000 lần."
+pubDate: 2026-09-02
+tags: ["vat-ly", "co-hoc", "khi-hau", "javascript"]
+translationId: "hieu-ung-coriolis-va-huyen-thoai-bon-cau"
+---
+
+import CoriolisDeflection from '../../../components/demos/CoriolisDeflection.astro';
+
+Bạn đứng trên một cái mâm xoay đường kính 12 700 km, quay một vòng mỗi
+ngày. Mọi vật bay tự do phía trên mâm — đạn, gió, dòng biển — đi thẳng
+trong không gian, nhưng **mặt mâm trườn dưới chân chúng**: người đứng trên
+mâm thấy quỹ đạo cong đi. Đó là toàn bộ hiệu ứng Coriolis, và nó có công
+thức đo được:
+
+<CoriolisDeflection />
+
+## Lệch phải ở Bắc bán cầu — đủ để pháo binh phải học địa lý
+
+Gia tốc Coriolis a = 2Ωv·sinφ trông còm cõi (Ω = 7,3×10⁻⁵ rad/s — cái mâm
+quay *chậm*), nhưng nó có hai đồng minh: **tốc độ lớn** và **thời gian
+dài**. Đạn pháo 800 m/s bay 30 km ở vĩ độ 45°: lệch phải **58 mét** — trượt
+mục tiêu bằng cả toà nhà nếu pháo thủ không cộng bù. Bảng bắn pháo binh từ
+Thế chiến I đã có cột hiệu chỉnh Coriolis; giai thoại kể trận Falklands
+1914, pháo thủ Anh dùng bảng chuẩn Bắc bán cầu ở vĩ độ 50 **Nam** — dấu
+sinφ đổi chiều, lệch trái thay vì phải, và loạt đạn đầu rơi lệch cả trăm
+mét. Dù chi tiết trận ấy còn tranh cãi, bài toán thì không: demo trên cho
+đúng ~105 m ở cấu hình đó — **dấu của một hàm sin từng là chuyện thắng
+thua**.
+
+Với khí quyển, đồng minh "thời gian dài" phát huy tối đa: gió thổi hàng
+*ngày*, nên cú lệch phải liên tục bẻ mọi luồng gió Bắc bán cầu — không khí
+ùa về vùng áp thấp không đi thẳng vào tâm mà **xoáy quanh tâm, ngược chiều
+kim đồng hồ** (thuận chiều ở Nam bán cầu). Mọi cơn bão trên ảnh vệ tinh là
+chân dung của 2Ωv·sinφ. Và vì sinφ = 0 tại xích đạo, **bão không thể hình
+thành trong dải ±5° quanh xích đạo** — không có lực xoáy mồi. Singapore
+gần như miễn nhiễm bão không nhờ may mắn, nhờ toạ độ.
+
+## Huyền thoại bồn cầu: thua 300 000 lần mà vẫn sống dai
+
+"Nước bồn cầu xoáy ngược chiều nhau ở hai bán cầu" — huyền thoại phổ biến
+đến mức có cả trò lừa du lịch biểu diễn ngay trên đường xích đạo. Phép
+chia lật tẩy nó nằm gọn một dòng: nước rút bồn có v cỡ xăng-ti-mét mỗi
+giây, thời gian cỡ chục giây — gia tốc Coriolis cỡ **10⁻⁶ m/s²**. Trong
+khi đó chỉ cần nước còn chút xoáy sót từ lúc xả (hay cái bồn hơi méo), gia
+tốc ly tâm của vòng xoáy đã cỡ **10⁻¹ m/s²** — Coriolis thua các hiệu ứng
+"rác" khoảng **ba trăm nghìn lần**. Chiều xoáy bồn cầu do hình dáng bồn và
+cú vẩy tay bạn quyết định, ở bất kỳ bán cầu nào. (Các thí nghiệm cực đoan
+— bể tròn tuyệt đối, nước để lặng nhiều ngày, tháo qua lỗ tí hon — *đã*
+tách được tín hiệu Coriolis thật; đó chính là điểm hay: hiệu ứng không giả,
+chỉ là **bé**, và ranh giới thật/huyền thoại vẽ bằng một phép so bậc đại
+lượng.) Quy tắc bỏ túi từ trò này: Coriolis chỉ đáng kể khi quãng đường
+tính bằng **kilômét** hoặc thời gian tính bằng **giờ** — bão được, dòng
+biển được, đạn tầm xa được; bồn rửa, không.
+
+## Trường hợp biên: con lắc tự viết biên bản Trái Đất quay
+
+Kéo hiệu ứng về "v nhỏ nhưng t vô hạn": treo quả lắc thật nặng trên dây
+thật dài và để nó lắc cả ngày. Mỗi cú lắc bị Coriolis vặn một góc vô hình,
+nhưng cộng dồn thì mặt phẳng lắc **xoay trọn vòng trong 24/sinφ giờ** — ở
+Paris hết ~32 giờ, đúng như Foucault trình diễn năm 1851 dưới mái vòm
+Panthéon trước công chúng sửng sốt: lần đầu tiên Trái Đất quay được *nhìn
+thấy* trong phòng kín, không cần ngước lên trời. Tại cực, chu kỳ đúng 24
+giờ (con lắc lắc nguyên chỗ, hành tinh xoay bên dưới); tại xích đạo — sinφ
+= 0 — mặt phẳng lắc đứng im vĩnh viễn, cùng một số 0 đã cấm bão và tha
+bổng cho mọi cái bồn cầu trên đường xích đạo.

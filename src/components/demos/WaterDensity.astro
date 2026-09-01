@@ -1,0 +1,105 @@
+---
+// Water's density anomaly, from the Kell (1975) fit: maximum at 3.98 °C.
+// Slider = temperature; the curve zooms on 0–30 °C where the hump lives.
+// Ice (917 kg/m³) sits far below the axis — noted in the readout.
+---
+
+<figure class="demo" data-demo="water-density">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Nhiệt độ nước T (°C) <output data-out="t"></output>
+      <input type="range" data-in="t" min="0" max="30" step="0.1" value="4" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Khối lượng riêng của nước theo nhiệt độ (công thức thực nghiệm Kell).
+    Gần như mọi chất lỏng chỉ có một chiều: nóng thì nở, lạnh thì co. Nước
+    đổi ý ở 3,98 °C — và cái bướu nhỏ trên đường cong này quyết định sinh
+    mạng của mọi hồ nước đóng băng.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const CURVE = '#2563eb', MARK = '#dc2626', PEAK = '#f59e0b';
+  // Kell (1975) fit, kg/m³.
+  const rho = (t: number) =>
+    (999.83952 + 16.945176 * t - 7.9870401e-3 * t * t - 46.170461e-6 * t ** 3 + 105.56302e-9 * t ** 4 - 280.54253e-12 * t ** 5) /
+    (1 + 16.87985e-3 * t);
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const slider = root.querySelector('[data-in="t"]') as HTMLInputElement;
+    const out = root.querySelector('[data-out="t"]') as HTMLOutputElement;
+
+    function draw() {
+      const T = Number(slider.value);
+      out.textContent = T.toFixed(1).replace('.', ',');
+      const r = rho(T);
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.44);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+
+      const padL = 56, padB = 26, padT = 12, padR = 10;
+      const rLo = 995.5, rHi = 1000.2;
+      const X = (t: number) => padL + (t / 30) * (cssW - padL - padR);
+      const Y = (rr: number) => padT + ((rHi - rr) / (rHi - rLo)) * (cssH - padB - padT);
+
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.3;
+      ctx.beginPath(); ctx.moveTo(padL, padT); ctx.lineTo(padL, cssH - padB); ctx.lineTo(cssW - padR, cssH - padB); ctx.stroke();
+      ctx.globalAlpha = 0.55; ctx.fillStyle = fg; ctx.font = '10px system-ui,sans-serif';
+      ctx.textAlign = 'center';
+      for (const t of [0, 4, 10, 20, 30]) ctx.fillText(`${t}°`, X(t), cssH - padB + 14);
+      ctx.textAlign = 'right';
+      for (const rr of [996, 998, 1000]) ctx.fillText(`${rr}`, padL - 4, Y(rr) + 3);
+      ctx.save(); ctx.translate(14, (padT + cssH - padB) / 2); ctx.rotate(-Math.PI / 2);
+      ctx.textAlign = 'center'; ctx.fillText('kg/m³', 0, 0); ctx.restore();
+      ctx.globalAlpha = 1;
+
+      // Density curve.
+      ctx.strokeStyle = CURVE; ctx.lineWidth = 2; ctx.beginPath();
+      for (let i = 0; i <= 300; i++) {
+        const t = (30 * i) / 300;
+        const y = Y(rho(t));
+        i ? ctx.lineTo(X(t), y) : ctx.moveTo(X(t), y);
+      }
+      ctx.stroke(); ctx.lineWidth = 1;
+
+      // Peak marker.
+      ctx.fillStyle = PEAK;
+      ctx.beginPath(); ctx.arc(X(3.98), Y(rho(3.98)), 4, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = fg; ctx.globalAlpha = 0.7; ctx.textAlign = 'left';
+      ctx.fillText('đặc nhất: 3,98 °C', X(3.98) + 8, Y(rho(3.98)) - 6);
+      ctx.globalAlpha = 1;
+
+      ctx.fillStyle = MARK;
+      ctx.beginPath(); ctx.arc(X(T), Y(r), 6, 0, Math.PI * 2); ctx.fill();
+
+      readout.innerHTML =
+        `ρ(${T.toFixed(1).replace('.', ',')} °C) = <b>${r.toFixed(3).replace('.', ',')} kg/m³</b>` +
+        ` · nước đá: chỉ <b>917</b> — nhẹ hơn 8%, nên băng nổi và hồ đóng băng TỪ TRÊN XUỐNG`;
+    }
+
+    slider.addEventListener('input', draw);
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="water-density"]').forEach(setup);
+</script>

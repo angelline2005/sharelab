@@ -1,0 +1,71 @@
+---
+title: "Cầu phân áp: mạch hai linh kiện đứng sau núm volume và gần như mọi cảm biến"
+description: "Hai điện trở nối tiếp chia điện áp theo đúng tỉ lệ ohm — mạch đơn giản nhất của điện tử học, và có mặt ở nhiều nơi nhất: núm vặn âm lượng, cảm biến ánh sáng, que đo nhiệt, chân đọc pin. Kèm cái bẫy kinh điển khiến người mới đo đâu sai đó."
+pubDate: 2026-09-02
+tags: ["vat-ly", "dien-tu", "javascript"]
+translationId: "cau-phan-ap-num-volume-va-moi-cam-bien"
+---
+
+import VoltageDivider from '../../../components/demos/VoltageDivider.astro';
+
+Nếu điện tử học có bảng chữ cái, thì đây là chữ A: hai điện trở xếp chồng,
+một sợi dây câu ra từ điểm nối giữa. Nó không khuếch đại, không tính toán,
+không nhớ — nó chỉ **chia** — và chính vì thế nó ở khắp nơi:
+
+<VoltageDivider />
+
+## Chia theo ohm: ai gánh nhiều, người đó hưởng nhiều
+
+Dòng điện qua hai điện trở nối tiếp là một — như [một hàng nước chảy qua
+hai đoạn ống](/vi/posts/dien-tro-song-song-nho-hon-ca-nhanh-nho-nhat). Định
+luật Ohm nói mỗi đoạn "ăn" điện áp tỉ lệ với điện trở của nó, nên điểm
+giữa nằm ở:
+
+```
+V_ra = V_vào · R₂/(R₁ + R₂)
+```
+
+Kéo hai thanh trượt là thấy trọn tính cách của mạch: R₂ áp đảo → V_ra sát
+nguồn; R₁ áp đảo → sát đất; cân nhau → đúng nửa. **Núm volume** của mọi
+ampli, tai nghe có dây chính là mạch này với một biến thể cơ khí: chiết áp
+— một dải điện trở duy nhất có **con trượt** chạy dọc, tức R₁ và R₂ đắp
+chung một thân, xoay núm là dời điểm chia. Tín hiệu nhạc đi vào hai đầu
+dải, con trượt câu ra đúng phần trăm bạn muốn nghe.
+
+Và đây là cách **cảm biến** nói chuyện với máy tính: quang trở (sáng thì
+ohm tụt), nhiệt điện trở (nóng thì ohm đổi), cảm biến uốn cong... tự thân
+chúng chỉ là điện trở biết đổi giá trị — vi điều khiển không đọc nổi "ohm".
+Ghép nó làm một nấc của cầu phân áp với một điện trở cố định: đại lượng
+vật lý → điện trở → **điện áp** — thứ chân ADC đọc ngon lành. Đo phần
+trăm pin điện thoại, đọc nhiệt độ CPU, đèn đường tự bật lúc chập tối: cùng
+một chữ A ấy viết đi viết lại.
+
+## Cái bẫy kinh điển: đồng hồ đo cũng là một điện trở
+
+Người mới ráp mạch gặp cú lừa này sớm muộn: cầu 5 kΩ + 5 kΩ trên nguồn
+12 V, tính ra 6 V — cắm tải 10 kΩ vào đọc thử: **4,8 V**. Mạch sai? Không:
+tải mắc vào là mắc **song song với R₂**, kéo nấc dưới từ 5 kΩ xuống 3,3 kΩ
+— cầu chia lại theo tỉ lệ mới. Cầu phân áp chỉ giữ lời hứa khi **tải nhẹ
+hơn nó nhiều lần** (luật thợ: điện trở tải gấp ≥10 lần R₂). Cả que đo của
+đồng hồ vạn năng cũng là một cái tải — đo mạch điện trở lớn bằng đồng hồ
+rẻ là tự tay bóp méo con số mình đang đọc. Đây là bài học đầu đời của mọi
+kỹ sư điện: **phép đo can thiệp vào hệ được đo** — nghe rất lượng tử,
+nhưng ở đây thuần Ohm.
+
+Cái bẫy thứ hai nằm ở dòng rò: cầu 100 Ω + 100 Ω cũng chia 12 V ra 6 V y
+như cầu 100 kΩ + 100 kΩ, nhưng cầu nhẹ ohm cho dòng 60 mA chảy xuyên **cả
+ngày lẫn đêm** — 0,7 watt [I²R](/vi/posts/vi-sao-duong-day-tai-dien-phai-cao-the)
+đốt chơi không. Chọn thang ohm là mặc cả giữa hao phí (thang nhẹ) và độ
+"mềm yếu" trước tải (thang nặng) — demo trên in sẵn dòng chảy để bạn thấy
+giá từng lựa chọn.
+
+## Trường hợp biên: chia đôi chính xác mà không cần điện trở xịn
+
+Chi tiết đẹp để đóng bài: V_ra chỉ phụ thuộc **tỉ số** R₂/(R₁+R₂), không
+phụ thuộc giá trị tuyệt đối. Cần đúng 50%? Không cần hai điện trở đắt tiền
+sai số 0,1% — chỉ cần hai điện trở **giống nhau**, kể cả cùng sai lệch 5%:
+sai số chung bị tỉ số triệt tiêu. Nguyên tắc "so cặp thay vì đo tuyệt
+đối" ấy là xương sống của cầu Wheatstone — bốn điện trở xếp hai cầu phân
+áp đấu lưng, phát hiện chênh lệch **một phần triệu** giữa hai nhánh — thứ
+đang nằm trong mọi cân điện tử và cảm biến áp suất quanh bạn. Từ núm
+volume tới cái cân tiểu ly: vẫn chưa ra khỏi chữ A của bảng chữ cái.

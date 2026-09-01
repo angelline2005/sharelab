@@ -1,0 +1,115 @@
+---
+// Seasons from axial tilt: solar declination δ = 23.44°·sin(2π(d−81)/365),
+// noon elevation = 90° − |φ − δ|, noon flux ∝ sin(elevation). Sliders for
+// latitude and day of year; sketch shows the noon sun over a tilted ground
+// patch. Static redraw.
+---
+
+<figure class="demo" data-demo="seasons">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Vĩ độ φ (°, dương = Bắc) <output data-out="lat"></output>
+      <input type="range" data-in="lat" min="-60" max="60" step="1" value="21" /></label>
+    <label>Ngày trong năm <output data-out="d"></output>
+      <input type="range" data-in="d" min="1" max="365" step="1" value="355" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Trục Trái Đất nghiêng 23,4° nên "độ cao mặt trời giữa trưa" của mỗi vĩ
+    độ dao động theo mùa. Nắng chiếu xiên bị trải mỏng trên diện rộng — cùng
+    chùm tia, đất nhận ít hơn theo đúng sin của góc. Mặc định: Hà Nội (21°B)
+    ngày đông chí.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const SUN = '#f59e0b', RAY = '#dc2626', GROUND = '#2563eb';
+  const MONTHS = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12'];
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (k: string) => root.querySelector(`[data-in="${k}"]`) as HTMLInputElement;
+    const output = (k: string) => root.querySelector(`[data-out="${k}"]`) as HTMLOutputElement;
+
+    function draw() {
+      const lat = Number(input('lat').value), d = Number(input('d').value);
+      output('lat').textContent = String(lat);
+      output('d').textContent = `${d} (~tháng ${MONTHS[Math.min(11, Math.floor(((d + 9) % 365) / 30.4))]})`;
+      const decl = 23.44 * Math.sin((2 * Math.PI * (d - 81)) / 365);
+      const elev = 90 - Math.abs(lat - decl);
+      const flux = Math.max(0, Math.sin((elev * Math.PI) / 180));
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.4);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+
+      const groundY = cssH * 0.78, ox = cssW * 0.5;
+      // Ground.
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.4;
+      ctx.beginPath(); ctx.moveTo(20, groundY); ctx.lineTo(cssW - 20, groundY); ctx.stroke();
+      ctx.globalAlpha = 1;
+
+      // Sun position on its arc.
+      const eRad = (Math.max(2, elev) * Math.PI) / 180;
+      const R = cssH * 0.62;
+      const sx = ox + R * Math.cos(eRad) * (lat >= decl ? -1 : 1);
+      const sy = groundY - R * Math.sin(eRad);
+      ctx.fillStyle = SUN;
+      ctx.beginPath(); ctx.arc(sx, sy, 12, 0, Math.PI * 2); ctx.fill();
+
+      // Rays to a fixed-width beam hitting the ground → footprint 1/sin(e).
+      const beamHalf = 26;
+      const dirX = ox - sx, dirY = groundY - sy;
+      const len = Math.hypot(dirX, dirY);
+      const ux = dirX / len, uy = dirY / len;
+      const px = -uy, py = ux; // perpendicular
+      ctx.strokeStyle = RAY; ctx.globalAlpha = 0.75; ctx.lineWidth = 1.5;
+      for (const s of [-1, 0, 1]) {
+        const bx = sx + px * beamHalf * s, by = sy + py * beamHalf * s;
+        // Intersect with ground line y = groundY.
+        const t = (groundY - by) / uy;
+        ctx.beginPath(); ctx.moveTo(bx, by); ctx.lineTo(bx + ux * t, groundY); ctx.stroke();
+      }
+      ctx.globalAlpha = 1; ctx.lineWidth = 1;
+      // Footprint on the ground.
+      const bx1 = sx + px * beamHalf, by1 = sy + py * beamHalf;
+      const bx2 = sx - px * beamHalf, by2 = sy - py * beamHalf;
+      const g1 = bx1 + ux * ((groundY - by1) / uy);
+      const g2 = bx2 + ux * ((groundY - by2) / uy);
+      ctx.strokeStyle = GROUND; ctx.lineWidth = 5; ctx.globalAlpha = 0.8;
+      ctx.beginPath(); ctx.moveTo(g1, groundY); ctx.lineTo(g2, groundY); ctx.stroke();
+      ctx.globalAlpha = 1; ctx.lineWidth = 1;
+      ctx.fillStyle = fg; ctx.globalAlpha = 0.65; ctx.font = '10px system-ui,sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(`cùng chùm nắng trải trên ${(Math.abs(g2 - g1) / (2 * beamHalf)).toFixed(1).replace('.', ',')}× bề rộng`, ox, groundY + 16);
+      ctx.fillText(`góc mặt trời giữa trưa: ${elev.toFixed(1).replace('.', ',')}°`, ox, 14);
+      ctx.globalAlpha = 1;
+
+      readout.innerHTML =
+        `Xích vĩ mặt trời hôm nay: ${decl.toFixed(1).replace('.', ',')}° · giữa trưa cao <b>${elev.toFixed(1).replace('.', ',')}°</b>` +
+        ` → mỗi m² đất nhận <b>${(flux * 100).toFixed(0)}%</b> so với nắng chiếu thẳng đỉnh đầu`;
+    }
+
+    root.querySelectorAll('input').forEach((el) => el.addEventListener('input', draw));
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="seasons"]').forEach(setup);
+</script>

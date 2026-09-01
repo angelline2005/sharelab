@@ -1,0 +1,99 @@
+---
+// Cycling power: P = ½ρ·CdA·v³ (aero) + Crr·m·g·v (rolling), with
+// ρ = 1.2 kg/m³, CdA = 0.32 m², Crr = 0.004, m = 85 kg (rider + bike).
+// Slider = speed; the curve shows the v³ wall and the readout splits the bill.
+---
+
+<figure class="demo" data-demo="cycling">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Tốc độ đạp xe (km/h) <output data-out="s"></output>
+      <input type="range" data-in="s" min="10" max="55" step="0.5" value="30" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Hai khoản chi của người đạp xe trên đường bằng: cản lăn tăng tuyến tính
+    theo tốc độ, cản gió tăng theo LŨY THỪA BA. Chậm thì lốp là kẻ thù chính;
+    nhanh thì 90% mồ hôi của bạn đổ vào việc khoan không khí.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const RHO = 1.2, CDA = 0.32, CRR = 0.004, M = 85, G = 9.81;
+  const AERO = '#2563eb', ROLL = '#f59e0b', MARK = '#dc2626';
+  const pAero = (kmh: number) => 0.5 * RHO * CDA * Math.pow(kmh / 3.6, 3);
+  const pRoll = (kmh: number) => CRR * M * G * (kmh / 3.6);
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const slider = root.querySelector('[data-in="s"]') as HTMLInputElement;
+    const out = root.querySelector('[data-out="s"]') as HTMLOutputElement;
+
+    function draw() {
+      const s = Number(slider.value);
+      out.textContent = s.toFixed(1).replace('.', ',');
+      const pa = pAero(s), pr = pRoll(s), pt = pa + pr;
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.44);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+
+      const padL = 44, padB = 26, padT = 12, padR = 10;
+      const pMax = 750;
+      const X = (kmh: number) => padL + ((kmh - 10) / 45) * (cssW - padL - padR);
+      const Y = (w: number) => cssH - padB - (Math.min(w, pMax) / pMax) * (cssH - padB - padT);
+
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.3;
+      ctx.beginPath(); ctx.moveTo(padL, padT); ctx.lineTo(padL, cssH - padB); ctx.lineTo(cssW - padR, cssH - padB); ctx.stroke();
+      ctx.globalAlpha = 0.55; ctx.fillStyle = fg; ctx.font = '10px system-ui,sans-serif';
+      ctx.textAlign = 'center';
+      for (const k of [20, 30, 40, 50]) ctx.fillText(`${k}`, X(k), cssH - padB + 14);
+      ctx.textAlign = 'right';
+      for (const w of [200, 400, 600]) ctx.fillText(`${w} W`, padL - 4, Y(w) + 3);
+      ctx.globalAlpha = 1;
+
+      // Rolling (linear) and total curves.
+      for (const [fn, colour] of [[pRoll, ROLL], [(k: number) => pAero(k) + pRoll(k), AERO]] as Array<[(k: number) => number, string]>) {
+        ctx.strokeStyle = colour; ctx.lineWidth = 2; ctx.beginPath();
+        for (let i = 0; i <= 200; i++) {
+          const k = 10 + (45 * i) / 200;
+          i ? ctx.lineTo(X(k), Y(fn(k))) : ctx.moveTo(X(k), Y(fn(k)));
+        }
+        ctx.stroke(); ctx.lineWidth = 1;
+      }
+      ctx.fillStyle = ROLL; ctx.textAlign = 'left'; ctx.font = '11px system-ui,sans-serif';
+      ctx.fillText('chỉ cản lăn', X(46), Y(pRoll(46)) - 8);
+      ctx.fillStyle = AERO;
+      ctx.fillText('tổng (lăn + gió)', X(38), Y(pAero(38) + pRoll(38)) - 10);
+
+      ctx.fillStyle = MARK;
+      ctx.beginPath(); ctx.arc(X(s), Y(pt), 6, 0, Math.PI * 2); ctx.fill();
+
+      readout.innerHTML =
+        `${s.toFixed(0)} km/h cần <b>${pt.toFixed(0)} W</b> — trong đó khoan gió ${pa.toFixed(0)} W (${((pa / pt) * 100).toFixed(0)}%), ` +
+        `cản lăn ${pr.toFixed(0)} W · tăng lên ${(s * 4 / 3).toFixed(0)} km/h cần ${(pAero(s * 4 / 3) + pRoll(s * 4 / 3)).toFixed(0)} W`;
+    }
+
+    slider.addEventListener('input', draw);
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="cycling"]').forEach(setup);
+</script>

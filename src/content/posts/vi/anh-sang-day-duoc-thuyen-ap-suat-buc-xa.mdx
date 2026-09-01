@@ -1,0 +1,70 @@
+---
+title: "Ánh sáng đẩy được thuyền: áp suất bức xạ và cánh buồm không cần gió"
+description: "Nắng đè lên mỗi mét vuông gương một lực 9 micro-newton — bé đến nực cười, nhưng không bao giờ tắt và không cần chở nhiên liệu. Cộng dồn đủ lâu, cú đẩy của photon thắng cả động cơ tên lửa."
+pubDate: 2026-09-02
+tags: ["vat-ly", "quang-hoc", "thien-van", "javascript"]
+translationId: "anh-sang-day-duoc-thuyen-ap-suat-buc-xa"
+---
+
+import LightPressure from '../../../components/demos/LightPressure.astro';
+
+Ánh sáng không có khối lượng — nhưng có **động lượng**: p = E/c, một trong
+những hệ quả lạnh gáy nhất của điện từ học Maxwell và [E =
+mc²](/vi/posts/e-bang-mc-binh-phuong-mot-gram-gia-bao-nhieu). Nghĩa là chiếu
+đèn vào vật là *đẩy* nó, theo đúng nghĩa cơ học. Câu hỏi chỉ là: đẩy mạnh
+bao nhiêu, và ai đủ kiên nhẫn để dùng?
+
+<LightPressure />
+
+## Lực bé nhất từng được đem ra làm động cơ
+
+Nắng toàn phần rọi vuông góc: 1361 W/m² chia cho c ra **4,5 µN mỗi mét
+vuông** nếu hấp thụ — gương phản xạ ăn cú hích gấp đôi, 9 µN, vì photon
+không chỉ dừng mà còn bật ngược ([va chạm đàn hồi ăn xung lượng gấp đôi va
+chạm mềm](/vi/posts/va-cham-dan-hoi-va-va-cham-mem), phiên bản ánh sáng).
+Chín micro-newton: trọng lượng một hạt cát mịn, đè lên nguyên một mét vuông.
+Toàn bộ nắng chiếu vào Trái Đất cũng chỉ "đẩy" hành tinh ~6×10⁸ N — bằng
+lực vài chục chiếc máy bay, chia cho 6×10²⁴ kg thì khỏi bàn.
+
+Nhưng nhìn dòng cuối của demo: buồm mỏng 10 g/m² nhận gia tốc ~0,9 mm/s² —
+và **cộng dồn 78 m/s mỗi ngày, không tốn một giọt nhiên liệu, không bao giờ
+nghỉ**. Sau một năm: gần 30 km/s — ngang tốc độ Trái Đất quanh Mặt Trời.
+Động cơ hoá học mạnh gấp tỉ lần nhưng cháy vài phút là hết; buồm ánh sáng
+là con rùa trong ngụ ngôn, và ngoài vũ trụ không có vạch đích để thỏ kịp
+tỉnh dậy. Nhật Bản đã chứng minh bằng thép và Mylar: tàu IKAROS (2010) căng
+buồm 196 m², nhận ~1,8 mN, và *đo được* từng thay đổi quỹ đạo đúng dự tính
+— cánh buồm nắng đầu tiên của loài người ra khơi thành công.
+
+Thiên nhiên dĩ nhiên chơi trò này trước: **đuôi bụi sao chổi** bị áp suất
+ánh sáng thổi dạt, nên đuôi không kéo *sau* sao chổi mà luôn chĩa **ra xa
+Mặt Trời** — sao chổi rời xa Mặt Trời thì đuôi đi... trước đầu. Với hạt bụi
+đủ nhỏ, lực đẩy ánh sáng thắng cả hấp dẫn (cả hai cùng giảm theo 1/r² —
+cuộc tỉ thí không phụ thuộc khoảng cách, chỉ phụ thuộc cỡ hạt), và Mặt Trời
+tự quét sạch bụi mịn khỏi hệ của mình.
+
+## Chiếc nhện quay trong tủ kính — và cú lừa trăm năm
+
+Vật chứng nổi tiếng nhất của áp suất ánh sáng hoá ra là... bằng chứng giả.
+Radiometer Crookes — chong chóng bốn cánh đen/bạc trong bóng thuỷ tinh, bày
+bán ở mọi cửa hàng quà khoa học — quay tít khi rọi đèn, và bao thế hệ được
+kể "áp suất ánh sáng đấy". Kiểm tra chiều quay là lộ: nó quay theo hướng
+**cánh đen thụt lùi** — ngược hẳn dự đoán (cánh bạc phản xạ phải ăn lực gấp
+đôi cánh đen!). Thủ phạm thật là hiệu ứng nhiệt của chút khí còn sót trong
+bóng: mặt đen nóng hơn, phân tử khí bật khỏi đó hăng hơn. Hút chân không
+thật sâu, chong chóng đứng im — còn áp suất ánh sáng *chân chính* thì phải
+đến 1901 mới được Nichols và Hull đo nổi, bằng sợi xoắn tinh vi hơn nhiều.
+Bài học đắt giá cho mọi người làm thí nghiệm: hiện tượng đúng hướng đồn
+đại chưa chắc đúng cơ chế — **chiều quay là một dữ kiện, và nó không tha
+cho lời giải thích sai**.
+
+## Trường hợp biên: đẩy bằng đèn nhà mình
+
+Đẩy công thức về phía phòng thí nghiệm: laser 5 mW lên gương cho 33
+**pico**-newton. Vô dụng? Đảo lại tỉ lệ: với hạt cỡ micron, vài trăm mW hội
+tụ tạo lực đủ **tóm và giữ** hạt trong tiêu điểm — đó là *nhíp quang học*
+(optical tweezers, Nobel 2018), công cụ đang kẹp từng con vi khuẩn, kéo
+căng từng sợi DNA đo lực bằng pico-newton trong các phòng sinh học phân
+tử. Còn đẩy về phía cuồng vọng: dự án Breakthrough Starshot đề xuất dàn
+laser 100 GW bắn vào buồm 4 m nặng vài gam — gia tốc chục nghìn g, đạt 20%
+tốc độ ánh sáng trong vài phút, tới Alpha Centauri trong 20 năm. Cùng một
+công thức p = E/c từ đầu bài — chỉ khác ai cầm đèn, và đèn to cỡ nào.

@@ -1,0 +1,100 @@
+---
+// Wind chill (JAG/TI 2001 formula, °C and km/h):
+// WCT = 13.12 + 0.6215T − 11.37v^0.16 + 0.3965T·v^0.16
+// Valid for T ≤ 10 °C and v ≥ 4.8 km/h. Sliders for both; curve vs wind.
+---
+
+<figure class="demo" data-demo="wind-chill">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Nhiệt độ không khí T (°C) <output data-out="t"></output>
+      <input type="range" data-in="t" min="-20" max="10" step="0.5" value="5" /></label>
+    <label>Tốc độ gió (km/h) <output data-out="v"></output>
+      <input type="range" data-in="v" min="5" max="70" step="1" value="30" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Gió không làm không khí lạnh đi — nhiệt kế ngoài trời mặc kệ gió. Gió
+    chỉ xé lớp không khí ấm mà cơ thể ủ quanh da, ép da tuột nhanh về nhiệt
+    độ môi trường. "Cảm giác như" là nhiệt độ lặng gió gây mất nhiệt tương
+    đương (công thức chuẩn JAG/TI 2001 của khí tượng Bắc Mỹ).
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const CURVE = '#2563eb', MARK = '#dc2626';
+  const wct = (T: number, v: number) =>
+    13.12 + 0.6215 * T - 11.37 * Math.pow(v, 0.16) + 0.3965 * T * Math.pow(v, 0.16);
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (k: string) => root.querySelector(`[data-in="${k}"]`) as HTMLInputElement;
+    const output = (k: string) => root.querySelector(`[data-out="${k}"]`) as HTMLOutputElement;
+
+    function draw() {
+      const T = Number(input('t').value), v = Number(input('v').value);
+      output('t').textContent = T.toFixed(1).replace('.', ',');
+      output('v').textContent = String(v);
+      const w = wct(T, v);
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.42);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+
+      const padL = 44, padB = 26, padT = 12, padR = 10;
+      const yLo = -35, yHi = 12;
+      const X = (vv: number) => padL + ((vv - 5) / 65) * (cssW - padL - padR);
+      const Y = (c: number) => padT + ((yHi - c) / (yHi - yLo)) * (cssH - padB - padT);
+
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.3;
+      ctx.beginPath(); ctx.moveTo(padL, padT); ctx.lineTo(padL, cssH - padB); ctx.lineTo(cssW - padR, cssH - padB); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(padL, Y(T)); ctx.lineTo(cssW - padR, Y(T)); ctx.stroke();
+      ctx.globalAlpha = 0.55; ctx.fillStyle = fg; ctx.font = '10px system-ui,sans-serif';
+      ctx.textAlign = 'left';
+      ctx.fillText('nhiệt độ thật (nhiệt kế đo được, bất kể gió)', padL + 6, Y(T) - 5);
+      ctx.textAlign = 'center';
+      for (const k of [10, 30, 50, 70]) ctx.fillText(`${k} km/h`, X(k), cssH - padB + 14);
+      ctx.textAlign = 'right';
+      for (const c of [-30, -20, -10, 0, 10]) ctx.fillText(`${c}°`, padL - 4, Y(c) + 3);
+      ctx.globalAlpha = 1;
+
+      // WCT curve vs wind at this T.
+      ctx.strokeStyle = CURVE; ctx.lineWidth = 2; ctx.beginPath();
+      for (let i = 0; i <= 200; i++) {
+        const vv = 5 + (65 * i) / 200;
+        const y = Y(wct(T, vv));
+        i ? ctx.lineTo(X(vv), y) : ctx.moveTo(X(vv), y);
+      }
+      ctx.stroke(); ctx.lineWidth = 1;
+
+      ctx.fillStyle = MARK;
+      ctx.beginPath(); ctx.arc(X(v), Y(w), 6, 0, Math.PI * 2); ctx.fill();
+
+      const note = w <= -27 ? ' · <b>vùng tê cóng da trần trong ~30 phút</b>' : '';
+      readout.innerHTML =
+        `Nhiệt kế: ${T.toFixed(1).replace('.', ',')} °C · gió ${v} km/h → cảm giác như <b>${w.toFixed(1).replace('.', ',')} °C</b>${note}`;
+    }
+
+    root.querySelectorAll('input').forEach((el) => el.addEventListener('input', draw));
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="wind-chill"]').forEach(setup);
+</script>

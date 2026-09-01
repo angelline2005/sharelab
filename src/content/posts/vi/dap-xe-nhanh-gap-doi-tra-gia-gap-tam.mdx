@@ -1,0 +1,73 @@
+---
+title: "Đạp xe nhanh gấp đôi, trả giá gấp tám: chế độ v³ của sức cản không khí"
+description: "Ở 15 km/h bạn đấu với lốp xe; ở 40 km/h, 90% mồ hôi đổ vào việc khoan không khí — và công suất khoan tăng theo lũy thừa ba của tốc độ. Từ đoàn đua núp gió tới mức phạt tốc độ trên cao tốc: tất cả nằm trên một đường cong."
+pubDate: 2026-09-02
+tags: ["vat-ly", "co-hoc", "chat-luu", "javascript"]
+translationId: "dap-xe-nhanh-gap-doi-tra-gia-gap-tam"
+---
+
+import CyclingPower from '../../../components/demos/CyclingPower.astro';
+
+Người mới đạp xe nào cũng gặp bức tường vô hình quanh mốc 27–30 km/h: dưới
+đó thong dong, trên đó mỗi km/h thêm như phải mua bằng máu. Bức tường ấy
+có phương trình, và nó không nằm ở đôi chân bạn:
+
+<CyclingPower />
+
+## Hai hoá đơn, hai độ dốc khác hẳn nhau
+
+Đạp xe đường bằng trả hai khoản. **Cản lăn** — lốp liên tục bẹp xuống nảy
+lên — tốn lực gần như cố định, nên công suất chỉ tăng bậc nhất theo v:
+đường vàng thoai thoải. **Cản không khí** thì tàn nhẫn hơn hai bậc: lực
+cản tăng theo v² ([người quen từ bài ném
+xiên](/vi/posts/cong-thuc-nem-xien-sai-bao-nhieu)), mà công suất = lực ×
+vận tốc — thêm một nhân v nữa:
+
+```
+P_gió = ½ρ·C_dA·v³
+```
+
+**Lũy thừa ba.** Nhanh gấp đôi: tám lần công suất khoan gió. Ở 15 km/h,
+gió chỉ chiếm non nửa hoá đơn 28 W — đạp xe là đi dạo. Ở 40 km/h, tổng
+lên **300 W** — ngưỡng vận động viên — và gió nuốt gần 90%. Muốn 50 km/h
+solo? 560 W: mức chỉ dân đua chuyên nghiệp giữ nổi vài phút. Bức tường
+không phải cảm giác; nó là đạo hàm của một hàm bậc ba.
+
+Từ đường cong này đọc ra toàn bộ chiến thuật môn xe đạp. **Núp gió**: bám
+sát bánh xe trước là mượn "lỗ khoan" người ta đã mở — C_dA hiệu dụng giảm
+30–40%, tiết kiệm cả trăm watt; đoàn đua thay nhau kéo gió như đàn ngỗng
+bay hình mũi tên, và cú "rút" thắng chặng luôn bung ra từ sau lưng người
+khác. **Tư thế**: cúi gập người trên ghi-đông không phải cho ngầu — hạ
+C_dA từ 0,4 xuống 0,25 là biếu không 5 km/h; kỷ lục giờ chạy trên xe khí
+động học trong nhà thi đấu vì đúng lý do đó. Còn **đổ đèo** là đường cong
+chạy chiều ngược: trọng lực cấp công suất tỉ lệ v, gió đòi v³ — hai đường
+cắt nhau ở [vận tốc tới
+hạn](/vi/posts/roi-tu-do-va-van-toc-toi-han) cỡ 70–90 km/h, nơi tay đua
+ngừng nhanh thêm dù dốc vẫn dốc.
+
+## Cùng đường cong ấy in trên hoá đơn xăng của bạn
+
+Ô tô cũng sống trên hàm bậc ba — chỉ đổi hệ số. Chạy 120 km/h thay vì 100:
+tốc độ tăng 20%, công suất khoan gió tăng **73%** — mức ăn xăng trên mỗi
+km đội lên rõ rệt vì ở tốc độ cao tốc, khí động học là chủ nợ chính. Các
+mức giới hạn 110–130 km/h khắp thế giới không chỉ là an toàn; chúng nằm
+đúng khúc đường cong bắt đầu dựng đứng. Xe điện lộ bài này rõ nhất: người
+dùng ngạc nhiên vì quãng đường tụt mạnh khi chạy nhanh — xăng từng che
+giấu v³ dưới cái động cơ vốn đã lãng phí, còn pin thì tính sổ trung thực.
+Và chiếc xe tải chạy sau một xe tải khác trên cao tốc đang núp gió y hệt
+đoàn đua — các hãng vận tải thử nghiệm "platooning" tiết kiệm 5–10% nhiên
+liệu bằng đúng mánh của dân xe đạp.
+
+## Trường hợp biên: kỷ lục tốc độ xe đạp là một bài toán xoá gió
+
+Đẩy tư duy tới cùng: nếu v³ là kẻ thù duy nhất đáng kể, thì *xoá hẳn gió*
+sẽ ra gì? Năm 2018, Denise Mueller-Korenek đạp **296 km/h** — không phải
+nhờ đôi chân 10 000 W, mà nhờ chạy sau xe dragster mang tấm chắn khổng
+lồ: trong "bong bóng" lặng gió ấy, khoản v³ gần như bằng 0, chỉ còn cản
+lăn tuyến tính hiền lành, và tốc độ ô tô trở nên khả thi bằng cơ bắp
+người. Kỷ lục ấy là thí nghiệm đối chứng hoàn hảo cho cả bài này: giữ
+nguyên người, giữ nguyên xe, chỉ rút một số hạng ra khỏi phương trình —
+và bức tường 30 km/h biến mất không dấu vết. Sức cản không khí không phải
+định mệnh của chuyển động; nó là cái giá của việc **tự mình mở đường
+xuyên một chất lưu** — ai mượn được lỗ khoan của kẻ khác, người đó qua
+mặt lũy thừa ba.
