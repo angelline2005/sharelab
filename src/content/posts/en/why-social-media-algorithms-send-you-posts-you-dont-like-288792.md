@@ -8,7 +8,7 @@ translationId: "the-conversation-288792"
 
 <p class="republished-from">
   <a href="https://theconversation.com" rel="noopener">
-    <img src="/sharelab/the-conversation-logo.svg" alt="The Conversation" height="24" />
+    <img src="/the-conversation-logo.svg" alt="The Conversation" height="24" />
   </a>
 </p>
 

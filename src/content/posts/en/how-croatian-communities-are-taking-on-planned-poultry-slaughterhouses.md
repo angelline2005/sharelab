@@ -8,7 +8,7 @@ translationId: "global-voices-how-croatian-communities-are-taking-on-planned-pou
 
 <p class="republished-from">
   <a href="https://globalvoices.org" rel="noopener">
-    <img src="/sharelab/global-voices-logo.png" alt="Global Voices" height="24" />
+    <img src="/global-voices-logo.png" alt="Global Voices" height="24" />
   </a>
 </p>
 

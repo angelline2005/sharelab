@@ -9,7 +9,7 @@ draft: true
 
 <p class="republished-from">
   <a href="https://news.mongabay.com" rel="noopener">
-    <img src="/sharelab/mongabay-logo.svg" alt="Mongabay" height="24" />
+    <img src="/mongabay-logo.svg" alt="Mongabay" height="24" />
   </a>
 </p>
 

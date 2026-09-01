@@ -46,7 +46,9 @@ const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const POSTS_DIR = (lang) => join(ROOT, 'src', 'content', 'posts', lang);
 const HOME = 'https://www.scidev.net/global/';
 const LICENCE = 'https://creativecommons.org/licenses/by/2.0/';
-const UA = 'sharelab-importer/1.0 (+https://angelline2005.github.io/sharelab/)';
+// Points at the repository rather than the site, so it stays correct if the
+// site moves to another host or domain.
+const UA = 'sharelab-importer/1.0 (+https://github.com/angelline2005/sharelab)';
 
 // SciDev.Net's declared RSS feeds all serve HTML and their REST collection is
 // closed, so article discovery means reading a listing page.
@@ -257,7 +259,7 @@ function buildPost(article, { tags, draft, withImages, lang }) {
 
   const credit = `<p class="republished-from">
   <a href="https://www.scidev.net" rel="noopener">
-    <img src="/sharelab/scidev-net-logo.png" alt="SciDev.Net" height="24" />
+    <img src="/scidev-net-logo.png" alt="SciDev.Net" height="24" />
   </a>
 </p>
 

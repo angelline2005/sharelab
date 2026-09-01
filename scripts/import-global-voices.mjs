@@ -242,7 +242,7 @@ and is republished under a [Creative Commons Attribution 3.0 licence](${LICENCE}
 
   const credit = `<p class="republished-from">
   <a href="https://globalvoices.org" rel="noopener">
-    <img src="/sharelab/global-voices-logo.png" alt="Global Voices" height="24" />
+    <img src="/global-voices-logo.png" alt="Global Voices" height="24" />
   </a>
 </p>
 

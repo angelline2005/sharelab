@@ -9,7 +9,7 @@ translationId: "scidev-net-latin-america-unites-on-ethical-ai-roadmap"
 
 <p class="republished-from">
   <a href="https://www.scidev.net" rel="noopener">
-    <img src="/sharelab/scidev-net-logo.png" alt="SciDev.Net" height="24" />
+    <img src="/scidev-net-logo.png" alt="SciDev.Net" height="24" />
   </a>
 </p>
 

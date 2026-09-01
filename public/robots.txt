@@ -1,4 +1,0 @@
-User-agent: *
-Allow: /
-
-Sitemap: https://angelline2005.github.io/sharelab/sitemap-index.xml
