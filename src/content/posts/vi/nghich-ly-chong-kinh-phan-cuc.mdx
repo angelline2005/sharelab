@@ -1,0 +1,68 @@
+---
+title: "Chồng thêm kính chắn sáng, ánh sáng lại đi qua nhiều hơn"
+description: "Hai kính phân cực vuông góc chặn sạch ánh sáng. Chèn 39 kính vào giữa — toàn vật cản — thì 94% ánh sáng đi qua. Không có gì huyền bí: chỉ là cos²θ nhân dồn."
+pubDate: 2026-09-02
+tags: ["vat-ly", "quang-hoc", "javascript"]
+translationId: "nghich-ly-chong-kinh-phan-cuc"
+draft: true
+---
+
+import PolarizerStack from '../../../components/demos/PolarizerStack.astro';
+
+Trong [bài về định luật Malus](/vi/posts/dinh-luat-malus-xoay-duoc/), ta dừng ở
+nghịch lý ba kính: hai kính vuông góc chặn sạch ánh sáng, chèn kính thứ ba lệch
+45° vào giữa thì một phần tư ánh sáng quay lại. Đã hứa là chuyện này còn đi xa
+hơn — và nó đi xa hơn thật.
+
+Câu hỏi tự nhiên tiếp theo: nếu một kính chèn giữa cho lại 25%, thì chèn
+**nhiều kính hơn nữa** — mỗi kính xoay một góc nhỏ hơn — thì sao?
+
+Trực giác vẫn cãi: mỗi kính là một vật cản, thêm vật cản thì phải tối đi.
+
+<PolarizerStack />
+
+Kéo thanh trượt và xem con số:
+
+| Kính chèn giữa | Mỗi bước quay | Ánh sáng qua |
+|---|---|---|
+| 0 (chỉ hai đầu vuông góc) | 90° | 0% |
+| 1 | 45° | 25% |
+| 4 | 18° | 60,5% |
+| 9 | 9° | 78,1% |
+| 39 | 2,25° | 94,0% |
+
+Ba mươi chín vật cản chen thêm vào đường đi — và ánh sáng qua gần như trọn vẹn,
+trong khi phương phân cực vẫn bị xoay đủ 90°.
+
+## Phép tính một dòng
+
+Chèn `m` kính là chia cú quay 90° thành `m + 1` bước đều nhau. Theo định luật
+Malus, mỗi bước ánh sáng còn lại `cos²` của góc bước đó:
+
+```
+I/I₀ = [cos²(90°/(m+1))]^(m+1)
+```
+
+Khi `m` lớn, góc mỗi bước nhỏ dần và `cos` của nó tiến về 1 **nhanh hơn** số
+lần nhân tăng lên — nên tích tiến về 1. Chặn một cú xoay lớn thì mất trắng;
+chia thành nhiều cú xoay bé thì gần như không mất gì.
+
+## Đây không phải trò ảo thuật quang học
+
+Cùng một cơ chế trong bài trước: kính phân cực **chiếu** ánh sáng sang phương
+mới chứ không lọc bớt phương cũ. Mỗi kính chỉ phải "thuyết phục" ánh sáng xoay
+thêm một góc bé, và cái giá `cos²` của một góc bé thì gần như miễn phí —
+`cos²(2,25°) ≈ 0,9985`.
+
+Hiện tượng xoay dần từng bước này có phiên bản ngoài đời không cần tới 40 tấm
+kính: màn hình tinh thể lỏng. Lớp tinh thể lỏng trong màn hình LCD xoay phương
+phân cực **liên tục** dọc bề dày của nó — như chồng vô hạn kính phân cực, mỗi
+tấm mỏng vô cùng và lệch vô cùng bé — nên ánh sáng đi qua hai kính vuông góc
+gần như nguyên vẹn. Đặt điện áp vào để phá cấu trúc xoắn đó, ánh sáng không
+được xoay nữa và điểm ảnh tắt. Mỗi điểm ảnh trên màn hình bạn đang đọc là công
+tắc bật tắt của đúng hiệu ứng trong demo trên.
+
+Với ai học tiếp vật lý: đây cũng là ví dụ sơ khai của một ý tưởng lớn trong cơ
+học lượng tử — thay đổi một hệ bằng chuỗi phép đo nhỏ liên tiếp thì "rẻ" hơn
+hẳn một phép đo lớn, mở đường tới hiệu ứng Zeno lượng tử. Nhưng đó là chuyện
+của một bài khác.

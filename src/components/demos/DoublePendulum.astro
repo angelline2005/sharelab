@@ -1,0 +1,266 @@
+---
+// Two double pendulums, identical except the second's inner angle starts
+// 0.001 radians — about a twentieth of a degree — away from the first's.
+//
+// For the first few seconds the red trace hides behind the blue one, which is
+// the point: the visitor should get bored enough to believe the systems are
+// the same, and then watch them stop being the same. The separation readout
+// makes the divergence quantitative.
+//
+// RK4 at a fixed dt, stepped in simulated time. The two pendulums are stepped
+// with the same integrator and the same dt, so the divergence on screen is
+// the dynamics, not integration error.
+---
+
+<figure class="demo" data-demo="double-pendulum">
+  <canvas></canvas>
+
+  <div class="controls">
+    <button type="button" data-btn="restart">Chạy lại từ đầu</button>
+    <label class="inline">
+      <input type="checkbox" data-in="trails" checked />
+      Vẽ vệt đầu mút
+    </label>
+  </div>
+
+  <p class="readout" data-readout></p>
+
+  <figcaption>
+    Hai con lắc đôi giống hệt nhau, trừ góc thả của thanh trong lệch
+    0,001 radian — khoảng một phần hai mươi của một độ. Cùng phương trình, cùng
+    bộ giải, cùng bước thời gian.
+  </figcaption>
+</figure>
+
+<style>
+  .demo {
+    margin: 2rem 0;
+    padding: 1rem;
+    border: 1px solid rgba(128, 128, 128, 0.3);
+    border-radius: 10px;
+  }
+  .demo canvas {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+  .controls {
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+    margin-top: 1rem;
+    flex-wrap: wrap;
+  }
+  .controls button {
+    border: 1px solid rgba(128, 128, 128, 0.5);
+    background: transparent;
+    color: inherit;
+    border-radius: 6px;
+    padding: 0.4rem 0.9rem;
+    cursor: pointer;
+    font-size: 0.85rem;
+  }
+  .controls .inline {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.85rem;
+  }
+  .readout {
+    margin: 0.9rem 0 0;
+    font-size: 0.9rem;
+    font-variant-numeric: tabular-nums;
+  }
+  figcaption {
+    margin-top: 0.75rem;
+    font-size: 0.8rem;
+    opacity: 0.7;
+    line-height: 1.5;
+  }
+</style>
+
+<script>
+  const G = 9.81;
+  const A_COLOR = '#2563eb';
+  const B_COLOR = '#dc2626';
+  const DT = 0.002; // integration step, s
+  const OFFSET = 0.001; // rad — the entire difference between the two systems
+
+  type State = [number, number, number, number]; // θ1, θ2, ω1, ω2
+
+  // Standard equal-mass, equal-length double pendulum equations.
+  function deriv([t1, t2, w1, w2]: State): State {
+    const d = t1 - t2;
+    const den = 3 - Math.cos(2 * d);
+    const a1 =
+      (-3 * G * Math.sin(t1) -
+        G * Math.sin(t1 - 2 * t2) -
+        2 * Math.sin(d) * (w2 * w2 + w1 * w1 * Math.cos(d))) /
+      den;
+    const a2 =
+      (2 * Math.sin(d) * (2 * w1 * w1 + 2 * G * Math.cos(t1) + w2 * w2 * Math.cos(d))) / den;
+    return [w1, w2, a1, a2];
+  }
+
+  function rk4(s: State, dt: number): State {
+    const add = (a: State, b: State, f: number): State =>
+      [a[0] + b[0] * f, a[1] + b[1] * f, a[2] + b[2] * f, a[3] + b[3] * f];
+    const k1 = deriv(s);
+    const k2 = deriv(add(s, k1, dt / 2));
+    const k3 = deriv(add(s, k2, dt / 2));
+    const k4 = deriv(add(s, k3, dt));
+    return [
+      s[0] + ((k1[0] + 2 * k2[0] + 2 * k3[0] + k4[0]) * dt) / 6,
+      s[1] + ((k1[1] + 2 * k2[1] + 2 * k3[1] + k4[1]) * dt) / 6,
+      s[2] + ((k1[2] + 2 * k2[2] + 2 * k3[2] + k4[2]) * dt) / 6,
+      s[3] + ((k1[3] + 2 * k2[3] + 2 * k3[3] + k4[3]) * dt) / 6,
+    ];
+  }
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const restart = root.querySelector('[data-btn="restart"]') as HTMLButtonElement;
+    const trailsBox = root.querySelector('[data-in="trails"]') as HTMLInputElement;
+
+    let a: State, b: State, simTime: number;
+    let trailA: [number, number][] = [];
+    let trailB: [number, number][] = [];
+    let raf = 0;
+    let last = 0;
+
+    function reset() {
+      a = [2.0, 2.0, 0, 0];
+      b = [2.0 + OFFSET, 2.0, 0, 0];
+      simTime = 0;
+      trailA = [];
+      trailB = [];
+      last = 0;
+    }
+
+    const tip = (s: State): [number, number] =>
+      [Math.sin(s[0]) + Math.sin(s[1]), -Math.cos(s[0]) - Math.cos(s[1])];
+
+    function frame(now: number) {
+      raf = requestAnimationFrame(frame);
+      if (!last) last = now;
+      // Advance simulated time to match wall time, capped so a background tab
+      // does not fast-forward through the interesting part on return.
+      let elapsed = Math.min((now - last) / 1000, 0.05);
+      last = now;
+      while (elapsed > 0) {
+        a = rk4(a, DT);
+        b = rk4(b, DT);
+        simTime += DT;
+        elapsed -= DT;
+      }
+
+      const pa = tip(a);
+      const pb = tip(b);
+      if (trailsBox.checked) {
+        trailA.push(pa);
+        trailB.push(pb);
+        if (trailA.length > 900) {
+          trailA.shift();
+          trailB.shift();
+        }
+      }
+
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32;
+      const cssH = Math.round(cssW * 0.62);
+      if (canvas.width !== cssW * dpr) {
+        canvas.width = cssW * dpr;
+        canvas.height = cssH * dpr;
+        canvas.style.height = `${cssH}px`;
+      }
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+
+      const cx = cssW / 2;
+      const cy = cssH * 0.38;
+      const scale = Math.min(cssW, cssH) * 0.21;
+      const px = (p: [number, number]) => [cx + p[0] * scale, cy - p[1] * scale] as const;
+
+      const fg = getComputedStyle(root).color;
+
+      const drawTrail = (trail: [number, number][], colour: string) => {
+        if (trail.length < 2) return;
+        ctx.strokeStyle = colour;
+        ctx.lineWidth = 1;
+        for (let i = 1; i < trail.length; i++) {
+          ctx.globalAlpha = (i / trail.length) * 0.5;
+          const [x0, y0] = px(trail[i - 1]);
+          const [x1, y1] = px(trail[i]);
+          ctx.beginPath();
+          ctx.moveTo(x0, y0);
+          ctx.lineTo(x1, y1);
+          ctx.stroke();
+        }
+        ctx.globalAlpha = 1;
+      };
+      drawTrail(trailA, A_COLOR);
+      drawTrail(trailB, B_COLOR);
+
+      const drawPendulum = (s: State, colour: string) => {
+        const j = px([Math.sin(s[0]), -Math.cos(s[0])]);
+        const e = px(tip(s));
+        ctx.strokeStyle = colour;
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(cx, cy);
+        ctx.lineTo(j[0], j[1]);
+        ctx.lineTo(e[0], e[1]);
+        ctx.stroke();
+        ctx.fillStyle = colour;
+        for (const [x, y] of [j, e]) {
+          ctx.beginPath();
+          ctx.arc(x, y, 5, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      };
+      drawPendulum(a, A_COLOR);
+      drawPendulum(b, B_COLOR);
+
+      ctx.fillStyle = fg;
+      ctx.globalAlpha = 0.5;
+      ctx.beginPath();
+      ctx.arc(cx, cy, 3, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.globalAlpha = 1;
+
+      const sep = Math.hypot(pa[0] - pb[0], pa[1] - pb[1]);
+      readout.innerHTML =
+        `t = <b>${simTime.toFixed(1)} s</b> · ` +
+        `khoảng cách hai đầu mút: <b>${sep < 0.01 ? (sep * 1000).toFixed(2) + ' mm' : sep.toFixed(3) + ' m'}</b>` +
+        (sep < 0.01 && simTime > 1 ? ' — vẫn chưa phân biệt được' : sep > 0.5 ? ' — đã là hai hệ khác nhau' : '');
+    }
+
+    restart.addEventListener('click', reset);
+    trailsBox.addEventListener('change', () => {
+      if (!trailsBox.checked) {
+        trailA = [];
+        trailB = [];
+      }
+    });
+
+    // Only animate while visible; a hidden loop is wasted work and the pause
+    // conveniently freezes simTime where the reader left it.
+    const observer = new IntersectionObserver((entries) => {
+      for (const entry of entries) {
+        if (entry.isIntersecting) {
+          last = 0;
+          raf = requestAnimationFrame(frame);
+        } else {
+          cancelAnimationFrame(raf);
+        }
+      }
+    });
+    observer.observe(root);
+
+    reset();
+  }
+
+  document.querySelectorAll<HTMLElement>('[data-demo="double-pendulum"]').forEach(setup);
+</script>

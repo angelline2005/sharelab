@@ -1,0 +1,238 @@
+---
+// m polarisers inserted between crossed ends, dividing the 90° turn into m+1
+// equal steps.
+//
+// Crossed ends alone give darkness. One plate at 45° gives a quarter of the
+// light back. Push m up and the stack approaches full transmission while still
+// rotating the polarisation through a right angle:
+// I/I₀ = cos^(2(m+1))(90°/(m+1)) → 1.
+//
+// The demo exists to make that limit felt rather than asserted: the slider is
+// the argument.
+---
+
+<figure class="demo" data-demo="polarizer-stack">
+  <canvas></canvas>
+
+  <div class="controls">
+    <label>
+      Số kính chèn giữa hai đầu vuông góc <output data-out="n"></output>
+      <input type="range" data-in="n" min="0" max="39" step="1" value="0" />
+    </label>
+  </div>
+
+  <p class="readout" data-readout></p>
+
+  <figcaption>
+    Kính đầu tiên đặt 0°, kính cuối cùng luôn ở 90° — hai đầu vuông góc, đúng
+    cấu hình cho ánh sáng tắt hẳn. Các kính ở giữa chia đều góc quay đó.
+  </figcaption>
+</figure>
+
+<style>
+  .demo {
+    margin: 2rem 0;
+    padding: 1rem;
+    border: 1px solid rgba(128, 128, 128, 0.3);
+    border-radius: 10px;
+  }
+  .demo canvas {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+  .controls {
+    margin-top: 1rem;
+  }
+  .controls label {
+    display: flex;
+    flex-direction: column;
+    font-size: 0.85rem;
+    gap: 0.3rem;
+  }
+  .controls output {
+    font-variant-numeric: tabular-nums;
+    opacity: 0.7;
+  }
+  .controls input {
+    width: 100%;
+  }
+  .readout {
+    margin: 0.9rem 0 0;
+    font-size: 0.9rem;
+    font-variant-numeric: tabular-nums;
+  }
+  figcaption {
+    margin-top: 0.75rem;
+    font-size: 0.8rem;
+    opacity: 0.7;
+    line-height: 1.5;
+  }
+</style>
+
+<script>
+  const BEAM = '#f59e0b';
+  const CURVE = '#2563eb';
+
+  // m inserted plates make m+1 equal rotation steps between the crossed ends;
+  // transmission after the first plate is cos^(2(m+1))(90°/(m+1)).
+  const throughStack = (m: number) => {
+    const steps = m + 1;
+    return Math.cos(Math.PI / 2 / steps) ** (2 * steps);
+  };
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const slider = root.querySelector('[data-in="n"]') as HTMLInputElement;
+    const out = root.querySelector('[data-out="n"]') as HTMLOutputElement;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+
+    function draw() {
+      const m = Number(slider.value);
+      const n = m + 2; // plates drawn, both crossed ends included
+      const stepDeg = 90 / (m + 1);
+      const total = throughStack(m);
+      out.textContent = `${m}`;
+
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32;
+      const cssH = Math.round(cssW * 0.46);
+      canvas.width = cssW * dpr;
+      canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+
+      const fg = getComputedStyle(root).color;
+      const splitX = cssW * 0.56;
+      const midY = cssH * 0.4;
+      const plateH = cssH * 0.42;
+
+      // --- left: the stack, with the beam dimming plate by plate ---
+      const first = 14;
+      const last = splitX - 18;
+      const span = last - first;
+      // Beyond a dozen plates the slits stop being legible, so draw the stack
+      // as a band and keep the plate glyphs for counts you can actually see.
+      const drawPlates = n <= 12;
+
+      // Beam segments: full before the first plate, then dimmed by cos²(step)
+      // after each plate. The segment after the last plate carries `total`.
+      let intensity = 1;
+      for (let i = 0; i <= n; i++) {
+        const x0 = i === 0 ? first : first + (span * i) / (n + 1);
+        const x1 = i === n ? first + span : first + (span * (i + 1)) / (n + 1);
+        ctx.globalAlpha = Math.max(intensity, 0.03) * 0.9;
+        ctx.strokeStyle = BEAM;
+        ctx.lineWidth = 13;
+        ctx.lineCap = 'butt';
+        ctx.beginPath();
+        ctx.moveTo(x0, midY);
+        ctx.lineTo(x1, midY);
+        ctx.stroke();
+        ctx.globalAlpha = 1;
+        // The first plate only fixes the polarisation plane; each later plate
+        // costs cos²(step).
+        if (i < n && i > 0) intensity *= Math.cos((stepDeg * Math.PI) / 180) ** 2;
+      }
+
+      for (let i = 0; i < n; i++) {
+        const x = first + (span * (i + 1)) / (n + 1);
+        // Plate i sits i steps past vertical, ending at 90° on the last plate.
+        const angle = 90 - stepDeg * i;
+        ctx.save();
+        ctx.translate(x, midY);
+        ctx.strokeStyle = fg;
+        ctx.globalAlpha = drawPlates ? 0.5 : 0.28;
+        ctx.lineWidth = 1.4;
+        ctx.strokeRect(-4, -plateH / 2, 8, plateH);
+        if (drawPlates) {
+          ctx.globalAlpha = 0.8;
+          const a = (angle * Math.PI) / 180;
+          for (let k = -1; k <= 1; k++) {
+            const off = k * 7;
+            ctx.beginPath();
+            ctx.moveTo(off * Math.cos(a) - 9 * Math.sin(a), off * Math.sin(a) + 9 * Math.cos(a));
+            ctx.lineTo(off * Math.cos(a) + 9 * Math.sin(a), off * Math.sin(a) - 9 * Math.cos(a));
+            ctx.stroke();
+          }
+        }
+        ctx.restore();
+        ctx.globalAlpha = 1;
+      }
+
+      ctx.fillStyle = fg;
+      ctx.globalAlpha = 0.65;
+      ctx.font = '11px system-ui, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('0°', first + span / (n + 1), midY + plateH / 2 + 16);
+      ctx.fillText('90°', first + (span * n) / (n + 1), midY + plateH / 2 + 16);
+      ctx.globalAlpha = 1;
+
+      // --- right: transmission against N ---
+      const gx = splitX + 26;
+      const gw = cssW - gx - 14;
+      const gy = cssH * 0.12;
+      const gh = cssH * 0.6;
+      const MAXM = 39;
+
+      ctx.strokeStyle = fg;
+      ctx.globalAlpha = 0.3;
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(gx, gy);
+      ctx.lineTo(gx, gy + gh);
+      ctx.lineTo(gx + gw, gy + gh);
+      ctx.stroke();
+
+      // 100% line, the value the stack creeps toward but never reaches.
+      ctx.setLineDash([3, 3]);
+      ctx.beginPath();
+      ctx.moveTo(gx, gy);
+      ctx.lineTo(gx + gw, gy);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.globalAlpha = 1;
+
+      ctx.strokeStyle = CURVE;
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      for (let k = 0; k <= MAXM; k++) {
+        const x = gx + (k / MAXM) * gw;
+        const y = gy + gh - throughStack(k) * gh;
+        k === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+
+      const mx = gx + (m / MAXM) * gw;
+      const my = gy + gh - total * gh;
+      ctx.fillStyle = BEAM;
+      ctx.beginPath();
+      ctx.arc(mx, my, 5, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.fillStyle = fg;
+      ctx.globalAlpha = 0.6;
+      ctx.font = '11px system-ui, sans-serif';
+      ctx.textAlign = 'left';
+      ctx.fillText('I / I₀', gx + 2, gy - 4);
+      ctx.textAlign = 'center';
+      ctx.fillText('0', gx, gy + gh + 15);
+      ctx.fillText(String(MAXM), gx + gw, gy + gh + 15);
+      ctx.globalAlpha = 1;
+
+      readout.innerHTML =
+        m === 0
+          ? `Chưa chèn kính nào — hai đầu vuông góc chặn sạch: <b>0.00%</b>`
+          : `${m} kính chèn giữa, mỗi bước quay <b>${stepDeg.toFixed(2)}°</b> · ` +
+            `ánh sáng đi qua <b>${(total * 100).toFixed(2)}%</b>`;
+    }
+
+    slider.addEventListener('input', draw);
+    window.addEventListener('resize', draw);
+    draw();
+  }
+
+  document.querySelectorAll<HTMLElement>('[data-demo="polarizer-stack"]').forEach(setup);
+</script>

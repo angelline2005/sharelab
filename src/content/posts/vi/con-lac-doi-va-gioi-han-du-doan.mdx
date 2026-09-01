@@ -1,0 +1,82 @@
+---
+title: "Con lắc đôi: lệch một phần nghìn radian, mất khả năng dự đoán"
+description: "Hai con lắc đôi giống hệt nhau trừ 0,001 radian ở góc thả. Bảy giây sau chúng là hai hệ khác hẳn — và cả 'trọng tài mô phỏng số' cũng có giới hạn của nó."
+pubDate: 2026-09-02
+tags: ["vat-ly", "mo-phong", "javascript"]
+translationId: "con-lac-doi-va-gioi-han-du-doan"
+draft: true
+---
+
+import DoublePendulum from '../../../components/demos/DoublePendulum.astro';
+
+Treo một con lắc vào đầu một con lắc khác. Chỉ vậy thôi — hai thanh, hai khối
+lượng, một trục quay — và bạn có một trong những hệ cơ học đơn giản nhất mà vật
+lý **không thể dự đoán lâu dài**.
+
+Dưới đây là hai con lắc đôi. Chúng dùng cùng phương trình, cùng bộ giải số, cùng
+bước thời gian. Khác biệt duy nhất: góc thả của thanh trong lệch nhau
+**0,001 radian** — cỡ một phần hai mươi của một độ, nhỏ hơn sai số của bất kỳ
+phép đo góc thủ công nào.
+
+<DoublePendulum />
+
+Vài giây đầu, vệt đỏ nấp sau vệt xanh — hai hệ không phân biệt nổi, và số đo
+khoảng cách xác nhận điều đó. Rồi đến khoảng giây thứ năm, thứ bảy, chúng rời
+nhau. Từ đó trở đi là hai con lắc không liên quan.
+
+Số liệu từ đúng mô phỏng này:
+
+| Thời điểm | Khoảng cách hai đầu mút |
+|---|---|
+| 0 s | 1 mm |
+| 2,5 s | 2 mm |
+| 5 s | 5,8 cm |
+| 7,5 s | 69 cm |
+| 10 s | 1,03 m |
+
+Sai lệch không tăng đều — nó tăng **theo cấp số nhân**. Mỗi khoảng thời gian cố
+định, khoảng cách nhân lên khoảng chục lần. Đó là chữ ký của hỗn loạn
+(chaos): nhạy cảm với điều kiện đầu.
+
+## "Hỗn loạn" không có nghĩa là "ngẫu nhiên"
+
+Phân biệt này đáng một đoạn riêng. Hệ trên **tất định tuyệt đối**: cùng điều
+kiện đầu thì ra cùng quỹ đạo, lần nào cũng thế — nút "Chạy lại từ đầu" chứng
+minh điều đó. Không có xúc xắc nào ở đây.
+
+Điều bị mất không phải quy luật, mà là **khả năng dùng quy luật để dự đoán**.
+Muốn biết con lắc ở đâu sau 30 giây, bạn phải biết góc thả chính xác đến mức
+không dụng cụ nào đo nổi. Sai một phần nghìn radian — mất dự đoán sau chưa đầy
+mười giây. Muốn dự đoán thêm vài giây nữa, độ chính xác cần thiết tăng theo cấp
+số nhân, và rất nhanh chóng vượt qua giới hạn vật lý của mọi phép đo.
+
+Thời tiết khó dự báo quá một hai tuần vì đúng cơ chế này, chỉ khác quy mô.
+
+## Và đây là chỗ phải nói lại một câu trong bài trước
+
+Trong [bài về kiểm tra đáp án bằng AI](/vi/posts/ai-giai-bai-vat-ly-va-cach-kiem-tra/),
+tôi gọi mô phỏng số là "trọng tài cuối cùng". Với con lắc **đơn**, điều đó đúng.
+Với hệ hỗn loạn thì trọng tài này cũng có giới hạn, và giới hạn đó đo được.
+
+Thí nghiệm: chạy **cùng một điều kiện đầu** qua cùng bộ giải RK4, chỉ đổi bước
+thời gian — `dt = 0,001` so với bản tham chiếu chạy bước mịn gấp nghìn lần:
+
+| Thời điểm | Hai bản mô phỏng lệch nhau |
+|---|---|
+| 10 s | 0,0001 m |
+| 15 s | 2,5 mm |
+| 20 s | **1,2 m** |
+
+Đến giây 15 mọi thứ vẫn đẹp. Đến giây 20, chính sai số làm tròn của bộ giải đã
+bị hệ khuếch đại thành khác biệt vĩ mô — **mô phỏng phân kỳ khỏi chính nó**, dù
+không có gì thay đổi ngoài kích thước bước tính.
+
+Bài học không phải "đừng tin mô phỏng". Bài học là mô phỏng một hệ hỗn loạn chỉ
+đáng tin trong **chân trời dự đoán** của nó — với hệ này là mười mấy giây — và
+người làm mô phỏng phải biết chân trời đó nằm ở đâu. Cách đo nó cũng đơn giản
+đến bất ngờ: chạy hai lần với hai bước thời gian khác nhau, và tin kết quả cho
+tới thời điểm hai bản bắt đầu cãi nhau.
+
+Ngoài chân trời đó, mô phỏng vẫn nói được nhiều điều — về năng lượng, về vùng
+không gian hệ lui tới, về tính chất thống kê của chuyển động. Nó chỉ không nói
+được duy nhất một thứ: *con lắc sẽ ở chỗ nào*.
