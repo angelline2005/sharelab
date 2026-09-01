@@ -68,9 +68,11 @@ và `θ₀ = 30°`, nó cho 1,6213 m/s, còn đáp án `sin θ₀` cho 3,1321 m/
 
 1. **Để mô hình dựng bài** — nêu nguyên lý áp dụng và viết ra phương trình. Đây
    là thế mạnh thật của nó.
-2. **Bắt nó sinh code thay vì tự tính.** SymPy rút gọn biểu thức không bao giờ
-   sai dấu; mô hình thì có. Việc của nó là dịch bài toán thành code, không phải
-   làm thay máy tính.
+2. **Bắt nó sinh code thay vì tự tính.** Chuyển vế và rút gọn biểu thức là việc
+   SymPy làm ổn định hơn hẳn, còn mô hình thì càng nhiều bước càng dễ trượt. Việc
+   của nó là dịch bài toán thành code, không phải làm thay máy tính. Nhưng đừng
+   coi CAS là chân lý tuyệt đối: nó cũng có thể ra kết quả đúng mà sai nhánh
+   nghiệm nếu bạn không khai báo điều kiện cho biến.
 3. **Kiểm tra bằng nhiều cách, và chọn cách tách được các đáp án ra.** Một cách
    kiểm tra mà mọi ứng viên đều qua thì không mang thông tin gì.
 4. **Có ít nhất một cách độc lập** — mô phỏng số, hoặc giải lại bằng phương pháp

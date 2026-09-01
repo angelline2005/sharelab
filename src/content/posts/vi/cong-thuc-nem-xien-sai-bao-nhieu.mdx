@@ -1,6 +1,6 @@
 ---
 title: "Công thức ném xiên trong sách giáo khoa sai bao nhiêu?"
-description: "Tầm xa R = v₀²sin(2θ)/g chỉ đúng trong chân không. Có lực cản, góc ném tối ưu không còn là 45° — và càng ném mạnh thì càng lệch xa."
+description: "Tầm xa R = v₀²sin(2θ)/g chỉ đúng trong chân không. Ném hết sức một quả bóng tennis, công thức này nói nó bay xa gấp đôi thực tế — và góc tối ưu cũng không còn là 45°."
 pubDate: 2026-09-01
 tags: ["vat-ly", "mo-phong", "javascript"]
 translationId: "cong-thuc-nem-xien-sai-bao-nhieu"
@@ -39,30 +39,50 @@ tầm xa. Cách duy nhất là giải số: chia thời gian thành từng bư�
 
 <ProjectileDrag />
 
-## Ba con số đáng nhớ
+## Vật càng nhanh, công thức càng lệch
 
-Quét toàn bộ góc ném để tìm tầm xa lớn nhất, với hệ số cản trung bình:
+Quét toàn bộ góc ném để tìm tầm xa lớn nhất, với `b = 0,002 m⁻¹` — cỡ một viên
+bi thép đường kính 2 cm, tức vật khá nặng so với tiết diện của nó:
 
-| Vận tốc đầu | Góc tối ưu | Tầm xa thực | Sách tính ra |
-|---|---|---|---|
-| 30 m/s | 44,0° | 80,5 m | 91,7 m |
-| 60 m/s | 41,8° | 242,0 m | 367,0 m |
-| 100 m/s | 38,8° | 445,7 m | 1019,4 m |
-
-Ba điều rút ra:
+| Vận tốc đầu | Góc tối ưu | Tầm xa thực | Sách tính ra | Lệch |
+|---|---|---|---|---|
+| 20 m/s | 44,5° | 38,4 m | 40,8 m | 6% |
+| 30 m/s | 44,0° | 80,5 m | 91,7 m | 12% |
+| 60 m/s | 41,8° | 242,0 m | 367,0 m | 34% |
+| 100 m/s | 38,8° | 445,7 m | 1019,4 m | 56% |
 
 **Góc tối ưu tụt xuống dưới 45°.** Trực giác đằng sau: bay cao thì mất thời gian
 trên không, mà thời gian trên không là thời gian bị lực cản bào mòn vận tốc. Nên
 có lực cản thì đáng đánh đổi độ cao lấy tốc độ.
 
-**Càng ném mạnh càng lệch xa.** Ở 30 m/s góc tối ưu gần như vẫn là 45°, sai số
-12%. Ở 100 m/s, tầm xa thật chỉ bằng **44%** con số sách giáo khoa đưa ra. Lực
-cản tỉ lệ bình phương vận tốc, nên tăng tốc độ lên gấp đôi thì lực cản gấp bốn.
+**Càng ném mạnh càng lệch xa.** Lực cản tỉ lệ bình phương vận tốc, nên tăng tốc
+độ lên gấp đôi thì lực cản gấp bốn. Ở 100 m/s, tầm xa thật chỉ bằng **44%** con
+số sách giáo khoa đưa ra.
 
-**Ở tốc độ đời thường thì công thức vẫn ổn.** Ném một quả bóng bằng tay, tốc độ
-cỡ 20–30 m/s, sai số vài phần trăm — đủ nhỏ để trực giác "ném chếch 45° là xa
-nhất" vẫn đúng. Đây là lý do công thức tồn tại được trong sách và không ai thấy
-gợn.
+## Vật càng nhẹ, công thức càng lệch — và đây mới là chỗ đau
+
+Hệ số cản không phải hằng số của không khí, nó phụ thuộc vào chính vật bay:
+
+```
+b = ½ · ρ · C_d · A / m
+```
+
+Diện tích cản `A` chia cho khối lượng `m`. Vật càng nhẹ so với kích thước thì `b`
+càng lớn. Viên bi thép ở bảng trên có `b = 0,002`. Quả bóng tennis có
+`b ≈ 0,0175` — **gấp gần chín lần**.
+
+Nên nếu bạn định lấy bảng trên mà suy ra "ném quả bóng thì sai số cỡ 12%", con số
+thật tệ hơn nhiều:
+
+| Vật, ở v₀ = 30 m/s | Tầm xa thực | Sách tính ra | Lệch |
+|---|---|---|---|
+| Viên bi thép | 80,5 m | 91,7 m | 12% |
+| Quả bóng golf | 67,7 m | 91,7 m | 26% |
+| **Quả bóng tennis** | **44,9 m** | 91,7 m | **51%** |
+
+Ném hết sức một quả bóng tennis, công thức trong sách nói nó bay xa **gấp đôi**
+thực tế. Đây không phải trường hợp cực đoan bịa ra — đó là quả bóng, ở tốc độ một
+người ném được.
 
 ## Không phải sách sai, mà là phạm vi áp dụng hẹp hơn ta tưởng
 
@@ -71,5 +91,24 @@ tuyệt đối trong điều kiện nó tuyên bố. Vấn đề nằm ở chỗ
 được nhấn mạnh, nên học sinh mang nó ra khỏi phòng thi mà không biết ranh giới ở
 đâu.
 
-Và ranh giới đó không nằm ở "có không khí hay không" — không khí luôn có. Nó nằm
-ở **tốc độ**: chậm thì bỏ qua được, nhanh thì không.
+Và ranh giới đó không nằm ở "có không khí hay không" — không khí thì luôn có. Nó
+nằm ở chỗ **tốc độ ném so với vận tốc tới hạn của chính vật đó**.
+
+Vận tốc tới hạn là tốc độ rơi mà tại đó lực cản cân bằng trọng lực, `v_t = √(g/b)`.
+Nó là thước đo gọn nhất cho câu hỏi "vật này bị không khí ăn hiếp đến mức nào":
+
+| Vật | Vận tốc tới hạn |
+|---|---|
+| Quả bóng bàn | 8,6 m/s |
+| Quả bóng tennis | 23,7 m/s |
+| Quả bóng golf | 42,9 m/s |
+| Viên bi thép 2 cm | 59,6 m/s |
+
+Quy tắc thô: **ném chậm hơn nhiều so với `v_t` thì công thức sách dùng được; ném
+tới gần hoặc vượt `v_t` thì không.** Quả bóng bàn có `v_t` chỉ 8,6 m/s — bạn ném
+kiểu gì cũng vượt, nên với nó công thức chân không vô dụng ngay từ đầu. Viên bi
+thép thì ngược lại, ném tay khó chạm tới 60 m/s nên công thức vẫn tạm.
+
+Hòn đá 250 g ném 20 m/s bay được 37,0 m, sách tính 40,8 m — lệch 9%, đủ tốt cho
+một ước lượng thô. Quả bóng tennis cùng tốc độ thì lệch 33%, và đó là chỗ phải
+bỏ công thức xuống mà đi giải số.
