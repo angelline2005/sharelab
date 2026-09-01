@@ -1,0 +1,318 @@
+---
+// The Doppler effect you can hear.
+//
+// A source emitting a constant 440 Hz — concert A — drives past a listener.
+// The top panel is a true-scale top-down view (~220 m across) with wavefronts
+// drawn as they propagate: the crowding ahead of the car and stretching behind
+// it IS the effect, at real proportions rather than the exaggerated textbook
+// sketch. The bottom panel scrolls the heard frequency, tracing the S-glide as
+// the car passes.
+//
+// The audio path uses a plain OscillatorNode whose frequency follows
+//   f' = f · v / (v − v_r),   v_r = v⃗_s · r̂  (radial component toward listener)
+// so the pitch you hear is computed from the same formula the article states.
+// Web Audio's own PannerNode Doppler was removed from the spec years ago, so
+// doing it by hand is not just pedagogy — it is the only way.
+//
+// Browsers only allow sound after a user gesture, hence the explicit toggle;
+// the oscillator also suspends when the demo scrolls out of view.
+
+---
+
+<figure class="demo" data-demo="doppler">
+  <canvas></canvas>
+
+  <div class="controls">
+    <label>
+      Tốc độ xe <output data-out="vs"></output>
+      <input type="range" data-in="vs" min="5" max="60" step="1" value="20" />
+    </label>
+    <label>
+      Bạn đứng cách đường <output data-out="dy"></output>
+      <input type="range" data-in="dy" min="3" max="40" step="1" value="10" />
+    </label>
+    <button type="button" data-btn="sound">🔊 Bật âm thanh</button>
+  </div>
+
+  <p class="readout" data-readout></p>
+
+  <figcaption>
+    Nguồn phát đúng một nốt La 440 Hz không đổi. Mọi thay đổi cao độ bạn nghe
+    thấy đều do chuyển động — đó chính là hiệu ứng Doppler. Mặt sóng vẽ đúng tỉ
+    lệ thật với tốc độ âm thanh 343 m/s.
+  </figcaption>
+</figure>
+
+<style>
+  .demo {
+    margin: 2rem 0;
+    padding: 1rem;
+    border: 1px solid rgba(128, 128, 128, 0.3);
+    border-radius: 10px;
+  }
+  .demo canvas {
+    width: 100%;
+    height: auto;
+    display: block;
+    border-radius: 6px;
+  }
+  .controls {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 0.75rem 1.25rem;
+    margin-top: 1rem;
+    align-items: end;
+  }
+  .controls label {
+    display: flex;
+    flex-direction: column;
+    font-size: 0.85rem;
+    gap: 0.3rem;
+  }
+  .controls output {
+    font-variant-numeric: tabular-nums;
+    opacity: 0.7;
+  }
+  .controls input[type='range'] {
+    width: 100%;
+  }
+  .controls button {
+    border: 1px solid rgba(128, 128, 128, 0.5);
+    background: transparent;
+    color: inherit;
+    border-radius: 6px;
+    padding: 0.45rem 0.9rem;
+    cursor: pointer;
+    font-size: 0.85rem;
+  }
+  .readout {
+    margin: 0.9rem 0 0;
+    font-size: 0.9rem;
+    font-variant-numeric: tabular-nums;
+    line-height: 1.6;
+  }
+  figcaption {
+    margin-top: 0.75rem;
+    font-size: 0.8rem;
+    opacity: 0.7;
+    line-height: 1.5;
+  }
+</style>
+
+<script>
+  const V = 343; // m/s, speed of sound at ~20°C
+  const F = 440; // Hz, source frequency — concert A
+  const HALF_W = 110; // m, half-width of the field of view
+  const EMIT_EVERY = 0.08; // s between drawn wavefronts (visual sampling only)
+  const CAR = '#dc2626';
+  const EAR = '#2563eb';
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const soundBtn = root.querySelector('[data-btn="sound"]') as HTMLButtonElement;
+    const input = (n: string) => root.querySelector(`[data-in="${n}"]`) as HTMLInputElement;
+    const output = (n: string) => root.querySelector(`[data-out="${n}"]`) as HTMLOutputElement;
+
+    let simTime = 0;
+    let last = 0;
+    let raf = 0;
+    let carX = -HALF_W;
+    let fronts: { x: number; t: number }[] = [];
+    let lastEmit = 0;
+    let history: { t: number; f: number }[] = [];
+
+    // --- audio ---------------------------------------------------------
+    let audio: { ctx: AudioContext; osc: OscillatorNode; gain: GainNode } | null = null;
+    let soundOn = false;
+
+    function ensureAudio() {
+      if (audio) return audio;
+      const actx = new AudioContext();
+      const osc = actx.createOscillator();
+      const gain = actx.createGain();
+      osc.type = 'sine';
+      osc.frequency.value = F;
+      gain.gain.value = 0;
+      osc.connect(gain).connect(actx.destination);
+      osc.start();
+      audio = { ctx: actx, osc, gain };
+      // Exposed for tests and console debugging; nothing in the demo reads it.
+      (root as HTMLElement & { _audio?: typeof audio })._audio = audio;
+      return audio;
+    }
+
+    function setSound(on: boolean) {
+      soundOn = on;
+      soundBtn.textContent = on ? '🔇 Tắt âm thanh' : '🔊 Bật âm thanh';
+      if (on) {
+        const a = ensureAudio();
+        a.ctx.resume();
+      } else if (audio) {
+        audio.gain.gain.setTargetAtTime(0, audio.ctx.currentTime, 0.05);
+      }
+    }
+
+    soundBtn.addEventListener('click', () => setSound(!soundOn));
+
+    // --- physics -------------------------------------------------------
+    function heard(vs: number, dy: number, x: number) {
+      const r = Math.hypot(x, dy);
+      // Radial closing speed: positive while the car is still approaching.
+      const vr = (vs * -x) / Math.max(r, 0.1);
+      return { f: (F * V) / (V - vr), r, vr };
+    }
+
+    function frame(now: number) {
+      raf = requestAnimationFrame(frame);
+      if (!last) last = now;
+      const dt = Math.min((now - last) / 1000, 0.05);
+      last = now;
+      simTime += dt;
+
+      const vs = Number(input('vs').value);
+      const dy = Number(input('dy').value);
+      output('vs').textContent = `${vs} m/s (${Math.round(vs * 3.6)} km/h)`;
+      output('dy').textContent = `${dy} m`;
+
+      carX += vs * dt;
+      if (carX > HALF_W) {
+        carX = -HALF_W;
+        fronts = [];
+      }
+
+      if (simTime - lastEmit >= EMIT_EVERY) {
+        fronts.push({ x: carX, t: simTime });
+        lastEmit = simTime;
+        if (fronts.length > 40) fronts.shift();
+      }
+
+      const { f: heardF, r } = heard(vs, dy, carX);
+      history.push({ t: simTime, f: heardF });
+      while (history.length && history[0].t < simTime - 12) history.shift();
+
+      if (audio && soundOn) {
+        const t = audio.ctx.currentTime;
+        audio.osc.frequency.setTargetAtTime(heardF, t, 0.03);
+        // 1/r loudness, referenced so a car 15 m away sits at a comfortable level.
+        audio.gain.gain.setTargetAtTime(Math.min(15 / r, 1) * 0.12, t, 0.05);
+      }
+
+      // --- draw ---------------------------------------------------------
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32;
+      const cssH = Math.round(cssW * 0.62);
+      if (canvas.width !== cssW * dpr) {
+        canvas.width = cssW * dpr;
+        canvas.height = cssH * dpr;
+        canvas.style.height = `${cssH}px`;
+      }
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+
+      // Field panel: metres → pixels, road along the top area.
+      const fieldH = cssH * 0.56;
+      const scale = cssW / (2 * HALF_W);
+      const roadY = fieldH * 0.32;
+      const px = (mx: number) => cssW / 2 + mx * scale;
+      const obsY = roadY + dy * scale;
+
+      ctx.strokeStyle = fg;
+      ctx.globalAlpha = 0.25;
+      ctx.setLineDash([8, 7]);
+      ctx.beginPath();
+      ctx.moveTo(0, roadY);
+      ctx.lineTo(cssW, roadY);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.globalAlpha = 1;
+
+      // Wavefronts, clipped to the field panel.
+      ctx.save();
+      ctx.beginPath();
+      ctx.rect(0, 0, cssW, fieldH);
+      ctx.clip();
+      for (const w of fronts) {
+        const radius = V * (simTime - w.t) * scale;
+        if (radius > cssW * 1.2) continue;
+        ctx.strokeStyle = fg;
+        ctx.globalAlpha = Math.max(0.05, 0.45 - (simTime - w.t) * 0.55);
+        ctx.beginPath();
+        ctx.arc(px(w.x), roadY, radius, 0, Math.PI * 2);
+        ctx.stroke();
+      }
+      ctx.globalAlpha = 1;
+
+      ctx.fillStyle = CAR;
+      ctx.fillRect(px(carX) - 9, roadY - 5, 18, 10);
+
+      ctx.fillStyle = EAR;
+      ctx.beginPath();
+      ctx.arc(px(0), Math.min(obsY, fieldH - 8), 6, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+
+      // Frequency-vs-time panel.
+      const gy = fieldH + 12;
+      const gh = cssH - gy - 18;
+      const fMax = (F * V) / (V - vs) + 6;
+      const fMin = (F * V) / (V + vs) - 6;
+      const fy = (f: number) => gy + gh - ((f - fMin) / (fMax - fMin)) * gh;
+
+      ctx.strokeStyle = fg;
+      ctx.globalAlpha = 0.25;
+      ctx.strokeRect(0.5, gy + 0.5, cssW - 1, gh);
+      ctx.setLineDash([3, 4]);
+      ctx.beginPath();
+      ctx.moveTo(0, fy(F));
+      ctx.lineTo(cssW, fy(F));
+      ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.globalAlpha = 0.6;
+      ctx.fillStyle = fg;
+      ctx.font = '11px system-ui, sans-serif';
+      ctx.textAlign = 'left';
+      ctx.fillText('440 Hz', 6, fy(F) - 4);
+      ctx.globalAlpha = 1;
+
+      ctx.strokeStyle = CAR;
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      let started = false;
+      for (const p of history) {
+        const x = cssW - (simTime - p.t) * (cssW / 12);
+        const y = fy(p.f);
+        started ? ctx.lineTo(x, y) : ctx.moveTo(x, y);
+        started = true;
+      }
+      ctx.stroke();
+      ctx.lineWidth = 1;
+
+      const fApproach = (F * V) / (V - vs);
+      const fRecede = (F * V) / (V + vs);
+      const semis = 12 * Math.log2(fApproach / fRecede);
+      readout.innerHTML =
+        `Đang nghe: <b>${heardF.toFixed(1)} Hz</b> · ` +
+        `tiến thẳng <b>${fApproach.toFixed(1)}</b> / lùi thẳng <b>${fRecede.toFixed(1)} Hz</b> · ` +
+        `cả cú trượt ≈ <b>${semis.toFixed(1)} nửa cung</b>`;
+    }
+
+    const observer = new IntersectionObserver((entries) => {
+      for (const entry of entries) {
+        if (entry.isIntersecting) {
+          last = 0;
+          raf = requestAnimationFrame(frame);
+          if (audio && soundOn) audio.ctx.resume();
+        } else {
+          cancelAnimationFrame(raf);
+          if (audio) audio.ctx.suspend();
+        }
+      }
+    });
+    observer.observe(root);
+  }
+
+  document.querySelectorAll<HTMLElement>('[data-demo="doppler"]').forEach(setup);
+</script>

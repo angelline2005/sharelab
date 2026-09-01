@@ -1,0 +1,98 @@
+---
+title: "Hiệu ứng Doppler mà bạn nghe được"
+description: "Xe phát đúng nốt La 440 Hz chạy ngang qua bạn — bật loa lên và nghe cao độ trượt xuống. Kèm một quy tắc bất ngờ: mỗi 10 m/s tốc độ đổi lấy đúng một nửa cung nhạc."
+pubDate: 2026-09-02
+tags: ["vat-ly", "song", "am-thanh", "javascript"]
+translationId: "hieu-ung-doppler-nghe-duoc"
+---
+
+import DopplerEffect from '../../../components/demos/DopplerEffect.astro';
+
+Ai cũng từng nghe hiệu ứng Doppler: tiếng còi xe cứu thương cao lên khi xe lao
+tới, rồi tụt xuống ngay khi nó vụt qua. Sách vật lý 12 cho công thức và vài bài
+tập thay số. Nhưng công thức không phát ra tiếng — còn demo dưới đây thì có.
+
+Chiếc xe phát đúng **một nốt La 440 Hz không đổi** — nốt mà cả dàn nhạc lấy làm
+chuẩn. Bấm bật âm thanh và nghe: mọi thay đổi cao độ đều không đến từ nguồn, mà
+đến từ chuyển động.
+
+<DopplerEffect />
+
+Nhìn các mặt sóng trong lúc nghe. Chúng được vẽ **đúng tỉ lệ thật** với tốc độ
+âm 343 m/s — không phóng đại như hình sách giáo khoa: phía trước xe các vòng
+tròn dồn lại gần nhau (bước sóng ngắn hơn, tần số cao hơn), phía sau chúng giãn
+ra. Ở 20 m/s, khoảng cách hai mặt sóng liên tiếp phía trước và phía sau chỉ
+chênh nhau khoảng 12% — hiệu ứng nghe rất rõ nhưng nhìn thì tinh tế, và đó là
+lý do tai phát hiện Doppler giỏi hơn mắt.
+
+## Công thức, và một quy tắc đáng nhớ hơn công thức
+
+Nguồn tiến thẳng về phía bạn với tốc độ `vs`, tần số nghe được là:
+
+```
+f' = f · v / (v − vs)        (tiến lại)
+f' = f · v / (v + vs)        (lùi ra xa)
+```
+
+với `v = 343 m/s`. Thay số cho nguồn 440 Hz:
+
+| Tốc độ xe | Tiến lại | Lùi ra | Cú trượt |
+|---|---|---|---|
+| 36 km/h | 453 Hz | 428 Hz | ≈ 1 nửa cung |
+| 72 km/h | 467 Hz | 416 Hz | ≈ 2 nửa cung |
+| 108 km/h | 482 Hz | 405 Hz | ≈ 3 nửa cung |
+| 180 km/h | 515 Hz | 384 Hz | ≈ 5 nửa cung |
+
+Cột cuối là điều ít sách nào nói: quy ra thang nhạc, **mỗi 10 m/s (36 km/h) tốc
+độ đổi lấy gần đúng một nửa cung**. Ai có tai nhạc tương đối đều ước lượng được
+tốc độ xe qua đường chỉ bằng nghe cú trượt cao độ: trượt cỡ một quãng ba thứ
+(3 nửa cung)? Xe đang chạy khoảng trăm cây số một giờ.
+
+## Thứ công thức không nói: hình dạng cú trượt
+
+Công thức trên chỉ cho hai con số — cao độ lúc tiến và lúc lùi. Nhưng bạn không
+bao giờ nghe thấy cú **nhảy** giữa hai giá trị đó, mà là một cú **trượt** mượt
+đi qua đúng 440 Hz tại thời điểm xe ngang mặt. Đồ thị dưới demo vẽ đường trượt
+đó theo thời gian thực.
+
+Lý do: công thức hai-con-số chỉ áp dụng khi nguồn chạy **thẳng vào bạn** — điều
+chỉ đúng nếu bạn đứng giữa đường. Đứng lệch sang lề, thứ quyết định cao độ là
+thành phần vận tốc **hướng về phía bạn**, `vr = vs·cosθ`, và góc θ xoay dần khi
+xe đi qua.
+
+Điều đó dẫn tới một dự đoán kiểm tra được ngay bằng thanh trượt "bạn đứng cách
+đường": khoảng cách của bạn tới đường quyết định **độ dốc** của cú trượt.
+
+| Đứng cách đường | Cú trượt kéo dài* |
+|---|---|
+| 5 m | ~1 giây |
+| 10 m | ~2 giây |
+| 30 m | ~6 giây |
+
+*thời gian để `vr` đảo từ 90% giá trị tiến sang 90% giá trị lùi, ở 20 m/s.
+
+Đứng sát lề: cao độ gãy gần như tức thì — đúng tiếng "wee-oo" quen thuộc. Đứng
+xa: cú trượt chậm rãi đến mức khó nhận ra. Cùng một chiếc xe, cùng tốc độ.
+
+## Trường hợp biên của công thức, lần này nghe được bằng tai
+
+Chuỗi bài trên site này có thói quen soi mẫu số, và mẫu số `v − vs` lần này đáng
+soi hơn cả: chuyện gì xảy ra khi `vs` tiến đến 343 m/s?
+
+`f'` tiến ra vô cùng. Ở 342 m/s, nguồn 440 Hz nghe thành **150.000 Hz** — và tại
+đúng `vs = v`, công thức chia cho 0.
+
+Đó không phải công thức hỏng — đó là công thức đang chỉ tay vào một hiện tượng
+thật. Nguồn bay bằng tốc độ âm thanh đuổi kịp chính các mặt sóng nó phát ra;
+toàn bộ chúng chồng đống lên nhau thành một mặt sóng duy nhất mang năng lượng
+dồn nén: **bức tường âm thanh**, và tiếng nổ siêu thanh khi máy bay vượt qua nó.
+Phép chia cho 0 trong bài tập vật lý 12 và cú nổ vang trời của chiếc tiêm kích
+là cùng một dòng toán.
+
+## Ghi chú cho ai muốn tự làm
+
+Web Audio API từng có sẵn Doppler trong `PannerNode` — và đã bị **gỡ khỏi chuẩn**
+từ lâu. Muốn có hiệu ứng này trên web hôm nay, bạn phải tự tính `f'` mỗi khung
+hình rồi đặt vào tần số của `OscillatorNode`, đúng như demo này làm. Một trường
+hợp hiếm hoi mà cách làm "thủ công cho mục đích dạy học" đồng thời là cách làm
+duy nhất còn tồn tại.
