@@ -1,9 +1,10 @@
 ---
+import { getCollection, type CollectionEntry } from 'astro:content';
 import BaseLayout from './BaseLayout.astro';
 import AdSlot from '../components/AdSlot.astro';
 import { useTranslations, type Locale } from '../i18n';
 import { withBase } from '../utils/url';
-import type { CollectionEntry } from 'astro:content';
+import { meaningfulTags, tagLabel, isPhysics } from '../utils/topics';
 
 interface Props {
   locale: Locale;
@@ -13,10 +14,11 @@ interface Props {
 }
 
 const { locale, post, otherLocaleSlug } = Astro.props;
-const { title, description, pubDate, updatedDate, tags } = post.data;
+const { title, seoTitle, description, pubDate, updatedDate } = post.data;
 const t = useTranslations(locale);
 const otherLocale = locale === 'vi' ? 'en' : 'vi';
 const slug = post.id.split('/').slice(1).join('/');
+const tags = meaningfulTags(post);
 
 // If the other-language version doesn't exist yet, the switcher falls back
 // to that locale's homepage instead of linking to a post that isn't there.
@@ -36,18 +38,81 @@ const alternates: Partial<Record<Locale, string>> = {
     ? { [otherLocale]: withBase(`/${otherLocale}/posts/${otherLocaleSlug}/`) }
     : {}),
 };
+
+// --- related posts & prev/next -------------------------------------------
+// Siblings ranked by how many meaningful tags they share; the noise tags that
+// sit on every post would make everything related to everything.
+const siblings = (
+  await getCollection('posts', ({ id, data }) => id.startsWith(`${locale}/`) && !data.draft)
+).filter((p) => p.id !== post.id);
+
+const myTags = new Set(tags);
+const related = siblings
+  .map((p) => ({
+    p,
+    score: meaningfulTags(p).filter((tg) => myTags.has(tg)).length,
+  }))
+  .filter(({ p, score }) => score > 0 && isPhysics(p) === isPhysics(post))
+  .sort((a, b) => b.score - a.score || a.p.id.localeCompare(b.p.id))
+  .slice(0, 3)
+  .map(({ p }) => p);
+
+const timeline = siblings
+  .filter((p) => isPhysics(p) === isPhysics(post))
+  .concat([post])
+  .sort((a, b) => a.data.pubDate.valueOf() - b.data.pubDate.valueOf() || a.id.localeCompare(b.id));
+const myIndex = timeline.findIndex((p) => p.id === post.id);
+const prevPost = myIndex > 0 ? timeline[myIndex - 1] : undefined;
+const nextPost = myIndex < timeline.length - 1 ? timeline[myIndex + 1] : undefined;
+
+const postHref = (p: CollectionEntry<'posts'>) =>
+  withBase(`/${locale}/posts/${p.id.split('/').slice(1).join('/')}/`);
+
+// --- structured data ------------------------------------------------------
+const canonical = new URL(Astro.url.pathname, Astro.site).href;
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    {
+      '@type': 'Article',
+      headline: title,
+      description,
+      inLanguage: locale,
+      datePublished: pubDate.toISOString(),
+      ...(updatedDate ? { dateModified: updatedDate.toISOString() } : {}),
+      mainEntityOfPage: canonical,
+      author: { '@type': 'Organization', name: t('site.title'), url: new URL(withBase(`/${locale}/`), Astro.site).href },
+      publisher: { '@type': 'Organization', name: t('site.title') },
+      image: new URL(withBase(`/og/${post.id}.png`), Astro.site).href,
+    },
+    {
+      '@type': 'BreadcrumbList',
+      itemListElement: [
+        { '@type': 'ListItem', position: 1, name: t('nav.home'), item: new URL(withBase(`/${locale}/`), Astro.site).href },
+        ...(tags[0]
+          ? [{ '@type': 'ListItem', position: 2, name: tagLabel(locale, tags[0]), item: new URL(withBase(`/${locale}/tags/${tags[0]}/`), Astro.site).href }]
+          : []),
+        { '@type': 'ListItem', position: tags[0] ? 3 : 2, name: title, item: canonical },
+      ],
+    },
+  ],
+};
 ---
 
 <BaseLayout
   locale={locale}
   title={title}
+  metaTitle={seoTitle}
   description={description}
+  ogImagePath={`/og/${post.id}.png`}
   langHrefs={langHrefs}
   alternates={alternates}
+  hideLangSwitcher={!otherLocaleSlug}
   ogType="article"
   publishedTime={pubDate}
   modifiedTime={updatedDate}
 >
+  <script is:inline type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
   <article>
     <header class="post-header">
       <h1>{title}</h1>
@@ -57,7 +122,11 @@ const alternates: Partial<Record<Locale, string>> = {
       </p>
       {tags.length > 0 && (
         <ul class="post-tags">
-          {tags.map((tag) => <li>{tag}</li>)}
+          {tags.map((tag) => (
+            <li>
+              <a href={withBase(`/${locale}/tags/${tag}/`)}>{tagLabel(locale, tag)}</a>
+            </li>
+          ))}
         </ul>
       )}
       {otherLocaleSlug && (
@@ -72,6 +141,43 @@ const alternates: Partial<Record<Locale, string>> = {
     </div>
 
     <AdSlot />
+
+    {related.length > 0 && (
+      <aside class="related">
+        <h2>{t('post.related')}</h2>
+        <ul>
+          {related.map((p) => (
+            <li>
+              <a href={postHref(p)}>{p.data.title}</a>
+              <p>{p.data.description}</p>
+            </li>
+          ))}
+        </ul>
+      </aside>
+    )}
+
+    <aside class="follow">
+      <strong>{t('post.followTitle')}</strong>
+      {t('post.followBody')}
+      <a href={withBase(`/${locale}/rss.xml`)}>RSS</a>
+    </aside>
+
+    <nav class="post-pager">
+      {prevPost ? (
+        <a class="pager-prev" href={postHref(prevPost)}>
+          <span>{t('post.prev')}</span>
+          {prevPost.data.title}
+        </a>
+      ) : (
+        <span />
+      )}
+      {nextPost && (
+        <a class="pager-next" href={postHref(nextPost)}>
+          <span>{t('post.next')}</span>
+          {nextPost.data.title}
+        </a>
+      )}
+    </nav>
   </article>
 </BaseLayout>
 
@@ -95,11 +201,17 @@ const alternates: Partial<Record<Locale, string>> = {
     margin: 0 0 0.75rem;
     flex-wrap: wrap;
   }
-  .post-tags li {
+  .post-tags a {
+    display: inline-block;
     font-size: 0.75rem;
-    background: rgba(128, 128, 128, 0.15);
+    background: rgba(37, 99, 235, 0.1);
+    color: var(--accent);
     border-radius: 999px;
     padding: 0.15rem 0.65rem;
+    text-decoration: none;
+  }
+  .post-tags a:hover {
+    background: rgba(37, 99, 235, 0.2);
   }
   .post-other-lang {
     font-size: 0.85rem;
@@ -111,5 +223,70 @@ const alternates: Partial<Record<Locale, string>> = {
     padding: 1rem;
     border-radius: 8px;
     overflow-x: auto;
+  }
+  .related {
+    margin-top: 3rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid rgba(128, 128, 128, 0.25);
+  }
+  .related h2 {
+    font-size: 1rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    opacity: 0.6;
+    margin: 0 0 1rem;
+  }
+  .related ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 1rem;
+  }
+  .related li a {
+    font-weight: 600;
+    text-decoration: none;
+  }
+  .related li p {
+    margin: 0.2rem 0 0;
+    font-size: 0.85rem;
+    opacity: 0.7;
+  }
+  .follow {
+    margin-top: 2rem;
+    padding: 0.9rem 1.1rem;
+    border-left: 3px solid var(--accent);
+    background: rgba(37, 99, 235, 0.06);
+    border-radius: 0 8px 8px 0;
+    font-size: 0.9rem;
+  }
+  .follow strong {
+    margin-right: 0.35rem;
+  }
+  .follow a {
+    margin-left: 0.35rem;
+    font-weight: 600;
+  }
+  .post-pager {
+    margin-top: 2rem;
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    font-size: 0.9rem;
+  }
+  .post-pager a {
+    max-width: 46%;
+    text-decoration: none;
+    font-weight: 600;
+  }
+  .post-pager a span {
+    display: block;
+    font-size: 0.75rem;
+    font-weight: 400;
+    opacity: 0.6;
+  }
+  .pager-next {
+    text-align: right;
+    margin-left: auto;
   }
 </style>

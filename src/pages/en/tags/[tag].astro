@@ -1,0 +1,52 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import PostCard from '../../../components/PostCard.astro';
+import { useTranslations } from '../../../i18n';
+import { withBase } from '../../../utils/url';
+import { tagLabel, NOISE_TAGS } from '../../../utils/topics';
+
+export async function getStaticPaths() {
+  const posts = await getCollection('posts', ({ id, data }) => id.startsWith('en/') && !data.draft);
+  const tags = new Set(posts.flatMap((p) => p.data.tags).filter((t) => !NOISE_TAGS.has(t)));
+  return [...tags].map((tag) => ({
+    params: { tag },
+    props: {
+      posts: posts
+        .filter((p) => p.data.tags.includes(tag))
+        .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf()),
+    },
+  }));
+}
+
+const { tag } = Astro.params;
+const { posts } = Astro.props;
+const t = useTranslations('en');
+const label = tagLabel('en', tag!);
+const title = `${t('tags.title')}: ${label}`;
+const description = `${posts.length} ${t('tags.postCount')} on ${label.toLowerCase()} — ${t('site.shortTagline').toLowerCase()}.`;
+const selfHref = withBase(`/en/tags/${tag}/`);
+---
+
+<BaseLayout
+  locale="en"
+  title={title}
+  description={description}
+  langHrefs={{ en: selfHref, vi: withBase('/vi/') }}
+  alternates={{ en: selfHref }}
+>
+  <h1 class="tag-title">{label}</h1>
+  <p class="tag-count">{posts.length} {t('tags.postCount')}</p>
+  {posts.map((post) => <PostCard post={post} locale="en" />)}
+</BaseLayout>
+
+<style>
+  .tag-title {
+    margin: 1rem 0 0.25rem;
+  }
+  .tag-count {
+    opacity: 0.6;
+    font-size: 0.9rem;
+    margin: 0;
+  }
+</style>

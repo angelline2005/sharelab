@@ -9,6 +9,11 @@ interface Props {
   locale: Locale;
   title: string;
   description: string;
+  // Overrides the <title> tag only (SEO): og:title and the on-page H1 keep the
+  // display title. Used by posts whose magazine hook hides the search keyword.
+  metaTitle?: string;
+  // Path (root-relative) to a page-specific OG image; defaults to the shared one.
+  ogImagePath?: string;
   // Fully-resolved URL for this same page in each locale, used by the header
   // language switcher — see LangSwitcher.astro for why this can't be derived
   // from the current path alone.
@@ -18,6 +23,9 @@ interface Props {
   // has no translation yet, and pointing hreflang at a homepage would tell
   // search engines that the homepage IS the translation of this article.
   alternates?: Partial<Record<Locale, string>>;
+  // The EN side has no real content yet; hide the switcher on pages whose only
+  // EN target would be that placeholder homepage.
+  hideLangSwitcher?: boolean;
   ogType?: 'website' | 'article';
   publishedTime?: Date;
   modifiedTime?: Date;
@@ -27,14 +35,24 @@ const {
   locale,
   title,
   description,
+  metaTitle,
+  ogImagePath,
   langHrefs,
   alternates,
+  hideLangSwitcher = false,
   ogType = 'website',
   publishedTime,
   modifiedTime,
 } = Astro.props;
 const t = useTranslations(locale);
 const canonicalURL = new URL(Astro.url.pathname, Astro.site);
+
+// "sharelab · sharelab" told visitors nothing; the homepage tab now carries
+// the pitch instead. Other pages keep the usual "Page · site" pattern.
+const tabTitle =
+  title === t('site.title')
+    ? `${t('site.title')} — ${t('site.shortTagline')}`
+    : `${metaTitle ?? title} · ${t('site.title')}`;
 
 // Google Search Console ownership token. Optional: unset simply omits the tag.
 // Validated rather than trusted so a stray value cannot end up in the markup —
@@ -54,7 +72,7 @@ const hreflangs = Object.entries(alternates ?? {}) as [Locale, string][];
 // x-default tells a search engine which version to serve a reader whose
 // language matches neither. The site's default locale is the right answer.
 const xDefault = alternates?.[defaultLocale];
-const ogImage = absolute(withBase('/og-default.png'));
+const ogImage = absolute(withBase(ogImagePath ?? '/og-default.png'));
 ---
 
 <!doctype html>
@@ -86,7 +104,7 @@ const ogImage = absolute(withBase('/og-default.png'));
       title={t('site.title')}
       href={withBase(`/${locale}/rss.xml`)}
     />
-    <title>{title} · {t('site.title')}</title>
+    <title>{tabTitle}</title>
     <meta name="description" content={description} />
     <meta property="og:type" content={ogType} />
     <meta property="og:site_name" content={t('site.title')} />
@@ -121,7 +139,7 @@ const ogImage = absolute(withBase('/og-default.png'));
         <a href={withBase(`/${locale}/about/`)}>{t('nav.about')}</a>
         <a href={withBase(`/${locale}/donate/`)}>{t('nav.donate')}</a>
       </nav>
-      <LangSwitcher currentLocale={locale} hrefs={langHrefs} />
+      {!hideLangSwitcher && <LangSwitcher currentLocale={locale} hrefs={langHrefs} />}
     </header>
 
     <main>
@@ -137,7 +155,11 @@ const ogImage = absolute(withBase('/og-default.png'));
       </nav>
     </footer>
 
-    <CookieConsent />
+    <CookieConsent
+      message={t('cookie.message')}
+      acceptLabel={t('cookie.accept')}
+      declineLabel={t('cookie.decline')}
+    />
   </body>
 </html>
 
@@ -145,12 +167,22 @@ const ogImage = absolute(withBase('/og-default.png'));
   :root {
     color-scheme: light dark;
     font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+    /* The blue every demo already draws with — promoted to the site's accent. */
+    --accent: #2563eb;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --accent: #60a5fa;
+    }
   }
   body {
     max-width: 42rem;
     margin: 0 auto;
     padding: 0 1.25rem 4rem;
     line-height: 1.65;
+  }
+  main a {
+    color: var(--accent);
   }
   .site-header {
     display: flex;
@@ -164,7 +196,7 @@ const ogImage = absolute(withBase('/og-default.png'));
     font-weight: 700;
     font-size: 1.1rem;
     text-decoration: none;
-    color: inherit;
+    color: var(--accent);
   }
   .site-nav {
     display: flex;

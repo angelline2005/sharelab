@@ -2,15 +2,25 @@
 // Minimal cookie consent banner. Required before showing personalized ads to
 // visitors in the EEA/UK once AdSense is live — see /privacy-policy.
 // Stores the choice in localStorage as "cookie-consent": "accepted" | "declined".
+
+interface Props {
+  message?: string;
+  acceptLabel?: string;
+  declineLabel?: string;
+}
+
+const {
+  message = 'This site uses cookies for analytics and ads.',
+  acceptLabel = 'Accept',
+  declineLabel = 'Decline',
+} = Astro.props;
 ---
 
 <div id="cookie-consent" class="cookie-consent" hidden>
-  <p>
-    <slot name="message">This site uses cookies for analytics and ads.</slot>
-  </p>
+  <p>{message}</p>
   <div class="cookie-consent-actions">
-    <button id="cookie-decline" type="button">Decline</button>
-    <button id="cookie-accept" type="button">Accept</button>
+    <button id="cookie-decline" type="button">{declineLabel}</button>
+    <button id="cookie-accept" type="button">{acceptLabel}</button>
   </div>
 </div>
 
