@@ -1,0 +1,161 @@
+---
+// Braking with reaction time on flat road: v(x) = v0 for x ≤ v0·t_r, then
+// v(x) = √(v0² − 2·μ·g·(x − v0·t_r)) — uniform deceleration a = μ·g.
+// Stopping distance d = v0·t_r + v0²/(2μg). Residual speed of the fast rider
+// at the slow rider's stopping point d1 reduces to
+//   v_còn = √( (v2² − v1²) + 2·μ·g·t_r·(v2 − v1) ), capped at v2.
+// Source: standard point-mass friction model (Halliday/Resnick ch. 6); μ for
+// tyre–asphalt 0,15–0,85 (dry 0,7–0,85; wet 0,4; wet + oil 0,2). Valid only
+// on level dry-geometry road, both wheels at the friction limit, no ABS
+// modulation, no aerodynamic drag (< 3% below 90 km/h).
+---
+
+<figure class="demo" data-demo="duong-phanh-xe-may-va-toc-do-con-lai">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Tốc độ xe chậm v₁ (km/h) <output data-out="v1"></output>
+      <input type="range" data-in="v1" min="20" max="70" step="1" value="40" /></label>
+    <label>Tốc độ xe nhanh v₂ (km/h) <output data-out="v2"></output>
+      <input type="range" data-in="v2" min="25" max="90" step="1" value="60" /></label>
+    <label>Ma sát lốp–đường μ <output data-out="mu"></output>
+      <input type="range" data-in="mu" min="0.15" max="0.85" step="0.01" value="0.7" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Hai xe cùng thấy chướng ngại vật một lúc, cùng phản xạ 1,0 s rồi phanh
+    hết cỡ. Đoạn nằm ngang đầu mỗi đường cong là quãng đường trôi trong lúc
+    tay chưa kịp bóp — tốc độ chưa giảm một phần trăm nào. Vạch đỏ dựng đúng
+    tại chỗ xe chậm đứng im; con số đỏ là tốc độ xe nhanh còn giữ khi đi
+    ngang vạch ấy. Đường ngang mảnh là mức v₁ để bạn so trực tiếp.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const SLOW = '#f59e0b', FAST = '#2563eb', MARK = '#dc2626';
+  const G = 9.81, TR = 1.0, K = 1 / 3.6;
+
+  const stopDist = (v: number, mu: number) => v * K * TR + (v * K) ** 2 / (2 * mu * G);
+  const speedAt = (v: number, x: number, mu: number) => {
+    const V = v * K;
+    if (x <= V * TR) return v;
+    const s2 = V * V - 2 * mu * G * (x - V * TR);
+    return s2 <= 0 ? 0 : Math.sqrt(s2) / K;
+  };
+  const nf = (x: number, n = 1) => x.toFixed(n).replace('.', ',');
+  const niceStep = (range: number, want: number) => {
+    const raw = range / want;
+    const p = Math.pow(10, Math.floor(Math.log10(raw)));
+    const n = raw / p;
+    return (n <= 1 ? 1 : n <= 2 ? 2 : n <= 5 ? 5 : 10) * p;
+  };
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (k: string) => root.querySelector(`[data-in="${k}"]`) as HTMLInputElement;
+    const output = (k: string) => root.querySelector(`[data-out="${k}"]`) as HTMLOutputElement;
+
+    function draw() {
+      const v1 = Number(input('v1').value);
+      const v2 = Number(input('v2').value);
+      const mu = Number(input('mu').value);
+      output('v1').textContent = String(v1);
+      output('v2').textContent = String(v2);
+      output('mu').textContent = nf(mu, 2);
+
+      const d1 = stopDist(v1, mu), d2 = stopDist(v2, mu);
+      const vRem = speedAt(v2, d1, mu);
+      const braking = d1 > v2 * K * TR;
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.5);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+
+      const padL = 46, padB = 26, padT = 22, padR = 12;
+      const xStep = niceStep(Math.max(d1, d2) * 1.12, 5);
+      const xMax = Math.ceil((Math.max(d1, d2) * 1.12) / xStep) * xStep;
+      const yStep = niceStep(Math.max(v1, v2) * 1.15, 4);
+      const yMax = Math.ceil((Math.max(v1, v2) * 1.15) / yStep) * yStep;
+      const X = (x: number) => padL + (x / xMax) * (cssW - padL - padR);
+      const Y = (v: number) => cssH - padB - (v / yMax) * (cssH - padB - padT);
+
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.3;
+      ctx.beginPath();
+      ctx.moveTo(padL, padT); ctx.lineTo(padL, cssH - padB); ctx.lineTo(cssW - padR, cssH - padB);
+      ctx.stroke();
+      ctx.globalAlpha = 0.55; ctx.fillStyle = fg; ctx.font = '10px system-ui,sans-serif';
+      ctx.textAlign = 'center';
+      for (let x = xStep; x <= xMax + 0.001; x += xStep) ctx.fillText(`${Math.round(x)} m`, X(x), cssH - padB + 14);
+      ctx.textAlign = 'right';
+      for (let v = yStep; v <= yMax + 0.001; v += yStep) ctx.fillText(`${Math.round(v)}`, padL - 4, Y(v) + 3);
+      ctx.textAlign = 'left';
+      ctx.fillText('km/h', padL - 40, padT - 8);
+      ctx.globalAlpha = 1;
+
+      // Reference level: the slow rider's initial speed.
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.25; ctx.setLineDash([3, 3]);
+      ctx.beginPath(); ctx.moveTo(padL, Y(v1)); ctx.lineTo(cssW - padR, Y(v1)); ctx.stroke();
+      ctx.setLineDash([]); ctx.globalAlpha = 1;
+
+      const curve = (v0: number, colour: string) => {
+        ctx.strokeStyle = colour; ctx.lineWidth = 2; ctx.beginPath();
+        const dEnd = stopDist(v0, mu);
+        for (let i = 0; i <= 240; i++) {
+          const x = (dEnd * i) / 240;
+          i ? ctx.lineTo(X(x), Y(speedAt(v0, x, mu))) : ctx.moveTo(X(x), Y(v0));
+        }
+        ctx.stroke(); ctx.lineWidth = 1;
+        ctx.fillStyle = colour;
+        ctx.beginPath(); ctx.arc(X(dEnd), Y(0), 3.5, 0, Math.PI * 2); ctx.fill();
+        ctx.textAlign = 'left'; ctx.font = '10px system-ui,sans-serif';
+        ctx.fillText(`xe ${v0} km/h`, X(0) + 5, Y(v0) - 6);
+      };
+      curve(v2, FAST);
+      curve(v1, SLOW);
+
+      // The marker: where the slow rider is already standing still.
+      ctx.strokeStyle = MARK; ctx.globalAlpha = 0.75; ctx.setLineDash([4, 3]);
+      ctx.beginPath(); ctx.moveTo(X(d1), padT); ctx.lineTo(X(d1), cssH - padB); ctx.stroke();
+      ctx.setLineDash([]); ctx.globalAlpha = 1;
+
+      ctx.fillStyle = MARK;
+      ctx.beginPath(); ctx.arc(X(d1), Y(vRem), 6, 0, Math.PI * 2); ctx.fill();
+      ctx.textAlign = X(d1) > cssW * 0.6 ? 'right' : 'left';
+      const dx = X(d1) > cssW * 0.6 ? -10 : 10;
+      ctx.font = 'bold 17px system-ui,sans-serif';
+      ctx.fillText(`${nf(vRem)} km/h`, X(d1) + dx, Y(vRem) - 6);
+      ctx.font = '10px system-ui,sans-serif'; ctx.globalAlpha = 0.8;
+      ctx.fillText(`vạch xe ${v1} km/h dừng hẳn: ${nf(d1)} m`, X(d1) + dx, Y(vRem) + 12);
+      ctx.globalAlpha = 1;
+
+      let tail: string;
+      if (vRem === 0) tail = `xe ${v2} km/h cũng dừng, trước vạch <b>${nf(d1 - d2)} m</b>`;
+      else if (!braking) tail = `xe ${v2} km/h qua vạch khi tay còn chưa chạm phanh — <b>còn nguyên ${v2} km/h</b>`;
+      else tail = `tại đúng vạch đó xe ${v2} km/h còn <b>${nf(vRem)} km/h</b>` +
+        (vRem > v1 ? ' — hơn cả tốc độ ban đầu của xe kia' : '');
+      readout.innerHTML =
+        `μ = ${nf(mu, 2)}, phản xạ 1,0 s · xe ${v1} km/h dừng tại <b>${nf(d1)} m</b> · ` + tail;
+    }
+
+    root.querySelectorAll('input').forEach((el) => el.addEventListener('input', draw));
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="duong-phanh-xe-may-va-toc-do-con-lai"]').forEach(setup);
+</script>

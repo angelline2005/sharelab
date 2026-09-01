@@ -1,0 +1,90 @@
+---
+title: "Miếng cao su chống rung: dưới ngưỡng √2 nó làm rung mạnh thêm"
+seoTitle: "Cách ly rung động: hệ số truyền và ngưỡng tần số căn hai"
+description: "Kê cục nóng điều hoà lên đệm cao su không phải lúc nào cũng đỡ rung. Nếu tần số máy chưa vượt 1,414 lần tần số riêng của đệm, lực truyền xuống sàn còn TĂNG — ở tỉ số 1,2 nó tăng 2,2 lần; phải lên tỉ số 4,8 mới cắt được 95%."
+pubDate: 2026-09-02
+tags: ["vat-ly", "dao-dong", "co-hoc", "javascript"]
+translationId: "de-cao-su-chong-rung-va-nguong-can-hai"
+---
+
+import VibrationIsolation from '../../../components/demos/VibrationIsolation.astro';
+
+Cục nóng điều hoà ù ù suốt đêm, tiếng đi qua sàn bê tông vào tận phòng
+ngủ. Bạn mua bốn miếng cao su chống rung, kê xuống chân máy — và tiếng ù
+**to hơn**. Không phải bạn mua nhầm hàng dởm: có đúng một tỉ số quyết
+định miếng đệm ấy là bùa hộ mệnh hay là cái loa.
+
+<VibrationIsolation />
+
+## Đệm cao su không nuốt rung, nó dời tần số riêng
+
+Cao su hấp thụ rất ít năng lượng rung. Việc nó thực sự làm là biến "máy
+bắt cứng xuống sàn" thành **khối nặng treo trên lò xo**, một hệ dao động
+có tần số riêng f₀. Máy rung ở tần số f, hệ đáp lại theo đúng [đường cong
+cộng hưởng](/vi/posts/cong-huong-vi-sao-day-nho-thang-luc-lon), và phần
+lực rung lọt xuống sàn gọi là **hệ số truyền TR**:
+
+```
+TR = √(1 + (2ζr)²) / √((1 − r²)² + (2ζr)²)     với r = f/f₀
+```
+
+ζ là hệ số cản của vật liệu. Câu hỏi đáng tiền nhất: khi nào TR = 1, tức
+kê đệm cũng như không? Cho tử bằng mẫu, hai cụm (2ζr)² **giống hệt nhau
+nên bỏ đi được**, chỉ còn (1 − r²)² = 1, tức r² = 2. Điểm hoà vốn là
+**r = √2 = 1,414**, và ζ đã biến mất khỏi phương trình: cao su non, lò xo
+thép hay đệm khí đều đổi phe đúng tại tỉ số ấy.
+
+## Dưới ngưỡng √2, miếng đệm là bộ khuếch đại
+
+Máy nén của cục nóng quay 2 880 vòng/phút, tức **48 Hz**. Miếng cao su đặc
+bán sẵn, cứng như đế giày, cho f₀ khoảng 40 Hz — r = 1,2, vẫn kẹt trong
+vùng đỏ của demo. TR = **2,21**: sàn nhà nhận **hơn gấp đôi** lực rung so
+với lúc bắt bulông thẳng xuống nền. Xui hơn nữa là đệm rơi đúng f₀ = 48 Hz:
+r = 1, và với ζ = 0,05 của cao su thì TR ≈ **10** — kiểu hỏng làm nứt chân
+giá đỡ và gãy ống đồng chứ không chỉ làm ồn.
+
+Riêng chuyện hoà vốn với máy 48 Hz đã đòi f₀ ≤ 48/√2 = **33,9 Hz**; cắt
+95% lực rung cần r ≥ 4,8, tức **f₀ ≤ 10 Hz** — mềm hơn cả cái đệm hoà vốn
+ấy **11,5 lần** về độ cứng.
+
+## Độ mềm cần thiết đo được bằng thước
+
+Khi máy chỉ đè lên đệm bằng trọng lượng của chính nó, độ lún tĩnh δ đã nói
+hết, không cần máy đo tần số:
+
+```
+f₀ = (1/2π)·√(g/δ)
+```
+
+Đúng là công thức [chu kỳ con lắc](/vi/posts/chu-ky-con-lac-don-co-that-su-khong-phu-thuoc-bien-do)
+viết ngược — cùng tỉ số g trên chiều dài, khối lượng biến mất khỏi cả
+hai. Máy nặng thì lún sâu hơn, nhưng f₀ đọc theo **độ lún** ấy chứ không
+theo cân nặng. Lún **1 mm** cho f₀ = 15,8 Hz; muốn f₀ = 10 Hz phải lún
+**2,5 mm**. Còn miếng đệm 40 Hz kia lún đúng **0,16 mm** — mắt thường
+không thấy. Quy tắc bỏ túi rút ra từ đó: *kê máy lên mà không nhìn thấy
+đệm bẹp xuống thì đệm ấy vô dụng*; và vì cao su rung nhanh thì cứng hơn
+cao su bị đè tĩnh, 2,5 mm là mức sàn chứ không phải mức đủ.
+
+Chính miếng đệm 10 Hz ấy đặt dưới máy giặt lúc vắt 1 200 vòng/phút
+(20 Hz) chỉ cho r = 2, TR = 0,34 — cắt 66%: máy rung chậm thì khó cách ly
+hơn, chứ không phải dễ hơn.
+
+## Trường hợp biên: cản cứu bạn lúc khởi động rồi phản bạn lúc chạy
+
+Để ý ζ nằm ở **cả tử số**. Giảm chấn là đường truyền lực song song với lò
+xo: nó níu đỉnh cộng hưởng xuống, đồng thời mở lối tắt cho rung đi thẳng
+xuống sàn. Với máy nén 48 Hz trên đệm f₀ = 10 Hz, tăng cản từ ζ = 0,05 lên
+0,30 làm TR tệ đi từ 0,050 lên **0,137**, xấu gần **2,7 lần**; cùng lúc ấy
+tại r = 1 nó dìm TR từ 10,1 xuống 1,94, tốt hơn **5,2 lần**. Cản chưa bao
+giờ là "càng nhiều càng tốt" — nó chỉ [đổi chỗ cái
+dở](/vi/posts/dao-dong-tat-dan-diem-vang-cua-giam-xoc).
+
+Đẩy tới cản tới hạn ζ = 1: TR ở r = 4,8 chỉ còn cắt **60%**. Đẩy ζ ra vô
+cùng thì tử và mẫu cùng tiến về 2ζr và **TR → 1 ở mọi tần số** — công thức
+tự khai rằng giảm chấn cứng vô hạn chính là thanh thép hàn máy xuống nền.
+Vì thế cao su hợp với máy chạy một tốc độ: nó lướt qua cộng hưởng trong
+vài giây khởi động rồi ở lì trong vùng xanh. Điều hoà inverter thì khác —
+tốc độ thấp nhất 15 Hz, muốn cắt 95% trên cả dải thì cần f₀ ≤ 3,1 Hz, tức
+lún tĩnh **26 mm**. Cao su lún 26 mm là cao su đã nát, nên từ đó trở
+xuống là đất của lò xo thép: loại lún tĩnh 25 mm cho đúng f₀ ≈ **3,2 Hz**
+mà vẫn lành.

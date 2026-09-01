@@ -1,0 +1,169 @@
+---
+// Rolling-sphere method for lightning protection zones (IEC 62305-3 / NFPA 780).
+// Striking distance (Golde–IEEE empirical fit, I in kA, R in m): R = 10·I^0.65.
+// Sphere rests on ground and on the mast tip; its centre sits at (cx, R) with
+//   cx = sqrt(2Rh − h²)  for h ≤ R   (tangent to the tip)
+//   cx = R               for h > R   (sphere jams against the mast flank —
+//                                     the tip no longer protects, and the mast
+//                                     above height R is exposed to side strikes)
+// Protected horizontal reach at roof height y ≤ min(h,R): r(y) = cx − sqrt(2Ry − y²).
+// Valid range: I ≈ 3–200 kA (the fit's data band); slider capped at 3–100 kA.
+---
+
+<figure class="demo" data-demo="cot-thu-loi-che-duoc-bao-xa-qua-cau-lan">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Chiều cao cột thu lôi (m) <output data-out="h"></output>
+      <input type="range" data-in="h" min="2" max="100" step="0.1" value="10" /></label>
+    <label>Dòng sét I (kA) <output data-out="i"></output>
+      <input type="range" data-in="i" min="3" max="100" step="1" value="10" /></label>
+    <label>Chiều cao mái cần che (m) <output data-out="b"></output>
+      <input type="range" data-in="b" min="0" max="20" step="0.5" value="6" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Mặt cắt đứng: cột thu lôi bên trái, mặt đất bên dưới. Quả cầu cam là
+    "tầm với" của tia tiên đạo — bán kính R càng lớn khi cú sét càng mạnh.
+    Lăn nó tì vào đỉnh cột và mặt đất; vùng xanh là chỗ quả cầu không chạm
+    tới được, tức vùng được che. Chấm đỏ là điểm xa nhất mà một mái nhà cao
+    bằng thanh trượt thứ ba còn nằm trong vùng ấy.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const ZONE = '#2563eb', MARK = '#dc2626', BALL = '#f59e0b';
+  const vi = (x: number, n = 1) => x.toFixed(n).replace('.', ',');
+  const strike = (I: number) => 10 * Math.pow(I, 0.65);
+
+  function niceStep(span: number) {
+    for (const s of [1, 2, 5, 10, 20, 25, 50, 100, 200]) if (span / s <= 8) return s;
+    return 500;
+  }
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (k: string) => root.querySelector(`[data-in="${k}"]`) as HTMLInputElement;
+    const output = (k: string) => root.querySelector(`[data-out="${k}"]`) as HTMLOutputElement;
+
+    function draw() {
+      const h = Number(input('h').value);
+      const I = Number(input('i').value);
+      const hb = Number(input('b').value);
+      output('h').textContent = vi(h);
+      output('i').textContent = String(I);
+      output('b').textContent = vi(hb);
+
+      const R = strike(I);
+      const tall = h > R;                       // mast taller than the striking distance
+      const cx = tall ? R : Math.sqrt(2 * R * h - h * h);
+      const yTouch = tall ? R : h;              // height where the sphere touches the mast
+      const reach = (y: number) => cx - Math.sqrt(2 * R * y - y * y);
+      const covered = hb < yTouch - 1e-9;
+      const rb = covered ? reach(hb) : 0;
+
+      let note = '';
+      if (tall) note = ` · <b>cột cao hơn R: đoạn trên ${vi(R)} m hứng sét ngang hông, đỉnh không còn che gì thêm</b>`;
+      else if (!covered) note = ` · <b>mái cao bằng hoặc hơn cột — không được che chút nào</b>`;
+      readout.innerHTML =
+        `Sét ${I} kA → khoảng cách bắt <b>R = ${vi(R)} m</b>. Cột ${vi(h)} m che tới ` +
+        `<b>${vi(cx)} m</b> ở mặt đất, còn ở độ cao mái ${vi(hb)} m chỉ tới ` +
+        `<b>${vi(rb)} m</b>${note}`;
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.5);
+      if (cssW < 120) return;              // container not laid out yet; resize redraws
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+
+      const padL = 40, padR = 12, padT = 14, padB = 26;
+      const Wp = cssW - padL - padR, Hp = cssH - padT - padB;
+      const xNeed = Math.max(cx * 1.3, 30), yNeed = Math.max(h * 1.25, 12);
+      const s = Math.min(Wp / xNeed, Hp / yNeed);
+      const xMax = Wp / s, yMax = Hp / s;
+      const X = (x: number) => padL + x * s;
+      const Y = (y: number) => cssH - padB - y * s;
+
+      // Protected zone: ground → sphere contact → arc up to the mast → down the mast.
+      ctx.beginPath();
+      ctx.moveTo(X(0), Y(0));
+      ctx.lineTo(X(cx), Y(0));
+      let thEnd = Math.atan2(yTouch - R, 0 - cx);
+      if (thEnd > 0) thEnd -= 2 * Math.PI;
+      for (let i = 0; i <= 120; i++) {
+        const th = -Math.PI / 2 + ((thEnd + Math.PI / 2) * i) / 120;
+        ctx.lineTo(X(cx + R * Math.cos(th)), Y(R + R * Math.sin(th)));
+      }
+      ctx.closePath();
+      ctx.fillStyle = ZONE; ctx.globalAlpha = 0.16; ctx.fill();
+      ctx.globalAlpha = 1; ctx.strokeStyle = ZONE; ctx.lineWidth = 2; ctx.stroke();
+
+      // The rolling sphere itself.
+      ctx.setLineDash([5, 4]); ctx.strokeStyle = BALL; ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.arc(X(cx), Y(R), R * s, 0, Math.PI * 2); ctx.stroke();
+      ctx.setLineDash([]);
+
+      // Ground line and axes.
+      ctx.strokeStyle = fg; ctx.lineWidth = 1; ctx.globalAlpha = 0.35;
+      ctx.beginPath(); ctx.moveTo(padL, Y(0)); ctx.lineTo(cssW - padR, Y(0)); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(padL, padT); ctx.lineTo(padL, Y(0)); ctx.stroke();
+      ctx.globalAlpha = 0.6; ctx.fillStyle = fg; ctx.font = '10px system-ui,sans-serif';
+      const sx = niceStep(xMax), sy = niceStep(yMax);
+      ctx.textAlign = 'center';
+      for (let x = sx; x <= xMax; x += sx) ctx.fillText(`${x} m`, X(x), Y(0) + 14);
+      ctx.textAlign = 'right';
+      for (let y = sy; y <= yMax; y += sy) ctx.fillText(`${y} m`, padL - 4, Y(y) + 3);
+      ctx.globalAlpha = 1;
+
+      // The mast: protected shaft, then the exposed flank above R when h > R.
+      ctx.lineWidth = 3; ctx.strokeStyle = fg;
+      ctx.beginPath(); ctx.moveTo(X(0), Y(0)); ctx.lineTo(X(0), Y(Math.min(h, yTouch))); ctx.stroke();
+      if (tall) {
+        ctx.strokeStyle = MARK;
+        ctx.beginPath(); ctx.moveTo(X(0), Y(R)); ctx.lineTo(X(0), Y(h)); ctx.stroke();
+      }
+      ctx.lineWidth = 1;
+
+      // Markers: ground reach, and the roof corner sitting exactly on the limit.
+      ctx.fillStyle = MARK;
+      ctx.beginPath(); ctx.arc(X(cx), Y(0), 4.5, 0, Math.PI * 2); ctx.fill();
+      ctx.font = '11px system-ui,sans-serif'; ctx.textAlign = 'left';
+      ctx.fillText(`${vi(cx)} m`, X(cx) + 7, Y(0) - 7);
+
+      if (covered && hb >= 0.5 && rb > 0.4) {
+        const wH = Math.min(Math.max(rb * 0.55, 1.5), 9);
+        ctx.strokeStyle = ZONE; ctx.lineWidth = 1.6;
+        ctx.strokeRect(X(rb - wH), Y(hb), wH * s, hb * s);
+        ctx.setLineDash([3, 3]); ctx.strokeStyle = MARK; ctx.lineWidth = 1;
+        ctx.beginPath(); ctx.moveTo(X(0), Y(hb)); ctx.lineTo(X(rb), Y(hb)); ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.fillStyle = MARK;
+        ctx.beginPath(); ctx.arc(X(rb), Y(hb), 4.5, 0, Math.PI * 2); ctx.fill();
+        ctx.fillText(`${vi(rb)} m`, X(rb) + 7, Y(hb) - 6);
+      }
+
+      ctx.fillStyle = BALL; ctx.textAlign = 'left';
+      ctx.fillText(`R = ${vi(R)} m`, X(0) + 8, padT + 10);
+    }
+
+    root.querySelectorAll('input').forEach((el) => el.addEventListener('input', draw));
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="cot-thu-loi-che-duoc-bao-xa-qua-cau-lan"]').forEach(setup);
+</script>

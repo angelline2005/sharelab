@@ -1,0 +1,84 @@
+---
+title: "Ba gram bụi trên cánh quạt trần, 247 gam lực lắc trên đầu bạn"
+seoTitle: "Cân bằng quạt trần: lực mất cân bằng m·r·ω² và cách kẹp đối trọng"
+description: "Ba gram bụi bám lệch cách trục 60 cm, quạt quay 350 vòng/phút: lực lắc 2,42 N — bằng 247 gam treo lủng lẳng, giật 5,83 lần mỗi giây. Trọng tâm chỉ dịch 0,36 mm, vượt chuẩn cân bằng công nghiệp 2,1 lần, và phải mất 8 gram chì dán đúng chỗ mới khử hết."
+pubDate: 2026-09-02
+tags: ["vat-ly", "co-hoc", "dao-dong", "javascript"]
+translationId: "can-bang-canh-quat-tran-ba-gram-bui"
+---
+
+import FanBalance from '../../../components/demos/FanBalance.astro';
+
+Quạt trần chạy số 3, cái móc trần bắt đầu cót két theo nhịp. Bạn tắt máy,
+bắc ghế lên soi: không cánh nào cong, ốc nào cũng chặt. Thứ duy nhất khác
+thường là vệt xám bạn vừa quệt tay qua — và nó nặng ba gram.
+
+<FanBalance />
+
+## Ba gram bụi, 247 gam lực
+
+Vệt bụi bám dọc mép sau một cánh, tâm khối cách trục 60 cm; quạt quay 350
+vòng/phút, tức ω = 36,7 rad/s. Lực để kéo nhúm bụi ấy đi vòng tròn:
+
+```
+F = m · r · ω²      với ω = 2π · (vòng/phút) / 60
+```
+
+0,003 kg × 0,60 m × 1 343 = **2,42 N**, bằng trọng lượng **247 gam** treo
+lủng lẳng ở cần cổ. Bụi lại quay, nên với cái móc trần đó không phải lực
+kéo mà là cú giật đổi hướng **5,83 lần mỗi giây**, 168 000 lần trong một
+đêm tám tiếng, mỗi lần lắc gần **5% trọng lượng phần quay 5 kg**. Số mũ 2
+trên ω gánh hết câu chuyện — vẫn cái ω²r [dựng nên trọng lực nhân
+tạo](/vi/posts/trong-luc-nhan-tao-va-cai-gia-cua-vong-quay) cho trạm quay.
+
+## Trọng tâm dịch 0,36 mm, và thế đã là quá nhiều
+
+Chia tích m·r cho khối lượng phần quay: 1 800 g·mm ÷ 5 000 g = **0,36 mm**.
+Toàn bộ tội trạng là thế, chưa bằng nửa bề dày một cái thẻ ATM. Mắt thường
+không bắt được, tiêu chuẩn thì có: ISO 21940-11 xếp quạt vào cấp cân bằng
+G6.3, ở 350 vòng/phút chỉ cho phép lệch tâm 0,17 mm — tức 860 g·mm với rotor
+5 kg. Vệt bụi cho 1 800, **gấp 2,1 lần mức cho phép**.
+
+Quạt treo cần cổ 30 cm còn là một con lắc, tần số riêng √(g/L)/2π =
+**0,91 Hz**, tức 55 vòng/phút. Chạy ở 5,83 Hz là trên cộng hưởng 6,4 lần,
+vùng mà biên độ thân quạt tụt xuống sát chính độ lệch tâm ấy: 0,37 mm. Cần
+cổ bẻ nó thành góc nghiêng, đầu cánh cách trục 70 cm nhấp nhô theo **1,7 mm
+mỗi vòng** — đủ để mắt bắt, đủ để cái móc kêu.
+
+## Vặn xuống số 1 thì hết lắc — và đó là phép chẩn đoán
+
+Hạ từ 350 xuống 175 vòng/phút, ω² còn một phần tư: lực rớt xuống **0,60 N**,
+tức 62 gam-lực. Đêm khuya [vặn hộp số quạt xuống một
+nấc](/vi/posts/hop-so-quat-dung-tu-dien-khong-dot-dien) là trần nhà im bặt
+vì thế, không phải vì bụi rơi bớt. Phép chia bốn ấy cũng là bộ đồ chẩn đoán
+rẻ nhất bạn có: số 1 mà lắc y hệt số 3 thì thủ phạm không thể là khối lượng
+lệch, mà là khớp cầu mòn, ốc treo lỏng hay giá cánh cong. Còn cú gật vài cái
+ngay lúc bật rồi êm lại thì vô hại: vòng quay vừa đi ngang 55 v/p, đúng tần
+số riêng — [cộng hưởng](/vi/posts/cong-huong-vi-sao-day-nho-thang-luc-lon)
+lướt qua.
+
+## Tám gram chì để khử ba gram bụi
+
+Trong công thức không có chỗ cho "bụi" hay "chì", chỉ có tích m·r: 1 800
+g·mm trả được bằng 6,0 g dán ở r = 0,30 m, 4,0 g ở 0,45 m, hay 2,6 g ở tận
+mép cánh — ba cách, cùng một số không. Có điều quạt ba cánh giấu một cái bẫy
+hình học: đối diện một cánh là khoảng trống. Đối trọng đành chia cho hai
+cánh kề, mỗi cánh lệch 60° khỏi hướng cần bù nên chỉ góp phần chiếu cos 60°,
+đúng một nửa; hai kẹp giống hệt nhau cộng lại thành 2 × m'r' × 0,5 = m'r'.
+Muốn 1 800 g·mm thì mỗi kẹp phải 4,0 g ở r = 0,45 m: **8 gram chì để dập 3
+gram bụi**. Kéo bụi ra tận mép mà giữ nguyên hai kẹp thì dư 300 g·mm, còn
+0,40 N — vẫn cắt 86% lực và vẫn lọt ngưỡng ISO.
+
+## Trường hợp biên: cân bằng tĩnh chưa phải cân bằng động
+
+Đặt đối trọng đúng khối lượng, đúng góc, tổng lực bằng không — tháo quạt
+xuống đặt lên đầu ngón tay, nó thăng bằng tuyệt đối. Bật lên vẫn gật gù. Vì
+hai khối ấy không nằm cùng một mặt phẳng: cánh mang bụi võng thấp hơn cánh
+mang kẹp 15 mm, và hai lực 2,42 N ngược chiều cách nhau 15 mm để lại một
+**ngẫu lực 0,036 N·m** quay ở 5,83 Hz — không đẩy quạt sang ngang nữa mà bẻ
+trục gật lên gật xuống. Cân bằng một mặt phẳng khử được lực chứ không khử
+được ngẫu lực; nó vẫn ăn với quạt trần vì rotor là cái đĩa rộng 1,4 m mà dày
+vài xentimét — cho tới khi các cánh võng lệch nhau. Nên tờ hướng dẫn trong bộ
+kẹp bắt bạn đo khoảng cách từ trần xuống đầu từng cánh trước, nắn cho chênh
+dưới 3 mm, rồi mới nói tới chuyện trượt kẹp dọc cánh. Trượt dọc cánh là chọn
+r, chọn cánh là chọn góc.

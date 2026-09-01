@@ -1,0 +1,89 @@
+---
+title: "Nồi cơm điện biết cơm chín nhờ một viên nam châm quên mình là nam châm ở 103 °C"
+seoTitle: "Nồi cơm điện tự ngắt thế nào: nhiệt độ Curie 103 °C của viên nam châm ferrite"
+description: "Còn nước tự do, đáy nồi bị ghim ở 100 °C dù mâm nhiệt vẫn rót đủ 600 W — 100 g nước cuối cùng mua thêm 6,3 phút. Nước cạn, nhiệt độ vọt lên và ở đúng 103 °C viên ferrite mất từ tính, lò xo đẩy công tắc sang chế độ hâm. Không cảm biến, không vi mạch."
+pubDate: 2026-09-02
+tags: ["vat-ly", "nhiet-hoc", "dien-tu", "javascript"]
+translationId: "noi-com-dien-va-nam-cham-quen-tu-tinh"
+---
+
+import CurieSwitch from '../../../components/demos/CurieSwitch.astro';
+
+Nồi cơm điện cơ trong bếp nhà bạn không có cảm biến nhiệt độ, không vi mạch,
+không đồng hồ hẹn giờ. Nó vẫn bật "tách" đúng lúc cơm chín, đều đặn hơn người
+canh bếp. Thứ ra quyết định là một viên nam châm to bằng hạt lạc, và cách nó
+quyết định là tự đánh mất chính mình:
+
+<CurieSwitch />
+
+## Còn nước tự do, đáy nồi không được phép nóng lên
+
+Mâm nhiệt rót đủ 600 W xuống đáy nồi, nhưng chừng nào nước còn sôi thì nhiệt
+độ đáy đứng im ở 100 °C — [năng lượng chui hết vào nhiệt
+ẩn](/vi/posts/nhiet-an-hai-quang-nhiet-ke-dung-im) chứ không vào cột thuỷ
+ngân. Đưa 100 g nước từ 25 °C lên điểm sôi tốn 31,4 kJ; biến đúng 100 g ấy
+thành hơi tốn **225,7 kJ**, **gấp 7,2 lần**. Ở 600 W, 100 g nước tự do cuối
+cùng mua cho hạt gạo **6,3 phút** ngâm trong nước sôi, và mỗi 10 g thêm vào
+là thêm 37,6 giây.
+
+Nên nồi cơm điện không đo "cơm chín" — nó đo "hết nước", và hai việc ấy trùng
+nhau chỉ vì bạn đong đúng lượng nước mà hạt gạo hút hết.
+
+## Viên nam châm sống cả đời ở 79% điểm Curie của nó
+
+Nam châm vĩnh cửu là một đám spin bị lực trao đổi bắt quay cùng hướng; nhiệt
+là phe đối lập, và có một nhiệt độ nó thắng dứt điểm — trật tự tan hết, cục
+nam châm hoá cục sắt thường. Đó là **nhiệt độ Curie**. Sắt 770 °C, niken
+358 °C, [miếng ferrite dẻo trên cánh tủ
+lạnh](/vi/posts/nam-cham-deo-tu-lanh-chi-dinh-mot-mat) 450 °C; gadolinium mất
+từ tính ngay ở 20 °C, nắm trong tay là hết.
+
+Viên trong nồi cơm là ferrite pha chế để điểm Curie rơi vào **103 °C**, tức
+376 K. Đó là một viên nam châm yếu, và yếu có lý do đo được: ở nhiệt độ phòng
+298 K nó đã sống tại **79% điểm Curie của chính nó**, trong khi miếng nam
+châm tủ lạnh mới ở 41%. Càng sát ngưỡng, từ độ sụp càng nhanh: theo luật
+trường trung bình `M/M₀ = √(1 − T/T_C)` — dạng chỉ đúng sát T_C — ngay tại
+100 °C viên ferrite còn **8,9%** từ độ, tới 102 °C còn 5,2%, và lực hút, tỉ
+lệ với bình phương từ độ, tụt tuyến tính về đúng số không.
+
+## Ba độ, hai mươi hai giây
+
+Giọt nước tự do cuối cùng bay đi là cái khoá mở: toàn bộ 600 W giờ đổ vào
+khối nhiệt dung của nồi — nồi nhôm 0,5 kg cộng chừng 1,2 kg cơm ẩm, tổng cộng
+**4,4 kJ mỗi độ**:
+
+```
+t_ngắt = (C_nồi + m_nước·c_nước)·(100 − T₀)/P   ← đun tới sôi
+       + m_nước·L_v/P                           ← quãng khoá
+       + C_nồi·(T_C − 100)/P                    ← leo nốt tới Curie
+```
+
+Ba độ cuối vì thế chỉ tốn **22 giây**, trong khi quãng khoá dài **gấp 17
+lần**. Trên đoạn dốc ấy, lực giữ của ferrite trượt qua ngưỡng một lò xo lá
+căng sẵn: nam châm buông, cần gạt bật xuống, tiếp điểm nhảy từ mạch nấu sang
+điện trở hâm vài chục oát. Nguyên lý — đếm nước bay hơi chứ không đếm cơm
+chín — là của chiếc nồi tự ngắt Toshiba bán ra từ 1955, khi ấy công tắc còn
+là lá lưỡng kim; viên nam châm Curie chỉ là bản rẻ hơn của cùng một mẹo.
+
+Vì sao 103 chứ không phải 110 °C cho chắc ăn? Mỗi độ Curie dôi ra là **7,3
+giây** nung một cái đáy nồi đã cạn nước; viên 110 °C để mâm nhiệt quay khô
+73 giây, vừa đủ đổi màu lớp cơm sát đáy.
+
+## Trường hợp biên: khi 100 °C không còn là 100 °C
+
+Cả thiết kế đặt cược vào ba độ chênh giữa điểm sôi và điểm Curie — mà điểm
+sôi thì không phải hằng số. Lên [Sa Pa 1 500 m, áp suất còn 85
+kPa](/vi/posts/tui-snack-tren-may-bay-va-ham-mu-cua-bau-troi): nước sôi ở
+**95,0 °C**, khe hở giãn từ 3 độ thành 8, và sau khi cạn nước mâm nhiệt còn
+nung khô 59 giây — **gấp 2,7 lần** dưới đồng bằng. Đáy cháy mà hạt gạo vẫn
+sượng: nó chỉ được ninh ở 95 độ, còn đồng hồ duy nhất của nồi là đồng hồ bay
+hơi, không chờ tinh bột kịp chín.
+
+Đầu kia thì công tắc lộn ngược hẳn vai trò. Chỉ **11 kPa dư áp** — một cái
+nắp có gioăng, tổng cộng 1,12 bar tuyệt đối — là điểm sôi dâng đúng lên
+103 °C: đường nằm ngang chồng khít lên ngưỡng Curie, nam châm buông tay khi
+nồi còn đầy nước, cơm sống sũng. Kéo thanh Curie trong demo xuống dưới 100 °C mà xem:
+chấm đỏ nhảy ngược về giữa quãng đang đun. Vì thế nồi cơ luôn có lỗ thoát hơi
+hở, và nồi áp suất hay nồi cao tần không dùng được mẹo này — khi đường sôi
+vượt qua điểm Curie, viên nam châm mất quyền phát biểu và người ta phải trả
+tiền cho một con cảm biến.

@@ -1,0 +1,84 @@
+---
+title: "Lỗ 2 mm chặn đứng sóng 12 cm nhưng cho ánh sáng lọt tự do"
+seoTitle: "Lồng Faraday và lưới cửa lò vi sóng: vì sao lỗ 2 mm chặn được vi sóng"
+description: "Tấm lưới trên cửa lò vi sóng để bạn nhìn thấy đồ ăn, mà sóng 2,45 GHz thì không lọt. Mỗi lỗ 2 mm chỉ cho qua 1,7 phần triệu công suất (−57,8 dB), trong khi ánh sáng bước sóng 0,5 µm đi qua như không có gì. Cùng một tấm lưới, khác nhau ở tỉ số đường kính lỗ trên bước sóng — và nó vào công thức luỹ thừa bốn."
+pubDate: 2026-09-02
+tags: ["vat-ly", "dien-tu", "song", "javascript"]
+translationId: "lo-2-mm-chan-song-cho-anh-sang"
+---
+
+import FaradayMesh from '../../../components/demos/FaradayMesh.astro';
+
+Bạn dí mắt vào cửa lò vi sóng xem miếng bánh quay tròn. Ánh sáng trong lò
+xuyên tấm lưới ra tới mắt bạn không chút vướng víu, còn 1 000 W vi sóng
+ngay sau tấm lưới ấy thì không thoát nổi một phần triệu. Cùng những cái lỗ
+đó, cùng một tấm kim loại:
+
+<FaradayMesh />
+
+## Cái lỗ không phải cánh cửa, nó là một ăng-ten tồi
+
+Trực giác "sóng chui lọt nếu lỗ đủ to" hỏng ngay từ chữ đầu. Sóng không đi
+*qua* lỗ: nó kích thích dòng điện chạy trên mặt kim loại, dòng ấy gặp lỗ
+phải vòng tránh, và chỗ vòng tránh bức xạ lại ra phía sau như một lưỡng
+cực từ tí hon. Hans Bethe tính ra hiệu suất của cái ăng-ten bất đắc dĩ này
+năm 1944:
+
+```
+T = 64·(k·a)⁴ / (27·π²)      với k = 2π/λ, a = bán kính lỗ
+```
+
+Thay số cho cửa lò: ở 2,45 GHz bước sóng là 12,2 cm, lỗ 2 mm cho `k·a` =
+0,051 — luỹ thừa bốn nghiền con số ấy thành **T = 1,7·10⁻⁶, tức −57,8
+dB**. Số mũ 4 mới là phần đáng nhớ: bóp lỗ còn một nửa mà bóp cả bước lưới
+theo — mắt bạn vẫn thấy chừng ấy ánh sáng — thì công suất rò cả cánh cửa
+chia thêm **16 lần**.
+
+## Cùng tấm lưới ấy, ánh sáng đi như chỗ không người
+
+Ánh sáng vàng-lục có λ = 0,5 µm. So với nó, lỗ 2 mm rộng **4 000 bước
+sóng** — hết chuyện nhiễu xạ, chỉ còn quang hình: tia cứ thế đi thẳng. Cản
+trở duy nhất là phần kim loại còn lại: lỗ 2 mm trên bước lưới 3 mm chừa
+**35% diện tích trống**, nên bạn nhìn miếng bánh qua một tấm kính mờ ba
+lần, thế thôi. Muốn dìm ánh sáng xuống đúng −57,8 dB như dìm vi sóng, lỗ
+phải nhỏ cỡ **8 nanômét** — vài chục nguyên tử bắc ngang. Cùng số mũ bốn
+ấy [quyết định màu bầu
+trời](/vi/posts/vi-sao-bau-troi-xanh-va-hoang-hon-do), chỉ đổi chiều: trên
+đầu bạn nó nhuộm xanh khí quyển, ở đây nó che chở bạn.
+
+## Dày thêm nửa milimét là mỗi lỗ thành một đường hầm
+
+Kéo thanh trượt bề dày, đường xanh tụt hẳn dưới đường cam. Lỗ tròn
+xuyên một tấm kim loại dày chính là đoạn ống dẫn sóng ngắn, mà [ống dẫn
+sóng dưới tần số cắt thì tắt theo hàm
+mũ](/vi/posts/duong-ham-la-mot-ong-dan-song) — với lỗ tròn, mức tắt gọn
+đến bất ngờ: **32 dB cho mỗi đơn vị tỉ số bề dày trên đường kính**. Tấm
+thép cửa lò dày 0,6 mm với lỗ 2 mm được tặng thêm **−9,6 dB**, đẩy tổng
+xuống −67,4 dB. Đó là lý do lưới chắn được đục trên tấm tôn chứ không đan
+bằng dây: dây đan cho bạn bề dày gần bằng không, cùng hàng nghìn mối tiếp
+xúc sẽ rỉ.
+
+## Ở 5 GHz, đúng tấm lưới đó rò gấp 17 lần
+
+T tỉ lệ với (d/λ)⁴ nên đổi tần số nghiệt ngã y như đổi kích thước: WiFi
+5 GHz qua cùng lỗ 2 mm được T = −45,4 dB, **gấp 17,3 lần** mức của 2,45 GHz;
+4G 1,8 GHz chỉ −63,1 dB. Ước lượng thô cho lò 1 000 W: cửa hứng chừng một
+phần sáu công suất khoang, 35% diện tích cửa là lỗ, mỗi lỗ lọt −67,4 dB —
+rò ra cỡ **0,01 mW**. Dồn hết chỗ đó vào đúng một xăng-ti-mét vuông vẫn
+thấp hơn gần 500 lần ngưỡng an toàn 5 mW/cm² đo ở 5 cm mà FDA áp cho lò vi
+sóng. Nhưng 0,01 mW là −20 dBm, còn card WiFi phải nghe được tới −70 dBm:
+mức rò vô hại với da thịt vẫn to hơn **trăm nghìn lần** tín hiệu máy thu
+đang tìm — và 2,45 GHz nằm đúng giữa băng WiFi 2,4 GHz. Vì thế mạng nhà
+bạn khựng lại đúng ba phút hâm cơm.
+
+## Trường hợp biên: khi cái lỗ dài ra thành khe
+
+Kéo đường kính lên trong demo thì công thức sụp đổ ngược chiều: tới **7,2
+cm = 0,586 λ**, lỗ vượt tần số cắt và cho qua gần như toàn bộ. Nhưng lồng
+Faraday ngoài đời không chết vì ai khoét lỗ 7 cm — nó chết vì một đường
+ghép mí. Khe hở chỉ cần **dài 6,1 cm = λ/2** là thành [ăng-ten khe đúng
+cộng hưởng](/vi/posts/ang-ten-vi-sao-dien-thoai-khong-con-can-cai-can), dù
+hẹp bằng sợi tóc: chiều dài quyết định chứ không phải diện tích. Thợ đo
+EMC vì thế soi mối hàn, gioăng cửa và lỗ luồn cáp, chẳng ai đi soi mắt
+lưới. Và có một thứ tấm lưới bó tay hoàn toàn: từ trường tĩnh. Đặt la bàn
+vào giữa cái lồng Faraday kín nhất, kim vẫn thản nhiên quay về hướng bắc.

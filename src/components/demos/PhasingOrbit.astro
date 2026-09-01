@@ -1,0 +1,224 @@
+---
+// Orbital phasing between two coplanar circular orbits.
+//   T(r) = 2*pi*sqrt(r^3/mu),  v(r) = sqrt(mu/r),  mu = 3,986004418e14 m^3/s^2, R = 6371 km
+// Catch-up along-track per chaser revolution = (T_target - T_chaser) * v_target — exact
+// for two circular coplanar orbits, not a linearisation.
+// Delta-v = two-burn Hohmann between r_target and r_chaser (exact vis-viva, both burns).
+// Validity: circular coplanar orbits, impulsive burns, no drag, no J2. Ranges kept to
+// 300–800 km altitude and |dh| <= 30 km, where drag and oblateness stay negligible over
+// the few orbits shown. Below ~1 km separation the two-body picture stops being the right
+// model (Clohessy–Wiltshire takes over) — see the closing section of the post.
+---
+
+<figure class="demo" data-demo="nghich-ly-quy-dao-duoi-kip-bang-cach-phanh">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Chênh độ cao của tàu đuổi Δh (km) <output data-out="dh"></output>
+      <input type="range" data-in="dh" min="-30" max="30" step="0.5" value="-1" /></label>
+    <label>Khoảng cách cần đóng (km) <output data-out="gap"></output>
+      <input type="range" data-in="gap" min="1" max="500" step="1" value="100" /></label>
+    <label>Độ cao quỹ đạo mục tiêu (km) <output data-out="h"></output>
+      <input type="range" data-in="h" min="300" max="800" step="10" value="400" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Trái: hai quỹ đạo tròn đồng phẳng — chấm xanh là tàu mục tiêu, chấm đỏ là tàu đuổi
+    bám sau, vòng rỗng là chỗ tàu đuổi tới sau đúng một vòng. Chênh lệch bán kính và góc
+    bám sau đều được phóng đại cho nhìn thấy được; mọi con số trong dòng kết quả vẫn thật.
+    Phải: khoảng cách còn lại theo số vòng đã bay. Kéo Δh sang phía dương — bay cao hơn —
+    để thấy đường ấy đi lên: nâng quỹ đạo là tự đẩy mình ra sau.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const MU = 3.986004418e14, RE = 6371e3;
+  const CURVE = '#2563eb', MARK = '#dc2626', THIRD = '#f59e0b';
+
+  const per = (r: number) => 2 * Math.PI * Math.sqrt((r * r * r) / MU);
+  const vel = (r: number) => Math.sqrt(MU / r);
+  // Vietnamese formatting: decimal comma, true minus sign, thousands grouped by a space.
+  const vc = (x: number, n = 1) =>
+    (x < 0 ? '−' : '') + Math.abs(x).toFixed(n).replace('.', ',');
+  // Along-track distances: three decimals while the number is small, so the
+  // 3*pi invariant (9,424 km per km lowered) is readable to four figures the
+  // way the post claims; one decimal once it runs into the hundreds.
+  const km = (m: number) => vc(m / 1000, Math.abs(m) < 1e5 ? 3 : 1);
+  const vcg = (x: number, n = 1) => {
+    const [int, frac] = Math.abs(x).toFixed(n).split('.');
+    return (x < 0 ? '−' : '') +
+      int.replace(/\B(?=(\d{3})+(?!\d))/g, ' ') + (frac ? ',' + frac : '');
+  };
+
+  // Two-burn Hohmann between two circular radii, exact vis-viva.
+  function hohmann(r1: number, r2: number) {
+    if (Math.abs(r2 - r1) < 1e-9) return 0;
+    const a = (r1 + r2) / 2;
+    const v1 = Math.sqrt(MU * (2 / r1 - 1 / a));
+    const v2 = Math.sqrt(MU * (2 / r2 - 1 / a));
+    return Math.abs(v1 - vel(r1)) + Math.abs(vel(r2) - v2);
+  }
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (k: string) => root.querySelector(`[data-in="${k}"]`) as HTMLInputElement;
+    const output = (k: string) => root.querySelector(`[data-out="${k}"]`) as HTMLOutputElement;
+
+    function draw() {
+      const dh = Number(input('dh').value);
+      const gap = Number(input('gap').value);
+      const h = Number(input('h').value);
+      output('dh').textContent = vc(dh, 1);
+      output('gap').textContent = String(gap);
+      output('h').textContent = String(h);
+
+      const rt = RE + h * 1000, rc = rt + dh * 1000;
+      const Tt = per(rt), Tc = per(rc), vt = vel(rt);
+      const dT = Tt - Tc;            // > 0 when the chaser flies lower
+      const drift = dT * vt;         // metres of along-track gap closed per revolution
+      const dv = hohmann(rt, rc);
+      const closing = drift > 1e-6;
+      const orbits = closing ? (gap * 1000) / drift : Infinity;
+      const hours = (orbits * Tc) / 3600;
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.50);
+      canvas.width = Math.round(cssW * dpr); canvas.height = Math.round(cssH * dpr);
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+      ctx.font = '10px system-ui,sans-serif';
+
+      // ---- left panel: the two orbits. Radius gap and lag angle are both exaggerated.
+      const cx = cssW * 0.22, cy = cssH * 0.5;
+      const RO = Math.min(cssW * 0.175, cssH * 0.38);
+      const off = Math.sign(dh) * Math.sqrt(Math.abs(dh) / 30) * (RO * 0.32);
+      const RC = RO + off;
+      // Motion is clockwise on screen; angle a is measured from the top, growing forward.
+      const PX = (R: number, a: number) => [cx + R * Math.sin(a), cy - R * Math.cos(a)] as const;
+      const angOf = (g: number) => Math.sign(g) * Math.sqrt(Math.abs(g) / 500) * (80 * Math.PI / 180);
+
+      ctx.globalAlpha = 0.16; ctx.fillStyle = fg;
+      ctx.beginPath(); ctx.arc(cx, cy, RO * 0.60, 0, Math.PI * 2); ctx.fill();
+      ctx.globalAlpha = 0.6; ctx.textAlign = 'center';
+      ctx.fillText('Trái Đất', cx, cy + 3);
+      ctx.globalAlpha = 1;
+
+      ctx.strokeStyle = CURVE; ctx.globalAlpha = 0.55; ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.arc(cx, cy, RO, 0, Math.PI * 2); ctx.stroke();
+      ctx.strokeStyle = MARK;
+      ctx.beginPath(); ctx.arc(cx, cy, RC, 0, Math.PI * 2); ctx.stroke();
+      ctx.globalAlpha = 1; ctx.lineWidth = 1;
+
+      const aT = 0, aC = -angOf(gap);
+      const aC1 = -angOf(gap - drift / 1000);
+
+      ctx.strokeStyle = THIRD; ctx.lineWidth = 2.5; ctx.globalAlpha = 0.85;
+      ctx.beginPath();
+      ctx.arc(cx, cy, RO, -Math.PI / 2 + aC, -Math.PI / 2 + aT, false);
+      ctx.stroke();
+      ctx.lineWidth = 1; ctx.globalAlpha = 1;
+
+      const [xT, yT] = PX(RO, aT);
+      const [xC, yC] = PX(RC, aC);
+      const [x1, y1] = PX(RC, aC1);
+      ctx.strokeStyle = MARK; ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.arc(x1, y1, 4.5, 0, Math.PI * 2); ctx.stroke();
+      ctx.lineWidth = 1;
+      ctx.fillStyle = CURVE; ctx.beginPath(); ctx.arc(xT, yT, 5, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = MARK; ctx.beginPath(); ctx.arc(xC, yC, 5, 0, Math.PI * 2); ctx.fill();
+
+      ctx.fillStyle = fg; ctx.globalAlpha = 0.7; ctx.textAlign = 'center';
+      ctx.fillText('mục tiêu', xT, yT - 9);
+      ctx.fillText('tàu đuổi', xC, yC - 9);
+      ctx.fillText('sau 1 vòng', x1, y1 + 16);
+      // Direction-of-flight arrowhead on the target orbit, drawn rather than
+      // spelled with a glyph so it cannot render as tofu.
+      const aA = Math.PI;
+      const [ax, ay] = PX(RO, aA);
+      const tx = Math.cos(aA), ty = Math.sin(aA);   // tangent, forward
+      const nx = -Math.sin(aA), ny = Math.cos(aA);  // outward normal
+      ctx.beginPath();
+      ctx.moveTo(ax + tx * 7, ay + ty * 7);
+      ctx.lineTo(ax - tx * 4 + nx * 4, ay - ty * 4 + ny * 4);
+      ctx.lineTo(ax - tx * 4 - nx * 4, ay - ty * 4 - ny * 4);
+      ctx.closePath(); ctx.fill();
+      ctx.fillText('chiều bay', cx, cy + RO - 9);
+      ctx.globalAlpha = 1;
+
+      // ---- right panel: separation still to close, versus revolutions flown.
+      const padL = cssW * 0.50, padR = 12, padT = 16, padB = 30;
+      const sAt = (n: number) => gap - (drift / 1000) * n;
+      const nMax = closing ? Math.max(orbits, 0.2) : 5;
+      const sMax = closing ? gap : Math.max(gap, sAt(5));
+      const X = (n: number) => padL + (n / nMax) * (cssW - padL - padR);
+      const Y = (s: number) => padT + ((sMax - s) / sMax) * (cssH - padT - padB);
+
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.3;
+      ctx.beginPath();
+      ctx.moveTo(padL, padT); ctx.lineTo(padL, cssH - padB); ctx.lineTo(cssW - padR, cssH - padB);
+      ctx.stroke();
+      ctx.globalAlpha = 0.55; ctx.fillStyle = fg;
+      ctx.textAlign = 'center';
+      for (const k of [0, 0.5, 1]) {
+        const n = nMax * k;
+        ctx.fillText(n >= 10 ? String(Math.round(n)) : vc(n, 1), X(n), cssH - padB + 14);
+      }
+      ctx.fillText('số vòng đã bay', (padL + cssW - padR) / 2, cssH - 5);
+      ctx.textAlign = 'right';
+      for (const k of [0, 0.5, 1]) {
+        const s = sMax * k;
+        ctx.fillText(`${s >= 100 ? String(Math.round(s)) : vc(s, 0)} km`, padL - 4, Y(s) + 3);
+      }
+      ctx.globalAlpha = 1;
+
+      ctx.strokeStyle = closing ? CURVE : MARK; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.moveTo(X(0), Y(gap)); ctx.lineTo(X(nMax), Y(sAt(nMax))); ctx.stroke();
+      ctx.lineWidth = 1;
+
+      if (nMax >= 1) {
+        ctx.fillStyle = THIRD;
+        ctx.beginPath(); ctx.arc(X(1), Y(sAt(1)), 4.5, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = fg; ctx.globalAlpha = 0.7; ctx.textAlign = 'left';
+        ctx.fillText(`sau 1 vòng: ${vc(sAt(1), 1)} km`, X(1) + 7, Y(sAt(1)) - 6);
+        ctx.globalAlpha = 1;
+      }
+      if (closing) {
+        ctx.fillStyle = MARK;
+        ctx.beginPath(); ctx.arc(X(nMax), Y(0), 5, 0, Math.PI * 2); ctx.fill();
+      }
+
+      const regime = dh > 0
+        ? ` — <b>bay cao hơn là tụt lại: khoảng cách giãn thêm ${km(-drift)} km mỗi vòng</b>`
+        : dh === 0
+          ? ' — <b>cùng quỹ đạo, cùng chu kỳ: không bao giờ bắt kịp</b>'
+          : '';
+      readout.innerHTML =
+        `Mục tiêu ${h} km: chu kỳ <b>${vcg(Tt)} s</b>, vận tốc ${vc(vt / 1000, 3)} km/s ·` +
+        ` tàu đuổi ${vc(h + dh)} km: <b>${vcg(Tc)} s</b>` +
+        ` → chênh ${vc(Math.abs(dT), 3)} s mỗi vòng${regime}<br />` +
+        (closing
+          ? `Rút ngắn <b>${km(drift)} km mỗi vòng</b> · đóng ${gap} km hết <b>${vc(orbits, 1)} vòng</b>` +
+            ` (${vc(hours, 1)} giờ) · Δv vào quỹ đạo chờ <b>${vc(dv, 2)} m/s</b>, khứ hồi ${vc(2 * dv, 2)} m/s`
+          : `Δv đã tiêu: <b>${vc(dv, 2)} m/s</b> — và khoảng cách vẫn không nhỏ lại`);
+    }
+
+    root.querySelectorAll('input').forEach((el) => el.addEventListener('input', draw));
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="nghich-ly-quy-dao-duoi-kip-bang-cach-phanh"]').forEach(setup);
+</script>

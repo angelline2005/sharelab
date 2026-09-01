@@ -1,0 +1,94 @@
+---
+title: "Hai cách hạ tốc quạt: một cách đốt bỏ 27,5 oát, một cách đốt 0"
+seoTitle: "Hộp số quạt dùng tụ điện hay điện trở: cách nào tiết kiệm điện"
+description: "Muốn dòng qua quạt còn một nửa, bạn có thể mắc nối tiếp 440 Ω điện trở — và nó biến 27,5 W thành nhiệt ngay trong hộp số; hoặc mắc 4,2 µF tụ điện, cho đúng tốc độ ấy mà tiêu tán 0 W. Điện kháng chặn dòng nhưng không lấy đi công suất."
+pubDate: 2026-09-02
+tags: ["vat-ly", "dien-hoc", "dao-dong", "javascript"]
+translationId: "hop-so-quat-dung-tu-dien-khong-dot-dien"
+---
+
+import FanSpeedControl from '../../../components/demos/FanSpeedControl.astro';
+
+Vặn hộp số quạt trần từ số 5 xuống số 2, quạt chạy chậm hẳn, và bạn yên tâm
+là mình vừa tiết kiệm điện. Có thể đúng, có thể không — tuỳ cái hộp nhựa trên
+tường đựng gì. Cùng một tốc độ ấy, hai linh kiện cho hai hoá đơn khác nhau:
+
+<FanSpeedControl />
+
+## Quạt của bạn là một điện trở 440 ôm
+
+Coi chiếc quạt trần ăn 110 W như một điện trở tương đương 440 Ω — mô hình thô,
+nhưng đủ để hai phương án đứng cạnh nhau công bằng. Cắm thẳng vào 220 V: dòng
+**0,5 A**.
+
+Muốn nó chậm lại thì hạ điện áp, và cách rẻ nhất là [cầu phân
+áp](/vi/posts/cau-phan-ap-num-volume-va-moi-cam-bien): mắc nối tiếp thêm
+440 Ω. Tổng trở 880 Ω, dòng còn **0,25 A**, quạt còn 110 V ở hai đầu — nửa
+điện áp, một phần tư công suất, tức 27,5 W. Chỗ trả giá nằm ở con điện trở
+kia: nó cũng gánh 0,25 A và cũng có 110 V rơi trên mình, nên `I²R` cho ra
+**27,5 W nữa, toàn bộ thành nhiệt**. Lưới cấp 55 W để quạt dùng đúng một nửa;
+nửa kia là cái mỏ hàn 30 W nằm trong hộp nhựa gắn tường — đúng cơ chế [ăn điện
+của đường dây tải điện](/vi/posts/vi-sao-duong-day-tai-dien-phai-cao-the), chỉ
+khác là ở đây người ta cố tình.
+
+## Vì sao tụ chặn được dòng mà không đòi công suất
+
+Với điện trở, dòng và áp cùng pha nên `v·i` không bao giờ âm: năng lượng chỉ
+đi một chiều, ra nhiệt. Với tụ, dòng sớm pha đúng 90°: một phần tư chu kỳ nó
+nạp và rút của lưới **0,15 jun**, một phần tư sau nó xả và trả lại nguyên vẹn
+— hai trăm lượt mỗi giây, trung bình cả chu kỳ đúng bằng không: tụ [mượn chứ
+không tiêu](/vi/posts/tu-dien-thung-nuoc-nong-cua-the-gioi-dien). Nhưng suốt
+lúc mượn-trả ấy nó vẫn cản dòng thật, bằng một đại lượng đo bằng ôm mà không
+phải điện trở:
+
+```
+X_C = 1/(2πfC)          (dung kháng, Ω)
+|Z| = √(R² + X_C²)      (tổng trở nối tiếp)
+P   = I²·R              (chỉ phần thực mới sinh nhiệt)
+```
+
+## Tam giác trở kháng: 440 và 762 cũng ra 880
+
+Điện trở và điện kháng không cộng thẳng, chúng cộng vuông góc. Muốn tổng trở
+880 Ω khi đã có sẵn 440 Ω của quạt, cạnh đứng phải dài
+`X_C = 440·√3 = 762 Ω`, tức **C = 4,18 µF**; con tụ thương mại gần nhất,
+4,2 µF, cho 0,251 A — lệch chưa tới nửa phần trăm, không tai nào nghe ra.
+
+Cùng 0,25 A, cùng 110 V trên quạt, cùng một tốc độ — nhưng lưới chỉ phải cấp
+**27,5 W thay vì 55 W**. Tụ thật cũng không hoàn hảo: tổn hao điện môi của tụ
+màng polypropylen, `tan δ ≈ 0,001`, đốt khoảng **0,05 W** — ít hơn con điện
+trở gần 580 lần.
+
+Cái giá nằm ở góc của tam giác: cạnh huyền nghiêng 60°, tức **cos φ = 0,50**.
+Dây và aptomat vẫn gánh đủ 0,25 A, trong khi một tải cùng nhận 27,5 W mà không
+lệch pha chỉ cần 0,125 A — đồng hồ điện sinh hoạt tha cho bạn vì nó chỉ đếm
+công suất tác dụng.
+
+## Cái hộp trên tường nhà bạn đựng gì
+
+Hộp số quạt trần bán ở Việt Nam hầu hết đã là loại tụ: bên trong là bốn năm
+con tụ màng cỡ 1,5–5 µF, cái núm vặn chỉ làm mỗi việc chọn con nào. Kiểu điện
+trở sống khoẻ ở chỗ khác — quạt gió điều hoà ô tô: cụm điện trở nằm ngay trong
+ống gió vì nó cần chính luồng gió ấy để tự làm mát, và là món hỏng vặt kinh
+điển của xe hơi. Với quạt trần, 27,5 W đốt suốt 8 giờ mỗi ngày là 6,6 kWh mỗi
+tháng — cỡ 16 500 đồng ở giá 2 500 đồng một kWh: đủ nhỏ để không ai để ý, đủ
+đều để chạy hết đời chiếc quạt.
+
+## Trường hợp biên: hạ tụ xuống 1 µF, rồi nhìn vào bên trong động cơ
+
+Đẩy tụ xuống 1 µF thì công thức tự vạch ra giới hạn của nó: dung kháng vọt lên
+3 183 Ω, dòng còn 0,068 A, quạt nhận 2,1 W — mà 2 W không thắng nổi ma sát ổ
+trục. Quạt đứng im và kêu ù; động cơ đứng im thì trở kháng của nó sụp xuống giá
+trị hãm, 440 Ω hết là hằng số, và mô hình chết ngay chỗ nó hứa hẹn nhất.
+
+Khoản đốt cuối cùng thì không hộp số nào tránh được, vì nó nằm sau nắp máy. Hạ
+áp một động cơ không đồng bộ thì trượt tăng: với mô hình mô-men đơn giản —
+mô-men máy tỉ lệ `V²·s`, mô-men cản của cánh tỉ lệ `ω²` — động cơ trượt 30% ở
+điện áp đầy đủ sẽ trượt **53%** ở nửa điện áp. Tốc độ tụt còn hai phần ba, và
+phần công suất qua khe từ ở lại đốt rôto tăng từ 30% lên 53%. Nhưng cũng chính
+công thức ấy nói nhiệt rôto tính bằng oát lại **giảm**, còn 79% so với lúc chạy
+đầy áp, trong khi gió tự làm mát còn hai phần ba: nóng hơn chừng 1,2 lần trên
+mỗi đơn vị gió thổi qua, chứ không phải cái lò mà người ta hay đổ tội. Và trượt
+53% cũng có nghĩa ở 110 V động cơ nuốt 49 W chứ không phải 27,5 W — trở kháng
+tương đương tụt còn cỡ 250 Ω, nên 4,18 µF là con số của mô hình, không phải con
+số để cầm đi mua tụ.

@@ -1,0 +1,92 @@
+---
+title: "Giữa trưa ở Hà Nội trôi 31 phút mỗi năm — và vết trôi ấy là một hình số tám"
+seoTitle: "Phương trình thời gian và analemma: vì sao giữa trưa không phải 12 giờ"
+description: "Hôm nay ở Hà Nội Mặt Trời lên cao nhất lúc 11 giờ 56, không phải 12 giờ. Quỹ đạo elip và trục nghiêng 23,4° kéo khoảnh khắc ấy trôi từ 11:40 đầu tháng 11 tới 12:11 giữa tháng 2 — biên độ 31 phút. Chấm nó lên đồ thị suốt một năm, 365 điểm khép thành hình số tám."
+pubDate: 2026-09-02
+tags: ["vat-ly", "thien-van", "javascript"]
+translationId: "phuong-trinh-thoi-gian-va-hinh-so-tam"
+---
+
+import Analemma from '../../../components/demos/Analemma.astro';
+
+Trưa nay ở Hà Nội, lúc điện thoại nhảy sang 12:00, Mặt Trời đã qua đỉnh được
+bốn phút — nó lên cao nhất lúc **11 giờ 56**. Đồng hồ không sai; khoảnh khắc
+"giữa trưa thật" ấy trôi qua trôi lại suốt năm, và vệt trôi có hình dạng hẳn
+hoi:
+
+<Analemma />
+
+## Ngày Mặt Trời không ngày nào dài bằng ngày nào
+
+Định nghĩa cổ nhất của một ngày: hai lần liên tiếp Mặt Trời qua kinh tuyến của
+bạn. Đem đo thật thì con số ấy không đứng yên — ngày 22 tháng 12 dài **24 giờ
+00 phút 30 giây**, ngày 16 tháng 9 chỉ **23 giờ 59 phút 39 giây**, chênh nhau
+51 giây. Bánh răng không biết co giãn theo lịch, nên loài người phát minh một
+mặt trời giả: mặt trời trung bình, chạy đều tăm tắp trên xích đạo trời, mỗi
+vòng đúng 86 400 giây. Giờ trên tay bạn là giờ của nó.
+
+Hiệu số giữa mặt trời thật và mặt trời giả, cộng dồn ngày qua ngày, mang tên
+**phương trình thời gian**: đầu tháng 11 lên +16,5 phút, giữa tháng 2 tụt
+xuống −14,2 phút. Chừng 31 phút giữa hai cực trị ấy là toàn bộ dải mà giữa
+trưa của bạn xê dịch.
+
+## Hai nguyên nhân đập lệch nhịp nhau, nên vết trôi khép thành số tám
+
+Quỹ đạo Trái Đất là elip, độ lệch tâm 0,0167 — gần tròn, nhưng đủ để đầu tháng
+1 ở cận nhật Trái Đất quét góc nhanh hơn đầu tháng 7 tới **6,9%** (cùng luật
+khiến [sao chổi Halley lúc phóng 54 km/s lúc bò chậm hơn máy
+bay](/vi/posts/sao-choi-halley-luc-phong-54-km-moi-giay-luc-bo-di-bo)). Mặt
+Trời vì thế lúc vượt lên lúc tụt lại: hình sin chu kỳ tròn một năm, biên độ
+7,53 phút. Nguyên nhân thứ hai tinh vi hơn — Mặt Trời đi trên hoàng đạo,
+nghiêng [23,4° so với xích đạo
+trời](/vi/posts/vi-sao-mua-dong-lanh-du-trai-dat-gan-mat-troi-hon) vì trục
+Trái Đất giữ nguyên hướng suốt năm, [đúng kiểu con quay không chịu
+đổ](/vi/posts/con-quay-hoi-chuyen-vi-sao-khong-chiu-do). Giờ giấc lại đo theo
+xích đạo: gần hai ngày chí, hình chiếu của bước đi xiên ấy dài ra; gần hai
+ngày phân, ngắn lại — hình sin thứ hai, chu kỳ **nửa năm**, biên độ 9,87 phút.
+
+```
+B   = 360° × (n − 81) / 365
+EoT = 9,87·sin(2B) − 7,53·cos(B) − 1,5·sin(B)   [phút, sai số dưới 1 phút]
+```
+
+Chính nhịp đôi ấy vẽ ra số tám. Trục dọc trong demo là xích vĩ Mặt Trời, đập
+một nhịp mỗi năm; nếu phương trình thời gian cũng vậy, 365 chấm sẽ khép thành
+vòng elip suông. Thành phần nửa năm bẻ đường cong ngược lại giữa chừng, cho nó
+tự cắt mình ở xích vĩ +9° — khoảng 14 tháng 4 và 29 tháng 8. Vòng mùa đông
+rộng 31 phút, vòng mùa hè chỉ 10 phút: quanh cận nhật hai hình sin cộng dồn,
+quanh viễn nhật chúng trừ nhau. Hình ấy tên là analemma, và chụp được — mỗi
+tuần một kiểu đúng một giờ đồng hồ, năm mươi hai lần bấm máy.
+
+## Bốn phút cho mỗi độ kinh tuyến
+
+Trái Đất quay 15° mỗi giờ, tức **4 phút cho mỗi độ kinh tuyến** — nửa còn lại
+của bài toán. Múi giờ GMT+7 lấy kinh tuyến chuẩn 105°Đ, Hà Nội nằm ở 105,85°Đ:
+lệch 0,85°, đúng 3,4 phút, cộng nốt phương trình thời gian hôm nay ra 11 giờ
+56. Kéo thanh kinh độ thì cả nước hiện ra — A Pa Chải ở 102,15°Đ đợi thêm 11,4
+phút, Mũi Đôi (Khánh Hòa) ở 109,45°Đ đã qua trưa từ 17,8 phút trước: hai đầu
+đất liền lệch nhau **29 phút**.
+
+Hệ quả thì ai cũng chứng kiến mà ít ai ngờ: ở Hà Nội, ngày Mặt Trời lặn sớm
+nhất **không phải** đông chí — nó rơi vào cuối tháng 11, lặn lúc 17:14, còn 21
+tháng 12 mặt trời lặn muộn hơn, 17:20. Buổi sáng muộn nhất thì đợi tới giữa
+tháng 1, mọc lúc 6:36. Ngày ngắn nhất nằm chính giữa, hai đầu bị kéo lệch ra
+mỗi bên gần một tháng.
+
+## Trường hợp biên: khi múi giờ nuốt trọn phương trình thời gian
+
+Phương trình thời gian bị chặn: không bao giờ quá ±16,5 phút, dù bạn đứng ở
+đâu. Số hạng kinh độ thì không có trần — lớn thêm 4 phút mỗi độ, tuyến tính và
+vô hạn. Lệch quá bốn độ so với kinh tuyến chuẩn là địa lý đã át hết thiên văn.
+Trung Quốc trải 61,5° kinh độ — **4 giờ 6 phút** giờ Mặt Trời — mà dùng chung
+một múi UTC+8 lấy chuẩn 120°Đ: ở Kashgar (76,0°Đ), riêng số hạng kinh độ đã là
+**176 phút**, giữa trưa thật rơi vào quãng 14:40–15:10 tùy mùa. Hình số tám
+vẫn nguyên đó, vẫn rộng nửa giờ, nhưng chỉ còn là gợn sóng trên con lệch
+gần ba tiếng.
+
+Đẩy demo về đầu kia thì chuyện lạ xuất hiện ngay trong nước: tại Mũi Đôi, giữa
+trưa thật chạy từ 11:26 tới 11:56 — **không một ngày nào trong năm** Mặt Trời
+còn đứng đỉnh lúc đồng hồ điểm 12 giờ. Chiếc đồng hồ mặt trời ở Hà Nội lệch
+tối đa 20 phút so với đồng hồ tay, dựng ở Mũi Đôi thành 34 phút, ở Kashgar thì
+sai hơn ba tiếng mà không hề áy náy: nó vẫn chỉ đúng giờ Mặt Trời, chỉ có
+chúng ta đã bỏ phiếu chọn một giờ khác.

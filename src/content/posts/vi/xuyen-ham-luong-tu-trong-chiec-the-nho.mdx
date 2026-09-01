@@ -1,0 +1,102 @@
+---
+title: "Bức tường 8 nanomet trong thẻ nhớ — và electron vẫn rò qua nó"
+seoTitle: "Hiệu ứng xuyên hầm lượng tử: vì sao thẻ nhớ và USB giữ được dữ liệu"
+description: "Mỗi bit trong thẻ nhớ là chừng hai chục electron bị nhốt sau lớp oxit dày 8 nanomet — bức tường mà vật lý cổ điển bảo không bao giờ qua nổi, còn lượng tử bảo vẫn rò. Xác suất rò giảm 68 triệu lần cho mỗi nanomet dày thêm, đủ để riêng đường hầm phải chờ 10⁴² năm. Nhà sản xuất chỉ dám hứa 10 năm, và khoảng cách ấy mới là câu chuyện."
+pubDate: 2026-09-02
+tags: ["vat-ly", "luong-tu", "dien-tu", "javascript"]
+translationId: "xuyen-ham-luong-tu-trong-chiec-the-nho"
+---
+
+import QuantumTunnel from '../../../components/demos/QuantumTunnel.astro';
+
+Chiếc thẻ nhớ bỏ quên trong ngăn kéo từ chuyến đi năm ngoái, cắm vào máy
+vẫn đủ ảnh. Không có pin nào nuôi nó suốt thời gian ấy: mỗi bit chỉ là một
+nhúm electron bị nhốt sau bức tường oxit dày 8 nanomet — chừng 22 lớp phân
+tử. Theo vật lý cổ điển chúng không có cách nào ra. Theo lượng tử thì có,
+và toàn bộ câu chuyện nằm ở chữ *bao lâu*:
+
+<QuantumTunnel />
+
+## Sóng không dừng ở tường — nó tắt dần bên trong tường
+
+Electron [là sóng](/vi/posts/nguyen-ly-bat-dinh-vi-sao-nguyen-tu-khong-sup-do),
+và sóng không biết dừng đột ngột. Gặp bức tường thế cao hơn năng lượng của
+mình, nó không bật lại hết ở mặt tường: bên trong tường, nghiệm phương
+trình sóng đổi tính — thôi dao động, chuyển sang tắt theo hàm mũ.
+
+```
+ψ(x) ∝ e^(−κx)     với κ = √(2m(φ − E)) / ħ
+```
+
+Bậc thang Si–SiO₂ cao 3,2 eV, electron ngồi ở 0,1 eV trên đáy giếng, nên
+rào hiệu dụng φ − E = 3,1 eV và κ = **9,02 nm⁻¹**: biên độ chia cho e sau
+mỗi 0,111 nm — chưa bằng một phần ba bề dày một lớp phân tử. Nhưng chia
+mãi thì không bao giờ ra đúng số không: tường kết thúc trước khi sóng tắt
+hẳn, phần thừa tí hon nối lại thành sóng chạy thật ở bên kia — electron đã
+ở ngoài mà chưa từng đi qua đỉnh rào. Cùng phép toán ấy khiến
+[đài AM chết trong đường hầm](/vi/posts/duong-ham-la-mot-ong-dan-song):
+dưới tần số cắt, sóng radio cũng tắt theo hàm mũ y hệt.
+
+## Mỗi nanomet dày thêm là 68 triệu lần an toàn
+
+Bình phương phần biên độ còn sót lại cho xác suất xuyên qua mỗi lần va
+chạm: `T = e^(−2κd)`. Với d = 8 nm, kết quả là **T = 2,1×10⁻⁶³**.
+
+Con số ấy chỉ có nghĩa khi kèm nhịp thử: electron 0,1 eV chạy tới lui trong
+giếng 10 nm đập vào tường **10¹³ lần mỗi giây**. Nhân lên, thời gian chờ
+trung bình để một hạt xuyên qua là **1,5×10⁴² năm** — gấp 10³² lần tuổi vũ
+trụ. Không hạt nào
+[đếm số ngày mình đã chờ](/vi/posts/chu-ky-ban-ra-khong-hat-nao-biet-tuoi-minh):
+mỗi cú va là một lần gieo xúc xắc y hệt lần trước, mặt trúng có xác suất
+2 phần 10⁶³.
+
+Kéo thanh trượt bề dày để thấy tay đòn: thêm 1 nm oxit là e^18,04 = **68
+triệu lần** chậm hơn; thêm đúng một lớp phân tử SiO₂ (0,357 nm) đã chậm
+620 lần.
+
+## Vậy sao nhà sản xuất chỉ dám hứa 10 năm?
+
+Vì bức tường trong demo là bức tường hoàn hảo, còn tường thật thì không.
+
+Trước hết, kho quá nhỏ để chịu hao. Ô nhớ cỡ 20 × 20 nm, ngăn với cổng
+điều khiển bằng 15 nm điện môi (ε ≈ 4), có điện dung 0,94 atto-farad:
+khoảng chênh ngưỡng 3 V ứng với vỏn vẹn **18 electron**. Mất vài hạt là ô
+trượt mức, đọc ra sai bit.
+
+Thứ hai, nhiệt — nhưng không phải kiểu ta hay tưởng. Ở 85 °C, kT chỉ có
+0,031 eV; muốn electron được hâm lên 0,5 eV để thấy bức tường thấp còn
+2,7 eV và rò nhanh gấp **15 000 lần** thì phải 5 800 K. Thứ nhiệt độ thật
+sự mở ra là một lối khác hẳn: trèo qua đỉnh thay vì chui qua thân, xác
+suất e^(−3,1 eV/kT) — ngay ở 30 °C đã lớn gấp **10¹¹ lần** xác suất xuyên
+hầm qua 8 nm, nên với bức tường hoàn hảo, lối ra nhanh nhất không phải
+đường hầm mà là nhiệt. Dòng "lưu 10 năm" trên tờ thông số luôn kèm một
+nhiệt độ; để thẻ trong xe phơi nắng là đang đọc bảng khác.
+
+Thứ ba, và đây mới là kẻ giết người: khuyết tật. Mỗi lần ghi hay xoá là
+một lần lùa electron xuyên qua oxit, để lại vài liên kết đứt — một cái bẫy
+nằm lửng giữa tường. Bẫy chính giữa biến cú nhảy 8 nm thành hai chặng
+4 nm, mà e^(2κ·4) = **2×10³¹**. Một khuyết tật cỡ nguyên tử đủ biến 10⁴²
+năm thành con số phòng bảo hành phải ngồi tính: "thẻ nhớ bị chai" không
+phải cách nói ẩn dụ, nó là số bẫy đã tích trong tường.
+
+## Trường hợp biên: dựng điện trường lên, bức tường đổi hình
+
+Tường kín đến thế thì lúc ghi, electron vào bằng lối nào? Bằng cách đặt
+chừng 10 MV/cm ngang lớp oxit — một vôn mỗi nanomet. Hàng rào chữ nhật
+nghiêng thành **hình tam giác**, và electron chỉ còn phải vượt phần tam
+giác cao hơn nó: rào hiệu dụng chia cho điện trường, tức 3,1 V trên
+1 V/nm, bằng **3,1 nm** — bất kể oxit dày bao nhiêu. Số mũ tụt từ 2κ·8 =
+144 xuống (4/3)·κ·3,1 = 37 — tam giác rẻ hơn hình chữ nhật cùng bề rộng
+đúng một phần ba — và xác suất xuyên nhân **3×10⁴⁶**. Đó là xuyên hầm
+Fowler–Nordheim: cùng một bức tường, thứ duy nhất đổi là hình dạng. Phép
+tính ấy hạ 10⁴² năm xuống chừng nửa giờ cho một electron đơn độc; xung
+ghi thật chỉ mất vài trăm micro giây, vì trong oxit electron mang khối
+lượng hiệu dụng nhẹ hơn và cả một kênh cùng đập vào tường chứ không phải
+một hạt.
+
+Đẩy chiều ngược lại thì gặp sàn cứng. Kéo bề dày xuống 2,7 nm: ô nhớ tự
+xả sạch trong 4,5 năm. Xuống 2,0 nm: **7,8 phút** — chưa kịp rút thẻ khỏi
+máy ảnh. Hàm mũ không thương lượng: ngành nhớ flash đã thôi làm tường mỏng
+đi từ lâu, chuyển sang xếp chồng ô theo chiều đứng. Con chip trong túi bạn
+cao lên chính vì bức tường 8 nanomet không chịu mỏng thêm một lớp phân tử
+nào.

@@ -1,0 +1,93 @@
+---
+title: "Sóng thần chạy 713 km/h giữa đại dương — và không con tàu nào nhận ra"
+seoTitle: "Tốc độ sóng thần: công thức v = căn(g·h) và vì sao ngoài khơi không ai thấy"
+description: "Trên vùng biển sâu 4 000 m, sóng thần đi 198 m/s — 713 km/h. Nhưng nó chỉ cao nửa mét và dài 238 km, nên tàu ngoài khơi không cảm thấy gì. Vào tới chỗ sâu 10 m, tốc độ tụt còn 35,7 km/h và chiều cao nhân lên 4,47 lần: cùng một công thức căn bậc hai của độ sâu."
+pubDate: 2026-09-02
+tags: ["vat-ly", "song", "chat-luu", "javascript"]
+translationId: "toc-do-song-than-va-can-bac-hai-cua-do-sau"
+---
+
+import TsunamiSpeed from '../../../components/demos/TsunamiSpeed.astro';
+
+Sáng 26/12/2004, những con tàu ngoài khơi Ấn Độ Dương đi ngang qua con
+sóng đang lao về phía Sri Lanka. Không nhật ký hàng hải nào ghi lại gì:
+dưới lườn tàu, thứ vừa đi qua chỉ nâng mặt biển lên nửa mét — trong mười
+phút.
+
+<TsunamiSpeed />
+
+## Đáy biển mới là thứ quyết định tốc độ
+
+Sóng gió ngoài bãi tắm chỉ khuấy lớp nước mặt: xuống sâu bằng nửa bước
+sóng là nước gần như đứng yên. Sóng thần thì ngược hẳn — bước sóng của
+nó dài hàng trăm kilômét, gấp hàng chục lần độ sâu đại dương, nên nó
+lay động **toàn bộ cột nước từ mặt xuống đáy**. Với loại sóng "chạm đáy"
+ấy, tốc độ chẳng phụ thuộc bước sóng cũng chẳng phụ thuộc chiều cao, mà
+phụ thuộc đúng một thứ:
+
+```
+v = √(g·h)      g = 9,81 m/s²,  h = độ sâu đáy biển
+```
+
+Vẫn là căn bậc hai của g nhân một chiều dài — đúng cái dạng định [ngưỡng
+chân bạn bỏ đi bộ mà chạy](/vi/posts/so-froude-khi-nao-di-bo-thanh-chay),
+chỉ đổi "chiều dài" từ cẳng chân sang chiều sâu đại dương. Thay h =
+4 000 m, độ sâu trung bình của đáy biển thế giới: **198,1 m/s, tức 713
+km/h** — kém tốc độ hành trình của máy bay chở khách (~850 km/h) chừng
+16%. Trên những vực 6 000 m, nó vượt máy bay: 873 km/h.
+
+Chính con số đó khiến cảnh báo sóng thần khả thi. [Sóng địa chấn chạy
+trong lòng đất](/vi/posts/nghe-tieng-tau-hai-lan-am-thanh-trong-vat-ran)
+với 6–8 km/s, **nhanh hơn 30 đến 40 lần**: máy đo biết về trận động đất
+trong vài phút, trong khi con sóng còn hai tiếng nữa mới tới bờ. Từ tâm chấn
+Sumatra tới Sri Lanka 1 600 km, biển sâu trung bình 3 500 m — công thức
+cho 2,4 giờ, thực tế sóng mất khoảng hai giờ.
+
+## Nửa mét trải trên 238 kilômét
+
+Chu kỳ sóng thần đo bằng chục phút chứ không phải giây. Lấy T = 20 phút
+nhân 198 m/s: bước sóng **238 km**. Đặt cạnh chiều cao 0,5 m ngoài khơi,
+tỉ số chiều cao trên bước sóng là **1 trên 475 000**. Con tàu được nâng
+lên nửa mét trong mười phút rồi hạ xuống trong mười phút tiếp theo: 5 cm
+mỗi phút — và chẳng có gì để đối chiếu, vì đường chân trời dâng lên cùng
+con tàu.
+
+Thứ chạy 713 km/h là *hình dạng* sóng, còn hạt nước bên dưới chỉ đưa qua
+đưa lại với 1,2 cm/s — chậm hơn mặt
+sóng **16 000 lần**. Sóng gió chỉ khuấy lớp mặt, còn sóng thần dồn áp
+suất xuống tận đáy — nên phao cảnh báo không thèm nhìn mặt biển: cảm
+biến nằm dưới 4 km nước, đo mực nước phía trên qua áp suất, và phân biệt
+được mức dâng cỡ centimét giữa sóng gió đang nhồi ầm ĩ bên trên.
+
+## Vào bờ là phanh gấp, và định luật Green
+
+Vào tới chỗ nước sâu 10 m sát bờ, √(g·h) chỉ còn **9,9 m/s — 35,7 km/h**,
+tốc độ một người đạp xe khỏe. Đầu sóng chậm lại trong khi đuôi sóng còn
+ngoài chỗ sâu vẫn giữ 713 km/h, nên cả con sóng bị **dồn ngắn lại 20
+lần**: 238 km xuống còn 11,9 km.
+
+Năng lượng không mất đi đâu, chỉ bị nhồi vào đoạn ngắn hơn — mật độ năng
+lượng nhân đúng 20 lần ấy. Mà năng lượng tỉ lệ với bình phương chiều
+cao, nên chiều cao chỉ nhân √20 = **4,47 lần**: 0,5 m ngoài khơi thành
+2,24 m ở chỗ sâu 10 m. Đó là định luật Green, H tỉ lệ với h mũ −1/4 — một
+số mũ nhỏ đến mức tàn nhẫn: muốn sóng cao gấp đôi, đáy phải nông đi
+**16 lần**. Sóng thần không dựng thành bức tường như tranh vẽ; nó là
+mực nước biển bị nâng lên vài mét và giữ nguyên ở đó suốt nhiều phút, đủ
+lâu để tràn vào sâu hàng kilômét. Ở [cấp M9 như trận
+Tohoku](/vi/posts/thang-do-dong-dat-moi-bac-la-31-lan-nang-luong), "vài
+mét" ngoài khơi thành hàng chục mét trên bờ.
+
+## Trường hợp biên: cùng đại dương ấy, sóng gió chỉ chạy 45 km/h
+
+Thả một con sóng gió bước sóng 100 m xuống đúng vùng biển 4 000 m ấy:
+độ sâu gấp 40 lần bước sóng, nó chẳng biết đáy tồn tại. Công thức đổi
+hẳn sang v = √(g·λ/2π) = 12,5 m/s — **45 km/h, chậm hơn sóng thần 16
+lần**, và tệ hơn: tốc độ giờ phụ thuộc bước sóng, nên mỗi thành phần
+chạy một kiểu, con sóng tự tãi ra thành sóng lừng. Sóng thần thì mọi
+thành phần đi chung một tốc độ √(g·h) nên nó giữ nguyên hình dạng băng
+qua cả đại dương. Ranh giới giữa hai chế độ nằm quanh λ/h ≈ 20 — kéo chu
+kỳ trong demo xuống 8 phút trên vực 6 000 m là bạn chạm đúng đó, và
+√(g·h) bắt đầu nói dối. Đầu kia của công thức còn dữ hơn: cho h → 0,
+định luật Green cho chiều cao → vô hạn. Thực tế nước không có chỗ mà cao
+thêm, nó đổ nhào — và độ leo bờ đo được thường gấp 2–4 lần chiều cao
+sóng mà công thức tính ra.

@@ -1,0 +1,180 @@
+---
+// Con lắc Kapitza — con lắc ngược có điểm treo rung theo phương thẳng đứng
+// y(t) = a·cos(ωt). Phương trình: I·θ̈ = m·d·(g − a·ω²·cos ωt)·sin θ.
+// Trung bình hoá (Landau & Lifshitz, Mechanics §30) cho thế hiệu dụng
+//   U_eff(θ) = (g/L_qđ)·cos θ + (a²ω²/4L_qđ²)·sin²θ
+// → vị trí thẳng đứng ngược ổn định khi (a·ω)² > 2·g·L_qđ,
+//   với L_qđ = I/(m·d); thanh đồng chất quay quanh đầu dưới: L_qđ = 2L/3.
+// Bán kính hút: cos θ_max = (v_ng/(a·ω))².  Nguồn: Kapitza 1951; Butikov,
+// Eur. J. Phys. 22 (2001) 469.
+// Chỉ đúng khi ω ≫ ω₀ = √(g/L_qđ) và a ≪ L — demo cảnh báo khi ω < 10·ω₀
+// hoặc a > 0,2·L. Thanh gắn bản lề vào đế, bỏ qua ma sát và độ dẻo của thanh.
+---
+
+<figure class="demo" data-demo="con-lac-nguoc-dung-vung-nho-rung-nhanh">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Biên độ rung của đế a (mm) <output data-out="a"></output>
+      <input type="range" data-in="a" min="1" max="30" step="1" value="10" /></label>
+    <label>Tần số rung f (Hz) <output data-out="f"></output>
+      <input type="range" data-in="f" min="5" max="100" step="0.1" value="45" /></label>
+    <label>Chiều dài thanh L (cm) <output data-out="l"></output>
+      <input type="range" data-in="l" min="5" max="80" step="1" value="30" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Bản đồ ổn định của cây đũa dựng ngược trên đế rung: trục ngang là tần số
+    rung, trục dọc là biên độ. Đường xanh là biên giới a·ω = √(2gL_qđ) —
+    dưới nó thanh đổ, trên nó thanh tự đứng. Vạch cam bên trái là nơi phép
+    trung bình hoá hết hiệu lực (ω chưa đủ lớn so với nhịp đổ tự nhiên ω₀),
+    ở đó kết luận "ổn định" không còn đáng tin. Hình góc phải là thanh tại
+    điểm làm việc hiện tại.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const G = 9.81;
+  const CURVE = '#2563eb', MARK = '#dc2626', WARN = '#f59e0b';
+  const F_LO = 5, F_HI = 100, A_HI = 30;
+
+  const Leq = (L: number) => (2 * L) / 3;            // thanh đồng chất, trục ở đầu dưới
+  const vth = (L: number) => Math.sqrt(2 * G * Leq(L));
+  const w0 = (L: number) => Math.sqrt(G / Leq(L));
+  const vn = (x: number, d = 2) => x.toFixed(d).replace('.', ',');
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (k: string) => root.querySelector(`[data-in="${k}"]`) as HTMLInputElement;
+    const output = (k: string) => root.querySelector(`[data-out="${k}"]`) as HTMLOutputElement;
+
+    function draw() {
+      const aMM = Number(input('a').value);
+      const f = Number(input('f').value);
+      const Lcm = Number(input('l').value);
+      output('a').textContent = String(aMM);
+      output('f').textContent = vn(f, 1);
+      output('l').textContent = String(Lcm);
+
+      const a = aMM / 1000, L = Lcm / 100, w = 2 * Math.PI * f;
+      const v = a * w, vt = vth(L), stable = v > vt;
+      const ratio = w / w0(L), peak = (a * w * w) / G;
+      const basin = stable ? (Math.acos((vt / v) ** 2) * 180) / Math.PI : 0;
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.46);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+
+      const padL = 42, padB = 26, padT = 12, padR = 12;
+      const X = (ff: number) => padL + ((ff - F_LO) / (F_HI - F_LO)) * (cssW - padL - padR);
+      const Y = (aa: number) => cssH - padB - (aa / A_HI) * (cssH - padB - padT);
+
+      // Biên giới ổn định: a = √(2gL_qđ)/ω, cắt trần 30 mm.
+      const N = 240;
+      const bnd: Array<[number, number]> = [];
+      for (let i = 0; i <= N; i++) {
+        const ff = F_LO + ((F_HI - F_LO) * i) / N;
+        bnd.push([ff, Math.min(A_HI, (1000 * vt) / (2 * Math.PI * ff))]);
+      }
+
+      // Vùng đổ (dưới biên giới) và vùng đứng (trên biên giới).
+      ctx.globalAlpha = 0.1; ctx.fillStyle = MARK;
+      ctx.beginPath(); ctx.moveTo(X(F_LO), Y(0));
+      bnd.forEach(([ff, aa]) => ctx.lineTo(X(ff), Y(aa)));
+      ctx.lineTo(X(F_HI), Y(0)); ctx.closePath(); ctx.fill();
+      ctx.globalAlpha = 0.09; ctx.fillStyle = CURVE;
+      ctx.beginPath(); ctx.moveTo(X(F_LO), Y(A_HI));
+      bnd.forEach(([ff, aa]) => ctx.lineTo(X(ff), Y(aa)));
+      ctx.lineTo(X(F_HI), Y(A_HI)); ctx.closePath(); ctx.fill();
+      ctx.globalAlpha = 1;
+
+      // Trục và vạch chia.
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.3;
+      ctx.beginPath(); ctx.moveTo(padL, padT); ctx.lineTo(padL, cssH - padB); ctx.lineTo(cssW - padR, cssH - padB); ctx.stroke();
+      ctx.globalAlpha = 0.55; ctx.fillStyle = fg; ctx.font = '10px system-ui,sans-serif';
+      ctx.textAlign = 'center';
+      for (const k of [20, 40, 60, 80, 100]) ctx.fillText(`${k} Hz`, X(k), cssH - padB + 14);
+      ctx.textAlign = 'right';
+      for (const k of [10, 20, 30]) ctx.fillText(`${k} mm`, padL - 4, Y(k) + 3);
+      ctx.globalAlpha = 1;
+
+      // Vạch cam: ω = 10·ω₀, biên giới hiệu lực của phép trung bình hoá.
+      const fValid = (10 * w0(L)) / (2 * Math.PI);
+      if (fValid > F_LO && fValid < F_HI) {
+        ctx.strokeStyle = WARN; ctx.setLineDash([4, 3]);
+        ctx.beginPath(); ctx.moveTo(X(fValid), padT); ctx.lineTo(X(fValid), cssH - padB); ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.fillStyle = WARN; ctx.textAlign = 'left'; ctx.font = '10px system-ui,sans-serif';
+        ctx.fillText('ω = 10 ω₀', X(fValid) + 4, padT + 10);
+      }
+
+      // Đường biên giới ổn định.
+      ctx.strokeStyle = CURVE; ctx.lineWidth = 2; ctx.beginPath();
+      bnd.forEach(([ff, aa], i) => (i ? ctx.lineTo(X(ff), Y(aa)) : ctx.moveTo(X(ff), Y(aa))));
+      ctx.stroke(); ctx.lineWidth = 1;
+
+      ctx.font = '11px system-ui,sans-serif'; ctx.textAlign = 'center';
+      ctx.fillStyle = MARK; ctx.globalAlpha = 0.75;
+      ctx.fillText('ĐỔ', X(F_LO + 14), Y(3));
+      ctx.fillStyle = CURVE;
+      ctx.fillText('ĐỨNG VỮNG', X(F_LO + 26), Y(A_HI - 4));
+      ctx.globalAlpha = 1;
+
+      // Hình thanh trên đế rung, góc trên bên phải.
+      const bx = cssW - padR - 46, by = padT + 74, rod = 58;
+      const tilt = stable ? 0 : Math.PI / 5;
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.35; ctx.lineWidth = 3;
+      ctx.beginPath(); ctx.moveTo(bx - 26, by); ctx.lineTo(bx + 26, by); ctx.stroke();
+      ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(bx, by + 6); ctx.lineTo(bx, by + 18);
+      ctx.moveTo(bx - 4, by + 10); ctx.lineTo(bx, by + 6); ctx.lineTo(bx + 4, by + 10);
+      ctx.moveTo(bx - 4, by + 14); ctx.lineTo(bx, by + 18); ctx.lineTo(bx + 4, by + 14);
+      ctx.stroke(); ctx.globalAlpha = 1;
+      ctx.strokeStyle = stable ? CURVE : MARK; ctx.lineWidth = 3;
+      for (const dy of [-2.5, 2.5]) {
+        ctx.globalAlpha = 0.3; ctx.beginPath();
+        ctx.moveTo(bx, by + dy); ctx.lineTo(bx + rod * Math.sin(tilt), by + dy - rod * Math.cos(tilt)); ctx.stroke();
+      }
+      ctx.globalAlpha = 1; ctx.beginPath();
+      ctx.moveTo(bx, by); ctx.lineTo(bx + rod * Math.sin(tilt), by - rod * Math.cos(tilt)); ctx.stroke();
+      ctx.lineWidth = 1;
+
+      // Điểm làm việc hiện tại.
+      ctx.fillStyle = MARK;
+      ctx.beginPath(); ctx.arc(X(f), Y(aMM), 6, 0, Math.PI * 2); ctx.fill();
+
+      const caveat =
+        ratio < 10
+          ? ` · <b>ω chỉ gấp ${vn(ratio, 1)} lần ω₀ = ${vn(w0(L), 1)} rad/s — phép trung bình hoá hết hiệu lực, kết luận trên không đáng tin</b>`
+          : a > 0.2 * L
+            ? ` · biên độ bằng ${vn((100 * a) / L, 0)}% chiều dài thanh — không còn "rung nhỏ", mô hình bắt đầu lệch`
+            : '';
+      readout.innerHTML =
+        `L = ${vn(L, 2)} m (L<sub>qđ</sub> = ${vn(Leq(L), 2)} m) · a = ${aMM} mm · f = ${vn(f, 1)} Hz → ` +
+        `a·ω = <b>${vn(v, 2)} m/s</b> so với ngưỡng ${vn(vt, 2)} m/s → <b>${stable ? 'ĐỨNG VỮNG' : 'ĐỔ'}</b>` +
+        (stable ? ` (gạt nghiêng tới ${vn(basin, 1)}° vẫn tự về thẳng đứng)` : ` (cần f > ${vn(vt / (2 * Math.PI * a), 1)} Hz ở biên độ này)`) +
+        ` · gia tốc đỉnh của đế ${vn(peak, 0)} g` + caveat;
+    }
+
+    root.querySelectorAll('input').forEach((el) => el.addEventListener('input', draw));
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="con-lac-nguoc-dung-vung-nho-rung-nhanh"]').forEach(setup);
+</script>

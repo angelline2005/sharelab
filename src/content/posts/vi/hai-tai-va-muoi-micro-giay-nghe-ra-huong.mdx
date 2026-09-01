@@ -1,0 +1,94 @@
+---
+title: "Hai tai bạn phân biệt được mười phần triệu giây"
+seoTitle: "Vì sao hai tai định hướng được âm thanh: chênh lệch thời gian ITD"
+description: "Âm từ bên hông đến tai xa chậm hơn tai gần 656 micro giây — và não bạn còn bắt được chênh lệch nhỏ tới 10 micro giây, tức tách được hai hướng cách nhau 1,1 độ, bằng bề ngang ngón tay ở cách 1 mét. Trên 762 Hz mẹo ấy bắt đầu nhập nhằng và não phải đổi chiến thuật."
+pubDate: 2026-09-02
+tags: ["vat-ly", "song", "am-thanh", "javascript"]
+translationId: "hai-tai-va-muoi-micro-giay-nghe-ra-huong"
+---
+
+import BinauralITD from '../../../components/demos/BinauralITD.astro';
+
+Nhắm mắt lại, nhờ ai đó búng ngón tay quanh đầu bạn. Bạn chỉ đúng hướng
+gần như tức thì, không hề thấy mình tính toán gì. Nhưng vừa có một phép so
+sánh thời gian chạy trong sọ, ở độ phân giải chưa đồng hồ đeo tay nào chạm
+tới:
+
+<BinauralITD />
+
+## Toàn bộ ngân sách chỉ có 656 micro giây
+
+Hai tai cách nhau chừng 17,5 cm; âm đi thẳng qua khoảng đó chênh nhau tối
+đa 0,175/343 = **510 µs**. Nhưng đầu bạn là quả cầu chắn ngang: sóng tới
+tai xa không có đường thẳng nào để đi, phải men theo mặt sọ. Woodworth gói
+cả hai đoạn — đoạn thẳng phụ a·sin θ, rồi cung a·θ bò vòng qua sọ — vào một
+dòng:
+
+```
+ITD = (a/c)·(θ + sin θ)
+```
+
+θ là góc lệch khỏi hướng trước mặt (radian), a bán kính đầu, c = 343 m/s.
+Với a = 8,75 cm, nguồn đúng bên hông cho **656 µs** — đường vòng dài hơn
+đường thẳng **28,5%**. Đó là toàn bộ dải làm việc: mọi hướng bạn từng nghe
+ra trong đời đều nằm giữa −656 và +656 micro giây.
+
+## 10 micro giây, tức 3,4 milimét đường đi
+
+Ngưỡng nhỏ nhất người còn phát hiện được, đo trong buồng cách âm từ giữa
+thế kỷ trước, là **10 µs** — quãng đường âm thanh đi được trong chừng ấy
+thời gian là **3,4 mm**. Đặt cạnh sinh học thì vô lý: một xung thần kinh
+kéo dài cỡ 1 ms, **gấp 100 lần** khoảng não đang phân giải. Không nơ-ron
+nào bấm giờ nổi.
+
+Cách hệ thính giác lách: **không đo thời gian, mà đổi thời gian thành vị
+trí**. Chỗ dựa lại chính là cái tưởng như nhược điểm — với [tốc độ dẫn
+truyền](/vi/posts/dap-ngon-chan-vi-sao-mot-nhip-sau-moi-thay-dau) cỡ
+100 m/s, 10 µs đúng bằng **1 mm sợi trục**, một chiều dài dựng được. Tín
+hiệu hai tai chạy vào cùng một dãy tế bào theo hai chiều ngược nhau, mỗi tế
+bào ứng với một độ trễ do đoạn dây tới nó dài ngắn khác nhau; tế bào nào
+nhận đủ hai xung *đúng lúc* thì phát mạnh nhất. Câu trả lời không phải một
+con số mà là địa chỉ của tế bào sáng nhất — vẫn là lối đổi hiệu số thời
+gian lấy một chỗ trên bản đồ mà [nhà địa chấn dùng với sóng P và sóng
+S](/vi/posts/dem-giay-giua-hai-con-rung-tam-chan-cach-bao-xa).
+
+## Vì sao bạn quay mặt về phía tiếng động
+
+Đạo hàm cho biết mỗi độ lệch hướng "đáng giá" bao nhiêu micro giây:
+
+```
+dITD/dθ = (a/c)·(1 + cos θ)
+```
+
+Trước mặt (θ = 0) hàm cos đạt đỉnh: **8,9 µs mỗi độ**. Ghép với ngưỡng
+10 µs ra **1,12°** — ở cách 1 mét là **2,0 cm**, đúng bề ngang một ngón tay
+cái. Ra đúng bên hông (θ = 90°) thì cos về 0, mỗi độ chỉ còn 4,45 µs: cùng
+ngưỡng ấy chỉ tách nổi 2,25°, mù gấp đôi. Đó là lý do phản xạ đầu tiên khi
+nghe tiếng động lạ là quay mặt về phía nó: không phải để nghe to hơn, mà để
+kéo nguồn về khúc dốc nhất. Hạ bán kính đầu xuống 7 cm cỡ đầu trẻ nhỏ, ngân
+sách còn 525 µs, phân giải hướng xấu đi 25%.
+
+Có một khoảng trống thời gian không lấp nổi: nguồn ở 30° phía trước và
+nguồn ở 150° chếch sau lưng cho **đúng cùng một ITD**. Trước–sau là mặt đối
+xứng của hộp sọ; muốn phá nó bạn phải lắc đầu cho hiệu số nhúc nhích — cử
+động ai cũng làm, không ai để ý.
+
+## Trường hợp biên: trên 762 Hz, "đến trước" hết nghĩa
+
+Mẹo này đọc pha, mà pha chỉ đơn trị trong nửa chu kỳ. Khi nửa chu kỳ ngắn
+hơn ITD cực đại, một độ lệch pha khớp với vài hướng cùng lúc — chỗ gãy ở
+f = 1/(2 × 656 µs) = **762 Hz**, bước sóng 45 cm, chỉ còn 2,6 lần bề ngang
+đầu. Ngay ở 1 kHz mọi nguồn lệch quá **62°** đã rơi vào vùng cam của demo:
+tai hết biết bên nào đến trước. Trên khoảng 1,5 kHz não bỏ kênh thời gian,
+chuyển sang so cường độ — ở 4 kHz bước sóng còn 8,6 cm, nhỏ hơn cái đầu,
+nên sọ đổ bóng âm thật, chênh lệch hai tai leo tới cả chục
+[decibel](/vi/posts/thang-decibel-vi-sao-tai-nguoi-dem-bang-logarit).
+
+Đầu kia của thang tần thì hai kênh hỏng vì hai lý do khác nhau. Kênh cường
+độ tắt hẳn: sóng 80 Hz dài 4,3 m — **gấp 25 lần** bề ngang đầu — lượn qua
+sọ không để lại bóng nào. Kênh thời gian thì ngược lại, thừa chỗ: nửa chu
+kỳ ở 80 Hz là **6 250 µs**, gần gấp mười dải ±656 µs, nên pha đơn trị tuyệt
+đối — chỉ có điều trong phòng kín, phản xạ tường trộn pha đến mức chẳng còn
+hiệu số nào sạch để đọc. Nên nhắm mắt bạn vẫn chỉ được cái loa tép ở góc
+nào — bằng chênh lệch cường độ chứ không phải bằng 656 micro giây — còn loa
+siêu trầm nhét gầm ghế thì chịu.

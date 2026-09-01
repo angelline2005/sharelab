@@ -1,0 +1,90 @@
+---
+title: "Sụt 0,1 vôn ở chỗ tiếp xúc lỏng: điểm đó đang ở 167 °C"
+seoTitle: "Điện trở tiếp xúc: vì sao ổ cắm lỏng gây cháy nhà dù aptomat không nhảy"
+description: "Nhiệt độ chỗ tiếp xúc chỉ phụ thuộc sụt áp ngang qua nó — không phụ thuộc dòng điện, cũng không phụ thuộc kích thước: 0,1 V đã là 167 °C, 0,3 V là 732 °C, 1 V là 2 936 °C, quá cả điểm sôi của đồng. Cả vụ cháy ấy tiêu chưa tới một oát, không aptomat nào ngắt."
+pubDate: 2026-09-02
+tags: ["vat-ly", "dien-hoc", "nhiet-hoc", "javascript"]
+translationId: "dien-tro-tiep-xuc-o-cam-long-gay-chay"
+---
+
+import ContactResistance from '../../../components/demos/ContactResistance.astro';
+
+Rút phích ấm nước ra, hai chân đồng ấm nóng và ngả nâu. Aptomat không nhảy,
+công tơ không nhích thêm nửa vạch. Nhưng chỗ hai mặt kim loại chạm nhau bên
+trong ổ cắm ấy có thể đang ở nhiệt độ lò nướng bánh — và chỉ cần đúng một con
+số để biết chắc:
+
+<ContactResistance />
+
+## Toàn bộ câu chuyện nằm gọn trong sụt áp
+
+Chỗ tiếp xúc lỏng là một điện trở bé mắc nối tiếp trong mạch, và nhiệt sinh ra
+đúng tại vài đốm kim loại thật sự chạm nhau. Nhiệt ấy thoát đi đâu? Qua chính
+hai khối kim loại hai bên — chẳng còn đường nào khác. Cân bằng hai quá trình
+đó cho một hệ thức Kohlrausch tìm ra năm 1900, gọn đến mức khó tin:
+
+```
+T_max² = T₀² + U²/(4L)      L = 2,45×10⁻⁸ V²/K², nhiệt độ tính bằng K
+```
+
+T₀ là nhiệt độ khối kim loại, U là sụt áp ngang qua riêng chỗ tiếp xúc. Vế
+phải không có diện tích, không có dòng điện, không có tên vật liệu — chỉ một
+hằng số dùng chung cho mọi kim loại. Trong hộp ổ cắm 30 °C: sụt **0,1 V** đặt
+điểm tiếp xúc ở **167 °C**; sụt 0,3 V là **732 °C**; sụt 1 V là **2 936 °C**,
+quá cả điểm sôi của đồng (2 562 °C). Ngưỡng đáng thuộc lòng nằm thấp hơn
+nhiều: **68 mV** là lúc điểm ấy chạm 100 °C và vỏ PVC quanh nó bắt đầu mềm.
+
+## Cả dòng điện chen qua một đốm bé hơn hồng cầu
+
+Vì sao kích thước biến mất khỏi công thức? Vì trong kim loại, cùng một đám
+electron vừa chở điện vừa [chở nhiệt](/vi/posts/vi-sao-kim-loai-so-vao-thay-lanh),
+và tỉ số giữa hai khả năng ấy chính là hằng số L. Bóp dòng vào một đốm nhỏ hơn
+thì điện trở tăng, nhưng đường thoát nhiệt khỏi đốm cũng hẹp lại **đúng theo
+cùng tỉ lệ**; hai hiệu ứng triệt tiêu nhau sạch sẽ.
+
+Con số làm nên nỗi sợ: tiếp xúc 10 mΩ tương đương một đốm đồng bán kính
+**0,86 µm**, tiết diện 2,3 µm² — nhỏ hơn một tế bào hồng cầu. Thực tế là vài
+chục đốm như thế [mắc song song](/vi/posts/dien-tro-song-song-nho-hon-ca-nhanh-nho-nhat);
+mỗi lần một đốm ôxy hoá bịt lại, phần còn lại gánh nặng thêm.
+
+## Một oát đốt được nhà, hai nghìn oát thì không
+
+Cắm [ấm siêu tốc 2 000 W](/vi/posts/dun-mot-am-nuoc-het-bao-nhieu-tien) vào ổ
+ấy: dòng 9 A, sụt 0,09 V, điểm tiếp xúc 145 °C — công suất đốt tại đó **0,8
+oát**, bằng 0,04% công suất cả mạch. Aptomat 16 A canh dòng quá tải, mà dòng
+vẫn ngoan ngoãn dưới ngưỡng; cầu dao chống giật canh dòng rò, mà ở đây chẳng
+có gì rò; đốt liên tục cả tháng, công tơ cũng chỉ ghi thêm 0,58 kWh. Thứ duy
+nhất có cửa bắt được là aptomat chống hồ quang (AFDD), mà nó phải đợi cầu kim
+loại đứt hẳn và phóng tia mới nhận ra — mối nối đỏ rực nhưng còn dính thì vẫn
+lọt; loại này lại gần như chưa có trong tủ điện dân dụng ở ta.
+
+Nên cách phát hiện vẫn thủ công: kẹp vôn kế ngang hai đầu mối nối **trong lúc
+đang tải**, nhớ mốc 68 mV. Thô sơ hơn mà vẫn đúng: mặt ổ cắm ấm tay sau mười
+phút dùng đã là còi báo động — cái ấm bạn sờ được mới chỉ là nhiệt rò tới lớp
+nhựa cách đó vài milimét.
+
+## Mối lỏng thì tự nới cho lỏng thêm
+
+Điện trở suất đồng tăng 0,39% mỗi độ: đốm ở 167 °C dẫn điện kém hơn lúc 30 °C
+**1,5 lần**. Cùng dòng tải ấy, sụt áp nhích lên, nhiệt độ nhích theo, điện trở
+lại tăng — vòng lặp chỉ chạy một chiều. Kèm theo là phần cơ học: lò xo đồng
+thau mất đàn hồi khi bị hâm quanh 200 °C, và mặt kim loại mới lộ ra sau mỗi
+lần giãn nở lại ôxy hoá nhanh hơn vì đang nóng. Dây
+nhôm là ca tệ nhất: nhôm chảy ở 660 °C, tức chỉ cần sụt **0,28 V**, mà ôxit
+nhôm cách điện hẳn chứ không dẫn lay lắt như ôxit đồng.
+
+## Trường hợp biên: mối nối càng bé, nhiệt độ càng không thèm giảm
+
+Cả suy luận trên đứng trên một giả thiết: mọi jun sinh ra đều thoát bằng chính
+hai vật dẫn kim loại. Với đốm cỡ micromet thì đúng — không khí quanh nó dẫn
+nhiệt kém hơn đồng mười lăm nghìn lần, xem như tấm chăn. Với mối bu-lông dài
+vài centimet hay thanh cái tủ điện, nhiệt còn tản ngang ra không khí, và hệ
+thức sẽ hét to hơn sự thật.
+
+Chỗ đáng sợ lại nằm ở thứ công thức **không** chứa. Cho đốm tiếp xúc bé đi
+mười lần: điện trở tăng mười lần, nên ở cùng sụt áp, dòng qua nó giảm mười
+lần và công suất cũng giảm mười lần — còn nhiệt độ không xê dịch lấy một độ.
+Một mối nối đang chết dần không hề an toàn hơn nhờ chạm ít đi. Và đó là chỗ
+0,8 oát ăn đứt 2 000 oát: ấm nước rải hai nghìn jun mỗi giây dọc cả mét dây
+mayso sinh ra để chịu nóng, còn đốm tiếp xúc dồn chưa tới một jun vào chỗ hẹp
+hơn một tế bào hồng cầu.

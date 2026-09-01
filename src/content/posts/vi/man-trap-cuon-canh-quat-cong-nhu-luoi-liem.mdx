@@ -1,0 +1,99 @@
+---
+title: "Màn trập cuốn: 16 mili-giây đủ để cánh quạt cong thành lưỡi liềm"
+seoTitle: "Rolling shutter: vì sao ảnh chụp cánh quạt bị cong"
+description: "Cảm biến điện thoại không chụp một khoảnh khắc — nó quét từng dòng, mất 8–33 ms cho một khung. Trong 16 ms ấy, quạt trần 300 vòng/phút đã quay 28,8°: tấm ảnh bạn nhận được là 28,8 độ thời gian xếp chồng, và cánh quạt cong không phải vì cánh quạt cong."
+pubDate: 2026-09-02
+tags: ["vat-ly", "quang-hoc", "mo-phong", "javascript"]
+translationId: "man-trap-cuon-canh-quat-cong-nhu-luoi-liem"
+---
+
+import RollingShutter from '../../../components/demos/RollingShutter.astro';
+
+Bạn giơ điện thoại chụp cái quạt trần đang chạy. Ảnh hiện ra: cánh cong như
+lưỡi liềm, một cánh gần như đứt lìa khỏi bầu quạt. Cánh quạt vẫn thẳng, ống
+kính vẫn tốt — thứ vừa hỏng là giả định rằng một tấm ảnh ứng với **một**
+khoảnh khắc:
+
+<RollingShutter />
+
+## Cảm biến không bấm một khoảnh khắc — nó quét từng dòng
+
+Màn trập cơ mở ra một lát, cả tấm phim ăn sáng cùng lúc. Cảm biến CMOS trong
+điện thoại thì không: mỗi điểm ảnh là [một mức điện áp phải được đọc
+ra](/vi/posts/cau-phan-ap-num-volume-va-moi-cam-bien), mạch đọc lại dùng
+chung theo cột — nên nó **quét từng dòng**, xong dòng trên mới tới dòng dưới.
+
+Một khung 4 000 dòng đọc hết trong 16 ms nghĩa là hai dòng liền nhau cách
+nhau **4 micro-giây**; trong 4 µs, cánh quạt 300 vòng/phút quay được 0,007°,
+nên phép quét gần như không bẻ cong gì *bên trong* một dòng — nhoè bên trong
+một dòng là việc của thời gian phơi sáng, chuyện khác. Cái cong không nằm
+trong dòng nào cả: nó nằm ở chỗ 4 000 dòng ấy thuộc về 4 000 thời điểm khác
+nhau, bị dán chồng lên nhau rồi gọi là "một tấm ảnh".
+
+## 28,8 độ thời gian nằm gọn trong một tấm ảnh
+
+Dòng ảnh thứ y được đọc muộn hơn dòng đầu đúng `t_đọc·(y/H)`, nên cánh quạt
+trong dòng ấy đã quay thêm:
+
+```
+θ(y) = ω · t_đọc · (y / H),   với ω = 2π · rpm / 60
+```
+
+Quạt trần chạy [số ba](/vi/posts/hop-so-quat-dung-tu-dien-khong-dot-dien) cỡ
+300 vòng/phút, khung đọc trong 16 ms: từ dòng đầu tới dòng cuối, cánh đã quay
+**28,8°**. Mút cánh dài 60 cm chạy 30 cm dọc cung trong khoảng ấy; so với gốc
+cánh của chính nó, mút bị đẩy lệch nhiều nhất **15,0 cm**. Đó là toàn bộ lưỡi
+liềm. Và vì độ trễ tính theo *y* chứ không theo chiều dài cánh, cánh nằm ngang
+hầu như không cong còn cánh dựng đứng cong nhất — mỗi cánh trong cùng tấm ảnh
+méo một kiểu.
+
+## Cùng cái quạt, mỗi máy một kiểu cong
+
+Kéo thanh thời gian đọc: 8 ms cho 14,4°, 33 ms cho 59,4°. Cùng cái quạt, cùng
+khoảnh khắc, hai điện thoại ra hai hình dạng — độ cong là chữ ký của **cảm
+biến**, không phải của vật. Kéo thanh tốc độ thì mọi thứ leo thang: chân vịt
+máy bay nhỏ cỡ 2 400 vòng/phút quay **230,4°** trong 16 ms, thành vệt xoắn ốc
+mà ai chụp qua cửa sổ máy bay cũng từng gặp.
+
+Vật đứng yên cũng không thoát. Lia điện thoại ngang 90°/giây thôi: dòng cuối
+khung nhìn cảnh vật lệch 1,44° so với dòng đầu — trên khung 4 000 pixel phủ
+góc nhìn 65°, cột điện nghiêng đi **89 pixel**. Nhà cao tầng đổ nghiêng trong
+video quay từ ô tô đang chạy là đúng hiệu ứng ấy.
+
+## Cái bẫy tệ hơn: khi cái quạt trông như đã dừng hẳn
+
+Quay video thì lưới lấy mẫu thứ hai xuất hiện: lưới *khung hình*. Máy 30
+hình/giây, quạt ba cánh — nếu mỗi khung quạt quay đúng 120° hoặc bội số của
+nó, khung nào cũng bắt được đội hình y hệt, quạt **đứng yên như chết** trên
+màn hình. Điều kiện ấy rơi vào 600, 1 200 và 1 800 vòng/phút; lệch đi một
+chút, 590 vòng/phút chẳng hạn, quạt hiện ra như đang bò **ngược 10
+vòng/phút**. Vẫn là phép trừ của [vân
+moiré](/vi/posts/van-moire-bo-khuech-dai-sai-lech-hinh-hoc): hai tần số gần
+nhau đẻ ra một tần số bé xíu.
+
+## Trường hợp biên: khi một mẩu cánh bị chụp ba lần
+
+Đẩy tốc độ lên nữa thì công thức tự phá chính nó. Điểm ở bán kính r trên cánh
+hiện ra trong ảnh tại góc α thoả `α = φ + (Ω/H)·(y_tâm + r·sin α)` — α nằm cả
+hai vế. Đạo hàm `dφ/dα = 1 − (Ω·r/H)·cos α`, và khi tích `Ω·r` **vượt quá H**,
+tồn tại một góc α làm đạo hàm ấy bằng 0: nghiệm nhân đôi, ảnh **gấp nếp**. Nói
+bằng tiếng người: khi cung mà mút cánh quét trong lúc cảm biến đọc hết khung
+*dài hơn chiều cao khung hình*, một dải cánh hiện ra **ba chỗ** trong cùng tấm
+ảnh — bản ở giữa lộn ngược — còn phần cánh còn lại bị nén vào ít dòng hơn
+phần nó đáng chiếm. Với cái quạt choán trọn chiều cao khung, ngưỡng là Ω = 2
+radian = **114,6°**, tức 1 194 vòng/phút ở 16 ms — cỡ một cái quạt bàn. Kéo
+qua 1 200 và demo bật cảnh báo. Ngay ở ngưỡng thì nếp gấp mới rộng vài phần
+trăm độ, mắt chưa thấy gì; cái hỏng nằm chỗ khác: ánh xạ vừa hết khả nghịch,
+nên "khử méo màn trập cuốn" từ đây là bài toán không có lời giải, không phần
+mềm nào cứu được. Và vì điều kiện là `Ω·r > H`, nếp gấp mở ra từ vành ngoài
+rồi ăn dần vào trong — tới 1 600 vòng/phút, vành ngoài của ảnh có bốn đầu cánh
+trên một cái quạt ba cánh.
+
+Đầu kia của trục thì bình yên. Đánh đèn flash 1/20 000 giây trong phòng tối:
+xung sáng chỉ **50 micro-giây**, quạt kịp quay 0,09°, mút cánh nhoè chưa tới
+**1 mm** — mọi dòng ảnh, dù đọc cách nhau bao lâu, đều chỉ nhận ánh sáng của
+đúng 50 µs ấy, và cánh quạt thẳng trở lại — với điều kiện xung sáng rơi trúng
+lúc mọi dòng đều đang mở, trượt ra ngoài là ảnh chia băng sáng tối, đúng cái
+bệnh của đèn flash đi với màn trập cuốn. Thứ định nghĩa "khoảnh
+khắc" lúc này không phải cảm biến mà là ánh sáng; cảm biến toàn cục trong máy
+ảnh đắt tiền làm y hệt bằng điện tử.

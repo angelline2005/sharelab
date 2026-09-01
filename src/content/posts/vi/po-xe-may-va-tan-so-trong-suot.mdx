@@ -1,0 +1,94 @@
+---
+title: "Chiếc pô xe máy của bạn trong suốt ở đúng 572 Hz"
+seoTitle: "Pô giảm thanh hoạt động thế nào: buồng nở và độ suy giảm truyền âm"
+description: "Một buồng nở gấp 9 lần tiết diện ống cắt được 13,2 dB — nhưng đúng tại f = c/2L, tức 572 Hz với buồng dài 30 cm, nó cho tiếng ồn đi qua trọn vẹn, suy giảm bằng 0. Cái pô không hút âm: nó hắt âm ngược lại động cơ, và chỉ hắt được ở một số tần số."
+pubDate: 2026-09-02
+tags: ["vat-ly", "song", "am-thanh", "javascript"]
+translationId: "po-xe-may-va-tan-so-trong-suot"
+---
+
+import MufflerChamber from '../../../components/demos/MufflerChamber.astro';
+
+Tháo cái pô ra khỏi xe rồi lắc thử: phần lớn ruột nó chỉ là một cái lon
+rỗng thủng lỗ ở cả hai đầu, và trong khoảng rỗng ấy chẳng có gì để "nuốt"
+tiếng ồn — vậy mà chạy xe không pô thì cả xóm biết. Cái lon ấy không hút
+âm; nó **hắt âm ngược lại động cơ**:
+
+<MufflerChamber />
+
+## Một cái lon rỗng, hai cái biên
+
+Sóng âm chạy trong ống pô, đến chỗ ống phình ra thì gặp một **biên**: tiết
+diện đổi đột ngột. Mọi biên đều phản xạ — y như tấm kính trong suốt vẫn
+hắt lại vài phần trăm ánh sáng. Một phần sóng quay đầu ngay đó, phần còn
+lại chạy hết buồng, gặp chỗ thắt ở đầu kia rồi dội lần nữa. Hai sóng phản
+xạ ấy chênh nhau quãng đường **2L**: cộng hay trừ là chuyện của giao thoa.
+
+Độ suy giảm truyền âm của một buồng nở đơn gói gọn trong một dòng:
+
+```
+TL = 10·log10[ 1 + 0,25·(m − 1/m)² · sin²(2πfL/c) ]
+```
+
+m là tỉ số tiết diện buồng trên ống, L là chiều dài buồng, c = 343 m/s.
+Toàn bộ tính nết của cái pô nằm trong hai ký tự `sin²`.
+
+## 13,2 dB, và vì sao phình to thêm gần như vô ích
+
+Một cái pô đời thường: ống ø38 mm nở thành lon ø114 mm — tiết diện gấp
+**9 lần**, m = 9. Chỗ tốt nhất của đường cong cho TL = **13,2 dB**, tức chỉ
+**4,8%** công suất âm lọt qua. Phình lon lên ø208 mm, m = 30, to gần bằng
+thùng sơn, chỉ được thêm **10,4 dB**: với m lớn, đỉnh TL xấp xỉ
+20·log10(m/2) — lại một [thang
+lôgarit](/vi/posts/thang-decibel-vi-sao-tai-nguoi-dem-bang-logarit), mỗi
+6 dB thêm vào đòi nhân đôi tiết diện. Pô xe máy dừng ở cỡ bắp chân vì thế.
+
+## sin² = 0: tần số mà cái pô biến mất
+
+Giờ đến chỗ lạ. sin² bằng 0 mỗi khi 2πfL/c là bội của π, tức
+**f = k·c/2L**. Với L = 30 cm: **572 Hz**, rồi 1 143 Hz, rồi 1 715 Hz. Tại
+đó TL = 0 dB — không phải "ít", mà *bằng không*. Đường vòng 2L khi ấy vừa
+đúng một bước sóng, nên quãng đường không làm lệch pha gì cả; nhưng chỗ
+phình phản xạ có đảo pha còn chỗ thắt thì không, thế là hai sóng dội về
+ngược pha nhau và xoá nhau, âm thanh đi qua như thể buồng nở không tồn tại.
+Cái lỗ ấy lại chẳng nhọn — quanh 572 Hz có nguyên dải **530–613 Hz** rộng
+82 Hz buồng cắt chưa nổi 3 dB.
+
+Đỉnh thì nằm ở f = c/4L = **286 Hz**, nơi buồng dài đúng **một phần tư bước
+sóng**: đường vòng 2L khi ấy lệch nửa bước sóng, bù đúng cái chênh pha giữa
+hai chỗ phản xạ, nên hai sóng dội về trùng pha và hắt lại mạnh nhất. Vẫn là
+cái λ/4 đã kéo giọng [cây
+clarinet](/vi/posts/cot-khi-cong-huong-bit-mot-dau-tram-mot-quang-tam)
+xuống thấp hơn một quãng tám, lần này dùng để chặn chứ không phải để ngân.
+
+## Tiếng nổ của động cơ rơi vào đâu trên cái lược ấy
+
+Xe số bốn kỳ một xy-lanh chạy 5 000 v/ph: hai vòng quay mới có một kỳ xả,
+nên tần số nổ nền là 5 000/120 = **41,7 Hz**. Chấm lên đường cong:
+sin(2πfL/c) = 0,227, TL = **3,0 dB** — đúng một nửa công suất đi thẳng ra
+ngoài, cái buồng đắt tiền gần như không đụng tới tiếng nổ nền.
+
+Nhưng tiếng nổ đâu phải sóng sin thuần, nó là cả chuỗi hài. Hài bậc 7 ở
+292 Hz rơi trúng đỉnh, mất trọn **13,2 dB**; hài bậc 14 ở 583 Hz rơi trúng
+lỗ trong suốt, chỉ mất **0,3 dB**. Cái pô vì thế không làm nhỏ tiếng, nó
+**đổi màu tiếng** — bóp phần giữa dải, thả trầm và vài vạch cao đi qua,
+đúng cái "chất giọng" dân độ xe nghe ra từ xa. (Khí xả nóng 400 °C có
+c = 520 m/s, gấp 1,52 lần không khí nguội, nên lỗ trong suốt thật sự nằm
+quanh **867 Hz**; demo tính với 343 m/s.)
+
+## Trường hợp biên: ở tần số 0, mọi cái pô đều trong suốt
+
+Đẩy f về 0 thì công thức tự thú: sin → 0, nên **TL → 0 với mọi m và mọi L**.
+Không phải khiếm khuyết thiết kế mà là điều kiện tồn tại: cái pô bắt buộc
+phải là một ống thông suốt cho khí xả thoát ra, và với sóng đủ dài, ống
+thông suốt trông y hệt như không có gì trên đường.
+
+Muốn đỉnh 13,2 dB rơi đúng 41,7 Hz phải có L = c/4f = **2,06 m**, dài hơn
+cả chiếc xe. Kéo thanh L hết cỡ 80 cm, đỉnh mới xuống 107 Hz — vẫn gấp 2,6
+lần tần số nổ; hạ ga về 1 000 v/ph thì nền còn 8,3 Hz, hết đường. Nên pô
+thật chẳng bao giờ chỉ có một buồng: người ta xếp nhiều buồng nối tiếp cho
+đỉnh cái này lấp lỗ cái kia, rồi luồn ống đục lỗ qua một lớp **sợi thuỷ
+tinh** — lớp ấy mới thật sự *hút* năng lượng thay vì hắt đi, [đúng nghề của
+vật liệu tiêu âm](/vi/posts/thoi-gian-vang-sabine-va-tam-rem-phong-tam).
+Còn phần trầm nhất, thứ hàng xóm nghe qua bức tường lúc nửa đêm, thì không
+cấu hình buồng nở nào với tới nổi.

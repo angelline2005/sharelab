@@ -1,0 +1,93 @@
+---
+title: "Ống kính không làm méo mặt bạn — 30 xăng-ti-mét mới làm"
+seoTitle: "Tiêu cự và phối cảnh: vì sao ảnh selfie làm mũi to ra"
+description: "Chụp cách 30 cm, mũi bạn được vẽ to hơn gò má 15,4%; chụp cách 2 m chỉ còn 2,0%. Ống kính không dính dáng gì tới chuyện đó — nó chỉ quyết định bạn phải đứng xa bao nhiêu để lấy đủ khuôn hình, và khoảng cách ấy mới là thứ vẽ lại khuôn mặt."
+pubDate: 2026-09-02
+tags: ["vat-ly", "quang-hoc", "javascript"]
+translationId: "tieu-cu-hay-khoang-cach-lam-meo-mat"
+---
+
+import PerspectiveDistortion from '../../../components/demos/PerspectiveDistortion.astro';
+
+Selfie một sải tay: mũi to, mặt tròn, tai biến đâu mất. Đưa máy cho người
+bên cạnh, lùi ra hai bước, chụp lại — vẫn ống kính ấy, vẫn khuôn mặt ấy,
+mà mặt bạn trở lại bình thường. Thứ vừa thay đổi không nằm trong máy:
+
+<PerspectiveDistortion />
+
+## Ảnh nhỏ dần theo 1/khoảng cách — và mũi bạn ở gần hơn
+
+Vật cao h đặt cách máy d hiện lên ảnh với kích thước tỉ lệ h/d — luật
+một-trên-d chi phối mọi phép nhìn, từ ngón tay che được mặt trăng tới
+[thị sai của ngôi sao gần nhất](/vi/posts/thi-sai-sao-va-goc-nho-nhat-do-duoc).
+Nhưng khuôn mặt không phẳng: chóp mũi nhô trước mặt phẳng gò má chừng
+Δ = 4 cm, tức được chụp ở cự ly d − Δ trong khi gò má ở cự ly d:
+
+```
+k = d / (d − Δ)
+```
+
+Cắm số vào là hết tranh cãi. Selfie ở d = 0,30 m cho k = 1,154 — **mũi bạn
+được vẽ to hơn mặt phẳng gò má 15,4%**. Người khác chụp giùm ở
+2,0 m: k = 1,020, tức 2,0% — phần dôi nhỏ hơn 7,5 lần, dưới ngưỡng mắt
+người nhận ra.
+Vành tai còn thiệt hơn: nó lùi chừng 10 cm sau chóp mũi, nên vẫn trong cú
+selfie ấy — mũi cách máy 26 cm, vành tai cách 36 cm — mũi được vẽ to hơn
+tai **38,5%**, và trong ảnh hai vành tai như bị nuốt mất. Ở 2 m, chênh lệch
+ấy chỉ còn 5,1%.
+
+## Ống kính chỉ quyết định bạn phải lùi tới đâu
+
+Trong công thức trên không có chữ nào là tiêu cự. Việc duy nhất của ống
+kính là quyết định [ảnh rơi vào đâu và to bao nhiêu trên cảm
+biến](/vi/posts/thau-kinh-hoi-tu-anh-that-anh-ao): bề ngang khuôn hình W
+nó ôm được ở cự ly d tuân một quan hệ góc thuần tuý (tiêu cự quy đổi
+full-frame, khung 36 mm):
+
+```
+f = 36 · d / W   (mm)
+```
+
+Muốn khuôn hình rộng 40 cm — vừa mặt và vai — ở 0,30 m bạn cần **27 mm**,
+đúng cỡ camera trước điện thoại; ở 2,0 m cần **180 mm**. Ống góc rộng
+không bẻ cong ai: nó chỉ **cho phép bạn đứng gần**, rồi khoảng cách làm
+nốt phần việc. Thanh trượt thứ ba của demo nói thẳng điều ấy — nới khuôn
+hình từ 40 lên 60 cm thì tiêu cự cần ở 0,30 m tụt từ 27 xuống 18 mm, còn
+đường xanh **không nhúc nhích một pixel**.
+
+## Vì sao 85 mm được gọi là "tiêu cự chân dung"
+
+Muốn k dưới 1,05 — mức méo 5% không ai để ý — cần d ≥ Δ·1,05/0,05 =
+**0,84 m**. Đó đúng là chỗ mấy ống chân dung kinh điển đặt bạn vào: với
+khuôn hình 40 cm, ống 85–90 mm buộc người chụp lùi ra khoảng 1 m, nơi
+k = 1,042.
+
+"Ống chân dung" vì thế là một hiểu lầm may mắn: thứ được khen là ống kính,
+thứ làm việc là **hai bước chân lùi** mà nó bắt bạn phải đi. Gậy selfie
+đẩy máy ra 1,1 m và kéo méo xuống 3,8% — một ống chân dung làm bằng nhôm,
+giá vài chục nghìn. Không gậy thì chụp rộng rồi cắt cúp: cắt cúp không
+đổi phối cảnh.
+
+## Trường hợp biên: ống góc rộng có méo thật, nhưng ở rìa khung
+
+Ống kính không hoàn toàn vô can — nó phạm một tội khác hẳn. Ống góc rộng
+dùng phép chiếu thẳng r = f·tanθ để giữ đường thẳng vẫn thẳng, và cái giá
+là mọi thứ lệch trục bị kéo dãn 1/cos²θ theo phương xuyên tâm nhưng chỉ
+1/cosθ theo phương tiếp tuyến. Với ống 24 mm, góc khung lệch trục 42,0°:
+dời một khuôn mặt từ giữa khung ra góc mà giữ nguyên cự ly thì nó nở
+**1,81 lần** một chiều và 1,35 lần chiều kia — tròn hoá trứng, diện tích
+2,44 lần — dù bạn đứng cách 3 m. Ảnh tập thể nhẹ hơn thế, vì người đứng
+đầu hàng đã ở xa máy hơn người giữa hàng đúng 1/cosθ: một thừa số cos bị
+khấu trừ, đầu họ cao y như cũ mà chỉ bè ngang thêm 1/cosθ — **đúng 25%**
+ở giữa mép ngang khung 24 mm. Vẫn đủ để nhận ra, và cách chữa là đổi chỗ
+chứ không phải giảm cân. Ống mắt cá bỏ hẳn phép chiếu ấy
+(r = f·θ) nên rìa khung hết phình, đổi lại mọi đường thẳng đều cong.
+
+Chiều ngược lại ít ai để ý: đẩy d ra vô cực thì k → 1,000. Kéo thanh trượt
+tới hết cỡ — 5,0 m, bù khuôn hình bằng ống 450 mm — và k = 1,008: khuôn
+mặt mất sạch chiều sâu, bẹt như tranh dán tường. [Ảnh là một phép chiếu,
+nó luôn nói dối về chiều
+sâu](/vi/posts/do-sau-bieu-kien-ho-boi-noi-doi-25-phan-tram); thứ duy nhất
+bạn được chọn là nói dối theo hướng nào. 30 cm phóng đại chiều sâu, 5 m
+xoá nó, còn khoảng một mét trùng khít với cự ly bộ não bạn quen thấy
+nhất: cự ly của một cuộc trò chuyện.

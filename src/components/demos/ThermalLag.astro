@@ -1,0 +1,223 @@
+---
+// Sóng nhiệt điều hoà trong vật bán vô hạn (nghiệm Fourier cổ điển, cùng dạng
+// dùng cho "time lag / decrement factor" trong vật lý xây dựng — ISO 13786):
+//   T(x,t) = T̄ + A·e^(−x/d)·cos(ωt − x/d),  ω = 2π/P
+//   d = √(α·P/π)  (độ sâu thấm, damping depth), P = 86 400 s cho sóng ngày đêm
+//   biên_độ_trong / biên_độ_ngoài = e^(−L/d);  độ_trễ = (L/d)·P/(2π)
+// α = k/(ρ·c). Nguồn số liệu vật liệu: gỗ thông k=0,12 ρ=500 c=1600;
+// gạch đặc 0,72/1920/835; bê tông 1,4/2300/880; thép 50/7850/490.
+// Phạm vi hợp lệ: mặt ngoài dao động điều hoà, vật liệu đồng nhất, một chiều,
+// bỏ qua ẩm và bức xạ. Là gần đúng bậc một cho tường thật (nghiệm bán vô hạn,
+// không kể điều kiện biên mặt trong); sát nhất khi L ≳ d.
+---
+
+<figure class="demo" data-demo="tuong-day-22-cm-va-buoi-trua-den-cham">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Bề dày L (mm) <output data-out="l"></output>
+      <input type="range" data-in="l" min="0.5" max="400" step="0.5" value="220" /></label>
+    <label>Vật liệu <output data-out="m"></output>
+      <input type="range" data-in="m" min="0" max="3" step="1" value="1" /></label>
+    <label>Biên độ mặt ngoài A (°C) <output data-out="a"></output>
+      <input type="range" data-in="a" min="3" max="15" step="0.5" value="10" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Trên: nhiệt độ mặt ngoài tường (xanh, đỉnh lúc 13h) và mặt trong (cam)
+    trong 48 giờ — mũi tên đỏ là khoảng trễ giữa hai đỉnh. Dưới: mặt cắt
+    tường, biên độ dao động tắt theo e^(−x/d) khi sóng nhiệt đi sâu vào;
+    vạch đứt là độ sâu thấm d, chấm đỏ là mặt trong tại L. Kéo bề dày về
+    0,5 mm và chọn thép để xem mái tôn: gần như không trễ, không giảm.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const OUTER = '#2563eb', MARK = '#dc2626', INNER = '#f59e0b';
+  const P = 86400, TM = 30, XMAX = 400;
+  // [tên, α (m²/s), nhãn α]
+  const MATS: Array<[string, number, string]> = [
+    ['gỗ thông', 1.5e-7, '1,50·10⁻⁷'],
+    ['gạch đặc', 4.491e-7, '4,49·10⁻⁷'],
+    ['bê tông', 6.917e-7, '6,92·10⁻⁷'],
+    ['thép (mái tôn)', 1.3e-5, '1,30·10⁻⁵'],
+  ];
+  const vn = (x: number, n: number) => x.toFixed(n).replace('.', ',');
+
+  function fmtLag(s: number) {
+    if (s < 90) return `${vn(s, 1)} giây`;
+    if (s < 3600) return `${vn(s / 60, 1)} phút`;
+    const m = Math.round(s / 60);
+    return `${Math.floor(m / 60)} giờ ${String(m % 60).padStart(2, '0')} phút`;
+  }
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (k: string) => root.querySelector(`[data-in="${k}"]`) as HTMLInputElement;
+    const output = (k: string) => root.querySelector(`[data-out="${k}"]`) as HTMLOutputElement;
+
+    function draw() {
+      const L = Number(input('l').value) / 1000;          // m
+      const mi = Number(input('m').value);
+      const A = Number(input('a').value);                 // °C
+      const [name, alpha, alab] = MATS[mi];
+
+      const d = Math.sqrt((alpha * P) / Math.PI);          // m
+      const phi = L / d;                                   // rad
+      const r = Math.exp(-phi);                            // hệ số suy giảm
+      const lagS = (phi * P) / (2 * Math.PI);              // s
+      const lagH = lagS / 3600;
+
+      const Lmm = Number(input('l').value);
+      output('l').textContent = Lmm % 1 === 0 ? String(Lmm) : vn(Lmm, 1);
+      output('m').textContent = `${name}, α = ${alab} m²/s`;
+      output('a').textContent = `±${vn(A, 1)}`;
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32;
+      const cssH = Math.round(cssW * (cssW < 460 ? 1 : 0.66));
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+      ctx.font = '10px system-ui,sans-serif';
+
+      const padL = 46, padR = 12, padT = 26, padB = 26, gap = 46;
+      const plotW = cssW - padL - padR;
+      const usable = cssH - padT - padB - gap;
+      const hA = Math.round(usable * 0.56), hB = usable - hA;
+      const aTop = padT, aBot = padT + hA;
+      const bTop = aBot + gap, bBot = bTop + hB;
+
+      const THI = 46, TLO = 14;
+      const XA = (t: number) => padL + (t / 48) * plotW;
+      const YA = (T: number) => aTop + ((THI - T) / (THI - TLO)) * hA;
+      const XB = (x: number) => padL + (x / XMAX) * plotW;   // x tính bằng mm
+      const YB = (f: number) => bBot - f * hB;
+
+      // ---- khung + nhãn trục, panel A (thời gian) ----
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.3; ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(padL, aTop); ctx.lineTo(padL, aBot); ctx.lineTo(cssW - padR, aBot); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(padL, YA(TM)); ctx.lineTo(cssW - padR, YA(TM)); ctx.stroke();
+
+      ctx.globalAlpha = 0.6; ctx.fillStyle = fg; ctx.textAlign = 'left';
+      ctx.fillText('Nhiệt độ hai mặt tường trong 48 giờ', padL, aTop - 10);
+      ctx.textAlign = 'center';
+      const stepH = cssW < 460 ? 12 : 6;
+      for (let t = 0; t <= 48; t += stepH) ctx.fillText(`${t % 24}h`, XA(t), aBot + 14);
+      ctx.textAlign = 'right';
+      for (const T of [20, 30, 40]) ctx.fillText(`${T} °C`, padL - 4, YA(T) + 3);
+      ctx.globalAlpha = 1;
+
+      const tOut = (t: number) => TM + A * Math.cos(((t - 13) * 2 * Math.PI) / 24);
+      const tIn = (t: number) => TM + A * r * Math.cos(((t - 13) * 2 * Math.PI) / 24 - phi);
+
+      ctx.strokeStyle = OUTER; ctx.lineWidth = 2; ctx.beginPath();
+      for (let i = 0; i <= 288; i++) {
+        const t = (48 * i) / 288;
+        i ? ctx.lineTo(XA(t), YA(tOut(t))) : ctx.moveTo(XA(t), YA(tOut(t)));
+      }
+      ctx.stroke();
+
+      ctx.strokeStyle = INNER; ctx.beginPath();
+      for (let i = 0; i <= 288; i++) {
+        const t = (48 * i) / 288;
+        i ? ctx.lineTo(XA(t), YA(tIn(t))) : ctx.moveTo(XA(t), YA(tIn(t)));
+      }
+      ctx.stroke(); ctx.lineWidth = 1;
+
+      // đỉnh ngoài (13h) và đỉnh trong (13h + trễ), cùng mũi tên khoảng trễ
+      const pk1 = 13, pk2 = 13 + lagH;
+      ctx.fillStyle = OUTER;
+      ctx.beginPath(); ctx.arc(XA(pk1), YA(TM + A), 4, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = INNER;
+      ctx.beginPath(); ctx.arc(XA(pk2), YA(TM + A * r), 4, 0, Math.PI * 2); ctx.fill();
+
+      const yArrow = Math.max(aTop + 12, YA(TM + A) - 12);
+      ctx.strokeStyle = MARK; ctx.fillStyle = MARK; ctx.textAlign = 'center';
+      if (lagH > 0.4) {
+        ctx.beginPath(); ctx.moveTo(XA(pk1), yArrow); ctx.lineTo(XA(pk2), yArrow); ctx.stroke();
+        for (const [x, s] of [[XA(pk1), 1], [XA(pk2), -1]] as Array<[number, number]>) {
+          ctx.beginPath(); ctx.moveTo(x, yArrow); ctx.lineTo(x + s * 5, yArrow - 3);
+          ctx.lineTo(x + s * 5, yArrow + 3); ctx.closePath(); ctx.fill();
+        }
+        ctx.fillText(`trễ ${fmtLag(lagS)}`, (XA(pk1) + XA(pk2)) / 2, yArrow - 5);
+      } else {
+        ctx.fillText(`trễ ${fmtLag(lagS)}`, XA(pk1), yArrow - 1);
+      }
+
+      // ---- panel B: mặt cắt tường + hình bao biên độ ----
+      ctx.globalAlpha = 0.09; ctx.fillStyle = fg;
+      ctx.fillRect(padL, bTop, XB(Lmm) - padL, hB);
+      ctx.globalAlpha = 0.3; ctx.strokeStyle = fg;
+      ctx.beginPath(); ctx.moveTo(padL, bTop); ctx.lineTo(padL, bBot); ctx.lineTo(cssW - padR, bBot); ctx.stroke();
+
+      ctx.globalAlpha = 0.6; ctx.fillStyle = fg; ctx.textAlign = 'left';
+      ctx.fillText('Biên độ còn lại theo độ sâu x (mm) trong tường: e^(−x/d)', padL, bTop - 10);
+      ctx.textAlign = 'center';
+      for (const x of [0, 100, 200, 300, 400]) ctx.fillText(`${x}`, XB(x), bBot + 14);
+      ctx.textAlign = 'right';
+      for (const f of [0.5, 1]) ctx.fillText(`${f * 100}%`, padL - 4, YB(f) + 3);
+      ctx.globalAlpha = 1;
+
+      const dmm = d * 1000;
+      if (dmm <= XMAX) {
+        ctx.strokeStyle = fg; ctx.globalAlpha = 0.5; ctx.setLineDash([4, 3]);
+        ctx.beginPath(); ctx.moveTo(XB(dmm), bTop); ctx.lineTo(XB(dmm), bBot); ctx.stroke();
+        ctx.setLineDash([]); ctx.fillStyle = fg; ctx.textAlign = 'left';
+        ctx.fillText(`d = ${vn(dmm / 10, 1)} cm`, XB(dmm) + 4, bTop + 10);
+        ctx.globalAlpha = 1;
+      } else {
+        ctx.globalAlpha = 0.5; ctx.fillStyle = fg; ctx.textAlign = 'right';
+        ctx.fillText(`d = ${vn(dmm / 10, 1)} cm — ngoài khung →`, cssW - padR, bTop + 10);
+        ctx.globalAlpha = 1;
+      }
+
+      ctx.strokeStyle = OUTER; ctx.lineWidth = 2; ctx.beginPath();
+      for (let i = 0; i <= 200; i++) {
+        const x = (XMAX * i) / 200;
+        const f = Math.exp(-x / dmm);
+        i ? ctx.lineTo(XB(x), YB(f)) : ctx.moveTo(XB(x), YB(f));
+      }
+      ctx.stroke(); ctx.lineWidth = 1;
+
+      ctx.strokeStyle = MARK; ctx.globalAlpha = 0.7;
+      ctx.beginPath(); ctx.moveTo(XB(Lmm), bTop); ctx.lineTo(XB(Lmm), bBot); ctx.stroke();
+      ctx.globalAlpha = 1; ctx.fillStyle = MARK;
+      ctx.beginPath(); ctx.arc(XB(Lmm), YB(r), 5, 0, Math.PI * 2); ctx.fill();
+      ctx.textAlign = XB(Lmm) > padL + plotW * 0.72 ? 'right' : 'left';
+      // giữ nhãn trong khung: với r ≈ 1 (mái tôn) nó sẽ đè lên tiêu đề panel
+      const yLab = Math.min(Math.max(YB(r) - 7, bTop + 11), bBot - 4);
+      ctx.fillText(`mặt trong: ${vn(100 * r, 1)}%`, XB(Lmm) + (ctx.textAlign === 'right' ? -6 : 6), yLab);
+
+      // ---- readout ----
+      const totalMin = Math.round(13 * 60 + lagS / 60);
+      const clock = `${Math.floor(totalMin / 60) % 24}h${String(totalMin % 60).padStart(2, '0')}`;
+      let note = '';
+      if (phi > 3) note = ' · <b>dày hơn 3d: sóng ngày đêm coi như tắt</b>, dày thêm chỉ còn tác dụng qua hệ số U';
+      else if (phi < 0.1) note = ' · <b>gần như không quán tính</b>: mặt trong bám mặt ngoài tức thì';
+      readout.innerHTML =
+        `${name}: d = <b>${vn(dmm / 10, 1)} cm</b> · dày ${output('l').textContent} mm → biên độ trong còn ` +
+        `<b>${vn(100 * r, 1)}%</b> (±${vn(A * r, 2)} °C so với ±${vn(A, 1)} °C), trễ <b>${fmtLag(lagS)}</b>` +
+        ` — trưa 13h ngoài trời gõ cửa lúc ${clock}${note}`;
+    }
+
+    root.querySelectorAll('input').forEach((el) => el.addEventListener('input', draw));
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="tuong-day-22-cm-va-buoi-trua-den-cham"]').forEach(setup);
+</script>

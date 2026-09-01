@@ -1,0 +1,83 @@
+---
+title: "Nghịch lý quỹ đạo: muốn đuổi kịp tàu phía trước, phi công phải phanh"
+seoTitle: "Vì sao tăng tốc trên quỹ đạo lại làm vệ tinh tụt lại phía sau"
+description: "Đốt động cơ về phía trước không đưa bạn tới gần hơn — nó nâng quỹ đạo, kéo dài chu kỳ và đẩy bạn ra sau. Muốn bắt kịp thì phải hạ xuống: thấp hơn 1 km làm chu kỳ ngắn đi 1,228 giây và rút ngắn 9,42 km mỗi vòng — đúng 3π km cho mỗi km hạ, ở bất kỳ độ cao nào, giá 0,57 m/s."
+pubDate: 2026-09-02
+tags: ["vat-ly", "thien-van", "co-hoc", "javascript"]
+translationId: "nghich-ly-quy-dao-duoi-kip-bang-cach-phanh"
+---
+
+import PhasingOrbit from '../../../components/demos/PhasingOrbit.astro';
+
+Tháng 6/1965, James McDivitt nhìn thấy tầng đẩy Titan trôi cách tàu Gemini 4
+vài trăm mét. Ông đẩy ga về phía nó. Nó lùi ra xa. Ông đẩy mạnh hơn — nó lùi
+nhanh hơn nữa. Đốt hết một phần lớn nhiên liệu điều khiển, phi vụ bỏ cuộc:
+
+<PhasingOrbit />
+
+## Đạp ga trên quỹ đạo là tự bỏ mình lại phía sau
+
+Trên cao tốc, thêm ga là thêm tốc độ. Trên quỹ đạo, thêm ga là thêm *năng
+lượng* — mà năng lượng thừa đi vào bán kính chứ không vào đồng hồ tốc độ. Cú
+đốt thuận chiều 1 m/s ở độ cao 400 km nâng bán trục lớn thêm **1 766 m** (viễn
+điểm cao thêm 3 531 m) và kéo dài chu kỳ **2,17 giây**. Nhân hai giây ấy với
+7,673 km/s: mỗi vòng, mục tiêu bỏ bạn lại **16,6 km**. [Tốc độ quỹ
+đạo](/vi/posts/toc-do-vu-tru-va-khau-dai-bac-cua-newton) là hàm của bán kính
+chứ không của chân ga — lên cao là chậm lại.
+
+## Muốn tới gần thì phải xuống thấp
+
+Đảo dấu là xong. Hạ tàu đuổi 1 km bằng hai cú đốt Hohmann, mỗi cú 0,283 m/s —
+tổng **0,567 m/s**, ít hơn một cái hắt hơi — và chu kỳ tụt từ 5 544,9 s xuống
+5 543,6 s. Chênh **1,228 giây**, nhân với 7,673 km/s: mỗi vòng bạn gặm được
+**9,42 km**. Cả chiến thuật nằm gọn trong dòng [Kepler viết từ
+1619](/vi/posts/dinh-luat-kepler-iii-va-duong-thang-cua-he-mat-troi):
+
+```
+T = 2π·√(r³/μ)   →   ΔT/T = (3/2)·Δr/r
+```
+
+## Con số 3π mà không giáo trình nào chịu in đậm
+
+Nhân vận tốc quỹ đạo với chênh lệch chu kỳ thì μ, bán kính và độ cao triệt
+tiêu sạch, chỉ còn lại:
+
+```
+rút ngắn mỗi vòng = 3π · Δh  ≈  9,42 km cho mỗi km hạ thấp
+```
+
+Kéo thanh trượt độ cao mục tiêu từ 300 lên 800 km mà xem: chu kỳ nhảy từ
+5 422,5 s lên 6 043,4 s, vận tốc tụt từ 7,730 xuống 7,456 km/s, còn **9,424 km
+mỗi vòng** đứng im tới bốn chữ số. Viết theo nhiên liệu, cùng hằng số ấy thành
+`Δs = 3·T·Δv`: ở 400 km là **16,6 km mỗi vòng cho mỗi m/s** — đúng con số mà
+cú đạp ga phía trên làm bạn mất. Ga và phanh là một công tắc, khác dấu; mà
+[Δv là thứ đắt nhất trên
+tàu](/vi/posts/phuong-trinh-ten-lua-che-do-doc-tai-cua-logarit).
+
+## Vì sao Soyuz từng mất hai ngày cho một trăm cây số cuối
+
+Từ đó ra cả lịch bay. Còn 100 km mà chỉ dám hạ 1 km: 10,6 vòng, **16,3 giờ**.
+Chi 5,67 m/s để hạ 10 km: 1,1 vòng, 1,6 giờ. Nhưng thứ đắt hơn nhiên liệu là
+*góc pha lúc phóng*. Hồ sơ Soyuz cổ điển ghép nối sau khoảng 34 vòng, hơn 52
+giờ — tên lửa thả tàu vào một góc pha bất kỳ trong khoảng rộng rồi để chênh
+lệch chu kỳ gặm dần. Hồ sơ nhanh ngày nay: 2 vòng, 3 giờ 3 phút — không nhờ
+động cơ mới nào, chỉ nhờ đồng hồ phóng canh tới từng giây và máy tính trên tàu
+tự dựng phương án.
+
+## Trường hợp biên: ba trăm mét cuối, trực giác đảo thêm lần nữa
+
+Áp 3π vào khoảng cách 300 m: đóng nó trong một vòng đòi hạ đúng **32 mét**,
+chênh chu kỳ 0,039 giây — không hệ đẩy nào canh nổi. Ở cự ly ấy bài toán đổi
+khung: chuyển động tương đối trong hệ quay theo mục tiêu, phương trình
+Clohessy–Wiltshire. Trong khung đó, cú đẩy thẳng về phía mục tiêu vẽ một vòng
+lượn — dâng lên tối đa 4Δv/n rồi rơi về đúng bán kính cũ sau một chu kỳ, nhưng
+ở phía sau 6π·Δv/n, mà ở 400 km bằng **16 635 m**: lại đúng con số 3T. Đó là
+thứ đã ăn hết nhiên liệu của McDivitt.
+Lối ra là cú đẩy **vuông góc**: xung 0,1 m/s hướng xuống Trái Đất dìm bạn
+xuống nhiều nhất 88 m, nhưng thứ nó thật sự làm là đẩy bạn **tiến lên 353 m**
+sau nửa vòng (46 phút); hết một vòng thì cả bán kính lẫn vị trí đều trở về
+đúng chỗ xuất phát nếu bạn buông tay. Quỹ đạo tương đối khép kín ấy là lý do
+khâu áp sát cuối thường được lập trình bằng những xung nhỏ vuông góc chứ không
+bằng chân ga: lỡ tay thì không đâm vào ai, cứ thả trôi là tự quay về. Aldrin
+bảo vệ luận án tiến sĩ MIT năm 1963 về đúng bài toán này; hai năm sau, McDivitt
+học lại nó bằng nhiên liệu.

@@ -1,0 +1,96 @@
+---
+title: "Vỗ tay trước cầu thang, nó trả lại bạn một nốt trượt xuống Đô"
+seoTitle: "Tiếng vọng cầu thang: vì sao vỗ tay trước bậc thang nghe ra một nốt nhạc"
+description: "Mỗi bậc thang trả về một tiếng vọng, và vì các bậc cách đều nhau nên chuỗi vọng ấy là một dao động tuần hoàn: bậc rộng 28 cm chặn trần ở 612 Hz. Càng lên cao đường đi càng chéo, cao độ tụt về cái sàn 524 Hz — lệch đúng 1 cent so với nốt Đô5 — một khoảng trần–sàn rộng 272 cent."
+pubDate: 2026-09-02
+tags: ["vat-ly", "song", "am-thanh", "javascript"]
+translationId: "vo-tay-truoc-cau-thang-va-not-612-hz"
+---
+
+import StaircaseChirp from '../../../components/demos/StaircaseChirp.astro';
+
+Đứng dưới chân cầu thang, vỗ một tiếng tay thật gọn. Thứ dội lại không
+phải tiếng vỗ tay: một tiếng "chíu" ngắn, có cao độ hẳn hoi, và trượt
+xuống trong chớp mắt. Không ai gảy đàn — hai mươi bậc thang vừa hát:
+
+<StaircaseChirp />
+
+## Hai mươi bậc, hai mươi mốt tiếng vọng, cách nhau 1,66 ms
+
+Mỗi mép bậc là một vật tán xạ: tiếng vỗ tay chạm vào rồi bật ngược về tai
+bạn. Mép thứ n cách bạn d + n·w theo phương ngang và n·h theo phương
+đứng, nên đường đi khứ hồi của nó là
+
+```
+P_n = 2·√((d + n·w)² + (n·h)²)
+```
+
+Một vế thang 20 bậc 28 × 17 cm trả về **21 tiếng vọng**, mỗi mép một cái.
+Đứng cách 3 m, tiếng đầu về sau 17,5 ms, tiếng cuối sau 53,9 ms — cả chùm
+gói trong **36 ms**. Các bậc cách đều nhau nên chùm ấy gần như tuần hoàn:
+khe giữa hai tiếng đầu là **1,66 ms**, khe cuối 1,88 ms. Với chuỗi lặp
+nhanh cỡ đó tai chỉ biết làm một việc — nghe ra **cao độ**: 1 chia cho khe
+đầu tiên ra **603 Hz**, rồi tụt dần theo từng bậc.
+
+## Vì sao nốt trượt xuống, và cái sàn của nó là nốt Đô
+
+Khe ấy không phải hằng số. Đạo hàm P theo n gọn đến bất ngờ: mỗi bậc cộng
+vào đường đi đúng 2(w·cosθ + h·sinθ), với θ là góc bạn phải ngẩng lên để
+nhìn bậc đó.
+
+Bậc dưới cùng nằm gần ngang tầm chỗ vỗ tay: θ → 0, chỉ bề rộng mặt bậc được
+tính, mỗi bậc thêm 2w = 56 cm — trần của cả trò này, 343/0,56 = **612 Hz**.
+Càng lên cao θ càng lớn; nếu thang đủ dài để tia chạy dọc mặt dốc (θ = 31°)
+thì mỗi bậc thêm 2·√(0,28² + 0,17²) = 65,5 cm — sàn **524 Hz**. Cú trượt
+luôn bị kẹp giữa hai con số ấy, không bao giờ chạm tới đầu nào.
+
+Thang [bình quân luật](/vi/posts/vi-sao-dan-piano-co-y-chinh-sai-moi-not)
+đặt Đô5 ở 523,25 Hz; cái sàn 523,6 Hz của cầu thang lệch **1 cent**, dưới
+ngưỡng nghe của cả người chỉnh đàn. Khoảng trần–sàn rộng **272 cent**,
+thiếu 28 cent nữa là tròn một quãng ba thứ; hai mươi bậc thật, nhìn từ 3 m,
+đi được **219 cent** trong đó — từ 603 Hz xuống 531 Hz. Và nó không phải [hiệu ứng
+Doppler](/vi/posts/hieu-ung-doppler-nghe-duoc): không gì chuyển động cả,
+chỉ hình học đổi dần theo từng bậc.
+
+## Cầu thang càng dốc, cú trượt càng dài
+
+Giữ mặt bậc 28 cm rồi kéo thanh chiều cao. Bậc 10 cm nâng sàn lên 577 Hz,
+cú trượt còn **83 cent** — chưa tới nửa cung, nghe gần như một nốt. Bậc
+25 cm dìm sàn xuống 457 Hz: **413 cent**, quá một quãng ba trưởng. Bề rộng
+thì quyết định trần một mình — 20 cm đẩy trần lên 858 Hz, 36 cm hạ xuống
+476 Hz.
+
+Vì thế trò này nổi tiếng nhờ một cầu thang khác: kim tự tháp El Castillo ở
+Chichén Itzá dốc 46°, bậc cao ~26 cm mà mặt bậc chỉ ~25 cm — và có tới 91
+bậc, thừa dài để bám sát cái sàn 475 Hz. Tiếng vỗ tay ở đó, vẫn đứng cách
+3 m, trượt từ 659 Hz xuống 476 Hz — **561 cent**, gần trọn nửa quãng tám,
+và du khách nào cũng được kể rằng đó là tiếng chim quetzal.
+
+## Bạn đứng ở đâu, tay bạn cao bao nhiêu
+
+Lùi ra xa là ép mọi tia về phương ngang: ở 12 m nốt mở đạt 610 Hz, chỉ
+**7 cent** dưới trần; đứng sát 1 m thì tia lên bậc đầu đã chếch, nốt mở
+tụt còn 589 Hz. Nhưng lùi xa phải trả bằng chính cú trượt: 20 bậc nhìn
+từ 12 m chỉ trượt 151 cent, so với 219 cent ở 3 m.
+
+Còn một nút vặn không có trên demo, vì demo giả thiết bạn vỗ sát mặt sàn:
+**độ cao đôi tay**. Vỗ ngang ngực (1,4 m), các bậc dưới nằm *thấp hơn* tay
+bạn, θ âm, hiệu đường đi ngắn hơn cả 2w — nốt mở vọt lên **891 Hz**, cú
+trượt dài ra **829 cent**, gấp 3,8 lần. Muốn nghe đúng cái nốt của cầu
+thang thì ngồi xổm mà vỗ.
+
+## Trường hợp biên: hét một tiếng thì cầu thang câm
+
+Cả trò này sống nhờ một bất đẳng thức: xung âm phải ngắn hơn cái khe 1,66
+ms. Tiếng vỗ tay có xung chính rộng cỡ 1 ms — vừa đủ lọt. Hét "a" 300 ms
+thì tiếng hét dài gấp tám lần cả chùm vọng, **cả 21 tiếng vọng chồng lên
+nhau** gần như suốt tiếng hét: chuỗi tuần hoàn bị bôi nhoè thành [tiếng
+vang](/vi/posts/thoi-gian-vang-sabine-va-tam-rem-phong-tam) đúng nghĩa
+Sabine.
+
+Đầu kia còn câm hơn. Đẩy khoảng cách ra 12 m trước một cầu thang thoải —
+bậc 36 × 10 cm — và cả 20 bậc chỉ trượt **38 cent**, chưa bằng một phần tư
+cung. Tam giác vuông trong công thức đã duỗi gần thẳng: mọi tia nằm ngang,
+h không còn được tính vào đâu. Cầu thang thôi làm nhạc cụ, chỉ còn là cái
+thước đo bề rộng mặt bậc — nó trả về đúng cái trần 343/0,72 = **476 Hz**,
+phẳng lì.

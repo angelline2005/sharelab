@@ -1,0 +1,89 @@
+---
+title: "Một làn xe máy chở được 4 000 xe mỗi giờ — nhưng chỉ khi ai cũng chịu đi 20 km/h"
+seoTitle: "Lưu lượng giao thông cực đại: vì sao đường tắc khi mật độ vượt một nửa"
+description: "Lưu lượng bằng mật độ nhân tốc độ, mà hai thứ ấy luôn kéo nhau xuống — nên q(k) là parabol có đỉnh đúng ở nửa mật độ kẹt. Với xe máy đô thị, đỉnh là 4 000 xe/giờ/làn ở đúng 20 km/h. Đi nhanh hơn hay chậm hơn đều chở được ít xe hơn."
+pubDate: 2026-09-02
+tags: ["vat-ly", "co-hoc", "mo-phong", "javascript"]
+translationId: "lan-xe-may-cho-duoc-4000-xe-moi-gio"
+---
+
+import TrafficFlow from '../../../components/demos/TrafficFlow.astro';
+
+Năm giờ chiều, bạn nhích từng mét và nghĩ đúng cái điều mọi người quanh bạn
+cũng đang nghĩ: giá mà dòng này chạy nhanh hơn. Nhưng con đường không
+thưởng cho tốc độ. Điểm ngọt của nó chậm hơn bạn tưởng nhiều:
+
+<TrafficFlow />
+
+## Lưu lượng là tích của hai con số cãi nhau
+
+Thứ một con đường thực sự bán không phải tốc độ mà là **lưu lượng**: bao
+nhiêu xe qua một vạch trong một giờ. Nó bằng mật độ nhân tốc độ, q = k·v —
+cùng dạng phương trình liên tục của [một dòng chất
+lưu](/vi/posts/nguyen-ly-bernoulli-nhanh-hon-la-loang-ap-hon). Rắc rối là
+hai thừa số ấy không độc lập: đường càng dày xe, người ta càng phải đi
+chậm. Greenshields (1935) lấy giả thiết thô nhất có thể — tốc độ tụt tuyến
+tính từ v_tự_do trên đường vắng về đúng 0 khi kẹt cứng:
+
+```
+v = v_tự_do · (1 − k / k_kẹt)
+q = k · v = v_tự_do · k · (1 − k / k_kẹt)
+q_max = v_tự_do · k_kẹt / 4   tại k = k_kẹt / 2 và v = v_tự_do / 2
+```
+
+Một số tăng nhân một số giảm tuyến tính thì ra parabol, mà parabol có đỉnh
+đúng giữa hai nghiệm. Với dòng xe máy đô thị — v_tự_do 40 km/h, kẹt cứng ở
+400 xe/km/làn (mỗi xe 2,5 m: thân 1,9 m cộng 0,6 m khe hở) — đỉnh là
+**4 000 xe/giờ, đạt được khi tất cả cùng đi 20 km/h**, cách nhau 5 m. Một
+chiếc lướt qua vạch mỗi **0,9 giây**, liên tục suốt tiếng đồng hồ.
+
+## Vì sao một làn xe máy chở gần gấp đôi làn ô tô
+
+Cùng công thức, thay bộ tham số ô tô đô thị: v_tự_do 60 km/h, kẹt cứng
+140 xe/km (mỗi xe 7,1 m). Đỉnh rơi vào 60 × 140 / 4 = **2 100 xe/giờ** ở
+30 km/h. Ô tô nhanh gấp rưỡi tại đỉnh của nó mà làn đường vẫn chở ít hơn
+**1,9 lần**, chỉ vì k_kẹt của nó nhỏ hơn gần ba lần. Mặt đường không đếm mã
+lực; nó đếm số mét mỗi phương tiện chiếm lấy. Giờ cao điểm thì gần như
+không ai chạm tới v_tự_do: thứ quyết định là bạn dám bám xe trước sát đến
+đâu, mà khoảng cách ấy do [độ trễ của hệ thần
+kinh](/vi/posts/dap-ngon-chan-vi-sao-mot-nhip-sau-moi-thay-dau) đặt sàn,
+không phải động cơ, càng không phải [sức cản không
+khí](/vi/posts/dap-xe-nhanh-gap-doi-tra-gia-gap-tam).
+
+## Cùng 3 000 xe mỗi giờ, hai cuộc đời rất khác nhau
+
+Parabol có một tính chất tàn nhẫn: mọi lưu lượng dưới đỉnh đều ứng với
+**hai** trạng thái. Ở 100 xe/km, dòng chạy 30 km/h và chở 3 000 xe/giờ. Ở
+300 xe/km, dòng bò 10 km/h và cũng chở đúng **3 000 xe/giờ** — nhưng bạn đi
+1 km mất 6 phút thay vì 2 phút.
+
+Đỉnh thì rất phẳng, đó là tin tốt: lệch mật độ tới 25% — 150 hay 250 thay
+vì 200 xe/km — chỉ mất 6,25% lưu lượng (3 750 thay vì 4 000). Tin xấu là
+nhánh phải trừng phạt đối xứng và không thương lượng: thêm 100 xe/km ở
+nhánh trái được thêm 1 000 xe/giờ, thêm đúng 100 xe/km ấy ở nhánh phải
+**mất** 1 000 xe/giờ. Nhồi từ 200 lên 400 xe/km, con đường rơi từ 4 000 về
+**0**. Vì thế việc của kỹ sư giao thông không phải "cho xe chạy" mà là
+*không cho quá nhiều xe vào cùng lúc*: đèn ở đầu đường dẫn lên cao tốc thả
+từng xe cách nhau vài giây, cố tình bắt một hàng chờ bên ngoài để phần
+đường bên trong ở lại nhánh trái.
+
+## Trường hợp biên: cú phanh bò ngược dòng 15 km/h
+
+Khi dòng nhảy từ trạng thái này sang trạng thái kia — một người phanh gấp —
+ranh giới giữa hai vùng không đứng yên: nó chạy với vận tốc bằng độ dốc dây
+cung nối hai điểm ấy trên parabol. Từ dòng đang chạy 25 km/h (150 xe/km,
+3 750 xe/giờ) sang cụm dừng hẳn (400 xe/km, 0 xe/giờ), dây cung ấy bằng
+**−15 km/h**: dấu âm nghĩa là nút thắt **bò ngược chiều xe chạy**, đúng dải
+15–20 km/h đo được trên đường thật. Đó là tốc độ so với mặt đường: một điểm
+cách chỗ phanh 1 km về phía sau phải 4 phút nữa mới đông cứng lại. Người
+đang chạy tới thì gặp sóng sớm hơn nhiều, vì họ lao thẳng vào nó — tốc độ
+tiếp cận 25 + 15 = 40 km/h, tức 1,5 phút. Lúc họ bóp phanh, thủ phạm đã đi
+khuất từ lâu — cái tắc "không có lý do" bạn gặp mỗi chiều, chỉ còn con sóng
+ở lại.
+
+Chỗ mô hình gãy nằm ngay đó: Greenshields giả định mọi xe như nhau, phản
+ứng tức thì, xếp thành làn — dòng xe máy Việt Nam không làm điều nào trong
+ba điều ấy. Xe len ngang, lấp mọi khe, nên k_kẹt thật trên một mặt cắt còn
+cao hơn 400 và đỉnh thật cũng cao hơn 4 000. Nhưng cái được ấy không mua
+được sự miễn trừ: hình dạng parabol không đổi, chỉ có đỉnh dịch đi. Con
+đường vẫn nhận thêm xe rất lâu sau khi nó đã thôi chở thêm được người.

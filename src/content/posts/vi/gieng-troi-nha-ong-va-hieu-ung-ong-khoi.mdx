@@ -1,0 +1,90 @@
+---
+title: "Giếng trời nhà ống bơm 5 000 m³ khí mỗi giờ, không tốn một watt điện"
+seoTitle: "Hiệu ứng ống khói: thông gió tự nhiên nhờ chênh lệch nhiệt độ"
+description: "Chênh 10 °C trong–ngoài, giếng trời cao 15 m sinh hiệu áp 5,47 Pa — bằng cột nước 0,56 mm — mà kéo được hơn 5 000 m³ khí mỗi giờ, tức 5,6 lần thay không khí. Toàn bộ động cơ là 37 gam chênh lệch khối lượng riêng trên mỗi mét khối."
+pubDate: 2026-09-02
+tags: ["vat-ly", "chat-luu", "nhiet-hoc", "javascript"]
+translationId: "gieng-troi-nha-ong-va-hieu-ung-ong-khoi"
+---
+
+import StackEffect from '../../../components/demos/StackEffect.astro';
+
+Que nhang trên bàn thờ tầng trệt nhà ống không toả khói ra bốn phía: sợi
+khói đi thẳng lên giếng trời như bị ai hút. Cửa sổ đóng, quạt tắt, ngoài
+đường không một ngọn gió. Cả căn nhà vẫn đang tự thở, và cái bơm chạy nó
+nhỏ đến mức gần như không đo nổi:
+
+<StackEffect />
+
+## Cái bơm không có một cánh quạt nào
+
+Không khí 30 °C nặng 1,164 kg mỗi mét khối; hâm lên 40 °C còn 1,127 —
+**nhẹ đi 37 gam**. Đó là toàn bộ động cơ: cột khí trong giếng trời nổi
+lên đúng kiểu [Archimedes trong bể không
+khí](/vi/posts/khinh-khi-cau-archimedes-tren-khong), và chỗ nó bỏ trống
+phải có khí mát chui vào lấp. Nhân khoản chênh ấy với gia tốc trọng
+trường và 15 m chiều cao ra hiệu áp toàn phần:
+
+```
+Δp = ρ_ngoài · g · h · ΔT / T_trong
+   = 1,164 · 9,81 · 15 · 10 / 313,15 = 5,47 Pa
+```
+
+**5,47 Pa** — một phần 18 500 áp suất khí quyển, bằng cột nước cao
+0,56 mm, vậy mà đủ điều khiển không khí của cả năm tầng lầu. Chênh 10 °C
+không phải giả định hào phóng: [mái tôn giữa trưa lên hơn 70
+°C](/vi/posts/mai-ton-72-do-va-lop-son-trang), và khối khí dưới tấm kính
+đỉnh giếng trời nóng hơn ngoài trời cả chục độ.
+
+## Torricelli với một trọng trường bị pha loãng
+
+Rút gọn công thức trên, tốc độ lý tưởng của luồng khí là
+`v = √(2·g·h·ΔT/T_trong)` — đúng công thức Torricelli `v = √(2gh)` của
+[bể nước thủng đáy](/vi/posts/torricelli-thoi-gian-can-cua-mot-be-nuoc),
+chỉ khác ở chỗ trọng trường đã bị pha loãng theo tỉ số ΔT/T còn
+**0,313 m/s², một phần 31 của g**. Rơi 15 m trong trọng trường tí hon
+ấy, khí đạt 3,07 m/s — khối lượng riêng biến mất khỏi phép tính, đúng
+kiểu Galileo.
+
+Thực tế bào đi già nửa cái trần ấy: hai lỗ thoáng nối tiếp nên mỗi lỗ
+chỉ gánh một nửa hiệu áp — 2,74 Pa — rồi mép lỗ sắc cạnh ăn thêm hệ số
+lưu lượng 0,65, cùng cỡ với 0,62 của bể nước Torricelli. Còn lại
+**1,41 m/s** qua mỗi mét vuông lỗ thoáng: **5 072 m³ mỗi giờ**, thay
+sạch không khí căn nhà 900 m³ **5,6 lần một giờ** — nhà ở thường chỉ cần
+0,35 lần, phòng bệnh viện 6 lần. Công suất khí động: 1,41 m³/s ×
+5,47 Pa = **7,7 W**, kém một bóng đèn LED — quạt làm thay việc ấy, hiệu
+suất 25%, sẽ rút 31 W khỏi ổ điện suốt ngày đêm.
+
+## Cao gấp đôi chỉ được nhanh hơn 41 phần trăm
+
+h nằm dưới dấu căn, nên chiều cao là đòn bẩy đắt và cùn. Kéo giếng trời
+từ 15 m lên 30 m — 5 tầng thành 10 — tốc độ chỉ nhích từ 1,41 lên
+1,99 m/s, lưu lượng từ 5 072 lên 7 174 m³/h; mà thể tích nhà thì tăng
+gấp đôi, nên số lần thay không khí **tụt từ 5,6 xuống 4,0**.
+
+Diện tích thì tuyến tính: lỗ thoáng gấp đôi là lưu lượng gấp đôi. Đòn
+bẩy thứ hai nằm ở đường nét đứt đỏ trong demo — mặt phẳng trung hoà, nơi
+trong và ngoài cùng áp suất, ở độ cao
+`z = h·A_trên² / (A_trên² + A_dưới²)`. Hai lỗ bằng nhau thì nó nằm chính
+giữa và chia đôi hiệu áp; làm lỗ trên rộng gấp đôi lỗ dưới, mặt trung
+hoà **dâng lên 12 m trong 15 m**, lỗ dưới hưởng 4,38 Pa thay vì 2,74 và
+lưu lượng lên 6 416 m³/h — **hơn 26%** mà không đục thêm milimét nào ở
+tầng trệt.
+
+## Trường hợp biên: hôm bật máy lạnh, ống khói thành cái phễu
+
+Trưa hè miền Nam, ngoài trời 35 °C, trong nhà máy lạnh giữ 25 °C: ΔT đổi
+dấu, cùng công thức ấy cho **−5,65 Pa**. Giếng trời bơm ngược — khí nóng
+ngoài trời tụt xuống dọc giếng rồi thoát ra lỗ thoáng tầng trệt,
+5 199 m³/h khí 35 độ đổ thẳng vào nhà. Máy lạnh phải gánh thêm
+1,44 m³/s × 1,15 kg/m³ × 1005 J/kg·K × 10 K = **16,6 kW**, hơn ba chiếc
+máy 2 ngựa chạy hết công suất chỉ để hoà vốn. Giếng trời tử tế vì thế
+bao giờ cũng có cánh đóng được.
+
+Còn một cách nữa để 5,47 Pa mất tiếng nói, nằm sẵn trong con số 3,07 m/s
+ở trên: áp động của gió ½ρv² đúng bằng 5,47 Pa khi v = 3,07 m/s. Một cơn
+**gió 11 km/h — cấp 2 Beaufort, thứ gió chỉ đủ lay lá — đã thổi ngang
+ngửa cả cái ống khói 15 mét**; gió 4 m/s cho 9,3 Pa, gấp
+1,7 lần, và khí trong nhà chạy hướng nào là do ngoài đường quyết định.
+Hiệu ứng ống khói chỉ thật sự cầm quyền vào những hôm lặng gió ngột ngạt
+— đúng những hôm bạn cần nó nhất.

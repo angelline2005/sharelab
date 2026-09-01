@@ -1,0 +1,94 @@
+---
+title: "Quả cầu lông 493 km/h: cứ 4 mét lại mất 63% tốc độ"
+seoTitle: "Vật lý cầu lông: vì sao cú đập 493 km/h chỉ còn 94 km/h khi tới vợt"
+description: "Cú đập nhanh nhất thế giới rời vợt ở 493 km/h nhưng chạm vợt đối phương ở 94 km/h — vì cái váy lông là một cái dù. Nghiệm v = v₀·e^(−x/L) cho chiều dài đặc trưng L = 4,05 m: mỗi bốn mét, quả cầu bỏ lại 63% tốc độ. Không môn bóng nào hãm khủng khiếp như vậy."
+pubDate: 2026-09-02
+tags: ["vat-ly", "chat-luu", "co-hoc", "javascript"]
+translationId: "cau-long-mat-toc-do-moi-bon-met"
+---
+
+import ShuttlecockDrag from '../../../components/demos/ShuttlecockDrag.astro';
+
+Không môn bóng nào có cảnh này: quả cầu rời vợt như một viên đạn rồi
+**hụt hơi giữa không trung**, chậm lại rõ tới mức người ngồi trên khán
+đài cũng thấy. Kỷ lục phòng thử của Yonex là 493 km/h (Tan Boon Heong,
+2013); từ vợt bên này sang vợt bên kia, không khí tịch thu **bốn phần
+năm** tốc độ ấy — và nó tính khoản thu này theo mét, không theo giây:
+
+<ShuttlecockDrag />
+
+## Cái váy lông là một cái dù
+
+Mười sáu chiếc lông ngỗng xoè thành hình nón rỗng — đó không phải trang
+trí, đó là **bộ hãm khí động** gắn liền quả cầu. Lực cản không khí [tỉ lệ
+với bình phương tốc độ](/vi/posts/dap-xe-nhanh-gap-doi-tra-gia-gap-tam),
+nên viết định luật II Newton theo quãng đường thay vì theo thời gian, cả
+bài toán rút gọn về một dòng:
+
+```
+v(x) = v₀ · e^(−x/L)     với L = 2m / (ρ · C_d · A)
+```
+
+L là **chiều dài đặc trưng** của quả cầu; thay số thật: cầu lông vũ 5,00 gam,
+váy đường kính 6,5 cm (tiết diện 33,2 cm²), hệ số cản C_d = 0,62, không khí
+1,20 kg/m³ → **L = 4,05 m**. Cứ mỗi 4,05 mét, tốc độ nhân với 1/e = 0,368:
+quả cầu bỏ lại **63,2%** những gì nó vừa có — đúng chiếc thang
+[63% mà tụ điện leo](/vi/posts/mach-rc-va-chiec-thang-63-phan-tram), đổi
+trục thời gian lấy trục quãng đường. Từ 493 km/h, sau 4,05 m còn
+181 km/h; sau 6,70 m — đúng khoảng cách từ lưới tới cuối sân — chỉ còn
+**94 km/h**, mất 81%.
+
+## Gia tốc 472 g, và một phần tám giây để quyết định
+
+Đặt lực cản lên bàn cân: ngay khi rời vợt, vật 5 gam ấy chịu 23 N — **gia
+tốc hãm 4 630 m/s², bằng 472 lần g**. Động năng 46,9 J tới cuối sân còn
+1,72 J: **96% động năng cú đập tan vào không khí**, riêng mét đầu tiên đã
+nuốt 39%.
+
+Và trọn đường bay nhanh tới mức không phản xạ nào theo kịp: 6,70 m ấy mất
+**0,125 giây**, trong khi phản xạ nhìn–động của người giỏi nhất cũng cỡ
+0,2 giây. Người đỡ không phản ứng với quả cầu, họ đọc *tư thế vào cầu* của
+đối phương — quyết định xong trước khi vợt chạm cầu. Cú đập 300 km/h từ giữa
+sân, đường bay 9 m, kéo dài 0,40 giây: trận đấu trở về phạm vi loài người.
+
+## Cái trần của sức mạnh: mỗi lần nhân đôi, thêm 2,81 mét
+
+Hàm mũ tàn nhẫn với sức mạnh: nhân đôi v₀ chỉ mua thêm **L·ln2 = 2,81
+mét** tầm bay, và nhân đôi từ đâu cũng đúng chừng ấy. Tích phân đầy đủ —
+có trọng lực, có góc phóng tối ưu, điểm tiếp xúc cao 2,5 m — cho ra y hệt:
+246 km/h bay được 12,8 m, còn 493 km/h, gấp đôi, chỉ được **15,6 m**. Cú
+đập kỷ lục thế giới, đánh ở góc xa nhất, cũng chỉ vượt vạch cuối sân
+13,40 m chừng hai mét; muốn hai mét tiếp theo, bạn phải nhanh gấp đôi kỷ
+lục ấy.
+
+Quả bóng tennis 57,5 g có L ≈ 49 m, gấp **12 lần**: qua cùng 6,7 mét nó
+chỉ mất 13% tốc độ, và cú giao bóng 200 km/h vượt trọn sân 23,77 m vẫn còn
+124 km/h — nên [công thức ném xiên chân
+không](/vi/posts/cong-thuc-nem-xien-sai-bao-nhieu) còn dùng tạm được bên
+đó, còn ở đây thì vô nghĩa.
+
+## Ống cầu số 77 hay 79: nhiệt độ ngoài trời quyết định hộ bạn
+
+L tỉ lệ thuận với m và tỉ lệ nghịch với ρ — cả hai đều là thứ người chơi
+phải mặc cả. Luật cho quả cầu nặng 4,74–5,50 g, tức L trải từ 3,84 đến
+4,46 m: **chênh 16% tầm bay** giữa hai quả cầu đều hợp lệ. Con số in ở nắp
+ống chính là khối lượng tính bằng grain (1 grain = 0,0648 g): số 77 nặng
+4,99 g, số 79 nặng 5,12 g, cả thang 75–79 vỏn vẹn 5,3%. Mà không khí 35 °C
+loãng hơn 15 °C 6,5%, đủ kéo L dài thêm **6,9%** — muốn đường cầu tháng
+sáu ở Hà Nội giống tháng chạp, bạn cần hạ từ 5,00 xuống **4,68 g**, một
+quả cầu "số 72" không hãng nào làm. Ngày ẩm còn cộng thêm: 30 °C ẩm 80%
+loãng hơn khô cùng nhiệt độ 1,3%.
+
+## Trường hợp biên: khi quả cầu quên mất mình đang bay ngang
+
+Nghiệm e-mũ ở trên đã lặng lẽ vứt bỏ trọng lực: nó chỉ đúng chừng nào lực
+cản còn áp đảo trọng lượng. Hai lực bằng nhau đúng tại [tốc độ rơi giới
+hạn](/vi/posts/roi-tu-do-va-van-toc-toi-han), mà chính chiều dài L ấy định
+ra — v_t = √(g·L) = 6,30 m/s = **22,7 km/h**, chậm bằng người đạp xe. Từ
+493 km/h, quả cầu tụt xuống ngưỡng gấp đôi giá trị đó sau **9,7 mét**; qua
+đó, công thức của bài này thành nghiệm sai — nó bảo ở 13,40 m quả cầu còn
+18 km/h, chậm hơn cả tốc độ rơi, chuyện không thể có với một vật đang bay
+ngang. Cái thật sự xảy ra là quả cầu **bẻ ngoặt xuống và rơi gần như thẳng
+đứng**, đế bần quay xuống trước nhờ chính cái váy lông. Đường cầu cuối sân
+dựng đứng khó chịu là vì thế, và cú thả cầu sống nhờ đúng chỗ này: không
+cần nhắm cho ngắn, chỉ cần đánh chậm rồi để không khí đỗ xe hộ.

@@ -1,0 +1,182 @@
+---
+// Magnus force on a spinning football, top-down view.
+//   S  = R·ω/v                (spin ratio / tip-speed ratio)
+//   C_L ≈ min(S, 0,35)        (Mehta, Aerodynamics of sports balls, Annu.
+//                              Rev. Fluid Mech. 1985: C_L rises ~linearly
+//                              with S and saturates near 0,3–0,35)
+//   F  = C_L·½ρ·A·v²
+//   d(x) = ½·(F/m)·(x/v)²     (small-deflection parabola; the exact no-drag
+//                              path is a circular arc of radius r = v²·m/F)
+// Ball: FIFA size 5 — circumference 0,69 m → R = 0,1098 m, A = 0,0379 m²,
+// m = 0,43 kg; ρ = 1,225 kg/m³ (15 °C, mặt biển).
+// Validity: drag and spin decay ignored; spin axis vertical; parabola good
+// while d ≲ 0,2·L — past that the readout flags itself, since the exact arc
+// runs ~12% wider at the slowest slider corner (v = 15, f = 12, L = 35).
+// Sliders kept to v = 15–40 m/s, f = 0–12 rev/s, L = 10–35 m.
+---
+
+<figure class="demo" data-demo="cu-sut-xoay-magnus-lech-ba-met">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Tốc độ bóng v (m/s) <output data-out="v"></output>
+      <input type="range" data-in="v" min="15" max="40" step="1" value="30" /></label>
+    <label>Xoáy (vòng/giây) <output data-out="f"></output>
+      <input type="range" data-in="f" min="0" max="12" step="0.5" value="8" /></label>
+    <label>Khoảng cách sút L (m) <output data-out="l"></output>
+      <input type="range" data-in="l" min="10" max="35" step="1" value="25" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Nhìn từ trên xuống. Nét đứt là đường bóng đi nếu không xoáy; đường xanh
+    là quỹ đạo thật, uốn dưới một lực ngang gần như không đổi. Vạch cam là
+    hàng rào ở 9,15 m — chỗ bóng mới chỉ lệch vài chục centimét, vì độ lệch
+    tăng theo bình phương quãng đường nên phần bẻ mạnh nhất dồn về cuối.
+    Trục dọc phóng to hơn trục ngang cho dễ đọc.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const CURVE = '#2563eb', MARK = '#dc2626', WALL = '#f59e0b';
+  const RHO = 1.225, MASS = 0.43, G = 9.81, CLMAX = 0.35;
+  const RAD = 0.69 / (2 * Math.PI);          // bán kính bóng số 5
+  const AREA = Math.PI * RAD * RAD;
+  const XMAX = 35, WALLX = 9.15;
+
+  const spinRatio = (f: number, v: number) => (RAD * 2 * Math.PI * f) / v;
+  const lift = (f: number, v: number) => Math.min(spinRatio(f, v), CLMAX);
+  const force = (f: number, v: number) => lift(f, v) * 0.5 * RHO * AREA * v * v;
+  const defl = (f: number, v: number, x: number) =>
+    0.5 * (force(f, v) / MASS) * (x / v) * (x / v);
+
+  const vn = (x: number, n: number) => x.toFixed(n).replace('.', ',');
+
+  function niceStep(range: number) {
+    const raw = range / 4;
+    const p = Math.pow(10, Math.floor(Math.log10(raw)));
+    const c = raw / p;
+    return (c < 1.5 ? 1 : c < 3 ? 2 : c < 7 ? 5 : 10) * p;
+  }
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (k: string) => root.querySelector(`[data-in="${k}"]`) as HTMLInputElement;
+    const output = (k: string) => root.querySelector(`[data-out="${k}"]`) as HTMLOutputElement;
+
+    function draw() {
+      const v = Number(input('v').value);
+      const f = Number(input('f').value);
+      const L = Number(input('l').value);
+      output('v').textContent = String(v);
+      output('f').textContent = vn(f, 1);
+      output('l').textContent = String(L);
+
+      const S = spinRatio(f, v), F = force(f, v), a = F / MASS;
+      const dEnd = defl(f, v, L), dWall = defl(f, v, WALLX);
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.46);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+
+      const padL = 46, padR = 14, padT = 24, padB = 26;
+      const step = niceStep(Math.max(dEnd * 1.3, 0.5));
+      const dMax = Math.max(step, Math.ceil(Math.max(dEnd * 1.3, 0.5) / step) * step);
+      const X = (x: number) => padL + (x / XMAX) * (cssW - padL - padR);
+      const Y = (d: number) => padT + (d / dMax) * (cssH - padT - padB);
+
+      ctx.font = '10px system-ui,sans-serif';
+
+      // Trục: đường ngắm (độ lệch 0) nằm trên, trục lệch bên trái.
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.3;
+      ctx.beginPath(); ctx.moveTo(padL, padT); ctx.lineTo(padL, cssH - padB);
+      ctx.moveTo(padL, padT); ctx.lineTo(cssW - padR, padT); ctx.stroke();
+      ctx.globalAlpha = 0.55; ctx.fillStyle = fg;
+      ctx.textAlign = 'center';
+      for (const x of [0, 5, 10, 15, 20, 25, 30, 35]) ctx.fillText(`${x} m`, X(x), cssH - padB + 14);
+      ctx.textAlign = 'right';
+      for (let d = 0; d <= dMax + 1e-9; d += step) {
+        ctx.fillText(`${vn(d, step < 1 ? 1 : 0)} m`, padL - 4, Y(d) + 3);
+        if (d > 0) {
+          ctx.globalAlpha = 0.12; ctx.beginPath();
+          ctx.moveTo(padL, Y(d)); ctx.lineTo(cssW - padR, Y(d)); ctx.stroke();
+          ctx.globalAlpha = 0.55;
+        }
+      }
+      ctx.textAlign = 'left';
+      ctx.fillText('độ lệch ngang', padL + 4, padT - 10);
+      ctx.globalAlpha = 1;
+
+      // Đường không xoáy (nét đứt) dọc theo đường ngắm.
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.5; ctx.setLineDash([6, 4]);
+      ctx.beginPath(); ctx.moveTo(X(0), Y(0)); ctx.lineTo(X(L), Y(0)); ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.textAlign = 'center';
+      ctx.fillText('không xoáy', X(L * 0.55), padT - 10);
+      ctx.globalAlpha = 1;
+
+      // Hàng rào 9,15 m.
+      ctx.strokeStyle = WALL; ctx.lineWidth = 3;
+      ctx.beginPath(); ctx.moveTo(X(WALLX), Y(0) - 13); ctx.lineTo(X(WALLX), Y(0) + 13); ctx.stroke();
+      ctx.lineWidth = 1;
+
+      // Quỹ đạo xoáy.
+      ctx.strokeStyle = CURVE; ctx.lineWidth = 2; ctx.beginPath();
+      for (let i = 0; i <= 200; i++) {
+        const x = (L * i) / 200;
+        i ? ctx.lineTo(X(x), Y(defl(f, v, x))) : ctx.moveTo(X(x), Y(defl(f, v, x)));
+      }
+      ctx.stroke(); ctx.lineWidth = 1;
+
+      // Điểm tại hàng rào.
+      ctx.fillStyle = WALL;
+      ctx.beginPath(); ctx.arc(X(WALLX), Y(dWall), 4, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = fg; ctx.globalAlpha = 0.7; ctx.textAlign = 'left';
+      ctx.fillText(`hàng rào 9,15 m · lệch ${vn(dWall, 2)} m`, X(WALLX) + 9, Y(dWall) + 20);
+      ctx.globalAlpha = 1;
+
+      // Đích: vạch đỏ đo độ lệch.
+      ctx.strokeStyle = MARK; ctx.globalAlpha = 0.75; ctx.setLineDash([3, 3]);
+      ctx.beginPath(); ctx.moveTo(X(L), Y(0)); ctx.lineTo(X(L), Y(dEnd)); ctx.stroke();
+      ctx.setLineDash([]); ctx.globalAlpha = 1;
+      ctx.fillStyle = MARK;
+      ctx.beginPath(); ctx.arc(X(L), Y(dEnd), 6, 0, Math.PI * 2); ctx.fill();
+      ctx.textAlign = 'right';
+      ctx.fillText(`lệch ${vn(dEnd, 2)} m`, X(L) - 10, Y(dEnd) + 3);
+
+      const arc = a > 0 ? `${vn((v * v) / a, 0)} m` : 'vô hạn (đường thẳng)';
+      const notes: string[] = [];
+      if (f === 0) notes.push('<b>xoáy 0: công thức nói bóng đi thẳng — thực tế là cú knuckleball đảo ngẫu nhiên</b>');
+      else if (S > CLMAX) notes.push(`<b>S = ${vn(S, 2)} đã quá ngưỡng bão hoà: C_L kịch trần 0,35, xoáy thêm không bẻ thêm</b>`);
+      // Parabol chỉ là xấp xỉ độ-lệch-nhỏ của cung tròn; quá 0,2·L nó bắt đầu
+      // báo thiếu (ở góc chậm nhất của thanh trượt là thiếu ~12%).
+      if (dEnd > 0.2 * L) notes.push('<b>lệch quá 20% quãng đường: parabol hết hiệu lực, cung tròn thật còn cong hơn con số này</b>');
+      const note = notes.length ? ' · ' + notes.join(' · ') : '';
+
+      readout.innerHTML =
+        `v = ${v} m/s, xoáy ${vn(f, 1)} vòng/giây → S = <b>${vn(S, 2)}</b> · lực Magnus <b>${vn(F, 2)} N</b>` +
+        ` (${vn((100 * F) / (MASS * G), 0)}% trọng lượng bóng) · gia tốc ngang ${vn(a, 1)} m/s²` +
+        ` · lệch <b>${vn(dEnd, 2)} m</b> ở mốc ${L} m · bán kính cong ${arc}${note}`;
+    }
+
+    root.querySelectorAll('input').forEach((el) => el.addEventListener('input', draw));
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="cu-sut-xoay-magnus-lech-ba-met"]').forEach(setup);
+</script>

@@ -1,0 +1,94 @@
+---
+title: "Đếm giây giữa hai cơn rung: mỗi giây là 8 kilômét"
+seoTitle: "Sóng P và sóng S: tính khoảng cách tới tâm chấn từ độ trễ"
+description: "Động đất phát ra hai loại sóng cùng một lúc: sóng P chạy 6,0 km/s, sóng S chỉ 3,46 km/s. Độ trễ giữa chúng cho khoảng cách theo một hằng số duy nhất — 8,20 km cho mỗi giây chờ. Và chính 12,2 giây ấy ở cự ly 100 km là toàn bộ vốn liếng của một hệ cảnh báo động đất sớm."
+pubDate: 2026-09-02
+tags: ["vat-ly", "song", "khi-hau", "javascript"]
+translationId: "dem-giay-giua-hai-con-rung-tam-chan-cach-bao-xa"
+---
+
+import SeismicSPDelay from '../../../components/demos/SeismicSPDelay.astro';
+
+Động đất không đến một lần. Đầu tiên là cú thúc gọn từ dưới móng nhà lên,
+như ai dộng một nhát vào nền. Rồi mấy giây yên. Rồi mặt đất mới lắc ngang
+— cơn động đất mà người ta nhớ. Khoảng lặng giữa hai đợt ấy là một cái
+thước đo khoảng cách:
+
+<SeismicSPDelay />
+
+## Cú thúc trước, cơn lắc sau
+
+Vết nứt phát ra hai loại sóng cùng lúc từ cùng một điểm. **Sóng P** là
+sóng nén — đúng loại sóng mà âm thanh dùng, chỉ khác là đi trong đá: hạt
+bị ép rồi giãn dọc hướng truyền. **Sóng S** là sóng ngang: hạt bị *trượt*
+vuông góc với hướng đi. Đá chống nén quyết liệt hơn chống trượt, nên P
+luôn thắng cuộc đua: trong vỏ Trái Đất **6,0 km/s** so với **3,46 km/s**
+— nhanh gấp 17,5 lần âm thanh trong không khí, tức 21 600 km/h.
+
+Tỉ số ấy cũng không phải con số nhặt từ bảng tra. Đá vỏ có hệ số Poisson
+xấp xỉ 0,25, và khi ν = 0,25 thì `vP/vS = √((2−2ν)/(1−2ν))` rút gọn đúng
+thành **√3 = 1,732**. Một khối đá, hai kênh truyền, hai lần tới — [y hệt
+chuyện áp tai vào đường
+ray](/vi/posts/nghe-tieng-tau-hai-lan-am-thanh-trong-vat-ran).
+
+## Vì sao lại đúng 8,2 kilômét cho mỗi giây
+
+Hai sóng đi cùng quãng đường d, chỉ khác vận tốc:
+
+```
+Δt = d/vS − d/vP  ⇒  d = Δt / (1/vS − 1/vP) = Δt · vP/(√3 − 1) = 1,366 · vP · Δt
+```
+
+Vế phải chỉ còn **một** vận tốc: tỉ số √3 đã nuốt mất vS. Với vP = 6,0
+km/s, mỗi giây trễ ăn đúng **8,20 km** — tuyến tính suốt, bất kể trận động
+đất ấy mạnh cỡ nào. Ở cự ly 100 km, sóng P tới sau 16,7 giây, sóng S sau
+28,9 giây, **trễ 12,2 giây**.
+
+Bạn vốn đã dùng cái thước này cho sấm sét, chỉ là ngược chiều: ánh sáng
+coi như tức thời, âm thanh bò 343 m/s — ba giây cho một cây số. Thước động
+đất thô hơn **24 lần**, vì cả hai "tia" đều nhanh và ta chỉ được ăn phần
+*chênh lệch* giữa chúng.
+
+Một trạm cho một con số, tức một **vòng tròn** khả dĩ; ba trạm cắt nhau
+cho một điểm. Nomogram gốc của Richter nhận đúng hai đầu vào — độ trễ S−P
+và biên độ lớn nhất — [rồi mới nhả ra con
+số](/vi/posts/thang-do-dong-dat-moi-bac-la-31-lan-nang-luong) mà bản tin
+đọc lên.
+
+## Mười hai giây ấy là toàn bộ vốn liếng của cảnh báo sớm
+
+Không ai tiên đoán được động đất. Nhưng khi nó *đã* vỡ, có một cuộc đua mà
+con người chắc thắng: **điện chạy nhanh hơn đá**. Máy đo bắt được cú thúc
+P, phần mềm quyết định, tín hiệu phóng đi bằng cáp quang tới thang máy và
+tàu điện quanh đó — bỏ xa sóng S đang lê 3,46 km/s.
+
+Ngân sách của cuộc đua ấy đúng bằng Δt, không hơn một phần trăm giây. Ở
+100 km bạn có 12,2 giây; trừ khoảng **5 giây** để nhận diện và xử lý thì
+còn **7,2 giây** — đủ để thang máy dừng ở tầng gần nhất và mở cửa, đủ để
+tàu cao tốc hãm, đủ để van khí đóng. Nhưng cùng phép trừ ấy vẽ một vòng
+tròn tàn nhẫn quanh tâm chấn: trong bán kính **41 km**, độ trễ chưa tới 5
+giây, cảnh báo tới sau cơn lắc. Vùng mù ấy lại đúng là nơi tàn phá nặng
+nhất, và không xoá được — chỉ thu nhỏ được bằng phần mềm nhanh hơn. Ở xa
+thì hào phóng: cách 180 km, sóng P tới ở giây thứ 30 còn sóng S mãi giây
+thứ 52 — **trễ 22 giây**, trừ 5 giây xử lý vẫn còn 17.
+
+## Trường hợp biên: quá 185 kilômét, mặt Moho ăn gian
+
+Quy tắc 8,2 km/giây giả định sóng đi thẳng trong lớp vỏ đồng nhất. Nhưng ở
+độ sâu 35 km có mặt Moho, nơi vận tốc P nhảy từ 6,0 lên 8,0 km/s — tia đập
+xuống đó dưới **góc tới hạn 48,6°** không xuyên qua mà [trượt dọc mặt phân
+cách](/vi/posts/khuc-xa-va-phan-xa-toan-phan), chạy bằng tốc độ manti rồi
+ngoi lên. Đường vòng nhưng nhanh hơn: quá **185 km**, chính tia đi vòng về
+đích trước, và cái thước đổi vạch: từ đó mỗi giây trễ ứng với **~10,9 km**
+chứ không còn 8,20. Ở 500 km, độ trễ thật là 51,4 giây chứ không phải
+61,0 — cứ nhân 8,20 thì bạn kết luận tâm chấn cách 421 km, **hụt 16%**.
+
+Ở quy mô hành tinh, sóng S còn khai ra nhiều hơn thế. Vận tốc của nó là
+`vS = √(μ/ρ)` với μ là độ cứng chống trượt — mà chất lỏng không chống
+trượt, μ = 0, nên **sóng S không đi qua chất lỏng**. Trên mặt đất vì thế
+tồn tại một vùng câm: quá 103° cung tròn tính từ tâm chấn, không máy nào
+bắt được sóng S trực tiếp nữa. Sóng P cũng tắt ở đó, nhưng quá 142° nó ló
+lại — khúc xạ xuyên qua chính cái lõi ấy rồi ngoi lên; sóng S thì không
+bao giờ trở lại. Cùng một phép đếm giây: ở sân sau nhà nó chỉ ra tâm
+chấn, ở quy mô địa cầu nó chỉ ra nhân ngoài đang lỏng — một biển kim loại
+nóng chảy sâu 2 900 km.

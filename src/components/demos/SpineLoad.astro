@@ -1,0 +1,229 @@
+---
+// Mô hình tĩnh 2D cổ điển của tải trọng cột sống (Chaffin & Andersson,
+// Occupational Biomechanics): một cơ duỗi tương đương với tay đòn 5 cm ở
+// đốt L5/S1 cân bằng mô-men của thân trên và của vật cầm trên tay.
+//   M   = W_thân · 0,30 m · sin θ + W_vật · d
+//   F_cơ = M / 0,05 m
+//   F_nén ≈ F_cơ + W_thân + W_vật
+// θ = độ nghiêng thân so với phương thẳng đứng; d = khoảng cách NGANG từ
+// vật tới khớp. Người mẫu 65 kg → thân trên trên L5/S1 lấy 32 kg, trọng
+// tâm cách khớp 0,30 m dọc trục thân; tay đòn cơ dựng sống 5 cm (đo MRI).
+// Giá trị tham chiếu: ngưỡng thiết kế NIOSH 3 400 N, giới hạn tối đa 6 400 N.
+// Chỉ đúng cho tư thế TĨNH trong mặt phẳng đứng, bỏ qua áp suất ổ bụng và
+// lực xoắn khi vặn mình; cộng đủ trọng lượng vào lực nén là quy ước đơn
+// giản hoá (ở tư thế cúi sâu, một phần trọng lượng thật ra thành lực trượt).
+---
+
+<figure class="demo" data-demo="cui-nhac-thung-hang-dia-dem-chiu-440-kg">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Khối lượng vật (kg) <output data-out="m"></output>
+      <input type="range" data-in="m" min="0" max="40" step="1" value="20" /></label>
+    <label>Thân nghiêng so với phương đứng (°) <output data-out="a"></output>
+      <input type="range" data-in="a" min="0" max="90" step="5" value="90" /></label>
+    <label>Vật cách khớp theo phương ngang (cm) <output data-out="d"></output>
+      <input type="range" data-in="d" min="20" max="60" step="1" value="50" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Người 65 kg, phần thân trên đốt L5/S1 nặng 32 kg với trọng tâm cách khớp
+    30 cm. Cơ dựng sống chỉ có tay đòn 5 cm, nên mọi mô-men đều bị nhân lên
+    khi quy về lực cơ. Cột bên phải xếp chồng hai phần của lực nén đĩa đệm:
+    phần do cơ kéo (xanh) và phần do trọng lượng (cam), đối chiếu ngưỡng
+    thiết kế NIOSH 3 400 N. Mô hình tĩnh — nhấc giật còn cộng thêm lực quán tính.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const MUS = '#2563eb', DANGER = '#dc2626', LOAD = '#f59e0b';
+  const G = 9.81, M_TRUNK = 32, D_TRUNK = 0.30, ARM = 0.05;
+  const W_TRUNK = M_TRUNK * G, NIOSH = 3400, MPL = 6400, FMAX = 7500;
+
+  const fmt = (x: number, d = 0) => {
+    const [i, f] = Math.abs(x).toFixed(d).split('.');
+    const gi = i.replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+    return (x < 0 ? '−' : '') + (f ? `${gi},${f}` : gi);
+  };
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (k: string) => root.querySelector(`[data-in="${k}"]`) as HTMLInputElement;
+    const output = (k: string) => root.querySelector(`[data-out="${k}"]`) as HTMLOutputElement;
+
+    function draw() {
+      const mL = Number(input('m').value);
+      const deg = Number(input('a').value);
+      const dL = Number(input('d').value) / 100;
+      output('m').textContent = String(mL);
+      output('a').textContent = String(deg);
+      output('d').textContent = String(Math.round(dL * 100));
+
+      const th = (deg * Math.PI) / 180, sin = Math.sin(th), cos = Math.cos(th);
+      const W_L = mL * G;
+      const armTrunk = D_TRUNK * sin;
+      const moment = W_TRUNK * armTrunk + W_L * dL;
+      const fMus = moment / ARM;
+      const fComp = fMus + W_TRUNK + W_L;
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32;
+      const cssH = Math.round(cssW * (cssW < 420 ? 0.8 : 0.54));
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+      ctx.font = '10px system-ui,sans-serif';
+      ctx.lineJoin = 'round';
+
+      const padT = 10, padB = 30, padL = 6, padR = 8;
+      const barPanelW = Math.max(132, Math.round(cssW * 0.34));
+      const barX0 = cssW - padR - barPanelW;
+      const figW = barX0 - padL - 10;
+      const vert = cssH - padT - padB;
+      const s = Math.min(vert / 1.28, figW / 1.08);
+      const ox = padL + (figW - 1.08 * s) / 2 + 0.2 * s;
+      const oy = padT + (vert - 1.28 * s) / 2 + 0.82 * s;
+      const X = (m: number) => ox + m * s, Y = (m: number) => oy - m * s;
+
+      // Trục thân và pháp tuyến lưng.
+      const ux = sin, uy = cos, nx = -cos, ny = sin;
+      const sh = [0.6 * ux, 0.6 * uy];
+      const com = [D_TRUNK * ux, D_TRUNK * uy];
+      const yBox = Math.max(-0.18, sh[1] - 0.5);
+
+      const arrow = (x1: number, y1: number, x2: number, y2: number, col: string, wd = 2) => {
+        const a = Math.atan2(y2 - y1, x2 - x1);
+        ctx.strokeStyle = col; ctx.fillStyle = col; ctx.lineWidth = wd;
+        ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(x2, y2);
+        ctx.lineTo(x2 - 7 * Math.cos(a - 0.4), y2 - 7 * Math.sin(a - 0.4));
+        ctx.lineTo(x2 - 7 * Math.cos(a + 0.4), y2 - 7 * Math.sin(a + 0.4));
+        ctx.closePath(); ctx.fill(); ctx.lineWidth = 1;
+      };
+
+      // Cột chậu–chân (chỉ để định hướng), thân, đầu, tay.
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.35; ctx.lineWidth = 3;
+      ctx.beginPath(); ctx.moveTo(X(0), Y(0)); ctx.lineTo(X(0), Y(-0.32)); ctx.stroke();
+      ctx.globalAlpha = 0.8;
+      ctx.beginPath(); ctx.moveTo(X(0), Y(0)); ctx.lineTo(X(sh[0]), Y(sh[1])); ctx.stroke();
+      ctx.beginPath(); ctx.arc(X(0.71 * ux), Y(0.71 * uy), 0.09 * s, 0, Math.PI * 2); ctx.stroke();
+      ctx.lineWidth = 2; ctx.globalAlpha = 0.55;
+      ctx.beginPath(); ctx.moveTo(X(sh[0]), Y(sh[1])); ctx.lineTo(X(dL), Y(yBox + 0.08)); ctx.stroke();
+      ctx.globalAlpha = 1; ctx.lineWidth = 1;
+
+      // Khớp L5/S1.
+      ctx.fillStyle = DANGER;
+      ctx.beginPath(); ctx.arc(X(0), Y(0), 4.5, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = fg; ctx.globalAlpha = 0.75; ctx.textAlign = 'right';
+      ctx.fillText('L5/S1', X(0) - 8, Y(0) + 3); ctx.globalAlpha = 1;
+
+      // Tay đòn 5 cm của cơ + mũi tên lực cơ (dài theo độ lớn lực).
+      const aLen = 0.06 + 0.36 * Math.min(1, fMus / 6600);
+      ctx.strokeStyle = MUS; ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.moveTo(X(0), Y(0)); ctx.lineTo(X(0.05 * nx), Y(0.05 * ny)); ctx.stroke();
+      arrow(X(aLen * ux + 0.05 * nx), Y(aLen * uy + 0.05 * ny), X(0.05 * nx), Y(0.05 * ny), MUS, 3);
+      ctx.fillStyle = MUS; ctx.textAlign = 'center';
+      const mlx = Math.min(Math.max(X(0.5 * ux + 0.17 * nx), padL + 34), barX0 - 46);
+      ctx.fillText('cơ · 5 cm', mlx, Y(0.5 * uy + 0.17 * ny));
+
+      // Thùng hàng + mũi tên trọng lượng.
+      ctx.strokeStyle = LOAD; ctx.lineWidth = 2;
+      ctx.strokeRect(X(dL) - 0.08 * s, Y(yBox) - 0.08 * s, 0.16 * s, 0.16 * s);
+      ctx.lineWidth = 1;
+      if (mL > 0) arrow(X(dL + 0.13), Y(yBox + 0.05), X(dL + 0.13), Y(yBox - 0.08), LOAD, 2);
+      ctx.fillStyle = LOAD; ctx.textAlign = 'center';
+      ctx.fillText(`${mL} kg`, X(dL), Y(yBox) + 3);
+      arrow(X(com[0]), Y(com[1]), X(com[0]), Y(com[1] - 0.13), LOAD, 2);
+      const labRight = dL - com[0] > 0.22;
+      ctx.textAlign = labRight ? 'left' : 'right';
+      ctx.fillText('32 kg', X(com[0]) + (labRight ? 6 : -6), Y(com[1] - 0.07));
+
+      // Hai tay đòn ngang, đo từ trục đứng qua khớp.
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.35; ctx.setLineDash([3, 3]);
+      ctx.beginPath(); ctx.moveTo(X(0), Y(0.05)); ctx.lineTo(X(0), Y(-0.46)); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(X(com[0]), Y(com[1])); ctx.lineTo(X(com[0]), Y(-0.34)); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(X(dL), Y(yBox - 0.08)); ctx.lineTo(X(dL), Y(-0.42)); ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.globalAlpha = 0.75;
+      ctx.strokeStyle = LOAD;
+      ctx.beginPath(); ctx.moveTo(X(0), Y(-0.34)); ctx.lineTo(X(com[0]), Y(-0.34)); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(X(0), Y(-0.42)); ctx.lineTo(X(dL), Y(-0.42)); ctx.stroke();
+      ctx.fillStyle = fg; ctx.textAlign = 'center';
+      ctx.fillText(`${fmt(armTrunk * 100)} cm`, X(com[0] / 2), Y(-0.34) - 4);
+      ctx.fillText(`${fmt(dL * 100)} cm`, X(dL / 2), Y(-0.42) - 4);
+      ctx.globalAlpha = 1;
+
+      // Chú giải màu.
+      ctx.fillStyle = MUS; ctx.fillRect(padL, cssH - 14, 9, 9);
+      ctx.fillStyle = LOAD; ctx.fillRect(padL + 74, cssH - 14, 9, 9);
+      ctx.fillStyle = fg; ctx.globalAlpha = 0.75; ctx.textAlign = 'left';
+      ctx.fillText('lực cơ', padL + 13, cssH - 6);
+      ctx.fillText('trọng lượng', padL + 87, cssH - 6);
+      ctx.globalAlpha = 1;
+
+      // Cột lực nén.
+      const axisX = barX0 + 34, base = cssH - padB, top = padT + 12;
+      const BY = (f: number) => base - (f / FMAX) * (base - top);
+      const barW = Math.min(40, Math.max(16, barPanelW - 118));
+      const barLeft = axisX + 6;
+      const labSpace = cssW - padR - (barLeft + barW) - 6;
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.3;
+      ctx.beginPath(); ctx.moveTo(axisX, top); ctx.lineTo(axisX, base); ctx.lineTo(cssW - padR, base); ctx.stroke();
+      ctx.globalAlpha = 0.6; ctx.fillStyle = fg; ctx.textAlign = 'right';
+      for (const f of [0, 2000, 4000, 6000]) {
+        ctx.beginPath(); ctx.moveTo(axisX - 3, BY(f)); ctx.lineTo(axisX, BY(f)); ctx.stroke();
+        ctx.fillText(fmt(f), axisX - 5, BY(f) + 3);
+      }
+      ctx.textAlign = 'left';
+      ctx.fillText('nén L5/S1 (N)', barX0, padT + 4);
+      ctx.globalAlpha = 1;
+
+      const over = fComp > NIOSH;
+      ctx.fillStyle = LOAD;
+      ctx.fillRect(barLeft, BY(fComp), barW, BY(fMus) - BY(fComp));
+      ctx.fillStyle = over ? DANGER : MUS;
+      ctx.fillRect(barLeft, BY(fMus), barW, base - BY(fMus));
+
+      const LIMS: Array<[number, string, string]> = [
+        [NIOSH, 'NIOSH 3 400', '3 400'], [MPL, 'tối đa 6 400', '6 400'],
+      ];
+      for (const [lim, long, short] of LIMS) {
+        ctx.strokeStyle = DANGER; ctx.globalAlpha = lim === NIOSH ? 0.9 : 0.45;
+        ctx.setLineDash([4, 3]);
+        ctx.beginPath(); ctx.moveTo(axisX, BY(lim)); ctx.lineTo(cssW - padR, BY(lim)); ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.fillStyle = DANGER; ctx.textAlign = 'right';
+        ctx.fillText(ctx.measureText(long).width <= labSpace ? long : short, cssW - padR, BY(lim) - 3);
+        ctx.globalAlpha = 1;
+      }
+
+      const zone = fComp > MPL
+        ? ' · <b>vượt cả giới hạn tối đa 6 400 N</b>'
+        : over
+          ? ` · <b>vượt ngưỡng NIOSH ${fmt((fComp / NIOSH - 1) * 100)}%</b>`
+          : ` · bằng ${fmt((fComp / NIOSH) * 100)}% ngưỡng NIOSH`;
+      readout.innerHTML =
+        `Thân nghiêng ${deg}° · vật ${mL} kg cách ${fmt(dL * 100)} cm → cơ dựng sống kéo ` +
+        `<b>${fmt(fMus)} N</b> · nén đĩa L5/S1 <b>${fmt(fComp)} N</b> (${fmt(fComp / G)} kg)${zone}`;
+    }
+
+    root.querySelectorAll('input').forEach((el) => el.addEventListener('input', draw));
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="cui-nhac-thung-hang-dia-dem-chiu-440-kg"]').forEach(setup);
+</script>

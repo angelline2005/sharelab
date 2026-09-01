@@ -1,0 +1,188 @@
+---
+// Cân bằng năng lượng bề mặt mái (nhiệt độ sol-air, ASHRAE Fundamentals ch. 18):
+//   α·S = h·(T_mặt − T_kk) + ε·σ·(T_mặt⁴ − T_kk⁴)
+// Giải đúng bậc 4 bằng chia đôi (không tuyến tính hoá), σ = 5,67·10⁻⁸ W/m²K⁴.
+// h theo McAdams: h = 5,7 + 3,8·v (v m/s) → v ≈ 0 / 2,4 / 5,1 m/s cho h = 6 / 15 / 25.
+// Giả thiết: T_kk = 35 °C, bầu trời coi như ở nhiệt độ không khí, bỏ qua phần
+// nhiệt dẫn xuống dưới (~10–15%, gần bù trừ với phần bức xạ về trời quang).
+// Hợp lệ cho mái phẳng ngoài trời, ε ≥ 0,10; ở góc α cao + ε thấp + lặng gió,
+// đường cong vọt khỏi khung — đó đúng là vùng "bề mặt hấp thụ chọn lọc".
+---
+
+<figure class="demo" data-demo="mai-ton-72-do-va-lop-son-trang">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Hệ số hấp thụ nắng α <output data-out="a"></output>
+      <input type="range" data-in="a" min="0.04" max="0.95" step="0.01" value="0.80" /></label>
+    <label>Độ phát xạ hồng ngoại ε <output data-out="e"></output>
+      <input type="range" data-in="e" min="0.10" max="0.96" step="0.01" value="0.85" /></label>
+    <label>Cường độ nắng S (W/m²) <output data-out="s"></output>
+      <input type="range" data-in="s" min="300" max="1050" step="10" value="950" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Trục ngang là hệ số hấp thụ nắng của bề mặt: tôn sẫm màu 0,80, sơn trắng
+    phản xạ 0,25. Ba đường ứng với ba mức gió — gió càng mạnh mái càng mát,
+    nhưng khoảng cách giữa hai đầu trục mới là thứ bạn mua được bằng một
+    thùng sơn. Thanh dưới cùng chia lại 1 m² nắng thành ba dòng: phần bị hắt
+    ngược, phần gió cuốn đi, phần mái bức xạ lên trời. Kéo ε xuống dưới 0,3
+    (kim loại sáng bóng) để xem dòng hồng ngoại tắt gần hết. Demo giữ bầu trời
+    ở đúng nhiệt độ không khí, nên đường cong không bao giờ xuống dưới 35 °C —
+    khác với đoạn cuối bài.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const SIG = 5.67e-8, TA = 35, SMAX = 1050;
+  const CURVE = '#2563eb', MARK = '#dc2626', CALM = '#f59e0b';
+  const WINDS: Array<[number, string]> = [[6, 'lặng gió'], [15, 'gió nhẹ 2,4 m/s'], [25, 'gió 5,1 m/s']];
+  const vn = (x: number, d: number) => x.toFixed(d).replace('.', ',');
+
+  // Giải α·S = h·(Ts − Ta) + ε·σ·(Ts⁴ − Ta⁴) cho Ts, bằng chia đôi.
+  function surfaceT(a: number, S: number, h: number, eps: number) {
+    const ta = TA + 273.15;
+    let lo = ta, hi = ta + 400;
+    for (let i = 0; i < 80; i++) {
+      const m = (lo + hi) / 2;
+      const f = a * S - h * (m - ta) - eps * SIG * (m ** 4 - ta ** 4);
+      if (f > 0) lo = m; else hi = m;
+    }
+    return (lo + hi) / 2 - 273.15;
+  }
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (k: string) => root.querySelector(`[data-in="${k}"]`) as HTMLInputElement;
+    const output = (k: string) => root.querySelector(`[data-out="${k}"]`) as HTMLOutputElement;
+
+    function draw() {
+      const a = Number(input('a').value), eps = Number(input('e').value), S = Number(input('s').value);
+      output('a').textContent = vn(a, 2);
+      output('e').textContent = vn(eps, 2);
+      output('s').textContent = String(S);
+
+      const temps = WINDS.map(([h]) => surfaceT(a, S, h, eps));
+      const tMid = temps[1];
+      const conv = 15 * (tMid - TA);
+      const rad = eps * SIG * ((tMid + 273.15) ** 4 - (TA + 273.15) ** 4);
+      const refl = (1 - a) * S;
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.58);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+      ctx.font = '10px system-ui,sans-serif';
+
+      const padL = 46, padR = 12, padT = 12;
+      const barH = 16, barTop = cssH - barH - 4, capY = barTop - 6;
+      const plotB = capY - 26;
+      const yLo = 30, yHi = 110;
+      const X = (aa: number) => padL + ((aa - 0.04) / 0.91) * (cssW - padL - padR);
+      const Y = (t: number) => padT + ((yHi - t) / (yHi - yLo)) * (plotB - padT);
+
+      // Trục và vạch chia.
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.3;
+      ctx.beginPath(); ctx.moveTo(padL, padT); ctx.lineTo(padL, plotB); ctx.lineTo(cssW - padR, plotB); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(padL, Y(TA)); ctx.lineTo(cssW - padR, Y(TA)); ctx.stroke();
+      ctx.globalAlpha = 0.55; ctx.fillStyle = fg;
+      ctx.textAlign = 'center';
+      for (const t of [0.1, 0.3, 0.5, 0.7, 0.9]) ctx.fillText(`α ${vn(t, 1)}`, X(t), plotB + 14);
+      ctx.textAlign = 'right';
+      for (const t of [40, 60, 80, 100]) ctx.fillText(`${t} °C`, padL - 4, Y(t) + 3);
+      ctx.textAlign = 'left';
+      ctx.fillText(`không khí ${TA} °C`, padL + 6, Y(TA) - 4);
+      ctx.globalAlpha = 1;
+
+      ctx.save();
+      ctx.beginPath(); ctx.rect(padL, padT - 6, cssW - padL - padR, plotB - padT + 6); ctx.clip();
+
+      // Ba đường cong theo mức gió.
+      WINDS.forEach(([h], k) => {
+        ctx.strokeStyle = k === 0 ? CALM : CURVE;
+        ctx.lineWidth = k === 1 ? 2 : 1.4;
+        ctx.globalAlpha = k === 2 ? 0.5 : 1;
+        ctx.setLineDash(k === 2 ? [4, 3] : []);
+        ctx.beginPath();
+        for (let i = 0; i <= 160; i++) {
+          const aa = 0.04 + (0.91 * i) / 160;
+          const y = Y(surfaceT(aa, S, h, eps));
+          i ? ctx.lineTo(X(aa), y) : ctx.moveTo(X(aa), y);
+        }
+        ctx.stroke();
+      });
+      ctx.setLineDash([]); ctx.lineWidth = 1; ctx.globalAlpha = 1;
+
+      // Chấm đỏ trên đường gió nhẹ.
+      ctx.fillStyle = MARK;
+      ctx.beginPath(); ctx.arc(X(a), Y(Math.min(tMid, yHi + 4)), 6, 0, Math.PI * 2); ctx.fill();
+      ctx.restore();
+
+      // Chú giải.
+      ctx.textAlign = 'left';
+      WINDS.forEach(([, lab], k) => {
+        const y = padT + 8 + k * 13;
+        ctx.strokeStyle = k === 0 ? CALM : CURVE;
+        ctx.globalAlpha = k === 2 ? 0.5 : 1;
+        ctx.lineWidth = k === 1 ? 2 : 1.4;
+        ctx.beginPath(); ctx.moveTo(padL + 8, y - 3); ctx.lineTo(padL + 26, y - 3); ctx.stroke();
+        ctx.globalAlpha = 0.75; ctx.fillStyle = fg;
+        ctx.fillText(`${lab} — ${vn(temps[k], 1)} °C`, padL + 32, y);
+        ctx.globalAlpha = 1;
+      });
+      ctx.lineWidth = 1;
+
+      // Thanh chia lại 1 m² nắng (ở mức gió nhẹ).
+      ctx.globalAlpha = 0.6; ctx.fillStyle = fg; ctx.textAlign = 'left';
+      ctx.fillText(`1 m² mái nhận ${S} W nắng, chia lại (gió nhẹ):`, padL, capY);
+      ctx.globalAlpha = 1;
+      const barW = cssW - padL - padR;
+      const seg: Array<[number, string, string, number]> = [
+        [refl, 'phản xạ', fg, 0.25],
+        [conv, 'đối lưu', CALM, 1],
+        [rad, 'hồng ngoại', CURVE, 1],
+      ];
+      let x0 = padL;
+      for (const [val, lab, col, al] of seg) {
+        const w = (val / SMAX) * barW;
+        ctx.fillStyle = col; ctx.globalAlpha = al;
+        ctx.fillRect(x0, barTop, Math.max(w, 0), barH);
+        ctx.globalAlpha = 1;
+        if (w > 30) {
+          ctx.fillStyle = al < 1 ? fg : '#fff';
+          ctx.textAlign = 'center';
+          ctx.fillText(w > 78 ? `${lab} ${val.toFixed(0)}` : val.toFixed(0), x0 + w / 2, barTop + 11);
+        }
+        x0 += w;
+      }
+
+      const flags: string[] = [];
+      if (eps < 0.3) flags.push('bề mặt kim loại sáng: <b>gần như không thải được hồng ngoại</b>');
+      if (tMid >= 60) flags.push('<b>chạm tay trần vào là bỏng</b>');
+      readout.innerHTML =
+        `α = ${vn(a, 2)} · ε = ${vn(eps, 2)} · nắng ${S} W/m² → mái <b>${vn(tMid, 1)} °C</b> khi gió nhẹ` +
+        ` · lặng gió ${vn(temps[0], 1)} °C · gió 5,1 m/s ${vn(temps[2], 1)} °C` +
+        (flags.length ? ` · ${flags.join(' · ')}` : '');
+    }
+
+    root.querySelectorAll('input').forEach((el) => el.addEventListener('input', draw));
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="mai-ton-72-do-va-lop-son-trang"]').forEach(setup);
+</script>

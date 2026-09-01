@@ -1,0 +1,92 @@
+---
+title: "Cú sút xoáy: 8 vòng mỗi giây bẻ quả bóng đi 3 mét"
+seoTitle: "Hiệu ứng Magnus: vì sao quả bóng sút xoáy bay cong"
+description: "Quả bóng 0,43 kg bay 30 m/s mà xoáy 8 vòng mỗi giây chịu một lực ngang 3,8 N suốt đường bay — bằng 91% trọng lượng của chính nó, đủ bẻ 3,10 m trên 25 mét. Lực ấy không đến từ gió, mà từ lớp không khí quả bóng lôi theo mình."
+pubDate: 2026-09-02
+tags: ["vat-ly", "chat-luu", "co-hoc", "javascript"]
+translationId: "cu-sut-xoay-magnus-lech-ba-met"
+---
+
+import MagnusCurve from '../../../components/demos/MagnusCurve.astro';
+
+Quả đá phạt rời chân nhắm ra ngoài cột dọc. Thủ môn đọc đúng đường bóng
+nên đứng yên — cho tới một phần ba cuối đường bay, khi quả bóng bẻ vào và
+đi qua tay anh ta. Sân hôm ấy lặng gió; thứ bẻ nó là thứ nó mang theo:
+
+<MagnusCurve />
+
+## Không phải gió, mà là lớp khí quả bóng lôi theo mình
+
+Không khí không trượt trên vỏ bóng: lớp khí sát bề mặt bị cuốn đi theo
+vòng quay. Bên nào bề mặt quay **cùng chiều** dòng khí lướt qua, lớp khí
+bên đó được thúc nhanh thêm; bên kia bị hãm lại. Mà nhanh hơn thì [loãng
+hơn và áp suất thấp
+hơn](/vi/posts/nguyen-ly-bernoulli-nhanh-hon-la-loang-ap-hon) — chênh áp
+giữa hai má bóng đẩy nó về phía má đang "chạy theo gió". Đó là toàn bộ
+hiệu ứng Magnus: một quả bóng tự tạo ra cánh cho mình bằng cách quay.
+
+Con số then chốt không phải số vòng xoáy mà là **tỉ số xoáy** S — tốc độ
+mép bóng chia cho tốc độ bay. Bóng số 5 chu vi 69 cm có bán kính 0,110 m;
+xoáy 8 vòng/giây cho mép bóng chạy 5,5 m/s so với tâm nó. Trên nền dòng
+khí 30 m/s, S = **0,18** — và trong dải ấy hệ số nâng bám khá sát chính S:
+
+```
+S = R·ω / v          → 0,110 · 50,3 / 30 = 0,18
+F = S · ½ρ·A·v²      → 3,8 N  (A = 0,0379 m², ρ = 1,225 kg/m³)
+d = ½·(F/m)·(L/v)²   → 3,10 m tại L = 25 m
+```
+
+Quả bóng nặng 0,43 kg, trọng lượng 4,22 N — nên lực ngang 3,8 N ấy bằng
+**91% trọng lượng của nó**.
+
+## Ba mét ấy dồn cả vào đoạn cuối
+
+Gia tốc ngang 8,9 m/s² nghe rất dữ, nhưng nó chỉ có 0,83 giây để làm việc
+— 25 m ở 30 m/s, đủ cho quả bóng quay 6,7 vòng. Nhân ra: 3,10 m.
+
+Nhưng thứ làm nên cú đá phạt không phải con số đó, mà là **hình dạng của
+nó**. Độ lệch tăng theo *bình phương* quãng đường, nên tại hàng rào ở
+9,15 m — đã đi 37% chặng đường — quả bóng mới lệch **0,42 m**, tức 13% tổng
+độ bẻ. Nó vẫn đang bay ra ngoài, vẫn lách qua mép hàng rào như một quả sút
+hỏng — rồi cộng nốt 2,7 m trong 15,9 m cuối, khi thủ môn đã đổ trọng tâm
+sai bên.
+
+## Đá chậm lại thì bóng cong nhiều hơn
+
+Trực giác nói sút mạnh thì xoáy ăn mạnh. Công thức nói ngược lại: vì
+S = R·ω/v, một bậc v bị triệt tiêu trong ½ρAv², nên lực ngang tỉ lệ **bậc
+nhất** với tốc độ, chứ không phải bậc hai. Đá nhanh gấp đôi thì lực ngang
+gấp đôi, nhưng thời gian chịu lực chỉ còn một nửa — vận tốc ngang thu được
+y hệt: **7,4 m/s tại mốc 25 m, dù bạn sút 20 hay 40 m/s**. Khác nhau ở chỗ
+quả bóng còn bao lâu để tiêu vận tốc ngang ấy.
+
+Kết quả là độ lệch tỉ lệ nghịch với tốc độ: cùng 8 vòng/giây trên 25 m,
+sút 20 m/s bẻ **4,65 m**, sút 40 m/s chỉ bẻ **2,33 m**. Quả bóng thật ra
+đang chạy trên một cung tròn bán kính v²/a = **101 m**, và bán kính ấy
+phình tỉ lệ thẳng với tốc độ.
+
+Mô hình này bỏ qua lực cản — [đúng cái giả định làm công thức ném xiên hụt
+tầm xa tới một nửa](/vi/posts/cong-thuc-nem-xien-sai-bao-nhieu) — nhưng ở
+đây nó *thiếu* chứ không thừa: bóng đá không hãm dữ dội như [quả cầu
+lông](/vi/posts/cau-long-mat-toc-do-moi-bon-met), nhưng chậm dần nghĩa là ở
+lại trong không khí lâu hơn — ngoài sân còn cong hơn con số demo.
+
+## Trường hợp biên: xoáy bằng không, và cú bẻ ngược chiều
+
+Kéo thanh xoáy về 0 và công thức trả lời dứt khoát: S = 0, lực 0, đường
+thẳng tắp. Trên sân thì đó lại là quả bóng khó đoán nhất trong bóng đá.
+Không có vòng quay nào ghim điểm tách dòng vào một bên cố định, các xoáy
+phía sau bóng [buông luân
+phiên](/vi/posts/day-dien-hu-trong-bao-tan-so-xoay-karman), bám vào bất kỳ
+đường chỉ khâu nào tình cờ nằm chỗ tách dòng. Lực ngang vẫn có — chỉ là nó
+đổi dấu vài lần giữa đường bay, không vì công thức sai mà vì bài toán hết
+nghiệm ổn định.
+
+Đầu kia của thang cũng có tường. Hệ số nâng không tăng mãi theo S: qua
+khoảng **0,35** nó bão hoà, xoáy thêm chỉ tốn sức chứ không bẻ thêm mét
+nào (demo kẹp trần đúng ở đó). Còn ở vùng S rất nhỏ, khi số Reynolds rơi
+vào dải tới hạn của quả bóng — quanh 2–3·10⁵, tức 15–20 m/s — vòng quay có
+thể làm lớp biên chuyển rối ở đúng cái má sai, đẩy điểm tách dòng ngược
+lại: lực Magnus **đổi dấu**. Cú 30 m/s ở đây đã ở Re ≈ 4,5·10⁵, qua khỏi
+dải đó; cửa sổ đổi dấu nằm ở đầu chậm của thanh trượt, không phải ở chỗ
+mặc định.

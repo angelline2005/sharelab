@@ -1,0 +1,90 @@
+---
+title: "Cú nhảy 2,45 m chỉ là cú bật cao 1,08 m — và trọng tâm chui DƯỚI xà"
+seoTitle: "Vật lý nhảy cao kiểu Fosbury: trọng tâm đi dưới xà 7 cm"
+description: "Xà 2,45 m nhưng trọng tâm người nhảy chỉ lên tới 2,38 m: uốn ngửa kiểu Fosbury cho phép từng phần cơ thể vượt xà trong khi điểm trung bình của cả người chui qua bên dưới 7,2 cm. Phần bật thật sự chỉ 1,08 m; 1,30 m còn lại là trọng tâm vốn đã ở đó khi đứng vươn người."
+pubDate: 2026-09-02
+tags: ["vat-ly", "co-hoc", "javascript"]
+translationId: "nhay-cao-trong-tam-di-duoi-xa-ngang"
+---
+
+import HighJumpArch from '../../../components/demos/HighJumpArch.astro';
+
+Xà đặt ở 2,45 m — kỷ lục thế giới nhảy cao, lập năm 1993, ba mươi ba năm
+chưa ai chạm tới. Nhưng độ cao thật sự **được nâng lên** trong cú nhảy ấy chỉ
+là 1,08 m, và điểm cao nhất mà trọng tâm vận động viên đạt tới nằm **thấp
+hơn chính cái xà anh ta vừa vượt qua**:
+
+<HighJumpArch />
+
+## 2,45 m = 1,30 m có sẵn + 1,08 m bật + 7 cm mẹo
+
+Cái xà không quan tâm cơ thể bạn ở đâu; vật lý chỉ theo dõi **trọng tâm**.
+Ở khoảnh khắc mũi chân cuối cùng rời đất — thân vươn thẳng, hai tay giơ, đùi
+chân lăng đá lên ngang hông — trọng tâm của một người cao 1,95 m đã nằm sẵn
+ở chừng **1,30 m**: hơn nửa cái xà, **53%**, là quà tặng của việc loài người
+đứng bằng hai chân.
+
+Phần còn lại là bài toán ném xiên: rời đất với vận tốc đứng v, trọng tâm lên
+thêm đúng v²/(2g) — tốc độ chạy đà theo phương ngang không đóng góp một
+milimét nào. Với v = 4,60 m/s:
+
+```
+H_xà = h_trọng tâm lúc bật + v²/(2g) + δ_uốn
+     = 1,30 + 1,078 + 0,072 = 2,45 m
+```
+
+1,078 m ấy mất 0,47 s để leo hết, cả cú nhảy ở trên không 0,94 s — và đỉnh
+trọng tâm dừng lại ở **2,38 m**, hụt cái xà 7 cm. Vậy mà anh ta vẫn qua.
+
+## Trọng tâm có quyền không nằm trong người bạn
+
+Trọng tâm là một điểm trung bình, mà điểm trung bình thì không bắt buộc phải
+nằm trên vật — [chồng sách nhô ra khỏi mép
+bàn](/vi/posts/chong-sach-nho-ra-khoi-mep-ban-bao-xa) đứng được cũng nhờ đúng
+chuyện đó. Uốn ngửa kiểu Fosbury khai thác cái quyền ấy.
+
+Coi thân và chân như một thanh dài 1,9 m uốn thành cung tròn. Cung càng cong,
+trọng tâm càng tụt sâu xuống dưới đỉnh cung: uốn thành cung **53°** là trọng
+tâm đã thấp hơn đỉnh **7,2 cm** — vừa đúng khoản hụt. Lúc ấy đầu và bàn chân
+treo thấp hơn đỉnh cung 21 cm, nhưng chúng ở cách xà **92 cm** về hai bên,
+tức là trong khoảng trống. Từng bộ phận vượt xà lần lượt, không bộ phận nào
+phải có mặt ở 2,45 m cùng lúc với phần còn lại — còn điểm trung bình của tất
+cả thì chui lọt bên dưới. Kéo thanh trượt thứ ba của demo về 0: cùng cú bật
+ấy, cái xà tụt xuống 2,38 m.
+
+## 7 cm ấy đắt bằng bao nhiêu cơ bắp?
+
+Kiểu nhảy úp bụng — thống trị cho tới 1968 — bắt trọng tâm phải đi **trên**
+xà. Muốn qua 2,45 m theo lối đó, trọng tâm phải lên ít nhất 1,15 m thay vì
+1,078 m, tức rời đất ở **4,75 m/s**: nhanh hơn 3,3%, nhưng phần động năng
+thẳng đứng đắt thêm **6,7%**. Ngược lại, đưa cái mẹo uốn cho một người vốn
+bật được 4,75 m/s thì anh ta qua **2,52 m**. Dick Fosbury mang kiểu ngửa lưng tới Olympic Mexico
+City 1968 và lấy vàng ở 2,24 m; trong vòng mười năm gần như cả làng nhảy cao
+đổi kiểu. Không ai khoẻ lên — họ chỉ thôi nâng một thứ không cần nâng.
+
+Một điều nữa demo vẽ ra: parabol xanh **bị đóng đinh ngay khi mũi chân rời
+đất**. Ở 4,6 m/s, [sức cản không khí chưa kịp bẻ cong
+nó](/vi/posts/cong-thuc-nem-xien-sai-bao-nhieu) quá 1 cm. Mọi động tác trên
+không sau đó — [ưỡn, xoay, thu
+chân](/vi/posts/bao-toan-momen-dong-luong-cu-xoay-khong-mien-phi) — chỉ sắp
+xếp lại các bộ phận **quanh** cái điểm đang bay, không dịch nổi chính nó.
+
+## Trường hợp biên: uốn tới khi trọng tâm rơi hẳn ra ngoài người
+
+Kéo thanh trượt độ uốn lên 20 cm và demo bật cảnh báo: để trọng tâm tụt sâu
+ngần ấy, thân phải cong thành cung **160°** — quá tầm ưỡn của cột sống. Mà
+cung càng khép thì đầu và bàn chân càng thõng sâu — 56 cm dưới hông thay vì
+21 cm — trong khi khoảng hở sang hai bên co từ 92 cm còn **67 cm**: cái mẹo
+tự ăn mất chỗ trống của chính nó. Trên thực tế các vận động viên giỏi chỉ moi
+được vài centimét tới trên chục.
+
+Nguyên tắc thì không có trần: một cơ thể uốn thành chữ U đủ sâu sẽ có trọng
+tâm nằm **hoàn toàn bên ngoài** khối thịt, như trọng tâm cái boomerang nằm
+giữa hai cánh — dân nhảy sào, ở tư thế gập sâu nhất quanh cây sào, tiến gần
+giới hạn đó nhất.
+
+Còn ở nhảy xa, đúng cái mẹo đó vô dụng: không có xà nào để chui xuống dưới,
+thành tích đo bằng vết chân chạm cát. Quỹ đạo trọng tâm đã bị đóng đinh từ
+lúc rời ván, nên động tác "đạp xe trên không" nổi tiếng không
+nâng ai lên một centimét — nó chỉ ghìm thân khỏi chúi về trước, để hai chân
+kịp duỗi thẳng ra xa trước khi tiếp cát.

@@ -1,0 +1,95 @@
+---
+title: "Nam châm dẻo trên tủ lạnh: vì sao chỉ một mặt dính"
+seoTitle: "Nam châm dẻo nhiều cực kiểu Halbach: vì sao chỉ một mặt hút"
+description: "Lật miếng nam châm dẻo lại và nó rơi — mặt in gần như không có từ trường. Bên trong là dãy sọc cực bước 4 mm, và trường của dãy ấy tắt theo hàm mũ với chiều dài đặc trưng 0,64 mm: khe 0,22 mm đã mất nửa lực, khe 2 mm còn 0,19%."
+pubDate: 2026-09-02
+tags: ["vat-ly", "dien-tu", "javascript"]
+translationId: "nam-cham-deo-tu-lanh-chi-dinh-mot-mat"
+---
+
+import FridgeMagnet from '../../../components/demos/FridgeMagnet.astro';
+
+Miếng nam châm dẻo in số điện thoại tiệm pizza bám chắc trên cánh tủ lạnh.
+Lật mặt in vào trong rồi thử lại: nó rơi. Cùng một miếng cao su, cùng bề
+dày, cùng lượng bột từ — chỉ đổi mặt, và lực dính biến mất:
+
+<FridgeMagnet />
+
+## Bên trong là 45 sọc cực rộng 2 mm
+
+Miếng nam châm dẻo không có một cực N và một cực S ở hai đầu — nó là hàng
+chục nam châm nhỏ nằm song song, sọc N rồi sọc S xen kẽ, mỗi sọc rộng chừng
+2 mm: một tấm cỡ danh thiếp 90 mm mang **45 sọc cực**, và một chu kỳ N+S
+trọn vẹn — bước cực λ — là **4 mm**.
+
+Đặt N cạnh S cách nhau 2 mm thì đường sức chẳng có lý do gì để đi xa: nó ra
+khỏi sọc N, cong lại, chui vào sọc S bên cạnh, khép kín chưa đầy một
+milimét trên mặt. Biên độ từ trường phía trên mặt làm việc là
+
+```
+B(y) = B_r · (1 − e^(−2πt/λ)) · e^(−2πy/λ)
+```
+
+với t là bề dày lá, y là khe hở. Chiều dài suy giảm của hàm mũ ấy bằng
+λ/2π — với λ = 4 mm là **0,64 mm**. Lực hút tỉ lệ B² nên nó tụt trên
+[chiếc thang mũ](/vi/posts/mach-rc-va-chiec-thang-63-phan-tram) nhanh gấp
+đôi: khe **0,22 mm** đã lấy mất một nửa. Lớp sơn cánh tủ dày 0,05 mm ăn
+15%; kẹp thêm tấm ảnh 0,25 mm — tổng khe 0,3 mm — thì còn **39%**; ở khe 2
+mm, B còn 4,3% mà lực còn **0,19%**; ở 3 mm còn 0,008%. Nam châm tủ lạnh
+không giữ được xấp giấy — nó chỉ giữ nổi tờ trên cùng.
+
+## Mặt sau không yếu hơn, nó gần như không tồn tại
+
+Đầu từ hoá không dập N–S theo kiểu lên–xuống đơn thuần: nó xoay hướng từ
+hoá từng nấc dọc theo lá — lên, ngang, xuống, ngang — bản phẳng của **mảng
+Halbach**. Thành phần thẳng đứng và thành phần nằm ngang sinh hai trường
+biên độ bằng nhau; mặt trước chúng cộng, mặt sau chúng trừ. Với một lá xoay
+mượt hoàn hảo, trường mặt sau bằng đúng **không**.
+
+Lá thật xoay theo nấc nên mặt sau còn sót hài bậc ba, và hài bậc ba có
+chiều dài suy giảm λ/6π = **0,21 mm**, ngắn hơn ba lần nữa. Qua lớp màng in
+0,1 mm, mặt sau giữ được cỡ một phần mười lực của mặt trước; ra tới 0,5 mm
+thì dưới 1%.
+
+## Cái giá phải trả để dính chặt lúc chạm
+
+Sao không từ hoá cả lá theo một hướng cho khoẻ? Vì như thế nó yếu thảm hại:
+lá dày 1 mm rộng 3 cm, từ hoá đồng nhất xuyên bề dày, chỉ cho **3,3% B_r**
+ngay sát mặt — hình dạng dẹt tự phá trường của chính nó. Lá nhiều cực cùng
+bề dày cho **79% B_r**, mạnh gấp **24 lần** đúng chỗ bạn cần.
+
+Đổi lại là tầm với. Đường cam trong demo gần như nằm ngang: ở khe 2 mm lá
+đồng nhất vẫn giữ 96% giá trị sát mặt, vì nó suy giảm theo cỡ của miếng nam
+châm (3 cm) chứ không theo bước cực. Hai đường cắt nhau ở **2,04 mm** — xa
+hơn ngưỡng đó, miếng "yếu" thắng.
+
+Bước cực cũng là thứ sờ được: úp hai miếng vào nhau rồi miết, chúng khớp
+rồi nhả theo đúng chu kỳ 4 mm, và ở tốc độ tay chừng 20 cm/s đó là **50
+nhịp mỗi giây** — ngón tay thôi đếm nấc và bắt đầu nghe tiếng rè. Xoay lệch
+hai lá một góc nhỏ, các sọc [sinh vân
+moiré](/vi/posts/van-moire-bo-khuech-dai-sai-lech-hinh-hoc) và bước gợn
+dưới tay đổi hẳn.
+
+## Trường hợp biên: nới bước cực để với xa hơn, và cái sập theo
+
+Ở khe 2 mm, nới bước cực từ 4 mm lên 15,5 mm nhân lực lên **18,7 lần**.
+Nhưng thừa số (1 − e^(−2πt/λ)) sập theo: khi λ lớn hơn nhiều so với 2πt nó
+tuyến tính hoá thành 2πt/λ, và lá 1 mm bước 15,5 mm chỉ còn **18%** lực lúc
+chạm. Giữa hai xu hướng ngược nhau có một tối ưu, dạng đóng:
+
+```
+λ_opt = 2πt / ln(1 + t/y)
+```
+
+Lá 1 mm giữ tờ giấy qua khe 0,1 mm: λ_opt = **2,6 mm**, đúng dải 2–5 mm nhà
+máy vẫn dập. Ở giới hạn y → 0 thì λ_opt → 0 — sát mặt, sọc càng mảnh càng
+tốt, cho tới khi λ tụt dưới cỡ 2t và thừa số bề dày bão hoà: mảnh thêm là
+mất công không.
+
+Nới λ theo chiều kia thì đổi hẳn nghề. Mảng Halbach bước cực hàng chục
+centimét treo dưới toa tàu Inductrack quét qua cuộn nhôm dọc đường ray,
+[sinh dòng cảm ứng](/vi/posts/cam-ung-faraday-hai-cu-hich-nguoc-dau) đủ nâng
+cả con tàu; cuộn tròn lại thành ống thì thành máy MRI cỡ nhỏ, trường dồn
+hết vào lòng ống còn bên ngoài gần như sạch. Vẫn là phép cộng-trừ hai thành
+phần từ hoá trên miếng cao su quảng cáo pizza, chỉ đổi bước cực từ 4 mm
+sang 40 cm.

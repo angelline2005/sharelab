@@ -1,0 +1,184 @@
+---
+// Tiếng vọng cầu thang ("staircase chirp", kiểu kim tự tháp El Castillo).
+// Mép bậc thứ n nằm tại (d + n·w, n·h); đường đi khứ hồi P_n = 2·√((d+n·w)² + (n·h)²).
+// Khe giữa hai tiếng vọng liên tiếp: Δt_n = (P_{n+1} − P_n)/c → cao độ f_n = 1/Δt_n.
+// Vì dP/dn = 2(w·cosθ + h·sinθ) với θ là góc ngẩng tới bậc đó, f_n luôn nằm giữa
+// c/(2w) (tia gần nằm ngang, các bậc dưới) và c/(2√(w²+h²)) (tia dọc mặt dốc, các bậc trên).
+// c = 343 m/s (không khí khô 20 °C). Cố định 20 bậc — một vế thang giữa hai tầng nhà ở.
+// Giả thiết: nguồn âm sát mặt sàn, mỗi mép bậc tán xạ một xung. Mô hình thuần hình học,
+// bỏ qua nhiễu xạ, hấp thụ và bề dày xung — chỉ đúng khi xung vỗ tay ngắn hơn Δt (~1,6 ms).
+---
+
+<figure class="demo" data-demo="vo-tay-truoc-cau-thang-va-not-612-hz">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Bề rộng mặt bậc w (cm) <output data-out="w"></output>
+      <input type="range" data-in="w" min="20" max="36" step="1" value="28" /></label>
+    <label>Chiều cao mỗi bậc h (cm) <output data-out="h"></output>
+      <input type="range" data-in="h" min="10" max="28" step="1" value="17" /></label>
+    <label>Đứng cách bậc đầu d (m) <output data-out="d"></output>
+      <input type="range" data-in="d" min="1" max="12" step="0.5" value="3" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Trên: mặt cắt 20 bậc thang, mỗi tia là đường đi của một tiếng vọng về tai bạn.
+    Dưới: từng tiếng vọng đặt lên trục thời gian — khe giữa chúng giãn dần, nên cao
+    độ (đường xanh) tụt dần, luôn lọt giữa trần c/2w và sàn c/2√(w²+h²) mà không
+    chạm vạch nào. Hai vạch cam là hai giới hạn ấy; sàn được gọi tên theo nốt gần nhất.
+    Demo giả thiết bạn vỗ tay sát mặt sàn, không khí 20 °C.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const C = 343, N = 20;
+  const CURVE = '#2563eb', MARK = '#dc2626', LM = '#f59e0b';
+  const NOTE = ['Đô', 'Đô#', 'Rê', 'Rê#', 'Mi', 'Fa', 'Fa#', 'Sol', 'Sol#', 'La', 'La#', 'Si'];
+  const vn = (x: number, k = 0) => x.toFixed(k).replace('.', ',');
+  const noteName = (f: number) => {
+    const m = Math.round(69 + 12 * Math.log2(f / 440));
+    return NOTE[((m % 12) + 12) % 12] + String(Math.floor(m / 12) - 1);
+  };
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (k: string) => root.querySelector(`[data-in="${k}"]`) as HTMLInputElement;
+    const output = (k: string) => root.querySelector(`[data-out="${k}"]`) as HTMLOutputElement;
+
+    function draw() {
+      const w = Number(input('w').value) / 100;
+      const h = Number(input('h').value) / 100;
+      const d = Number(input('d').value);
+      output('w').textContent = vn(w * 100);
+      output('h').textContent = vn(h * 100);
+      output('d').textContent = vn(d, 1);
+
+      // Đường đi khứ hồi tới mép bậc n, thời điểm về tai, và cao độ từng khe.
+      const P: number[] = [], T: number[] = [];
+      for (let n = 0; n <= N; n++) { P.push(2 * Math.hypot(d + n * w, n * h)); T.push(P[n] / C); }
+      const F: number[] = [], TM: number[] = [];
+      for (let n = 0; n < N; n++) { F.push(C / (P[n + 1] - P[n])); TM.push((T[n] + T[n + 1]) / 2); }
+      const ceil = C / (2 * w), floor = C / (2 * Math.hypot(w, h));
+      const slide = 1200 * Math.log2(F[0] / F[N - 1]);
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.7);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+      ctx.font = '10px system-ui,sans-serif';
+
+      // ---- Băng trên: mặt cắt cầu thang ----
+      const padL = 46, padR = 10;
+      const topH = Math.round(cssH * 0.4), gap = 16;
+      const bandW = cssW - padL - padR, bandH = topH - 18;
+      const wx = d + N * w + 0.6, wy = Math.max(N * h, 0.8);
+      const s = Math.min(bandW / wx, bandH / (wy * 1.1));
+      const ox = padL + (bandW - wx * s) / 2, oy = topH - 8;
+      const SX = (x: number) => ox + x * s, SY = (y: number) => oy - y * s;
+
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.35;
+      ctx.beginPath(); ctx.moveTo(SX(-0.5), SY(0)); ctx.lineTo(SX(d), SY(0)); ctx.stroke();
+      ctx.globalAlpha = 0.8; ctx.beginPath(); ctx.moveTo(SX(d), SY(0));
+      for (let n = 1; n <= N; n++) {
+        ctx.lineTo(SX(d + (n - 1) * w), SY(n * h));
+        ctx.lineTo(SX(d + n * w), SY(n * h));
+      }
+      ctx.stroke(); ctx.globalAlpha = 1;
+
+      ctx.strokeStyle = CURVE; ctx.globalAlpha = 0.16;
+      for (let n = 1; n < N; n++) {
+        ctx.beginPath(); ctx.moveTo(SX(0), SY(0)); ctx.lineTo(SX(d + n * w), SY(n * h)); ctx.stroke();
+      }
+      ctx.globalAlpha = 1;
+      ctx.strokeStyle = MARK;
+      ctx.beginPath(); ctx.moveTo(SX(0), SY(0)); ctx.lineTo(SX(d), SY(0)); ctx.stroke();
+      ctx.strokeStyle = LM;
+      ctx.beginPath(); ctx.moveTo(SX(0), SY(0)); ctx.lineTo(SX(d + N * w), SY(N * h)); ctx.stroke();
+      ctx.fillStyle = MARK;
+      ctx.beginPath(); ctx.arc(SX(0), SY(0) - 3, 4, 0, Math.PI * 2); ctx.fill();
+
+      ctx.fillStyle = fg; ctx.globalAlpha = 0.6; ctx.textAlign = 'center';
+      ctx.fillText(`vỗ tay · d = ${vn(d, 1)} m`, SX(0) + 26, SY(0) + 13);
+      ctx.textAlign = 'left';
+      ctx.fillText(`bậc 20 · cao ${vn(N * h, 2)} m`, SX(d + N * w) - 84, SY(N * h) - 6);
+      ctx.globalAlpha = 1;
+
+      // ---- Băng dưới: chuỗi xung vọng + cao độ ----
+      const cTop = topH + gap, padB = 24;
+      const yLo = 350, yHi = 900;
+      const tMax = T[N] * 1.06;
+      const X = (t: number) => padL + (t / tMax) * (cssW - padL - padR);
+      const Y = (f: number) => cTop + ((yHi - f) / (yHi - yLo)) * (cssH - padB - cTop);
+      const base = Y(yLo);
+
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.3;
+      ctx.beginPath(); ctx.moveTo(padL, cTop); ctx.lineTo(padL, base); ctx.lineTo(cssW - padR, base); ctx.stroke();
+      ctx.globalAlpha = 0.55; ctx.fillStyle = fg;
+      ctx.textAlign = 'right';
+      for (const f of [400, 500, 600, 700, 800]) ctx.fillText(`${f} Hz`, padL - 4, Y(f) + 3);
+      ctx.textAlign = 'center';
+      for (let k = 1; k <= 4; k++) {
+        const t = (tMax * k) / 4;
+        ctx.fillText(`${vn(t * 1000)} ms`, X(t), base + 14);
+      }
+      ctx.globalAlpha = 1;
+
+      // Trần và sàn cao độ.
+      ctx.strokeStyle = LM; ctx.setLineDash([4, 4]);
+      for (const f of [ceil, floor]) { ctx.beginPath(); ctx.moveTo(padL, Y(f)); ctx.lineTo(cssW - padR, Y(f)); ctx.stroke(); }
+      ctx.setLineDash([]);
+      ctx.fillStyle = LM; ctx.textAlign = 'left';
+      ctx.fillText(`trần c/2w = ${vn(ceil)} Hz`, padL + 4, Y(ceil) - 4);
+      ctx.textAlign = 'right';
+      ctx.fillText(`sàn ${vn(floor)} Hz ≈ ${noteName(floor)}`, cssW - padR, Y(floor) + 11);
+
+      // Chuỗi xung vọng trên trục thời gian.
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.5;
+      for (let n = 0; n <= N; n++) {
+        ctx.beginPath(); ctx.moveTo(X(T[n]), base); ctx.lineTo(X(T[n]), base - 9); ctx.stroke();
+      }
+      ctx.globalAlpha = 1;
+      ctx.strokeStyle = MARK; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.moveTo(X(T[0]), base); ctx.lineTo(X(T[0]), base - 12); ctx.stroke();
+      ctx.lineWidth = 1;
+
+      // Cao độ của từng khe.
+      ctx.strokeStyle = CURVE; ctx.lineWidth = 2; ctx.beginPath();
+      for (let n = 0; n < N; n++) n ? ctx.lineTo(X(TM[n]), Y(F[n])) : ctx.moveTo(X(TM[n]), Y(F[n]));
+      ctx.stroke(); ctx.lineWidth = 1;
+      ctx.fillStyle = CURVE;
+      for (let n = 0; n < N; n++) { ctx.beginPath(); ctx.arc(X(TM[n]), Y(F[n]), 2.5, 0, Math.PI * 2); ctx.fill(); }
+      ctx.fillStyle = MARK;
+      ctx.beginPath(); ctx.arc(X(TM[0]), Y(F[0]), 5, 0, Math.PI * 2); ctx.fill();
+
+      const note = slide < 100
+        ? ' · <b>trượt chưa nổi nửa cung: tai chỉ nghe một nốt duy nhất</b>'
+        : '';
+      readout.innerHTML =
+        `Bậc ${vn(w * 100)} × ${vn(h * 100)} cm, đứng cách ${vn(d, 1)} m → tiếng dội mở ở ` +
+        `<b>${vn(F[0])} Hz</b>, khép ở <b>${vn(F[N - 1])} Hz</b> sau 20 bậc — trượt ` +
+        `<b>${vn(slide)} cent</b> trong ${vn((T[N] - T[0]) * 1000)} ms · ` +
+        `trần ${vn(ceil)} Hz, sàn ${vn(floor)} Hz (${noteName(floor)})${note}`;
+    }
+
+    root.querySelectorAll('input').forEach((el) => el.addEventListener('input', draw));
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="vo-tay-truoc-cau-thang-va-not-612-hz"]').forEach(setup);
+</script>

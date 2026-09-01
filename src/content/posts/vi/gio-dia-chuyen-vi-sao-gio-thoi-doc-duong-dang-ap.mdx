@@ -1,0 +1,86 @@
+---
+title: "Chênh 1 hPa trên 100 km là gió 60 km/h — và nó thổi dọc đường đẳng áp, không băng qua"
+seoTitle: "Gió địa chuyển: tính tốc độ gió từ chênh lệch áp suất trên bản đồ thời tiết"
+description: "Không khí lẽ ra phải chảy thẳng từ nơi áp cao sang nơi áp thấp, nhưng nó lại đi vòng quanh. Cân bằng giữa lực gradient áp và lực Coriolis cho gió chạy song song với đường đẳng áp: 60 km/h cho mỗi 1 hPa/100 km ở vĩ độ 20, nhưng 118 km/h ở vĩ độ 10 và chỉ 29 km/h ở vĩ độ 45."
+pubDate: 2026-09-02
+tags: ["vat-ly", "chat-luu", "khi-hau", "javascript"]
+translationId: "gio-dia-chuyen-vi-sao-gio-thoi-doc-duong-dang-ap"
+---
+
+import GeostrophicWind from '../../../components/demos/GeostrophicWind.astro';
+
+Bản đồ thời tiết vẽ những vòng đẳng áp khép kín quanh tâm áp thấp, nhưng mũi
+tên gió in trên đó không chỉ vào tâm: nó chạy vòng quanh, gần như song song
+với chính các đường ấy. Không khí có chỗ trũng trước mặt mà lại đi men mép:
+
+<GeostrophicWind />
+
+## Lực đẩy gió đi nhỏ hơn trọng lực gần mười hai nghìn lần
+
+Chênh 1 hPa trên 100 km là gradient thường gặp trên bản đồ Biển Đông. Chia ra
+lực trên mỗi kilôgam không khí — 100 Pa trên 100 km, chia cho mật độ
+1,2 kg/m³ — được **8,3 × 10⁻⁴ m/s²**, nhỏ hơn trọng lực **11 800 lần**. Cú
+đẩy yếu tới mức khối khí phải tăng tốc liên tục **5,6 giờ** mới đạt 60 km/h.
+
+Mà 5,6 giờ thì Trái Đất kịp xoay khá nhiều dưới chân nó. [Lực
+Coriolis](/vi/posts/hieu-ung-coriolis-va-huyen-thoai-bon-cau) tỉ lệ với chính
+tốc độ khối khí: đi càng nhanh càng bị bẻ mạnh sang phải (Bắc bán cầu). Khối
+khí trượt xuống phía áp thấp, càng nhanh càng bị bẻ gắt — tới lúc quay trọn
+90° thì Coriolis chỉ đúng ngược chiều lực gradient áp, hai lực triệt tiêu,
+không còn gì bắt nó đổi hướng nữa:
+
+```
+V_g = (1/(ρ·f)) · Δp/Δn        f = 2Ω·sin(φ),  Ω = 7,29 × 10⁻⁵ rad/s
+```
+
+## Khoảng cách giữa hai đường đẳng áp chính là tốc độ gió
+
+Đây là lý do bản đồ thời tiết đọc được bằng mắt. Đẳng áp vẽ cách nhau 4 hPa;
+hai đường liền kề cách nhau **400 km** là gradient 1 hPa/100 km, và ở vĩ độ
+20 gió đúng **16,7 m/s = 60 km/h**. Ép chúng còn 200 km: gió gấp đôi.
+
+Thuỷ thủ thời chưa có vệ tinh rút gọn thêm một bậc, thành quy tắc Buys
+Ballot: **quay lưng vào gió ở Bắc bán cầu, áp thấp nằm bên tay trái bạn**.
+
+## Cùng một bản đồ, Hà Nội và Cần Thơ đọc ra hai con số khác nhau
+
+Vĩ độ nằm gọn trong chữ f, mà f = 2Ω·sin(φ) tụt về 0 khi về xích đạo. Cùng
+gradient ấy: vĩ độ 45 — ngang Milano hay bắc Hokkaido — cho **29 km/h**; Hà
+Nội ở vĩ độ 21 cho **57 km/h**; Cần Thơ ở vĩ độ 10 cho **118 km/h**, gấp bốn
+lần, từ đúng một bản đồ.
+
+Nghe ngược đời cho tới khi lật lại: chính vì f nhỏ mà nhiệt đới **không giữ
+nổi** gradient mạnh — chênh áp hơi lớn là gió thổi mạnh và san bằng nó ngay.
+Bản đồ nhiệt đới vì thế luôn nhợt nhạt, đẳng áp thưa thếch, trừ khi có bão.
+
+## Ma sát bẻ gió chệch vào phía áp thấp — và đó là lý do trời mưa
+
+Cân bằng hai lực ấy chỉ đúng ở trên cao: sát mặt đất có thêm lực cản, và tam
+giác lệch đi — gió xoay một góc α **vào phía áp thấp**, chậm lại còn
+V_g·cos α. Trên biển α chừng 10–15°, trên đất liền gồ ghề 25–35°. Ở 25°,
+60 km/h thành **15,1 m/s ≈ 55 km/h**; ở 35° còn 49 km/h, và chính con số sát
+đất ấy mới là thứ [da bạn quy ra nhiệt độ cảm
+giác](/vi/posts/gio-lanh-cam-giac-nhu-la-do-cai-gi).
+
+Góc lệch bé ấy làm nên thời tiết: gió chúi vào trong nên không khí **dồn về
+tâm áp thấp** từ mọi phía, mà dồn vào thì chỉ còn đường đi lên — lên cao là
+[giãn nở và lạnh đi](/vi/posts/tui-snack-tren-may-bay-va-ham-mu-cua-bau-troi),
+hơi nước ngưng thành mây. Áp thấp mưa được là nhờ ma sát: hành tinh trơn tuột
+sẽ chỉ có những xoáy vĩnh cửu, không bao giờ đổ một giọt nước.
+
+## Trường hợp biên: ở xích đạo công thức cho gió nhanh gần bằng âm thanh
+
+Đẩy thanh vĩ độ về 5°: 236 km/h. Ra ngoài thang demo, ở vĩ độ 1: **327 m/s**,
+sát tốc độ âm thanh 340 m/s. Không phải phát hiện mà là cáo phó — chia cho
+sin(φ) thì f → 0, cân bằng địa chuyển tan rã trong dải ±5°. Khối khí ở đó
+trượt thẳng từ áp cao sang áp thấp, chẳng ai bẻ thành xoáy, nên xích đạo
+**không sinh nổi một cơn bão**; ngoại lệ gần như độc nhất là bão Vamei tháng
+12/2001, ở 1,5°N ngoài khơi Singapore.
+
+Công thức còn sập theo hướng ngược lại, ngay chỗ ta cần nhất. Quanh mắt bão, 20 hPa
+dồn trong 40 km — tức 50 hPa/100 km — cắm vào cho 835 m/s, tức **3 007 km/h**.
+Vô nghĩa: đẳng áp ở đó cong gắt tới mức lực ly tâm nuốt trọn vai Coriolis, và
+cân bằng thật cho **40,8 m/s ≈ 147 km/h**, đúng cỡ bão cấp 13. Ngay cả một vùng
+áp thấp rộng, bán kính 1 000 km trên đúng bản đồ 1 hPa/100 km ấy, độ cong đã ăn
+mất **21%**; siết bán kính còn 300 km thì mất **40%**. Gió địa chuyển là
+câu trả lời cho đường đẳng áp thẳng, mà bầu trời thì hiếm khi vẽ thẳng.

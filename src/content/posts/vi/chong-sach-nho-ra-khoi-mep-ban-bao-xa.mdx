@@ -1,0 +1,91 @@
+---
+title: "Chồng sách nhô ra khỏi mép bàn: bốn cuốn là đã vượt một thân sách"
+seoTitle: "Bài toán chồng sách nhô ra mép bàn và chuỗi điều hòa L/2n"
+description: "Bốn cuốn sách xếp khéo nhô ra 1,04 lần chiều dài một cuốn — cuốn trên cùng không còn gì bên dưới ngoài không khí. Muốn nhô 3 thân sách cần 227 cuốn; muốn 10 thân cần 272 triệu cuốn, chồng cao 8 172 km. Chuỗi điều hòa phân kỳ, nhưng phân kỳ tàn nhẫn chậm."
+pubDate: 2026-09-02
+tags: ["vat-ly", "co-hoc", "mo-phong", "javascript"]
+translationId: "chong-sach-nho-ra-khoi-mep-ban-bao-xa"
+---
+
+import BookOverhang from '../../../components/demos/BookOverhang.astro';
+
+Đẩy một cuốn sách ra khỏi mép bàn: quá nửa thân là nó lật. Nhưng chồng cuốn
+thứ hai lên rồi đẩy cả hai, thêm cuốn thứ ba — giới hạn "nửa thân" biến mất
+sạch. Chồng sách nhô ra **xa bao nhiêu cũng được**; chỗ tàn nhẫn nằm ở hoá đơn:
+
+<BookOverhang />
+
+## Cuốn thứ k tính từ trên chỉ mua thêm được L/(2k)
+
+Điều kiện duy nhất để không đổ: ở mọi khe, **trọng tâm của toàn bộ phần nằm
+trên khe đó phải rơi vào trong mép cuốn ngay dưới** — vẫn là [luật
+mô-men](/vi/posts/don-bay-cho-toi-mot-diem-tua) của cái xà beng, chỉ khác là ở
+đây bạn né nó chứ không khai thác nó.
+
+Xếp từ trên xuống thì phép tính gọn lạ thường. Nếu k cuốn trên cùng đã cân
+bằng với trọng tâm chung ở điểm C, cuốn thứ k+1 phải đặt mép phải đúng tại C —
+nên tâm riêng nó nằm ở C − L/2, và trọng tâm của cả k+1 cuốn lùi lại đúng
+L/(2(k+1)). Cộng ngược từ đầu mút cuốn trên cùng xuống tới trọng tâm cả chồng
+— chỗ buộc phải nằm đúng mép bàn:
+
+```
+độ nhô = L/2 + L/4 + L/6 + … + L/(2n) = (L/2)·H_n
+```
+
+H_n là tổng điều hòa 1 + 1/2 + … + 1/n. Sách khổ 20 cm: cuốn trên cùng lấn
+10 cm, cuốn hai 5 cm, cuốn ba 3,33 cm, cuốn tư 2,5 cm — cộng lại **20,8 cm**.
+
+## Bốn cuốn, và cuốn trên cùng không còn gì bên dưới ngoài không khí
+
+20,8 cm với sách dài 20 cm nghĩa là **1,04 thân sách**: mép trong của cuốn
+trên cùng đã ra ngoài mép bàn 8,3 mm, nó lơ lửng hoàn toàn trong không khí. Ba
+cuốn thì chưa — 0,92 thân, vẫn còn một mẩu tựa bàn; bốn là con số nhỏ nhất, và
+bạn dựng nó trên bàn ăn trong hai phút.
+
+Kéo thanh trượt tiếp: 12 cuốn cho 31,0 cm, 40 cuốn cho 42,8 cm. Thang cột mốc
+tròn mới đáng nhớ — **1 thân sách cần 4 cuốn, 2 thân cần 31, 3 thân
+cần 227, 4 thân cần 1 674, 5 thân cần 12 367**. Mỗi thân thêm vào nhân số cuốn
+lên hơn bảy lần, chính xác là e² ≈ 7,39.
+
+## Phân kỳ với tốc độ của một hàm logarit
+
+H_n tăng mãi không chặn, nên trên lý thuyết mọi độ nhô đều với tới được. Có
+điều H_n ≈ ln n + 0,5772, đảo lại thì số cuốn cần có là **hàm mũ của độ
+nhô**. Muốn nhô
+10 thân sách — đúng 2 mét — cần **272 triệu cuốn**, và chồng ấy dày 3 cm mỗi
+cuốn nên cao **8 172 km**, bằng 1,28 lần bán kính Trái Đất.
+
+Vẫn là hàm logarit [cai trị bản thiết kế tên
+lửa](/vi/posts/phuong-trinh-ten-lua-che-do-doc-tai-cua-logarit): thêm một lượng
+cố định ở đầu ra thì đầu vào phải nhân lên. Luật ở đây còn gọn hơn nữa —
+**nhân đôi độ nhô là bình phương số cuốn**: 3 thân tốn 227 cuốn, 6 thân đòi
+91 380, bằng 227² nhân 1,77.
+
+## Vụng tay 2 mm gần như không tốn gì
+
+Mô hình đòi trọng tâm nằm *đúng* mép: cân bằng phiếm định, biên an toàn bằng
+không, nghe như thứ chỉ sống được trên giấy. Nhưng chừa một khoảng ε ở mọi khe
+rồi tính lại, công thức chỉ đổi L/2 thành L/2 − ε — độ nhô còn (1 − 2ε/L) lần
+lý tưởng. Chừa hẳn 2 mm mỗi khe với sách 20 cm: bạn vẫn giữ được **98%**.
+Trượt cũng không phải kẻ thù: mọi lực ở đây đều thẳng đứng, mà giấy trên giấy
+có [hệ số ma sát ~0,4](/vi/posts/mat-phang-nghieng-va-goc-bat-dau-truot) —
+nghiêng bàn tới 22° mới trôi.
+
+Thứ giết chồng sách thật là **cỡ của bước đi**. Cuốn thứ 12 chỉ được nhích
+8,3 mm, cuốn thứ 50 nhích 2 mm, cuốn thứ 227 nhích 0,44 mm — nhỏ hơn độ vênh
+của một bìa sách mềm, nhỏ hơn sai số lúc bạn buông tay. Chuỗi điều hòa không
+đổ vì hết ý tưởng; nó chìm dần vào nhiễu.
+
+## Trường hợp biên: bỏ luật "mỗi tầng một cuốn"
+
+Cả bài toán đứng trên một quy ước không phải vật lý: mỗi tầng đúng một cuốn.
+Cho phép xếp hai cuốn cạnh nhau làm đối trọng, luật tăng trưởng đổi hẳn:
+Paterson và Winkler dựng được năm 2006 những chồng nhô tỉ lệ **n^(1/3)** chứ
+không phải ln n, và chặn trên cùng bậc ấy được chứng minh ngay sau đó — n^(1/3)
+là mức trần thật. Giá cả lật ngược theo: nhân đôi độ nhô chỉ tốn **gấp 8 lần**
+số cuốn thay vì bình phương — luật luỹ thừa dù số mũ bé đến đâu rồi cũng bỏ
+logarit lại phía sau.
+
+Nhưng luỹ thừa một phần ba là chuyện của vô cực. Ở cỡ bàn ăn, chồng
+một-cuốn-mỗi-tầng chưa bị bỏ xa: 100 cuốn xếp kiểu điều hòa đã cho 2,59 thân
+sách, còn với n nhỏ thì mấy cuốn làm đối trọng ăn gần hết phần thắng.

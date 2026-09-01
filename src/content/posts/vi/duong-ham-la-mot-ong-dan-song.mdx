@@ -1,0 +1,91 @@
+---
+title: "Vào hầm, đài AM tắt ngóm mà FM vẫn nói: hầm là một ống dẫn sóng"
+seoTitle: "Tần số cắt của ống dẫn sóng: vì sao sóng AM chết trong đường hầm"
+description: "Một đường hầm rộng 8 mét là ống dẫn sóng có tần số cắt 18,75 MHz. Dưới ngưỡng đó sóng không truyền được mà tắt theo hàm mũ: AM 1 MHz mất 3,41 dB mỗi mét, vào sâu 30 m là chia hơn 16 tỉ lần công suất. FM 100 MHz nằm trên ngưỡng nên đi qua như không có gì."
+pubDate: 2026-09-02
+tags: ["vat-ly", "dien-tu", "song", "javascript"]
+translationId: "duong-ham-la-mot-ong-dan-song"
+---
+
+import WaveguideCutoff from '../../../components/demos/WaveguideCutoff.astro';
+
+Xe chui vào hầm Hải Vân. Đài AM đang nói dở câu thì rè, rồi im — chưa hết
+chiều dài một chiếc xe tải. Bạn dò sang FM: giọng phát thanh viên nguyên
+vẹn, sạch như ngoài trời. Cùng một cái hầm, cùng một cái ăng-ten, hai số
+phận. Cái hầm ấy không chắn sóng — nó **lọc** sóng:
+
+<WaveguideCutoff />
+
+## Ống nào cũng có một nốt trầm nhất
+
+Sóng điện từ chui vào khoang dài phải chiều hai vách: điện trường dọc theo
+vách kim loại buộc phải bằng 0. Đó là bài toán [cột khí trong ống
+sáo](/vi/posts/cot-khi-cong-huong-bit-mot-dau-tram-mot-quang-tam) viết lại
+bằng ngôn ngữ điện từ — kiểu đơn giản nhất cần đúng **nửa bước sóng** nằm
+ngang giữa hai vách, tức λ_c = 2a. Đổi sang tần số bằng [λ = c/f quen
+thuộc](/vi/posts/ang-ten-vi-sao-dien-thoai-khong-con-can-cai-can):
+
+```
+f_c = c / (2a)
+α  = (2π/λ)·√((f_c/f)² − 1)   [Np/m]   khi f < f_c
+λ_g = λ / √(1 − (f_c/f)²)              khi f > f_c
+```
+
+Bề nào rộng hơn thì bề ấy cầm trịch, mà hầm đường bộ rộng hơn là cao. Hầm
+8 m → **f_c = 18,75 MHz**; hầm 10 m → 15 MHz; ống metro đơn 6 m → 25 MHz.
+Trên ngưỡng sóng chạy suốt; dưới ngưỡng, không nghiệm truyền nào tồn tại.
+
+## Dưới ngưỡng, sóng tắt ngay từ miệng hầm
+
+Trường vẫn lọt vào, nhưng biên độ rơi theo e^(−αz) ngay từ mét đầu. AM
+1 MHz trong hầm 8 m: **3,41 dB mỗi mét** — cứ **0,88 m công suất còn một
+nửa**. Vào 11,7 m đã mất 40 dB, máy thu coi như trắng sóng; vào 30 m là
+**102 dB**, tức [công suất còn một phần 16
+tỉ](/vi/posts/thang-decibel-vi-sao-tai-nguoi-dem-bang-logarit). Không phải
+hấp thụ — bê tông chẳng nuốt gì đáng kể; sóng chỉ đơn giản không có cách
+nào xếp mình cho vừa cái ống.
+
+Nét lạ nhất nằm ở nửa trái đường cong dưới trong demo: nó **phẳng lì**. Hạ
+xuống 0,5 MHz vẫn ra 3,41 dB/m y hệt 1 MHz, vì khi f rất nhỏ so với f_c thì
+α tiến về π/a — tần số biến mất khỏi công thức, chỉ còn bề rộng hầm. Tệ
+tới một mức rồi thôi.
+
+## Vì sao FM sống sót còn AM thì không
+
+FM 100 MHz cao gấp 5,3 lần ngưỡng: bước sóng ống λ_g = **3,05 m** so với
+3,00 m ngoài trời — dài thêm 1,8%, đủ để dân kỹ thuật quan tâm và không đủ
+để bạn nhận ra. Ranh giới cắt ngang đúng băng sóng ngắn: cùng hầm 8 m, đài
+12 MHz mất 79 dB sau 30 m, còn đài 20 MHz đi thẳng một mạch.
+
+Muốn AM 1 MHz truyền được, hầm phải rộng **150 m**; muốn cắt đầu dưới băng
+FM, hầm phải bóp còn **1,7 m** (f_c = 88,2 MHz) — một cái cống chứ không
+phải hầm.
+
+Vách hầm dĩ nhiên là bê tông chứ không phải đồng, nên ngưỡng thật là cái
+dốc rất đứng chứ không phải vách đá dựng; ngay cả FM cũng yếu dần vài dB
+mỗi trăm mét vì vách nhám, khúc cua và thùng xe tải chắn đường. Hầm dài
+vài cây số vì thế chăng dọc trần một sợi **cáp rò** — ăng-ten dài bằng cả
+cái hầm, phát tại chỗ.
+
+## Trường hợp biên: ngay trên ngưỡng, vận tốc pha vượt tốc độ ánh sáng
+
+Đẩy tần số xuống sát f_c từ phía trên thì λ_g phình ra: ở 20 MHz trong hầm
+8 m, bước sóng ống là **43,1 m** cho một sóng chỉ dài 15 m ngoài trời, và
+vận tốc pha v_p = c/√(1 − (f_c/f)²) = **2,87c**. Ở f = 1,05·f_c nó lên
+3,28c, rồi tiến ra vô cực đúng tại ngưỡng.
+
+Không gì bị vi phạm: thứ chạy nhanh hơn c là **hình dạng vân giao thoa**
+giữa các tia nảy zíc-zắc trên vách, không phải năng lượng. Tín hiệu bò dọc
+hầm bằng vận tốc nhóm v_g = c²/v_p — ở 20 MHz là 0,35c — và tích hai vận
+tốc luôn đúng bằng c².
+
+Cùng cái ngưỡng ấy nằm trên [cửa lò vi sóng nhà
+bạn](/vi/posts/lo-2-mm-chan-song-cho-anh-sang), thu nhỏ bốn nghìn lần: lỗ
+tròn 2 mm là một ống dẫn sóng tí hon. Ống tròn nên hằng số đổi — ngưỡng là
+1,84·c/(π·d) chứ không phải c/2a — ra f_c = **87,9 GHz**, gấp 36 lần [2,45
+GHz mà lò phát ra](/vi/posts/do-toc-do-anh-sang-bang-thanh-so-co-la), còn
+ánh sáng nhìn thấy ở 500 THz thì trên ngưỡng gấp 5 700 lần nên bạn cứ nhìn
+xuyên thoải mái. Chỉ có điều cái "hầm" ấy dài đúng bề dày tấm tôn, 0,6 mm,
+nên tần số cắt chỉ góp **−9,6 dB** vào tổng mức chặn; phần lớn còn lại là
+chuyện nhiễu xạ qua lỗ nhỏ, không phải chuyện ngưỡng. Ống dẫn sóng phải đủ
+dài mới tắt được sóng — và hầm Hải Vân thì dài hơn sáu cây số.

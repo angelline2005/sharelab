@@ -1,0 +1,200 @@
+---
+// Tidal evolution of the Earth–Moon system, first-order model.
+//   Conserved: L = C·ω + μ·√(G(M+m)·a)   (Earth spin + lunar orbit)
+//   C = 8,0340e37 kg m² (polar moment of inertia, Williams 1994)
+//   ω₀ = 7,2921150e-5 rad/s, a₀ = 384 400 km
+//   Solar day from sidereal: 1/T_sol = 1/T_sid − 1/T_năm
+// The user picks a constant recession rate da/dt; a(t) is linear in t.
+// Ignored: solar tides (~1/6 of the braking torque, and that share goes to
+// Earth's orbit, not the Moon's), orbital eccentricity, changes in C.
+// Range narrowed to −1000…+500 Myr: beyond that the constant-C and
+// constant-rate assumptions are worthless.
+// Fossil data plotted: Devonian coral growth bands ≈400 days/yr (Wells 1963)
+// and Elatina tidal rhythmites at 620 Ma: 21,9 h / 400 days (Williams 2000).
+---
+
+<figure class="demo" data-demo="mat-trang-lui-xa-va-nam-400-ngay">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Thời gian (triệu năm, âm = quá khứ) <output data-out="t"></output>
+      <input type="range" data-in="t" min="-1000" max="500" step="10" value="-380" /></label>
+    <label>Tốc độ Mặt Trăng lùi ra (cm/năm) <output data-out="r"></output>
+      <input type="range" data-in="r" min="1" max="6" step="0.01" value="3.83" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Thanh trên cùng là mômen động lượng tổng của hệ — dài không đổi. Thuỷ
+    triều chỉ chuyển nó từ ngăn "Trái Đất quay" sang ngăn "quỹ đạo Mặt
+    Trăng": ngăn trái ngắn đi đúng bằng ngăn phải dài ra. Đồ thị dưới (trục
+    ngang tính bằng triệu năm, âm là quá khứ) suy ra độ dài ngày (xanh, trục
+    trái) và khoảng cách Mặt Trăng (cam, trục phải) từ đúng phép chia ấy.
+    Hai ô đỏ là số liệu hoá thạch thật — san hô kỷ Devon và đá nhịp triều
+    Elatina; kéo thanh tốc độ để tìm một giá trị xuyên qua cả hai, bạn sẽ
+    không tìm được.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const SPIN = '#2563eb', ORB = '#f59e0b', MARK = '#dc2626';
+
+  const C = 8.0340e37, W0 = 7.2921150e-5;
+  const ME = 5.9722e24, MM = 7.346e22, G = 6.67430e-11;
+  const MU = (ME * MM) / (ME + MM), GM = G * (ME + MM);
+  const A0 = 3.84400e8, YR = 3.15576e7;
+  const LTOT = C * W0 + MU * Math.sqrt(GM * A0);
+
+  const T_MIN = -1000, T_MAX = 500;
+
+  type St = { a: number; hours: number; days: number; spin: number; orb: number };
+  function state(tMyr: number, rate: number): St {
+    const a = A0 + rate * tMyr * 1e6;
+    const orb = MU * Math.sqrt(GM * a);
+    const spin = LTOT - orb;
+    const tSid = (2 * Math.PI * C) / spin;
+    const tSol = 1 / (1 / tSid - 1 / YR);
+    return { a, hours: tSol / 3600, days: YR / tSol, spin, orb };
+  }
+
+  const vn = (x: number, d: number) => x.toFixed(d).replace('.', ',');
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (k: string) => root.querySelector(`[data-in="${k}"]`) as HTMLInputElement;
+    const output = (k: string) => root.querySelector(`[data-out="${k}"]`) as HTMLOutputElement;
+
+    function draw() {
+      const t = Number(input('t').value), r = Number(input('r').value) / 100;
+      output('t').textContent = t > 0 ? `+${t}` : String(t).replace('-', '−');
+      output('r').textContent = vn(r * 100, 2);
+      const s = state(t, r);
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.60);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+      ctx.font = '10px system-ui,sans-serif';
+
+      // ---- conserved angular momentum bar -------------------------------
+      const narrow = cssW < 480;
+      const padL = narrow ? 40 : 46, padR = narrow ? 34 : 44;
+      const barX = padL, barW = cssW - padL - padR, barY = 16, barH = 22;
+      const fSpin = s.spin / LTOT;
+      ctx.fillStyle = fg; ctx.globalAlpha = 0.6; ctx.textAlign = 'left';
+      ctx.fillText(narrow ? 'Mômen động lượng tổng — không đổi'
+        : 'Mômen động lượng tổng — chiều dài thanh này không bao giờ đổi', barX, barY - 5);
+      ctx.globalAlpha = 1;
+      ctx.fillStyle = SPIN; ctx.fillRect(barX, barY, barW * fSpin, barH);
+      ctx.fillStyle = ORB; ctx.fillRect(barX + barW * fSpin, barY, barW * (1 - fSpin), barH);
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.35;
+      ctx.strokeRect(barX, barY, barW, barH); ctx.globalAlpha = 1;
+      ctx.fillStyle = '#fff'; ctx.textAlign = 'center';
+      ctx.fillText(`${vn(100 * fSpin, 1)}%`, barX + (barW * fSpin) / 2, barY + 15);
+      ctx.fillText(`${narrow ? 'Mặt Trăng' : 'quỹ đạo Mặt Trăng'} ${vn(100 * (1 - fSpin), 1)}%`,
+        barX + barW * fSpin + (barW * (1 - fSpin)) / 2, barY + 15);
+      ctx.fillStyle = fg; ctx.globalAlpha = 0.6; ctx.textAlign = 'left';
+      ctx.fillText('Trái Đất quay', barX, barY + barH + 12);
+      ctx.globalAlpha = 1;
+
+      // ---- dual-axis plot ------------------------------------------------
+      const plotT = barY + barH + 22, plotB = cssH - 24;
+      const hLo = 16, hHi = 30;          // left axis: solar day, hours
+      const dLo = 3.15e8, dHi = 4.20e8;  // right axis: Moon distance, m
+      const X = (tt: number) => padL + ((tt - T_MIN) / (T_MAX - T_MIN)) * barW;
+      const Yh = (h: number) => plotB - ((h - hLo) / (hHi - hLo)) * (plotB - plotT);
+      const Yd = (d: number) => plotB - ((d - dLo) / (dHi - dLo)) * (plotB - plotT);
+
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.3;
+      ctx.beginPath();
+      ctx.moveTo(padL, plotT); ctx.lineTo(padL, plotB); ctx.lineTo(cssW - padR, plotB);
+      ctx.moveTo(cssW - padR, plotT); ctx.lineTo(cssW - padR, plotB);
+      ctx.stroke();
+      ctx.setLineDash([3, 3]);
+      ctx.beginPath(); ctx.moveTo(X(0), plotT); ctx.lineTo(X(0), plotB); ctx.stroke();
+      ctx.setLineDash([]);
+
+      ctx.globalAlpha = 0.6; ctx.fillStyle = fg; ctx.textAlign = 'center';
+      for (const tt of narrow ? [-1000, -500, 0, 500] : [-1000, -750, -500, -250, 0, 250, 500])
+        ctx.fillText(tt === 0 ? 'nay' : `${tt}`.replace('-', '−'), X(tt), plotB + 13);
+      ctx.textAlign = 'right';
+      for (const h of [18, 21, 24, 27, 30]) ctx.fillText(`${h} h`, padL - 4, Yh(h) + 3);
+      ctx.textAlign = 'left';
+      for (const d of [3.3e8, 3.6e8, 3.9e8, 4.2e8])
+        ctx.fillText(`${Math.round(d / 1e6)}`, cssW - padR + 4, Yd(d) + 3);
+      ctx.textAlign = 'right';
+      ctx.fillText('nghìn km', cssW - 2, plotT - 5);
+      ctx.globalAlpha = 1;
+
+      // distance curve (amber, right axis)
+      ctx.strokeStyle = ORB; ctx.lineWidth = 2; ctx.beginPath();
+      for (let i = 0; i <= 200; i++) {
+        const tt = T_MIN + ((T_MAX - T_MIN) * i) / 200;
+        const y = Yd(state(tt, r).a);
+        i ? ctx.lineTo(X(tt), y) : ctx.moveTo(X(tt), y);
+      }
+      ctx.stroke();
+
+      // day-length curve (blue, left axis)
+      ctx.strokeStyle = SPIN; ctx.beginPath();
+      for (let i = 0; i <= 200; i++) {
+        const tt = T_MIN + ((T_MAX - T_MIN) * i) / 200;
+        const y = Yh(state(tt, r).hours);
+        i ? ctx.lineTo(X(tt), y) : ctx.moveTo(X(tt), y);
+      }
+      ctx.stroke(); ctx.lineWidth = 1;
+
+      // fossil evidence squares
+      const DATA: Array<[number, number, string, number]> = [
+        [-620, 21.9, 'đá nhịp triều', -1],
+        [-380, 21.92, 'san hô Devon', 1],
+      ];
+      ctx.textAlign = 'center';
+      for (const [tt, hh, lab, side] of DATA) {
+        ctx.fillStyle = MARK;
+        ctx.fillRect(X(tt) - 4, Yh(hh) - 4, 8, 8);
+        ctx.fillStyle = fg; ctx.globalAlpha = 0.8;
+        ctx.fillText(lab, X(tt), Yh(hh) + (side < 0 ? -10 : 17));
+        ctx.globalAlpha = 1;
+      }
+
+      // current pick
+      ctx.fillStyle = MARK;
+      ctx.beginPath(); ctx.arc(X(t), Yh(s.hours), 6, 0, Math.PI * 2); ctx.fill();
+      ctx.globalAlpha = 0.5;
+      ctx.beginPath(); ctx.arc(X(t), Yd(s.a), 5, 0, Math.PI * 2); ctx.fill();
+      ctx.globalAlpha = 1;
+
+      let note = '';
+      if (t < -680) note = ' · <b>vượt quá mọi bằng chứng hoá thạch</b>';
+      else if (t >= -680 && t <= -560) note = ' · <b>đá nhịp triều Elatina: 21,9 giờ, 400 ngày</b>';
+      else if (t >= -430 && t <= -330) note = ' · <b>san hô Devon đếm được ~400 ngày</b>';
+
+      const when = t === 0 ? 'Hôm nay' :
+        `${t > 0 ? 'Sau' : 'Cách đây'} ${Math.abs(t)} triệu năm`;
+      readout.innerHTML =
+        `${when}, với tốc độ lùi ${vn(r * 100, 2)} cm/năm: ` +
+        `Mặt Trăng ở <b>${Math.round(s.a / 1000).toLocaleString('vi-VN')} km</b> (${vn(100 * s.a / A0, 1)}% hiện tại) · ` +
+        `ngày dài <b>${vn(s.hours, 2)} giờ</b> · <b>${vn(s.days, 1)} ngày</b> mỗi năm${note}`;
+    }
+
+    root.querySelectorAll('input').forEach((el) => el.addEventListener('input', draw));
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="mat-trang-lui-xa-va-nam-400-ngay"]').forEach(setup);
+</script>

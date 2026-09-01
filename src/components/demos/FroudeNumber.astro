@@ -1,0 +1,207 @@
+---
+// Số Froude của dáng đi: Fr = v²/(g·L), L = chiều dài chân (bán kính con
+// lắc ngược quanh bàn chân trụ). Tại giữa bước, trọng tâm chạy trên cung
+// tròn bán kính L nên gia tốc hướng tâm v²/L hướng xuống đất:
+//   mg − N = m·v²/L  →  N/mg = 1 − Fr.
+// Fr = 1 ⇒ N = 0, bàn chân hết ép được xuống đất (ngưỡng lý thuyết của
+// đi bộ). Nguồn: Alexander, "Principles of Animal Locomotion" (2003),
+// chương dáng đi và dynamic similarity.
+// Miền hợp lệ: mô hình con lắc ngược cứng, một chân trụ, trọng tâm ở
+// khớp hông. Đúng cho đi bộ bình thường; vẽ tới Fr = 2 để thấy vùng
+// mà mô hình tự phủ định (N âm là vô nghĩa — đó là lúc chạy).
+---
+
+<figure class="demo" data-demo="so-froude-khi-nao-di-bo-thanh-chay">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Chiều dài chân L — bán kính cung (m) <output data-out="l"></output>
+      <input type="range" data-in="l" min="0.45" max="1.60" step="0.01" value="0.90" /></label>
+    <label>Tốc độ đi (km/h) <output data-out="v"></output>
+      <input type="range" data-in="v" min="2" max="16" step="0.1" value="9" /></label>
+    <label>Trọng trường g (m/s²) <output data-out="g"></output>
+      <input type="range" data-in="g" min="1.62" max="9.81" step="0.01" value="9.81" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Bên trái: giữa mỗi bước, trọng tâm bạn lướt trên cung tròn nét đứt bán
+    kính bằng chiều dài chân. Cột màu là trọng lượng: phần đỏ phía trên là
+    lực hướng tâm mà cung tròn đòi, phần xanh còn lại mới là phản lực đất
+    dưới bàn chân. Bên phải: Fr tăng theo bình phương tốc độ. Kéo tốc độ
+    lên tới khi cột xanh cạn — đó là lúc bàn chân hết ép được xuống đất.
+    Kéo L quá 1,1 m là mô phỏng mẹo của đi bộ thể thao: quỹ đạo trọng tâm
+    bị kéo phẳng thành cung có bán kính lớn hơn chiều dài chân thật.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const CURVE = '#2563eb', MARK = '#dc2626', LM = '#f59e0b';
+  const VMIN = 2, VMAX = 16, FRMAX = 2, LMAX = 1.60;
+  const froude = (vKmh: number, g: number, L: number) => (vKmh / 3.6) ** 2 / (g * L);
+  const vn = (x: number, n: number) => x.toFixed(n).replace('.', ',');
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (k: string) => root.querySelector(`[data-in="${k}"]`) as HTMLInputElement;
+    const output = (k: string) => root.querySelector(`[data-out="${k}"]`) as HTMLOutputElement;
+
+    function draw() {
+      const L = Number(input('l').value);
+      const v = Number(input('v').value);
+      const g = Number(input('g').value);
+      output('l').textContent = vn(L, 2);
+      output('v').textContent = vn(v, 1);
+      output('g').textContent = vn(g, 2);
+
+      const Fr = froude(v, g, L);
+      const N = Math.max(0, 1 - Fr);
+      const vth = Math.sqrt(g * L) * 3.6;
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32;
+      // Phần tử chưa có layout (tab nền, cha đang display:none): bỏ vẽ lần này
+      // thay vì tính ra bán kính âm; sự kiện resize sẽ gọi lại khi hiện ra.
+      if (cssW < 160) return;
+      const cssH = Math.round(cssW * 0.5);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+      ctx.font = '10px system-ui,sans-serif';
+
+      const padT = 14, padB = 26;
+      const LW = Math.min(cssW * 0.42, 250);
+      const groundY = cssH - padB;
+
+      // ---------- Bảng trái: con lắc ngược + cột lực ----------
+      const Rmax = Math.max(10, Math.min(groundY - padT - 34, LW * 0.40));
+      const rp = (L / LMAX) * Rmax;
+      const fx = LW * 0.34;
+      const comY = groundY - rp;
+
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.35;
+      ctx.beginPath(); ctx.moveTo(6, groundY); ctx.lineTo(LW - 4, groundY); ctx.stroke();
+      ctx.globalAlpha = 1;
+
+      // Cung tròn trọng tâm (nét đứt).
+      ctx.setLineDash([4, 4]); ctx.strokeStyle = fg; ctx.globalAlpha = 0.45;
+      ctx.beginPath(); ctx.arc(fx, groundY, rp, -Math.PI / 2 - 0.62, -Math.PI / 2 + 0.62); ctx.stroke();
+      ctx.setLineDash([]); ctx.globalAlpha = 1;
+
+      // Chân trụ = bán kính.
+      ctx.strokeStyle = fg; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.moveTo(fx, groundY); ctx.lineTo(fx, comY); ctx.stroke();
+      ctx.lineWidth = 1;
+      // Đầu + thân người que.
+      ctx.beginPath(); ctx.arc(fx, comY - 17, 7, 0, Math.PI * 2); ctx.stroke();
+      // Trọng tâm.
+      ctx.fillStyle = Fr >= 1 ? MARK : CURVE;
+      ctx.beginPath(); ctx.arc(fx, comY, 5, 0, Math.PI * 2); ctx.fill();
+
+      ctx.fillStyle = fg; ctx.globalAlpha = 0.6; ctx.textAlign = 'center';
+      ctx.fillText(`L = ${vn(L, 2)} m`, fx, groundY + 15);
+      ctx.globalAlpha = 1;
+
+      // Cột lực: cao = mg, đáy xanh = N, đỉnh đỏ = mv²/L.
+      const barX = LW - 40, barW = 18;
+      const barH = Math.min(groundY - padT - 30, 190);
+      const barTop = groundY - barH;
+      const nH = N * barH;
+      ctx.fillStyle = CURVE;
+      ctx.fillRect(barX, groundY - nH, barW, nH);
+      ctx.fillStyle = MARK;
+      ctx.fillRect(barX, barTop, barW, barH - nH);
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.5;
+      ctx.strokeRect(barX, barTop, barW, barH); ctx.globalAlpha = 1;
+
+      ctx.fillStyle = fg; ctx.globalAlpha = 0.6; ctx.textAlign = 'center';
+      ctx.fillText('mg', barX + barW / 2, barTop - 16);
+      ctx.globalAlpha = 1;
+      ctx.fillStyle = Fr >= 1 ? MARK : CURVE;
+      ctx.fillText(`N = ${(100 * N).toFixed(0)}%`, barX + barW / 2, barTop - 4);
+
+      // ---------- Bảng phải: Fr theo tốc độ ----------
+      const gX0 = LW + 42, gX1 = cssW - 10, gY0 = padT, gY1 = cssH - 42;
+      const gW = gX1 - gX0;
+      const X = (vv: number) => gX0 + ((vv - VMIN) / (VMAX - VMIN)) * gW;
+      const Y = (f: number) => gY1 - (f / FRMAX) * (gY1 - gY0);
+
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.3;
+      ctx.beginPath(); ctx.moveTo(gX0, gY0); ctx.lineTo(gX0, gY1); ctx.lineTo(gX1, gY1); ctx.stroke();
+      ctx.globalAlpha = 0.55; ctx.fillStyle = fg;
+      ctx.textAlign = 'center';
+      for (const k of [4, 8, 12, 16]) ctx.fillText(String(k), X(k), gY1 + 14);
+      ctx.fillText('tốc độ đi (km/h)', (gX0 + gX1) / 2, gY1 + 30);
+      ctx.textAlign = 'right';
+      for (const f of [0.5, 1, 1.5, 2]) ctx.fillText(vn(f, 1), gX0 - 4, Y(f) + 3);
+      ctx.fillText('Fr', gX0 - 4, gY0 + 8);
+      ctx.globalAlpha = 1;
+
+      // Ngưỡng Fr = 1 và ngưỡng đổi bước thật Fr ≈ 0,5.
+      ctx.setLineDash([5, 4]);
+      ctx.strokeStyle = MARK; ctx.beginPath(); ctx.moveTo(gX0, Y(1)); ctx.lineTo(gX1, Y(1)); ctx.stroke();
+      ctx.strokeStyle = LM; ctx.beginPath(); ctx.moveTo(gX0, Y(0.5)); ctx.lineTo(gX1, Y(0.5)); ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.textAlign = 'left'; ctx.globalAlpha = 0.85;
+      ctx.fillStyle = MARK;
+      ctx.fillText(gW < 230 ? 'Fr = 1' : 'Fr = 1 · bàn chân rời đất', gX0 + 5, Y(1) - 4);
+      ctx.fillStyle = LM;
+      ctx.fillText(gW < 230 ? 'Fr ≈ 0,5' : 'Fr ≈ 0,5 · người thật đổi bước', gX0 + 5, Y(0.5) - 4);
+      ctx.globalAlpha = 1;
+
+      // Đường cong Fr = v²/(gL).
+      ctx.strokeStyle = CURVE; ctx.lineWidth = 2; ctx.beginPath();
+      let started = false;
+      for (let i = 0; i <= 220; i++) {
+        const vv = VMIN + ((VMAX - VMIN) * i) / 220;
+        const f = froude(vv, g, L);
+        if (f > FRMAX) break;
+        started ? ctx.lineTo(X(vv), Y(f)) : ctx.moveTo(X(vv), Y(f));
+        started = true;
+      }
+      ctx.stroke(); ctx.lineWidth = 1;
+
+      // Giao điểm với Fr = 1: tốc độ ngưỡng.
+      if (vth >= VMIN && vth <= VMAX) {
+        ctx.fillStyle = LM;
+        ctx.beginPath(); ctx.arc(X(vth), Y(1), 4, 0, Math.PI * 2); ctx.fill();
+        ctx.textAlign = 'center'; ctx.fillStyle = fg; ctx.globalAlpha = 0.75;
+        // Giữ nhãn trong khung: ở L lớn, ngưỡng trôi sát mép phải.
+        const lx = Math.max(gX0 + 26, Math.min(X(vth), gX1 - 26));
+        ctx.fillText(`${vn(vth, 1)} km/h`, lx, Y(1) - 8);
+        ctx.globalAlpha = 1;
+      }
+
+      // Điểm đang xét.
+      ctx.fillStyle = MARK;
+      ctx.beginPath(); ctx.arc(X(v), Y(Math.min(Fr, FRMAX)), 6, 0, Math.PI * 2); ctx.fill();
+
+      const regime = Fr >= 1
+        ? ' · <b>N = 0: con lắc ngược sụp, đây đã là chạy</b>'
+        : Fr >= 0.5
+          ? ' · <b>đã qua ngưỡng người thật bỏ đi bộ</b>'
+          : ' · đi bộ thoải mái';
+      readout.innerHTML =
+        `Chân ${vn(L, 2)} m · g = ${vn(g, 2)} m/s² · v = ${vn(v, 1)} km/h → Fr = <b>${vn(Fr, 2)}</b>` +
+        ` · phản lực đất còn ${(100 * N).toFixed(0)}% trọng lượng · ngưỡng Fr = 1 ở <b>${vn(vth, 1)} km/h</b>${regime}`;
+    }
+
+    root.querySelectorAll('input').forEach((el) => el.addEventListener('input', draw));
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="so-froude-khi-nao-di-bo-thanh-chay"]').forEach(setup);
+</script>

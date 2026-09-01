@@ -1,0 +1,231 @@
+---
+// Bethe (1944) diffraction by a small circular hole in a thin conducting screen.
+// Power transmission normalised to hole area: T = 64·(k·a)^4 / (27π²), k = 2π/λ,
+// a = hole radius. Strictly valid only for a ≪ λ (drawn solid up to d ≤ 0,2λ,
+// dashed beyond as a qualitative extension).
+// Plate thickness adds below-cutoff waveguide loss for the TE11 mode of a round
+// hole: λc = 1,706·d, α = (2π/λc)·√(1 − (λc/λ)²), loss = 8,686·α·t dB
+// (≈ 32·t/d dB when λ ≫ λc).
+// Above cutoff (d > λ/1,706 = 0,586λ) the hole propagates: T clamped at 0 dB.
+---
+
+<figure class="demo" data-demo="lo-2-mm-chan-song-cho-anh-sang">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Đường kính lỗ d (mm) <output data-out="d"></output>
+      <input type="range" data-in="d" min="0.1" max="100" step="0.1" value="2" /></label>
+    <label>Tần số sóng f (GHz) <output data-out="f"></output>
+      <input type="range" data-in="f" min="0.1" max="30" step="0.05" value="2.45" /></label>
+    <label>Bề dày tấm kim loại t (mm) <output data-out="t"></output>
+      <input type="range" data-in="t" min="0.2" max="5" step="0.1" value="0.6" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Dải trên cùng là mặt cắt tấm lưới, vẽ đúng tỉ lệ so với đúng một bước sóng:
+    ở 2,45 GHz mỗi lỗ 2 mm chỉ chiếm 1/61 bước sóng. Đường cam là công thức
+    Bethe cho tấm mỏng vô hạn, đường xanh cộng thêm phần suy hao vì lỗ dày lên
+    thành ống dẫn sóng dưới tần số cắt. Đường cong dốc 40 dB mỗi lần đường
+    kính tăng 10 lần — lỗ to gấp đôi thì T gấp 16 lần. Vạch đứng bên phải
+    là đường kính cắt d = 0,586 λ: qua nó lỗ thông hẳn, và đoạn nét đứt là
+    vùng công thức Bethe chỉ còn định tính.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const C = 299792458;
+  const CURVE = '#2563eb', MARK = '#dc2626', ALT = '#f59e0b';
+  const D_MIN = 0.1, D_MAX = 100, DB_MIN = -140;
+
+  const lam = (f: number) => C / (f * 1e9);
+  const bethe = (d: number, f: number) => {
+    const a = d / 2000, k = (2 * Math.PI) / lam(f);
+    return (64 * Math.pow(k * a, 4)) / (27 * Math.PI * Math.PI);
+  };
+  const thickDb = (d: number, f: number, t: number) => {
+    const lc = (1.706 * d) / 1000, l = lam(f);
+    if (l <= lc) return 0;
+    const al = ((2 * Math.PI) / lc) * Math.sqrt(1 - Math.pow(lc / l, 2));
+    return 8.685889638 * al * (t / 1000);
+  };
+  const thinDb = (d: number, f: number) => Math.min(0, 10 * Math.log10(bethe(d, f)));
+  const totDb = (d: number, f: number, t: number) =>
+    Math.min(0, 10 * Math.log10(bethe(d, f)) - thickDb(d, f, t));
+
+  const vn = (x: number, n: number) => x.toFixed(n).replace('.', ',');
+  const sci = (x: number) => {
+    const e = Math.floor(Math.log10(x));
+    return `${vn(x / Math.pow(10, e), 2)}·10<sup>${String(e).replace('-', '−')}</sup>`;
+  };
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (k: string) => root.querySelector(`[data-in="${k}"]`) as HTMLInputElement;
+    const output = (k: string) => root.querySelector(`[data-out="${k}"]`) as HTMLOutputElement;
+
+    function draw() {
+      const d = Number(input('d').value);
+      const f = Number(input('f').value);
+      const t = Number(input('t').value);
+      output('d').textContent = vn(d, 1);
+      output('f').textContent = vn(f, 2);
+      output('t').textContent = vn(t, 1);
+
+      const l = lam(f);
+      const dCut = (l / 1.706) * 1000;   // mm, đường kính trên tần số cắt
+      const dValid = 0.2 * l * 1000;     // mm, biên Bethe còn định lượng
+      const tot = totDb(d, f, t);
+      const thin = thinDb(d, f);
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32;
+      const cssH = Math.round(cssW * (cssW < 420 ? 0.85 : 0.56));
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+
+      const padL = 50, padR = 12, padT = 64, padB = 42;
+      const plotW = cssW - padL - padR;
+      const X = (dd: number) =>
+        padL + ((Math.log10(dd) - Math.log10(D_MIN)) / (Math.log10(D_MAX) - Math.log10(D_MIN))) * plotW;
+      const Y = (db: number) => padT + (-db / -DB_MIN) * (cssH - padT - padB);
+
+      // ── Dải trên: mặt cắt tấm lưới, bề ngang = đúng 1 bước sóng ──
+      const bandY = 16, bandH = 20;
+      ctx.font = '10px system-ui,sans-serif';
+      ctx.fillStyle = fg; ctx.globalAlpha = 0.55; ctx.textAlign = 'left';
+      ctx.fillText(`mặt cắt tấm lưới trên đúng 1 bước sóng (λ = ${vn(l * 100, 1)} cm)`, padL, bandY - 5);
+      ctx.globalAlpha = 1;
+      const holeW = (d / 1000 / l) * plotW;
+      ctx.fillStyle = fg; ctx.globalAlpha = 0.35;
+      if (holeW >= plotW) {
+        ctx.globalAlpha = 0.55; ctx.textAlign = 'center';
+        ctx.fillText('lỗ rộng hơn cả bước sóng', padL + plotW / 2, bandY + 14);
+      } else {
+        const pitch = Math.max(holeW * 2.2, 2.5);
+        if (pitch < 3) {
+          ctx.fillRect(padL, bandY, plotW, bandH);
+        } else {
+          for (let x = padL; x < padL + plotW; x += pitch) {
+            const xm = x + holeW;
+            const wMetal = Math.min(pitch - holeW, padL + plotW - xm);
+            if (wMetal > 0) ctx.fillRect(xm, bandY, wMetal, bandH);
+          }
+        }
+      }
+      ctx.globalAlpha = 0.3; ctx.strokeStyle = fg;
+      ctx.beginPath(); ctx.moveTo(padL, bandY + bandH + 6); ctx.lineTo(padL + plotW, bandY + bandH + 6); ctx.stroke();
+      ctx.globalAlpha = 1;
+
+      // ── Trục ──
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.3;
+      ctx.beginPath();
+      ctx.moveTo(padL, padT); ctx.lineTo(padL, cssH - padB); ctx.lineTo(cssW - padR, cssH - padB);
+      ctx.stroke();
+      ctx.globalAlpha = 0.55; ctx.fillStyle = fg;
+      ctx.textAlign = 'center';
+      for (const dd of [0.1, 0.3, 1, 3, 10, 30, 100]) {
+        ctx.fillText(dd < 1 ? vn(dd, 1) : String(dd), X(dd), cssH - padB + 14);
+      }
+      ctx.textAlign = 'right';
+      const dbStep = (cssH - padT - padB) < 190 ? 40 : 20;
+      for (let db = 0; db >= DB_MIN; db -= dbStep) {
+        ctx.fillText(`${String(db).replace('-', '−')} dB`, padL - 4, Y(db) + 3);
+      }
+      ctx.textAlign = 'center';
+      ctx.fillText('đường kính lỗ (mm)', padL + plotW / 2, cssH - padB + 30);
+      ctx.globalAlpha = 1;
+
+      // ── Vùng trên tần số cắt: lỗ thông hẳn ──
+      if (dCut < D_MAX) {
+        ctx.fillStyle = MARK; ctx.globalAlpha = 0.08;
+        ctx.fillRect(X(dCut), padT, cssW - padR - X(dCut), cssH - padT - padB);
+        ctx.globalAlpha = 0.5; ctx.strokeStyle = MARK;
+        ctx.setLineDash([4, 3]);
+        ctx.beginPath(); ctx.moveTo(X(dCut), padT); ctx.lineTo(X(dCut), cssH - padB); ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.globalAlpha = 0.75; ctx.fillStyle = fg; ctx.textAlign = 'right';
+        ctx.fillText(`d cắt = ${vn(dCut, 1)} mm`, X(dCut) - 5, cssH - padB - 8);
+        ctx.globalAlpha = 1;
+      }
+
+      // ── Hai đường cong: tấm mỏng (cam) và tấm dày t (xanh) ──
+      const drawCurve = (color: string, fn: (dd: number) => number) => {
+        ctx.strokeStyle = color; ctx.lineWidth = 2;
+        const seg = (from: number, to: number, dash: boolean) => {
+          if (to <= from) return;
+          ctx.setLineDash(dash ? [4, 3] : []);
+          ctx.globalAlpha = dash ? 0.55 : 1;
+          ctx.beginPath();
+          let pen = false;
+          for (let i = 0; i <= 160; i++) {
+            const dd = from * Math.pow(to / from, i / 160);
+            const db = fn(dd);
+            if (db < DB_MIN) { pen = false; continue; }   // chạy ra khỏi khung dưới
+            const y = Math.max(padT, Y(db));
+            if (pen) ctx.lineTo(X(dd), y); else { ctx.moveTo(X(dd), y); pen = true; }
+          }
+          ctx.stroke();
+          ctx.setLineDash([]); ctx.globalAlpha = 1;
+        };
+        seg(D_MIN, Math.min(dValid, D_MAX), false);
+        seg(Math.min(dValid, D_MAX), Math.min(dCut, D_MAX), true);
+        if (dCut < D_MAX) {
+          ctx.globalAlpha = 0.55;
+          ctx.beginPath(); ctx.moveTo(X(dCut), Y(0)); ctx.lineTo(cssW - padR, Y(0)); ctx.stroke();
+          ctx.globalAlpha = 1;
+        }
+        ctx.lineWidth = 1;
+      };
+      drawCurve(ALT, (dd) => thinDb(dd, f));
+      drawCurve(CURVE, (dd) => totDb(dd, f, t));
+
+      ctx.font = '10px system-ui,sans-serif'; ctx.textAlign = 'left';
+      ctx.fillStyle = ALT; ctx.fillText('tấm mỏng (Bethe)', padL + 6, padT + 12);
+      ctx.fillStyle = CURVE; ctx.fillText(`tấm dày ${vn(t, 1)} mm`, padL + 6, padT + 25);
+
+      // ── Điểm đang chọn ──
+      ctx.fillStyle = MARK;
+      const yMark = Math.max(padT, Math.min(cssH - padB, Y(tot)));
+      ctx.beginPath(); ctx.arc(X(d), yMark, 6, 0, Math.PI * 2); ctx.fill();
+
+      const T = bethe(d, f);
+      const rat = (l * 1000) / d;
+      const ratTxt = rat >= 2.5 ? `d/λ = 1/${rat.toFixed(0)}` : `d/λ = ${vn(1 / rat, 2)}`;
+      let tail: string;
+      if (d >= dCut || T >= 1) {
+        const msg = d >= dCut
+          ? 'lỗ đã vượt tần số cắt: sóng đi qua gần như không mất gì'
+          : 'lỗ đã lớn ngang bước sóng: công thức Bethe hết hiệu lực';
+        tail = `T ≈ <b>1</b> (0 dB) · <b>${msg}</b>`;
+      } else {
+        const warn = d > dValid ? ' · <b>lỗ không còn nhỏ so với λ — Bethe chỉ còn định tính</b>' : '';
+        tail =
+          `T = <b>${sci(T)}</b> = ${vn(thin, 1).replace('-', '−')} dB` +
+          ` · bề dày ${vn(t, 1)} mm cộng thêm −${vn(thickDb(d, f, t), 1)} dB` +
+          ` → tổng <b>${vn(tot, 1).replace('-', '−')} dB</b>${warn}`;
+      }
+      readout.innerHTML =
+        `Lỗ ${vn(d, 1)} mm · f = ${vn(f, 2)} GHz (λ = ${vn(l * 100, 1)} cm) · ${ratTxt} · ${tail}`;
+    }
+
+    root.querySelectorAll('input').forEach((el) => el.addEventListener('input', draw));
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="lo-2-mm-chan-song-cho-anh-sang"]').forEach(setup);
+</script>

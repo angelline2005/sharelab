@@ -1,0 +1,248 @@
+---
+// Cherenkov geometry. Frank–Tamm / Huygens construction:
+//   cos θ = 1/(n·β),  ngưỡng β = 1/n,  E_kin = mc²·(n/√(n²−1) − 1)
+//   dN/dx (400–700 nm) = 2πα·(1/λ₁ − 1/λ₂)·(1 − 1/(n²β²)) ≈ 491·sin²θ photon/cm
+// Nguồn: Frank & Tamm 1937; PDG "Passage of particles through matter".
+// Hợp lệ khi n không đổi trong dải nhìn thấy (bỏ qua tán sắc) và hạt đi thẳng,
+// đủ dài so với bước sóng. Slider n: 1,0001 (không khí ở 10 km, nơi mưa hạt
+// bùng lên) → 1,0003 (không khí mặt biển) → 1,333 (nước) → 2,42 (kim cương).
+---
+
+<figure class="demo" data-demo="anh-sang-cherenkov-va-goc-41-do">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Tốc độ hạt β = v/c <output data-out="b"></output>
+      <input type="range" data-in="b" min="0.5" max="0.9999" step="0.0001" value="0.99" /></label>
+    <label>Chiết suất môi trường n <output data-out="n"></output>
+      <input type="range" data-in="n" min="1.0001" max="2.42" step="0.0001" value="1.333" /></label>
+    <label>Loại hạt <output data-out="p"></output>
+      <input type="range" data-in="p" min="0" max="2" step="1" value="0" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Trên: hạt chạy sang phải; tại mỗi điểm nó đã đi qua, một mặt sóng ánh sáng
+    nở ra với tốc độ c/n. Khi hạt nhanh hơn chính ánh sáng trong môi trường,
+    các mặt sóng ấy có tiếp tuyến chung — đó là nón Cherenkov, y hệt nón Mach
+    của máy bay siêu thanh. Tia đỏ là hướng photon thoát ra, hợp với đường bay
+    góc θ. Dưới: θ theo β, dựng đứng từ ngưỡng β = 1/n rồi bão hoà ở θ tối đa.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const CURVE = '#2563eb', MARK = '#dc2626', WAVE = '#f59e0b';
+  const C_KMS = 299792.458;
+  const ALPHA = 1 / 137.035999;
+  // 2πα·(1/400nm − 1/700nm), đổi sang "trên mỗi cm": nhân sin²θ ra số photon/cm.
+  const YIELD = (2 * Math.PI * ALPHA * (1 / 400e-9 - 1 / 700e-9)) / 100;
+  const PARTICLES: Array<[string, number]> = [
+    ['electron', 0.51099895],
+    ['muon', 105.6583755],
+    ['proton', 938.27208816],
+  ];
+
+  const vn = (x: number, d: number) => x.toFixed(d).replace('.', ',');
+  // ngưỡng sát 1 (không khí: 0,9997) cần thêm chữ số, kẻo làm tròn thành "1,000"
+  const vnThr = (x: number) => vn(x, x >= 0.99 ? 4 : 3);
+  const gamThr = (n: number) => n / Math.sqrt(n * n - 1);
+  const eKin = (n: number, mc2: number) => mc2 * (gamThr(n) - 1);
+  const fmtE = (e: number) => (e >= 10 ? vn(e, 0) : vn(e, 2)) + ' MeV';
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (k: string) => root.querySelector(`[data-in="${k}"]`) as HTMLInputElement;
+    const output = (k: string) => root.querySelector(`[data-out="${k}"]`) as HTMLOutputElement;
+
+    function draw() {
+      const b = Number(input('b').value);
+      const n = Number(input('n').value);
+      const pi = Number(input('p').value);
+      const [pName, pMass] = PARTICLES[pi];
+
+      output('b').textContent = vn(b, 4);
+      output('n').textContent = vn(n, 4);
+      output('p').textContent = pName;
+
+      const nb = n * b;
+      const over = nb > 1;
+      const th = over ? Math.acos(1 / nb) : 0;          // góc phát photon
+      const thDeg = (th * 180) / Math.PI;
+      const thMax = (Math.acos(1 / n) * 180) / Math.PI; // giới hạn khi β → 1
+      const bThr = 1 / n;
+      const nPh = over ? YIELD * (1 - 1 / (nb * nb)) : 0;
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.78);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+      ctx.font = '10px system-ui,sans-serif';
+
+      // ---------- Bảng trên: dựng hình Huygens ----------
+      const geomT = 6, geomB = Math.round(cssH * 0.52);
+      const gx1 = 14, gx2 = cssW - 14;
+      const ay = (geomT + geomB) / 2;
+      const halfH = (geomB - geomT) / 2 - 10;
+      const tanA = over ? 1 / Math.sqrt(nb * nb - 1) : 0;
+      // L = tầm nhìn lại phía sau; chọn sao cho nón vừa khít chiều cao bảng.
+      let L = over ? halfH / tanA : halfH * nb;
+      L = Math.max(70, Math.min(L, gx2 - gx1 - 50));
+      // đặt đỉnh nón sao cho toàn bộ dựng hình nằm giữa bảng
+      const vertexX = Math.min((gx1 + gx2) / 2 + L / 2, gx2 - 40);
+
+      ctx.save();
+      ctx.beginPath(); ctx.rect(gx1, geomT, gx2 - gx1, geomB - geomT); ctx.clip();
+
+      // đường bay
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.35;
+      ctx.beginPath(); ctx.moveTo(vertexX - L, ay); ctx.lineTo(vertexX + 30, ay); ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(vertexX + 30, ay); ctx.lineTo(vertexX + 22, ay - 4); ctx.lineTo(vertexX + 22, ay + 4);
+      ctx.closePath(); ctx.fillStyle = fg; ctx.fill();
+      ctx.globalAlpha = 1;
+
+      // mặt sóng đã nở ra từ các điểm phát
+      const N = 5;
+      for (let k = 1; k <= N; k++) {
+        const d = (L * k) / N, cx = vertexX - d, r = d / nb;
+        ctx.strokeStyle = WAVE; ctx.globalAlpha = 0.55;
+        ctx.beginPath(); ctx.arc(cx, ay, r, 0, Math.PI * 2); ctx.stroke();
+        ctx.globalAlpha = 0.8; ctx.fillStyle = WAVE;
+        ctx.beginPath(); ctx.arc(cx, ay, 2, 0, Math.PI * 2); ctx.fill();
+        ctx.globalAlpha = 1;
+      }
+
+      if (over) {
+        // hai tiếp tuyến chung = mặt nón
+        ctx.strokeStyle = CURVE; ctx.lineWidth = 2;
+        for (const s of [-1, 1]) {
+          ctx.beginPath();
+          ctx.moveTo(vertexX, ay);
+          ctx.lineTo(vertexX - L * 1.05, ay + s * L * 1.05 * tanA);
+          ctx.stroke();
+        }
+        ctx.lineWidth = 1;
+
+        // tia photon từ điểm phát xa nhất tới điểm tiếp xúc
+        const cx = vertexX - L, r = L / nb;
+        const tx = cx + r * Math.cos(th), ty = ay - r * Math.sin(th);
+        ctx.strokeStyle = MARK; ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.moveTo(cx, ay); ctx.lineTo(tx, ty); ctx.stroke();
+        ctx.lineWidth = 1;
+
+        // cung góc θ
+        const aR = Math.max(18, Math.min(38, r * 0.55));
+        ctx.strokeStyle = MARK; ctx.globalAlpha = 0.8;
+        ctx.beginPath(); ctx.arc(cx, ay, aR, -th, 0); ctx.stroke();
+        ctx.globalAlpha = 1;
+        ctx.fillStyle = MARK; ctx.textAlign = 'left';
+        ctx.fillText(`θ = ${vn(thDeg, 1)}°`, cx + aR + 6, ay - aR * 0.35);
+
+        // nhãn đặt ngay phía trên cánh nón trên, không đè lên đường; sát ngưỡng
+        // cánh nón dựng gần như thẳng đứng nên phải ghìm nhãn lại trong bảng
+        ctx.fillStyle = fg; ctx.globalAlpha = 0.7; ctx.textAlign = 'left';
+        ctx.fillText('nón Cherenkov',
+          vertexX - L * 0.62, Math.max(geomT + 11, ay - L * 0.62 * tanA - 6));
+        ctx.globalAlpha = 1;
+      } else {
+        ctx.fillStyle = fg; ctx.globalAlpha = 0.75; ctx.textAlign = 'center';
+        ctx.fillText(
+          `n·β = ${vn(nb, 3)} nhỏ hơn 1 — hạt chậm hơn ánh sáng trong môi trường: không có nón`,
+          (gx1 + gx2) / 2, geomT + 16);
+        ctx.globalAlpha = 1;
+      }
+
+      ctx.fillStyle = MARK;
+      ctx.beginPath(); ctx.arc(vertexX, ay, 5, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = fg; ctx.globalAlpha = 0.7; ctx.textAlign = 'left';
+      ctx.fillText('hạt', vertexX + 6, ay + 16);
+      ctx.textAlign = 'center';
+      ctx.fillText('mặt sóng nở ra với c/n',
+        Math.max(gx1 + 62, vertexX - L), geomB - 6);
+      ctx.globalAlpha = 1;
+      ctx.restore();
+
+      // ---------- Bảng dưới: θ theo β ----------
+      const padL = 42, padR = 12;
+      const chartT = geomB + 24, chartB = cssH - 24;
+      const X = (bb: number) => padL + ((bb - 0.5) / 0.5) * (cssW - padL - padR);
+      const Y = (t: number) => chartB - (t / 70) * (chartB - chartT);
+
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.3;
+      ctx.beginPath(); ctx.moveTo(padL, chartT); ctx.lineTo(padL, chartB); ctx.lineTo(cssW - padR, chartB); ctx.stroke();
+      ctx.globalAlpha = 0.55; ctx.fillStyle = fg;
+      ctx.textAlign = 'center';
+      for (const k of [0.6, 0.7, 0.8, 0.9, 1.0]) {
+        ctx.fillText(`β = ${vn(k, 1)}`, Math.min(X(k), cssW - 20), chartB + 14);
+      }
+      ctx.textAlign = 'right';
+      for (const t of [0, 20, 40, 60]) ctx.fillText(`${t}°`, padL - 4, Y(t) + 3);
+      ctx.globalAlpha = 1;
+
+      // trần θ tối đa
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.35; ctx.setLineDash([4, 4]);
+      ctx.beginPath(); ctx.moveTo(padL, Y(thMax)); ctx.lineTo(cssW - padR, Y(thMax)); ctx.stroke();
+      ctx.setLineDash([]); ctx.globalAlpha = 0.7; ctx.fillStyle = fg; ctx.textAlign = 'left';
+      ctx.fillText(`θ tối đa = ${vn(thMax, 1)}° (β → 1)`, padL + 6, Y(thMax) - 5);
+      ctx.globalAlpha = 1;
+
+      // ngưỡng
+      if (bThr >= 0.5) {
+        ctx.strokeStyle = MARK; ctx.globalAlpha = 0.5; ctx.setLineDash([3, 3]);
+        ctx.beginPath(); ctx.moveTo(X(bThr), chartT); ctx.lineTo(X(bThr), chartB); ctx.stroke();
+        ctx.setLineDash([]); ctx.globalAlpha = 0.85; ctx.fillStyle = MARK;
+        // với không khí ngưỡng nằm sát mép phải — lật nhãn sang trái kẻo mất chữ
+        const onRight = X(bThr) > cssW * 0.6;
+        ctx.textAlign = onRight ? 'right' : 'left';
+        ctx.fillText(`ngưỡng β = 1/n = ${vnThr(bThr)}`, X(bThr) + (onRight ? -5 : 5), chartT + 11);
+        ctx.globalAlpha = 1;
+      }
+
+      ctx.strokeStyle = CURVE; ctx.lineWidth = 2; ctx.beginPath();
+      let started = false;
+      for (let i = 0; i <= 260; i++) {
+        const bb = 0.5 + (0.5 * i) / 260;
+        if (n * bb <= 1) continue;
+        const y = Y((Math.acos(1 / (n * bb)) * 180) / Math.PI);
+        started ? ctx.lineTo(X(bb), y) : ctx.moveTo(X(bb), y);
+        started = true;
+      }
+      ctx.stroke(); ctx.lineWidth = 1;
+
+      if (over) {
+        ctx.fillStyle = MARK;
+        ctx.beginPath(); ctx.arc(X(b), Y(thDeg), 6, 0, Math.PI * 2); ctx.fill();
+      }
+
+      // ---------- Readout ----------
+      const eThr = fmtE(eKin(n, pMass));
+      const vLight = Math.round(C_KMS / n).toLocaleString('vi-VN');
+      const vPart = Math.round(C_KMS * b).toLocaleString('vi-VN');
+      readout.innerHTML = over
+        ? `n = ${vn(n, 4)} → ánh sáng đi ${vLight} km/s, hạt đi ${vPart} km/s ⇒ nón <b>θ = ${vn(thDeg, 1)}°</b>`
+          + ` · ngưỡng β = ${vnThr(bThr)}, tức ${pName} <b>${eThr}</b>`
+          + ` · <b>${vn(nPh, 0)} photon</b> khả kiến mỗi cm đường đi`
+        : `n = ${vn(n, 4)} → ánh sáng đi ${vLight} km/s, hạt chỉ ${vPart} km/s`
+          + ` ⇒ <b>dưới ngưỡng, tối đen</b> · cần β ≥ ${vnThr(bThr)}, tức ${pName} ${eThr}`;
+    }
+
+    root.querySelectorAll('input').forEach((el) => el.addEventListener('input', draw));
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="anh-sang-cherenkov-va-goc-41-do"]').forEach(setup);
+</script>

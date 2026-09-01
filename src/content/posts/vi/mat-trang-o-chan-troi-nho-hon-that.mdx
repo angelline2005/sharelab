@@ -1,0 +1,87 @@
+---
+title: "Mặt Trăng ở chân trời nhỏ hơn 1,6% — ảo giác không nằm trong ánh sáng"
+seoTitle: "Ảo giác Mặt Trăng: kích thước góc thật ở chân trời và trên đỉnh đầu"
+description: "Ở chân trời bạn đứng xa Mặt Trăng thêm gần trọn một bán kính Trái Đất, nên đường kính góc tụt từ 31,60′ xuống 31,08′ — nhỏ đi 1,6% chứ không to lên. Dao động thật do quỹ đạo elip lớn gấp tám lần, 33,51′ so với 29,37′, mà chẳng ai nhận ra vì nó kéo dài một tháng."
+pubDate: 2026-09-02
+tags: ["vat-ly", "quang-hoc", "thien-van", "javascript"]
+translationId: "mat-trang-o-chan-troi-nho-hon-that"
+---
+
+import MoonIllusion from '../../../components/demos/MoonIllusion.astro';
+
+Mặt Trăng vừa nhô lên sau dãy nhà trông to như cái mâm đồng; ba tiếng sau
+nó leo lên đỉnh đầu và teo thành đồng xu. Hai đĩa ấy quả thật không bằng
+nhau — chỉ có điều hình học xếp chúng ngược đúng thứ tự mắt bạn xếp:
+
+<MoonIllusion />
+
+## Ra chân trời là lùi xa thêm một bán kính Trái Đất
+
+Bạn không đứng ở tâm Trái Đất. Trăng trên đỉnh đầu thì bạn nằm trên đoạn
+nối hai tâm, **gần nó hơn tâm Trái Đất trọn một bán kính**; trăng xuống
+chân trời thì bạn trượt ra rìa hình cầu và mất sạch khoản lợi đó. Định lý
+cosin gói cả câu chuyện vào một dòng:
+
+```
+d(alt) = √(D² − R²·cos²alt) − R·sin(alt)
+θ = 2·arctan(r_MT / d)
+```
+
+Thay D = 384 400 km, R = 6 371 km, r_MT = 1 737,4 km: chân trời cho
+**384 347 km**, thiên đỉnh cho **378 029 km** — chênh 6 318 km, đúng 99,2%
+một bán kính Trái Đất. Đường kính góc đi theo: 31,60′ trên đỉnh đầu,
+**31,08′** ở chân trời. Cái Mặt Trăng "khổng lồ" mọc sau dãy nhà **nhỏ hơn
+1,6%** so với lúc nó bé tí trên đầu bạn. Kéo con trượt lên 30° là hết một
+nửa hiệu ứng — thứ chi phối chỉ là R·sin(alt).
+
+## Thứ nhấp nhô thật sự thì lớn gấp tám lần
+
+Quỹ đạo Mặt Trăng là elip, và đó mới là nguồn dao động đáng kể: cận điểm
+356 500 km cho đĩa **33,51′**, viễn điểm 406 700 km cho **29,37′** —
+chênh **14,1%**, kèm độ sáng lệch **30%** (ánh sáng thu về tỉ lệ bình
+phương đường kính góc). Khoảng nhấp nhô 4,14′ ấy **gấp 7,96 lần** cái
+0,52′ mà cả hành trình từ chân trời lên thiên đỉnh gây ra. Vậy mà không ai
+kêu "trăng hôm nay to bất thường" đúng lúc: chu kỳ cận điểm dài 27,55
+ngày, và trí nhớ thị giác không giữ nổi kích thước lâu đến thế. "Siêu
+trăng" là thứ duy nhất có thật trong họ này — thật đến mức phân xử nhật
+thực: đĩa trăng viễn điểm nhìn từ thiên đỉnh chỉ **29,84′**, thua đĩa Mặt
+Trời (31,46–32,53′), nên hôm ấy chỉ có thể là **hình khuyên**.
+
+## 0,52 phút góc nằm dưới ngưỡng của mắt
+
+Hiệu số giữa hai tư thế là **31 giây góc**, còn mắt tinh tường phân giải
+được chừng 60″. Quy ra vật thật: cả đĩa Mặt Trăng vừa khít **lỗ bấm giấy
+6 mm để cách mắt 66 cm**, còn phần chênh, ở đúng khoảng cách ấy, là **bề
+dày một tờ giấy — 0,1 mm**. Đây chính là [thị
+sai](/vi/posts/thi-sai-sao-va-goc-nho-nhat-do-duoc) phiên bản một ngày,
+cùng phép đo đã bắt được 1,54 giây cung dịch chuyển của ngôi sao gần nhất.
+Ảo giác bạn *thấy* thì ngược dấu và lớn hơn ba mươi lần: trăng chân trời
+thường bị khai là to gấp rưỡi. Phép thử rẻ nhất nằm trong túi bạn: chụp
+hai tấm cách nhau ba tiếng cùng ống kính rồi dán cạnh nhau — phải đo pixel
+mới thấy khác.
+
+## Ảo giác nằm sau võng mạc
+
+Thứ thật sự đổi khi Mặt Trăng xuống thấp là **bối cảnh**: mái nhà, ngọn
+cây, dãy núi xếp thành chuỗi mốc khoảng cách chạy tới tận chân trời; thiên
+đỉnh thì trống trơn. Não ước lượng kích thước bằng góc nhìn nhân với
+khoảng cách nó *đoán*, mà chân trời luôn được đoán là xa hơn — cùng một
+góc, ra một vật to hơn. Đó là ảo giác Ponzo, chạy trên đúng bộ máy giúp
+bạn không lẫn con muỗi trước mũi với con chim ngoài sân. Bằng chứng ai
+cũng thử được: nhìn nó qua một ống giấy cuộn để cắt sạch bối cảnh — đĩa
+trăng xẹp về cỡ thường ngay, dù chưa photon nào đổi đường đi.
+Cái *có* đổi thật là màu: ánh trăng lách qua quãng khí quyển **dài gấp gần
+40 lần** lúc thiên đỉnh, [tán xạ mất phần
+lam](/vi/posts/vi-sao-bau-troi-xanh-va-hoang-hon-do) nên ngả cam và tối đi.
+
+## Trường hợp biên: khí quyển bóp dẹt đúng cái đĩa được khen là to
+
+Đẩy độ cao về sát 0° thì khúc xạ vào cuộc và phản chứng nốt: mép dưới đĩa
+được nâng **34,5′**, mép trên chỉ **29,4′**, chênh lệch ăn thẳng vào chiều
+đứng. Đường kính đứng còn **26,0′** trong khi chiều ngang vẫn 31,1′ — cái
+Mặt Trăng ai cũng chụp ở chân trời vừa nhỏ hơn vừa **dẹt đi 16%**, một quả
+trứng nằm chứ không phải cái mâm. Biên kia là thời gian: Mặt Trăng [lùi ra
+3,83 cm mỗi năm](/vi/posts/mat-trang-lui-xa-va-nam-400-ngay), giữ nguyên
+tốc độ ấy thì sau chừng **770 triệu năm**, cả trăng cận điểm trên đỉnh đầu
+cũng không phủ kín nổi đĩa Mặt Trời nhỏ nhất: nhật thực toàn phần cuối
+cùng diễn ra, rồi thôi vĩnh viễn.

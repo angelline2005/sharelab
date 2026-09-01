@@ -1,0 +1,93 @@
+---
+title: "Chỉ 66 người là đủ đưa hệ số cản của một nhịp cầu về không"
+seoTitle: "Cầu đi bộ lắc ngang: hiệu ứng khoá bước và số người tới hạn"
+description: "Cầu Millennium London đóng cửa hai ngày sau khi mở. Không phải cộng hưởng: mỗi người đi bộ trên mặt cầu đang lắc là một cái giảm chấn mang dấu âm, 300 N·s/m. Với nhịp 113 tấn, 1,0 Hz, ζ = 0,7 %, đúng 66 người là tổng cản về 0 — và đó là một ngưỡng, không phải một đỉnh."
+pubDate: 2026-09-02
+tags: ["vat-ly", "dao-dong", "co-hoc", "javascript"]
+translationId: "cau-di-bo-lac-ngang-va-66-nguoi"
+---
+
+import BridgeLockIn from '../../../components/demos/BridgeLockIn.astro';
+
+Ngày 10 tháng 6 năm 2000, cầu đi bộ Millennium bắc qua sông Thames mở cửa.
+Đám đông vừa tràn lên, mặt cầu bắt đầu lắc ngang, và người trên cầu tự
+động bước đồng loạt như một đoàn diễu binh. Hai ngày sau cầu đóng cửa. Thủ
+phạm không phải cộng hưởng — mà là một dấu trừ:
+
+<BridgeLockIn />
+
+## Mỗi người đi bộ là một cái giảm chấn cắm ngược dấu
+
+Bạn đi 2 bước mỗi giây, nhưng trọng tâm chỉ lắc trái rồi phải một lần cho
+mỗi hai bước: nhịp ngang của cơ thể là **1 Hz**, đúng bằng tần số ngang
+của nhịp cầu Millennium. Nghe đã giống cộng hưởng — thực tế còn tệ hơn.
+
+Giờ đặt bạn lên một mặt sàn đang trượt ngang. Chân đi bộ là [một con lắc
+ngược](/vi/posts/so-froude-khi-nao-di-bo-thanh-chay); để khỏi ngã, bạn đặt
+bàn chân hơi lệch về phía sàn đang chạy tới. Cú đặt chân ấy đẩy sàn thêm
+một nhát **đúng lúc sàn đi nhanh nhất**: lực bạn tác dụng tỉ lệ không phải
+với li độ mà với **vận tốc** của cầu. Arup đo hệ số ấy sau sự cố — khoảng
+**300 N·s/m mỗi người**.
+
+Lực tỉ lệ vận tốc, theo định nghĩa, là lực cản — chỉ có điều vòng phản xạ
+thăng bằng của người gắn cho nó dấu ngược: cái giảm chấn ấy **bơm** năng
+lượng vào thay vì rút ra. Trải dọc dạng dao động nửa hình sin của nhịp,
+trung bình mỗi người góp **−150 N·s/m**.
+
+## Một ngưỡng, không phải một đỉnh
+
+Nhịp cầu thép có chút cản của riêng nó, ít đến mức xấu hổ:
+
+```
+c_kết cấu = 4π · ζ · m · f          (m tính bằng kg → N·s/m)
+N tới hạn = c_kết cấu / 150 = 8π · ζ · m · f / k
+```
+
+Số của Millennium, cũng là mặc định trong demo: m = 113 tấn, f = 1,00 Hz,
+ζ = 0,7 % → **9 940 N·s/m**; chia cho 150: **66 người**.
+
+Đường xanh ấy không giống [đường cong cộng
+hưởng](/vi/posts/cong-huong-vi-sao-day-nho-thang-luc-lon) chỗ nào. Cộng
+hưởng cho một *đỉnh*: lực kích thích cố định, biên độ dâng rồi dừng ở mức
+cản đỡ nổi. Ở đây là một *ngưỡng*: dưới 66 người mặt cầu dập tắt mọi rung
+lắc, trên 66 người tổng cản mang dấu âm và một nhiễu bé tí cũng **lớn lên
+theo hàm mũ** — 100 người thì biên độ nhân đôi mỗi **31 giây**, 200 người
+mỗi **7,8 giây**.
+
+Kỹ sư thời đó có tính tải trọng đám đông và tính đúng, theo giả thiết
+chuẩn: người đi bộ pha ngẫu nhiên nên lực ngang chỉ cộng theo **căn bậc
+hai** — 2 000 người mạnh ngang **√2 000 ≈ 45 người bước cùng nhịp**. Chỗ
+hỏng là chữ "ngẫu nhiên": mặt cầu lắc ép tất cả chỉnh thăng bằng theo cùng
+một chu kỳ, **tự sản xuất ra sự đồng bộ nuôi sống nó**. Hôm mở cửa, 2 000
+người trên mặt cầu đẩy biên độ ngang tới **70 mm**.
+
+## Vì sao "phá nhịp bước" không cứu được gì
+
+Lính qua cầu được lệnh phá nhịp bước để không tần số nào trùng tần số
+riêng. Ở đây mẹo ấy vô nghĩa: lực gây hại neo vào vận tốc cầu chứ không
+vào nhịp chân bạn — khởi hành nhịp nào thì vài chục bước sau mặt cầu cũng
+chỉnh bạn về nhịp của nó.
+
+Công thức chỉ có ba cần gạt: ζ, m và f. Tăng m hay f là xây lại kết cấu,
+nên còn đúng một lối rẻ — [bơm cản thật
+vào](/vi/posts/dao-dong-tat-dan-diem-vang-cua-giam-xoc). Millennium được
+lắp **37 giảm chấn nhớt và 52 bộ khối lượng điều chỉnh** hết khoảng 5
+triệu bảng, kéo ζ từ 0,7 % lên cỡ **20 %**: ngưỡng nhảy lên **gần 1 900
+người**, đông đến mức ở mật độ 1,5 người/m² phải trải kín 316 m mặt cầu
+rộng 4 m — dài hơn cả nhịp dài nhất của cây cầu 325 m ấy. Cầu mở lại ngày
+22 tháng 2 năm 2002, sau hai mươi tháng đóng cửa.
+
+## Trường hợp biên: trong công thức không có biên độ nào cả
+
+Đọc lại `N tới hạn = 8π · ζ · m · f / k`: không có ký hiệu nào cho biên
+độ, nên mô hình dự đoán dao động lớn mãi không trần — mà cầu không sập.
+Chỗ gãy nằm trong chính con số 300 N·s/m. Ở biên độ 70 mm với f = 1,0 Hz,
+mặt cầu chạy nhanh nhất **0,44 m/s**, nên "giảm chấn người" phải xuất ra
+300 × 0,44 = **132 N** lực ngang: 13,5 kgf, một phần năm trọng lượng người
+70 kg, mỗi giây một lần. Không ai đi bộ như vậy — người ta đứng lại, dạng
+chân, túm lan can, và đúng lúc đó đổi dấu, thành giảm chấn thật. **Cơn mất ổn định tự chặn mình ở đúng biên độ đủ làm người ta sợ.**
+
+Đầu kia của công thức lạnh hơn: ζ → 0 thì N tới hạn → 0 — một nhịp cầu
+không cản sẽ bị **một người** làm cho lắc. Với loại cầu mảnh, dài, nhẹ mà
+kiến trúc hiện đại ưa thích, 0,7 % ấy là toàn bộ khoảng cách giữa đi lại
+bình thường và một ngưỡng 66 người.

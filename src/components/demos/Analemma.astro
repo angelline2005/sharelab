@@ -1,0 +1,190 @@
+---
+// Phương trình thời gian (dạng đóng Whitman/Spencer, phút):
+//   B = 360·(n − 81)/365 ;  EoT = 9,87·sin(2B) − 7,53·cos(B) − 1,5·sin(B)
+// Xích vĩ Mặt Trời (Cooper 1969, độ):  δ = 23,45·sin(B)
+// Giữa trưa thật (giờ Việt Nam GMT+7, kinh tuyến chuẩn 105°Đ):
+//   t = 12:00 − EoT + 4·(105 − L)
+// Nguồn: Duffie & Beckman, "Solar Engineering of Thermal Processes", ch.1.
+// Sai số so với EoT thiên văn chính xác (thuật toán NOAA): dưới 1 phút, ngày
+// đạt cực trị lệch 2–3 ngày. Hợp lệ cho mọi n = 1..365 và mọi kinh độ; thanh
+// trượt giới hạn trong dải kinh độ đất liền Việt Nam 102–110°Đ.
+---
+
+<figure class="demo" data-demo="phuong-trinh-thoi-gian-va-hinh-so-tam">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Ngày trong năm <output data-out="n"></output>
+      <input type="range" data-in="n" min="1" max="365" step="1" value="245" /></label>
+    <label>Kinh độ <output data-out="l"></output>
+      <input type="range" data-in="l" min="102" max="110" step="0.05" value="105.85" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Trục ngang: phương trình thời gian — Mặt Trời qua kinh tuyến sớm hay muộn
+    bao nhiêu phút so với một mặt trời trung bình chạy đều tăm tắp. Trục dọc:
+    xích vĩ, tức Mặt Trời đứng cao hay thấp theo mùa. Chấm của 365 ngày khép
+    lại thành hình số tám — đúng hình bạn thu được khi chụp bầu trời vào một
+    giờ đồng hồ cố định suốt một năm. Mặt đồng hồ bên phải đọc giờ giữa trưa
+    thật tại kinh độ đã chọn; kim mờ là 12:00 đúng.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const CURVE = '#2563eb', MARK = '#dc2626', LM = '#f59e0b';
+  const LSTD = 105;
+  const ML = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+  const PLACES: Array<[number, string]> = [
+    [102.15, 'A Pa Chải'], [103.0, 'Điện Biên Phủ'], [105.85, 'Hà Nội'],
+    [106.7, 'TP.HCM'], [107.6, 'Huế'], [109.45, 'Mũi Đôi'],
+  ];
+
+  const rad = (d: number) => (d * Math.PI) / 180;
+  const bang = (n: number) => rad((360 * (n - 81)) / 365);
+  const eot = (n: number) =>
+    9.87 * Math.sin(2 * bang(n)) - 7.53 * Math.cos(bang(n)) - 1.5 * Math.sin(bang(n));
+  const decl = (n: number) => 23.45 * Math.sin(bang(n));
+  const vn = (x: number, d: number) => x.toFixed(d).replace('.', ',').replace('-', '−');
+  const sgn = (x: number, d: number) => (x >= 0 ? '+' : '−') + Math.abs(x).toFixed(d).replace('.', ',');
+  const dayOf = (n: number) => {
+    let m = 0, d = n;
+    while (d > ML[m]) { d -= ML[m]; m++; }
+    return `${d}/${m + 1}`;
+  };
+  const firstOf = (m: number) => { let n = 1; for (let i = 0; i < m; i++) n += ML[i]; return n; };
+  const clock = (mins: number) => {
+    const t = Math.round(mins), h = Math.floor(t / 60), q = t - h * 60;
+    return `${h}:${String(q).padStart(2, '0')}`;
+  };
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (k: string) => root.querySelector(`[data-in="${k}"]`) as HTMLInputElement;
+    const output = (k: string) => root.querySelector(`[data-out="${k}"]`) as HTMLOutputElement;
+
+    function draw() {
+      const n = Number(input('n').value), L = Number(input('l').value);
+      const place = PLACES.find(([p]) => Math.abs(p - L) < 0.03);
+      output('n').textContent = `${n} (${dayOf(n)})`;
+      output('l').textContent = `${vn(L, 2)}°Đ` + (place ? ` · ${place[1]}` : '');
+
+      const E = eot(n), D = decl(n), lon = 4 * (LSTD - L), noon = 12 * 60 - E + lon;
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.5);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+      ctx.font = '10px system-ui,sans-serif';
+
+      const padL = 40, padB = 30, padT = 14;
+      const clockW = Math.min(cssW * 0.34, cssH * 0.92);
+      const plotR = cssW - clockW - 6;
+      const X = (e: number) => padL + ((e + 18) / 36) * (plotR - padL);
+      const Y = (d: number) => padT + ((26 - d) / 52) * (cssH - padB - padT);
+
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.3;
+      ctx.beginPath();
+      ctx.moveTo(padL, padT); ctx.lineTo(padL, cssH - padB); ctx.lineTo(plotR, cssH - padB);
+      ctx.stroke();
+      ctx.globalAlpha = 0.18;
+      ctx.beginPath(); ctx.moveTo(X(0), padT); ctx.lineTo(X(0), cssH - padB); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(padL, Y(0)); ctx.lineTo(plotR, Y(0)); ctx.stroke();
+
+      ctx.globalAlpha = 0.55; ctx.fillStyle = fg;
+      const xt = plotR - padL >= 260 ? [-15, -10, -5, 0, 5, 10, 15] : [-15, 0, 15];
+      ctx.textAlign = 'center';
+      for (const k of xt) ctx.fillText(vn(k, 0), X(k), cssH - padB + 13);
+      ctx.fillText('phương trình thời gian (phút)', (padL + plotR) / 2, cssH - padB + 25);
+      ctx.textAlign = 'right';
+      for (const d of [-20, -10, 0, 10, 20]) ctx.fillText(`${vn(d, 0)}°`, padL - 4, Y(d) + 3);
+      ctx.textAlign = 'left';
+      ctx.fillText('xích vĩ Mặt Trời', padL + 5, padT + 9);
+      ctx.globalAlpha = 1;
+
+      // Hình số tám: 365 ngày trong mặt phẳng (EoT, xích vĩ).
+      ctx.strokeStyle = CURVE; ctx.lineWidth = 2; ctx.beginPath();
+      for (let i = 0; i <= 730; i++) {
+        const d = 1 + (365 * i) / 730;
+        i ? ctx.lineTo(X(eot(d)), Y(decl(d))) : ctx.moveTo(X(eot(d)), Y(decl(d)));
+      }
+      ctx.closePath(); ctx.stroke(); ctx.lineWidth = 1;
+
+      // Mốc mùng 1 mỗi tháng.
+      for (let m = 0; m < 12; m++) {
+        const d = firstOf(m), e = eot(d), y = Y(decl(d));
+        ctx.fillStyle = LM;
+        ctx.beginPath(); ctx.arc(X(e), y, 3, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = fg; ctx.globalAlpha = 0.65;
+        ctx.textAlign = e >= 0 ? 'left' : 'right';
+        ctx.fillText(`T${m + 1}`, X(e) + (e >= 0 ? 7 : -7), y + 3);
+        ctx.globalAlpha = 1;
+      }
+
+      ctx.fillStyle = MARK;
+      ctx.beginPath(); ctx.arc(X(E), Y(D), 6, 0, Math.PI * 2); ctx.fill();
+
+      // Mặt đồng hồ: giờ giữa trưa thật tại kinh độ đã chọn.
+      const cx = plotR + clockW / 2, cy = padT + (cssH - padB - padT) / 2 - 8;
+      const R = Math.min(clockW / 2 - 6, (cssH - padB - padT) / 2 - 20);
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.35; ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.arc(cx, cy, R, 0, Math.PI * 2); ctx.stroke();
+      for (let k = 0; k < 12; k++) {
+        const a = (k / 12) * Math.PI * 2 - Math.PI / 2, big = k % 3 === 0;
+        ctx.beginPath();
+        ctx.moveTo(cx + Math.cos(a) * R, cy + Math.sin(a) * R);
+        ctx.lineTo(cx + Math.cos(a) * R * (big ? 0.84 : 0.91), cy + Math.sin(a) * R * (big ? 0.84 : 0.91));
+        ctx.stroke();
+      }
+      ctx.globalAlpha = 0.25; ctx.lineWidth = 3;
+      ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(cx, cy - R * 0.72); ctx.stroke();
+
+      const mm = ((noon % 60) + 60) % 60, hh = (noon - mm) / 60;
+      const aM = (mm / 60) * Math.PI * 2 - Math.PI / 2;
+      const aH = (((hh % 12) + mm / 60) / 12) * Math.PI * 2 - Math.PI / 2;
+      ctx.globalAlpha = 1; ctx.strokeStyle = MARK;
+      ctx.lineWidth = 4; ctx.beginPath();
+      ctx.moveTo(cx, cy); ctx.lineTo(cx + Math.cos(aH) * R * 0.5, cy + Math.sin(aH) * R * 0.5); ctx.stroke();
+      ctx.lineWidth = 2; ctx.beginPath();
+      ctx.moveTo(cx, cy); ctx.lineTo(cx + Math.cos(aM) * R * 0.78, cy + Math.sin(aM) * R * 0.78); ctx.stroke();
+      ctx.fillStyle = MARK;
+      ctx.beginPath(); ctx.arc(cx, cy, 3, 0, Math.PI * 2); ctx.fill();
+      ctx.lineWidth = 1;
+
+      ctx.fillStyle = fg; ctx.globalAlpha = 0.7; ctx.textAlign = 'center';
+      ctx.fillText('giữa trưa thật', cx, cy + R + 14);
+      ctx.globalAlpha = 1; ctx.fillStyle = MARK;
+      ctx.font = 'bold 13px system-ui,sans-serif';
+      ctx.fillText(clock(noon), cx, cy + R + 29);
+
+      // Sớm/muộn nhất là tính theo cực trị của EoT (cực đại +16,45; cực tiểu
+      // −14,60), không theo một mốc giờ tuyệt đối: mốc tuyệt đối chỉ đúng cho
+      // Hà Nội và sẽ báo sai suốt nửa năm ở A Pa Chải hay Mũi Đôi.
+      const note = E >= 15.4
+        ? ' · <b>vùng giữa trưa sớm nhất trong năm</b>'
+        : E <= -13.6 ? ' · <b>vùng giữa trưa muộn nhất trong năm</b>' : '';
+      readout.innerHTML =
+        `Ngày ${dayOf(n)} · phương trình thời gian <b>${sgn(E, 1)} phút</b> · xích vĩ ${sgn(D, 1)}°` +
+        ` · lệch kinh độ ${sgn(lon, 1)} phút → giữa trưa thật lúc <b>${clock(noon)}</b>${note}`;
+    }
+
+    root.querySelectorAll('input').forEach((el) => el.addEventListener('input', draw));
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="phuong-trinh-thoi-gian-va-hinh-so-tam"]').forEach(setup);
+</script>

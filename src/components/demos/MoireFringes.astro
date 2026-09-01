@@ -1,0 +1,251 @@
+---
+// Moiré between two line gratings, pitch p and p(1+ε), crossed at angle θ.
+// Beat wave vector Δk = k1 − k2 gives the exact fringe period
+//   Λ = p(1+ε) / √((1+ε)² + 1 − 2(1+ε)cos θ)
+// which reduces to Λ = p/(2 sin(θ/2)) for ε = 0 and to Λ = p(1+ε)/ε for θ = 0,
+// and to the small-angle form Λ ≈ p/√(ε² + θ²) quoted in the article.
+// Exact for all θ ∈ [0°, 60°] and ε ∈ [0, 10%] — no small-angle approximation
+// is used in the code. The field is drawn in the frame where Δk is horizontal,
+// so the fringes always stand vertical and one period always fits the arrow.
+---
+
+<figure class="demo" data-demo="van-moire-bo-khuech-dai-sai-lech-hinh-hoc">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Bước lưới p (mm) <output data-out="p"></output>
+      <input type="range" data-in="p" min="0.05" max="2" step="0.01" value="0.25" /></label>
+    <label>Góc lệch θ (°) <output data-out="th"></output>
+      <input type="range" data-in="th" min="0" max="60" step="0.1" value="1" /></label>
+    <label>Lệch bước ε (%) <output data-out="e"></output>
+      <input type="range" data-in="e" min="0" max="10" step="0.1" value="0" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Khung trên là hai lưới vạch song song chồng lên nhau — không có mực nào
+    ngoài mực của hai lưới, nhưng mắt thấy những dải rộng gấp hàng chục lần
+    bước lưới. Mũi tên đo đúng một chu kỳ vân; thanh tỉ lệ cho biết khung
+    hình rộng bao nhiêu milimét. Khung dưới vẽ hệ số khuếch đại Λ/p theo góc
+    lệch trên trục log–log: đường gần thẳng dốc −1, tức khuếch đại tỉ lệ
+    nghịch với góc. Khi ε > 0, vạch cam là trần mà lệch bước đặt ra.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const CURVE = '#2563eb', MARK = '#dc2626', THIRD = '#f59e0b';
+  const RAD = Math.PI / 180;
+  const vn = (x: number, d: number) => x.toFixed(d).replace('.', ',');
+  const fmtL = (x: number) => vn(x, x < 100 ? 2 : x < 1000 ? 1 : 0); // mm
+  const fmtG = (x: number) => vn(x, x < 100 ? 1 : 0); // ×
+
+  // Exact fringe period in units of the first grating's pitch.
+  function gainOf(eps: number, thDeg: number) {
+    const a = 1 + eps, c = Math.cos(thDeg * RAD);
+    const q = a * a + 1 - 2 * a * c;
+    return q <= 0 ? Infinity : a / Math.sqrt(q);
+  }
+
+  // Transmittance of one grating period: a 50%-duty bar whose edges are
+  // softened by `e` (in units of the period). Softening is set to about one
+  // device pixel at draw time, so the bars stay sharp — and the moiré
+  // contrast stays high — without ever aliasing.
+  const LUT = new Float32Array(512);
+  function buildLUT(e: number) {
+    for (let i = 0; i < 512; i++) {
+      let u = i / 512; if (u > 0.5) u -= 1;
+      const s = (0.25 + e / 2 - Math.abs(u)) / e;
+      LUT[i] = s <= 0 ? 0 : s >= 1 ? 1 : s * s * (3 - 2 * s);
+    }
+  }
+
+  function niceStep(x: number) {
+    const e = Math.pow(10, Math.floor(Math.log10(x))), m = x / e;
+    return (m >= 5 ? 5 : m >= 2 ? 2 : 1) * e;
+  }
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (k: string) => root.querySelector(`[data-in="${k}"]`) as HTMLInputElement;
+    const output = (k: string) => root.querySelector(`[data-out="${k}"]`) as HTMLOutputElement;
+
+    function draw() {
+      const p = Number(input('p').value);
+      const th = Number(input('th').value);
+      const epsPct = Number(input('e').value);
+      const eps = epsPct / 100;
+      output('p').textContent = vn(p, 2);
+      output('th').textContent = vn(th, 1);
+      output('e').textContent = vn(epsPct, 1);
+
+      const gain = gainOf(eps, th);
+      const lambda = gain * p; // mm
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.66);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+      const rgb = (fg.match(/\d+/g) || ['120', '120', '120']).map(Number);
+
+      const fieldH = Math.round(cssH * 0.5);
+      const fieldW = cssW;
+
+      // Pixels per grating pitch: aim for ~1.7 fringes across the field, so the
+      // bars stay wide enough to render sharply and the beat stays obvious.
+      const PXPP = Math.max(3, Math.min(16, fieldW / (1.7 * Math.max(gain, 1))));
+      const scale = PXPP / p; // px per mm
+      const lamPx = gain * PXPP;
+
+      // Wave vectors (cycles per px) in the frame where Δk lies along +x.
+      const g = 1 / PXPP, a = 1 + eps, s = Math.sin(th * RAD), c = Math.cos(th * RAD);
+      const k1 = [0, g], k2 = [(-s * g) / a, (c * g) / a];
+      const dx = k1[0] - k2[0], dy = k1[1] - k2[1];
+      const phi = Math.atan2(dy, dx), cp = Math.cos(phi), sp = Math.sin(phi);
+      const rot = (v: number[]) => [v[0] * cp + v[1] * sp, -v[0] * sp + v[1] * cp];
+      const K1 = rot(k1), K2 = rot(k2);
+
+      // Render the product of the two transmittances into the field.
+      const fw = Math.round(fieldW * dpr), fh = Math.round(fieldH * dpr);
+      buildLUT(Math.max(0.05, Math.min(0.35, 1.2 / (PXPP * dpr))));
+      const img = ctx.createImageData(fw, fh);
+      const d = img.data;
+      const a1x = K1[0] / dpr, a1y = K1[1] / dpr, a2x = K2[0] / dpr, a2y = K2[1] / dpr;
+      // Ink colour: house blue, nudged toward the page's own text colour so the
+      // field stays legible in both light and dark mode.
+      const ink = [37 * 0.75 + rgb[0] * 0.25, 99 * 0.75 + rgb[1] * 0.25, 235 * 0.75 + rgb[2] * 0.25];
+      let i = 0;
+      for (let y = 0; y < fh; y++) {
+        let u1 = a1y * y, u2 = a2y * y;
+        for (let x = 0; x < fw; x++) {
+          const t1 = LUT[(((u1 * 512) | 0) % 512 + 512) % 512];
+          const t2 = LUT[(((u2 * 512) | 0) % 512 + 512) % 512];
+          d[i] = ink[0]; d[i + 1] = ink[1]; d[i + 2] = ink[2];
+          d[i + 3] = 255 * (1 - t1 * t2);
+          i += 4;
+          u1 += a1x; u2 += a2x;
+        }
+      }
+      ctx.putImageData(img, 0, 0);
+
+      ctx.font = '10px system-ui,sans-serif';
+      ctx.fillStyle = fg; ctx.strokeStyle = fg;
+
+      // Scale bar (bottom-left of the field).
+      const fov = fieldW / scale;
+      const bar = niceStep(fov / 5), barPx = bar * scale;
+      const by = fieldH - 12;
+      ctx.globalAlpha = 0.85; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.moveTo(12, by); ctx.lineTo(12 + barPx, by); ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(12, by - 4); ctx.lineTo(12, by + 4);
+      ctx.moveTo(12 + barPx, by - 4); ctx.lineTo(12 + barPx, by + 4); ctx.stroke();
+      ctx.textAlign = 'left';
+      ctx.fillText(`${vn(bar, bar < 1 ? 2 : bar < 10 ? 1 : 0)} mm`, 12, by - 8);
+      ctx.lineWidth = 1; ctx.globalAlpha = 1;
+
+      // One-period arrow across the fringes.
+      const ay = Math.round(fieldH * 0.32);
+      if (lamPx <= fieldW - 40) {
+        const x0 = (fieldW - lamPx) / 2, x1 = x0 + lamPx;
+        ctx.strokeStyle = MARK; ctx.fillStyle = MARK; ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.moveTo(x0, ay); ctx.lineTo(x1, ay); ctx.stroke();
+        for (const [xe, dir] of [[x0, 1], [x1, -1]] as Array<[number, number]>) {
+          ctx.beginPath();
+          if (lamPx > 26) {
+            // Arrowheads only when they fit inside the span.
+            ctx.moveTo(xe, ay); ctx.lineTo(xe + dir * 8, ay - 4); ctx.lineTo(xe + dir * 8, ay + 4);
+            ctx.closePath(); ctx.fill();
+          } else {
+            ctx.moveTo(xe, ay - 5); ctx.lineTo(xe, ay + 5); ctx.stroke();
+          }
+        }
+        ctx.textAlign = 'center'; ctx.font = 'bold 11px system-ui,sans-serif';
+        ctx.fillText(`Λ = ${fmtL(lambda)} mm`, (x0 + x1) / 2, ay - 7);
+      } else {
+        ctx.fillStyle = MARK; ctx.textAlign = 'center';
+        ctx.font = 'bold 11px system-ui,sans-serif';
+        ctx.fillText('một vân rộng hơn cả khung hình', fieldW / 2, ay);
+      }
+      ctx.font = '10px system-ui,sans-serif';
+
+      // ---- Lower panel: gain vs angle, log–log.
+      const padL = 46, padR = 10, padT = fieldH + 22, padB = 24;
+      const plotB = cssH - padB;
+      // Range covers every angle the article quotes: 0,1° (×573) to 60° (×1).
+      const xLo = Math.log10(0.1), xHi = Math.log10(60);
+      const yLo = Math.log10(0.7), yHi = Math.log10(1000);
+      const X = (t: number) => padL + ((Math.log10(t) - xLo) / (xHi - xLo)) * (cssW - padL - padR);
+      const Y = (v: number) => plotB - ((Math.log10(v) - yLo) / (yHi - yLo)) * (plotB - padT);
+      const clampY = (v: number) => Y(Math.max(0.7, Math.min(1000, v)));
+
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.3;
+      ctx.beginPath(); ctx.moveTo(padL, padT); ctx.lineTo(padL, plotB); ctx.lineTo(cssW - padR, plotB); ctx.stroke();
+      ctx.globalAlpha = 0.55; ctx.fillStyle = fg;
+      ctx.textAlign = 'center';
+      for (const t of [0.1, 0.5, 1, 2, 5, 10, 20, 60])
+        ctx.fillText(`${vn(t, t < 1 ? 1 : 0)}°`, X(t), plotB + 14);
+      ctx.textAlign = 'right';
+      for (const v of [1, 3, 10, 30, 100, 300, 1000]) ctx.fillText(`×${v}`, padL - 4, Y(v) + 3);
+      ctx.globalAlpha = 1;
+
+      // Gain = 1 line: the fringe has shrunk to the grating pitch itself.
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.35; ctx.setLineDash([3, 3]);
+      ctx.beginPath(); ctx.moveTo(padL, Y(1)); ctx.lineTo(cssW - padR, Y(1)); ctx.stroke();
+      ctx.setLineDash([]); ctx.globalAlpha = 1;
+
+      // Ceiling imposed by pitch mismatch alone.
+      if (eps > 0) {
+        const ceil = (1 + eps) / eps;
+        if (ceil <= 1000) {
+          ctx.strokeStyle = THIRD; ctx.setLineDash([5, 4]);
+          ctx.beginPath(); ctx.moveTo(padL, Y(ceil)); ctx.lineTo(cssW - padR, Y(ceil)); ctx.stroke();
+          ctx.setLineDash([]);
+          ctx.fillStyle = THIRD; ctx.textAlign = 'left'; ctx.globalAlpha = 0.9;
+          ctx.fillText(`trần do lệch bước: ×${vn(ceil, ceil < 10 ? 1 : 0)}`, padL + 6, Y(ceil) - 4);
+          ctx.globalAlpha = 1;
+        }
+      }
+
+      ctx.strokeStyle = CURVE; ctx.lineWidth = 2; ctx.beginPath();
+      for (let k = 0; k <= 240; k++) {
+        const t = Math.pow(10, xLo + ((xHi - xLo) * k) / 240);
+        const y = clampY(gainOf(eps, t));
+        k ? ctx.lineTo(X(t), y) : ctx.moveTo(X(t), y);
+      }
+      ctx.stroke(); ctx.lineWidth = 1;
+
+      ctx.fillStyle = MARK;
+      ctx.beginPath();
+      ctx.arc(X(Math.max(0.1, Math.min(60, th))), clampY(gain), 6, 0, Math.PI * 2);
+      ctx.fill();
+
+      let note = '';
+      if (gain < 3) note = ' · <b>vân đã co xuống ngang bước lưới — hết đọc được</b>';
+      else if (lamPx > fieldW - 40) note = ' · <b>hai lưới gần trùng khớp: vân rộng hơn khung hình</b>';
+
+      readout.innerHTML =
+        `bước ${vn(p, 2)} mm · lệch góc ${vn(th, 1)}° · lệch bước ${vn(epsPct, 1)}% → ` +
+        `chu kỳ vân <b>Λ = ${isFinite(lambda) ? fmtL(lambda) + ' mm' : '∞'}</b>` +
+        ` · khuếch đại <b>${isFinite(gain) ? fmtG(gain) + ' lần' : 'vô hạn — không có vân'}</b>${note}`;
+    }
+
+    root.querySelectorAll('input').forEach((el) => el.addEventListener('input', draw));
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="van-moire-bo-khuech-dai-sai-lech-hinh-hoc"]').forEach(setup);
+</script>

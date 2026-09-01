@@ -1,0 +1,90 @@
+---
+title: "Cứu vườn khỏi sương giá bằng cách… làm nước đóng băng lên lá"
+seoTitle: "Chống sương giá bằng tưới nước: nhiệt ẩn đông đặc 334 kJ/kg giữ lá ở 0 °C"
+description: "Lá trần nhìn thẳng lên trời quang mất 70 W/m², trượt qua mốc 0 °C sau 30 giây và chạm ngưỡng chết mô −2 °C sau 1 phút 44 giây — trong khi nhiệt kế vẫn báo 2 °C. Phủ lên nó 1 mm nước: 334 kJ mỗi kilôgam phải nhả xong trước khi lớp nước đông hết, ghim lá ở đúng 0 °C suốt hơn hai giờ."
+pubDate: 2026-09-02
+tags: ["vat-ly", "nhiet-hoc", "khi-hau", "javascript"]
+translationId: "tuoi-nuoc-cuu-cay-khoi-suong-gia"
+---
+
+import FrostIrrigation from '../../../components/demos/FrostIrrigation.astro';
+
+Dự báo đêm nay 2 độ, không có cảnh báo sương giá. Sáng ra, một góc vườn chè
+cháy đen như bị dội nước sôi. Nhiệt kế không nói dối — nó chỉ ngồi trong lều
+khí tượng, còn chiếc lá thì suốt đêm nhìn thẳng lên bầu trời quang mây:
+
+<FrostIrrigation />
+
+## Chiếc lá tự làm mình lạnh hơn không khí
+
+Ở 0 °C, mặt lá bức xạ 306 W/m² lên khoảng trống; bầu trời quang chỉ trả lại
+236 W/m² — hụt **70 W/m²**, rò suốt đêm không nghỉ. Chỗ 236 W/m² trả về ấy
+chính là [tấm chăn nhà kính](/vi/posts/can-bang-nhiet-trai-dat-va-tam-chan-33-do)
+đang làm việc; đêm quang mây và khô là đêm nó mỏng nhất.
+
+Lá thì gần như không có gì chống đỡ: dày 0,2 mm, hầu hết là nước, nhiệt dung
+vỏn vẹn **800 J cho mỗi mét vuông mỗi độ**. Chia cho hệ số trao đổi nhiệt của
+một đêm lặng gió (15 W/(m²·K)) ra hằng số thời gian **53 giây**: lá tụt qua
+0 °C sau **30 giây**, chạm mốc chết mô −2 °C sau **1 phút 44 giây**, rồi nằm lì
+ở **−2,7 °C** trong khi nhiệt kế trong lều vẫn trung thực báo +2 °C. An ủi duy
+nhất: gió mạnh lại là bạn — nó ép lá về sát nhiệt độ không khí, nên sương giá
+hại nhất vào đêm *lặng*.
+
+## 334 kilôjun giấu trong cú đổi pha
+
+Giờ tưới lên lá **1 mm nước** — đúng 1 kilôgam mỗi mét vuông, mang theo nhiệt
+dung 4 180 J/(m²·K) và đẩy tổng khối nhiệt của lá lên **6,2 lần**. Nhưng đó mới
+là chuyện nhỏ; chuyện lớn đợi ở mốc 0 °C.
+
+Muốn đông đặc, mỗi kilôgam nước phải nhả ra **334 kJ** mà nhiệt độ không nhúc
+nhích một phần độ — [nhiệt ẩn, cái quãng nhiệt kế chết
+đứng](/vi/posts/nhiet-an-hai-quang-nhiet-ke-dung-im). Chừng ấy nhiệt bằng đúng
+phần bạn phải rút ra để làm nguội cùng kilôgam nước ấy **từ 80 °C xuống 0 °C**.
+
+## Vì sao bọc cây trong băng lại là cứu cây
+
+Phép chia thô, tạm bỏ qua phần không khí hoàn lại: 334 kJ/m² chia cho 70 W/m²
+ra 4 771 giây — **79,5 phút** ghim ở đúng 0 °C. Nhưng đêm 2 độ, không khí còn
+hoàn về 30 W/m², dòng ròng chỉ còn 40 W/m², nên quãng ghim thật là **2 giờ 19
+phút** — gấp **80 lần** quãng sống của lá khô bên cạnh:
+
+```
+t_ghim = ρ · d · L_f / (q_bức_xạ − h · (T_không_khí − 0 °C))
+```
+
+Chừng nào còn một giọt nước lỏng nằm cạnh băng, hỗn hợp ấy **bắt buộc** ở
+0 °C — không phải cách nhiệt, mà là một ràng buộc nhiệt động. Lớp vỏ băng đục
+nhìn như án tử thật ra là chiếc kẹp giữ nhiệt độ, và 0 °C ấm hơn hẳn −2,7 °C mà
+lá trần đang chịu. Vườn cam Florida và vườn nho Chablis xuống tay theo đúng
+logic ấy: đêm rét thì bật vòi phun, sáng ra cả vườn đọng băng trong veo và cây
+sống.
+
+## Vòi phải chạy suốt đêm — và chạy bao nhiêu nước
+
+Nhiệt ẩn chỉ trả một lần cho mỗi kilôgam, nên nước mới phải tới liên tục, vừa
+đủ để lượng đông đặc bù đúng dòng nhiệt đang rò: đêm 2 độ cần **0,43 mm/h**,
+đêm −5 độ cần **1,8 mm/h** — gấp **4,2 lần**. Bảy độ ấy tính hai lần: 30 W/m²
+đối lưu đang hoàn lại lật thành 75 W/m² mất thêm, và bầu trời lạnh hơn cũng
+kéo khoản hụt bức xạ từ 70 lên 93 W/m².
+
+Đó vẫn là sàn, vì trong bóng tối có kẻ ăn trộm. Hoá hơi 1 kg nước ngốn
+2 501 kJ, **gấp 7,5 lần** khoản 334 kJ mà đông đặc trả về; chỉ 0,1 mm màng nước
+bốc hơi là 250 kJ/m² bay mất. Vì thế quy tắc đầu tiên của nghề này là nhìn
+[điểm sương](/vi/posts/diem-suong-vi-sao-coc-bia-do-mo-hoi) chứ không nhìn
+nhiệt độ: bật vòi vào đêm khô, bạn có thể tự tay dìm cây xuống thấp hơn cả khi
+để yên.
+
+## Trường hợp biên: khoảnh khắc bạn tắt vòi
+
+Mẹo này chỉ tồn tại khi nước còn chảy. Ngừng phun lúc nửa đêm, phần nước cuối
+cùng đông nốt rồi lớp băng thành vật vô dụng: 334 kJ đã nhả sạch, mà băng chỉ
+giữ 2 100 J cho mỗi kilôgam mỗi độ. Lá trong áo giáp băng tụt từ 0 xuống −2 °C
+trong **4 phút 28 giây**, rồi màng ẩm sót lại bốc hơi tiếp, kéo nó xuống dưới
+cả nhiệt độ không khí. Cây bị bọc băng rồi bỏ dở chết chắc hơn cây chưa bao giờ
+bị tưới.
+
+Đầu kia của thang là cửa tử cơ học: phun 2 mm/h suốt tám tiếng là **16 kg băng
+trên mỗi mét vuông tán**, tán rộng 3 m² đeo **48 kg** trên những cành vừa giòn
+đi vì lạnh. Đêm càng rét càng phải phun dày, nên tới một ngưỡng nào đó cành gãy
+trước khi lạnh kịp giết cây — nhà vườn đổi một tai nạn nhiệt lấy một tai nạn
+kết cấu, rồi chọn cái mà mùa sau còn cứu được.

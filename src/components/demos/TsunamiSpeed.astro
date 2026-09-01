@@ -1,0 +1,204 @@
+---
+// Sóng nước nông (long-wave / shallow-water): v = √(g·h), λ = v·T.
+// Biên độ theo định luật Green (bảo toàn thông lượng năng lượng, đáy dốc
+// thoải, không tán sắc, không ma sát): H₂/H₁ = (h₁/h₂)^(1/4).
+// Nguồn: Lamb, Hydrodynamics §185; NOAA/IOC Tsunami Glossary 2019.
+// Chỉ đúng khi λ ≫ h (nước nông, ngưỡng thực dụng λ/h > 20) và khi sóng
+// còn tuyến tính (H ≪ h) — demo cắt đường vẽ ở h = 10 m và tô vùng sóng đổ.
+// Mặt cắt đáy biển là hồ sơ rìa lục địa lý tưởng hoá (thềm 120 km sâu tới
+// 150 m, sườn dốc 60 km xuống 4 000 m, đồng bằng thẳm ra 6 000 m).
+---
+
+<figure class="demo" data-demo="toc-do-song-than-va-can-bac-hai-cua-do-sau">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Độ sâu đáy biển tại điểm bạn chọn (m) <output data-out="h"></output>
+      <input type="range" data-in="h" min="5" max="6000" step="5" value="4000" /></label>
+    <label>Chiều cao sóng ở vùng sâu 4 000 m (m) <output data-out="a"></output>
+      <input type="range" data-in="a" min="0.1" max="2" step="0.1" value="0.5" /></label>
+    <label>Chu kỳ sóng T (phút) <output data-out="t"></output>
+      <input type="range" data-in="t" min="5" max="40" step="1" value="20" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Trên: mặt cắt dọc từ đồng bằng thẳm vào bờ. Đáy biển nông dần, bước sóng
+    bị nén lại còn chiều cao dâng lên — trục đứng của mặt sóng đã phóng đại
+    hàng nghìn lần so với trục độ sâu, nếu không thì con sóng nửa mét trên
+    4 km nước là một đường thẳng. Dưới: v = √(g·h), trục sâu vẽ theo thang
+    log. Chấm đỏ là điểm bạn chọn, chấm cam là mốc 4 000 m.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const CURVE = '#2563eb', MARK = '#dc2626', REF = '#f59e0b';
+  const G = 9.81, HREF = 4000, XMAX = 400, HMAX = 6000, HCUT = 10;
+
+  const speed = (h: number) => Math.sqrt(G * h);            // m/s
+  const green = (h: number) => Math.pow(HREF / h, 0.25);     // hệ số khuếch đại
+  const vn = (n: number, d: number) => n.toFixed(d).replace('.', ',');
+  const th = (n: number) => String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+
+  // Mặt cắt rìa lục địa: độ sâu theo khoảng cách từ bờ (km).
+  function depthAt(x: number) {
+    if (x <= 120) return 1.25 * x;
+    if (x <= 180) return 150 + (3850 * (x - 120)) / 60;
+    return 4000 + (2000 * (x - 180)) / 220;
+  }
+  function distAt(h: number) {
+    if (h <= 150) return 0.8 * h;
+    if (h <= 4000) return 120 + (60 * (h - 150)) / 3850;
+    return 180 + (220 * (h - 4000)) / 2000;
+  }
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (k: string) => root.querySelector(`[data-in="${k}"]`) as HTMLInputElement;
+    const output = (k: string) => root.querySelector(`[data-out="${k}"]`) as HTMLOutputElement;
+
+    function draw() {
+      const h = Number(input('h').value);
+      const H0 = Number(input('a').value);
+      const Tmin = Number(input('t').value);
+      const T = Tmin * 60;
+      output('h').textContent = th(h);
+      output('a').textContent = vn(H0, 1);
+      output('t').textContent = String(Tmin);
+
+      const v = speed(h), lam = v * T, H = H0 * green(h);
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.66);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+      ctx.font = '10px system-ui,sans-serif';
+
+      const padL = 52, padR = 30, padT = 14, padB = 22;
+      const aTop = padT, aBot = Math.round(padT + (cssH - padT - padB) * 0.60);
+      const bTop = aBot + 42, bBot = cssH - padB;
+      const seaY = aTop + 44;                       // mực nước 0
+      const X = (x: number) => padL + (x / XMAX) * (cssW - padL - padR);
+      const Dy = (d: number) => seaY + (d / HMAX) * (aBot - seaY);
+
+      // Thang đứng cho mặt sóng: đủ chứa nửa chiều cao lớn nhất trong dải.
+      const etaMax = (H0 * green(HCUT)) / 2;
+      const ampScale = 32 / etaMax;                 // px trên mét
+      const exagg = ampScale / ((aBot - seaY) / HMAX);
+      const Sy = (eta: number) => seaY - eta * ampScale;
+
+      // ---- Panel A: mặt cắt dọc ----
+      ctx.strokeStyle = fg; ctx.fillStyle = fg;
+      ctx.globalAlpha = 0.3;
+      ctx.beginPath(); ctx.moveTo(padL, aTop); ctx.lineTo(padL, aBot); ctx.lineTo(cssW - padR, aBot); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(padL, seaY); ctx.lineTo(cssW - padR, seaY); ctx.stroke();
+      ctx.globalAlpha = 0.55;
+      ctx.textAlign = 'center';
+      for (const x of [100, 200, 300, 400]) ctx.fillText(`${x} km`, X(x), aBot + 13);
+      ctx.textAlign = 'left'; ctx.fillText('bờ', padL, aBot + 13);
+      ctx.textAlign = 'right';
+      for (const d of [2000, 4000, 6000]) ctx.fillText(`${th(d)} m`, padL - 4, Dy(d) + 3);
+      ctx.fillText('0', padL - 4, seaY + 3);
+      ctx.globalAlpha = 1;
+
+      // Đáy biển.
+      ctx.beginPath(); ctx.moveTo(X(0), Dy(0));
+      for (let x = 0; x <= XMAX; x += 2) ctx.lineTo(X(x), Dy(depthAt(x)));
+      ctx.lineTo(X(XMAX), aBot); ctx.lineTo(X(0), aBot); ctx.closePath();
+      ctx.fillStyle = fg; ctx.globalAlpha = 0.16; ctx.fill(); ctx.globalAlpha = 1;
+
+      // Vùng sóng đổ (h < 10 m) — công thức hết hiệu lực.
+      const xCut = distAt(HCUT);
+      ctx.fillStyle = MARK; ctx.globalAlpha = 0.12;
+      ctx.fillRect(padL, aTop, X(xCut) - padL, aBot - aTop);
+      ctx.globalAlpha = 0.8; ctx.textAlign = 'left';
+      ctx.fillText('sóng đổ', X(xCut) + 4, aBot - 8);
+      ctx.globalAlpha = 1;
+
+      // Mặt sóng: đi từ ngoài khơi vào, pha cộng dồn theo bước sóng địa phương.
+      ctx.strokeStyle = CURVE; ctx.lineWidth = 2; ctx.beginPath();
+      let phase = 0;
+      for (let x = XMAX; x >= xCut; x -= 0.25) {
+        const d = depthAt(x);
+        const eta = ((H0 * green(d)) / 2) * Math.cos(phase);
+        const px = X(x), py = Sy(eta);
+        x === XMAX ? ctx.moveTo(px, py) : ctx.lineTo(px, py);
+        phase += (2 * Math.PI * 0.25 * 1000) / (speed(d) * T);
+      }
+      ctx.stroke(); ctx.lineWidth = 1;
+
+      // Chấm đánh dấu điểm đang chọn.
+      const xm = distAt(h);
+      ctx.strokeStyle = MARK; ctx.globalAlpha = 0.5;
+      ctx.beginPath(); ctx.moveTo(X(xm), Sy(0)); ctx.lineTo(X(xm), Dy(h)); ctx.stroke();
+      ctx.globalAlpha = 1;
+      ctx.fillStyle = MARK;
+      ctx.beginPath(); ctx.arc(X(xm), Dy(h), 4, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.arc(X(xm), Sy(H / 2), 5, 0, Math.PI * 2); ctx.fill();
+
+      ctx.fillStyle = fg; ctx.globalAlpha = 0.6; ctx.textAlign = 'right';
+      ctx.fillText(`trục đứng mặt sóng phóng đại ≈ ${th(exagg)} lần`, cssW - padR, aTop + 10);
+      ctx.globalAlpha = 1;
+
+      // ---- Panel B: v = √(gh), trục sâu thang log ----
+      const l0 = Math.log10(5), l1 = Math.log10(HMAX);
+      const XB = (d: number) => padL + ((Math.log10(d) - l0) / (l1 - l0)) * (cssW - padL - padR);
+      const YB = (kmh: number) => bBot - (kmh / 900) * (bBot - bTop);
+
+      ctx.strokeStyle = fg; ctx.fillStyle = fg; ctx.globalAlpha = 0.3;
+      ctx.beginPath(); ctx.moveTo(padL, bTop); ctx.lineTo(padL, bBot); ctx.lineTo(cssW - padR, bBot); ctx.stroke();
+      ctx.globalAlpha = 0.55; ctx.textAlign = 'center';
+      for (const d of [10, 100, 1000, 6000]) ctx.fillText(`${th(d)} m`, XB(d), bBot + 13);
+      ctx.textAlign = 'right';
+      for (const s of [300, 600, 900]) ctx.fillText(`${s} km/h`, padL - 4, YB(s) + 3);
+      ctx.globalAlpha = 1;
+
+      ctx.strokeStyle = CURVE; ctx.lineWidth = 2; ctx.beginPath();
+      for (let i = 0; i <= 240; i++) {
+        const d = Math.pow(10, l0 + ((l1 - l0) * i) / 240);
+        i ? ctx.lineTo(XB(d), YB(speed(d) * 3.6)) : ctx.moveTo(XB(d), YB(speed(d) * 3.6));
+      }
+      ctx.stroke(); ctx.lineWidth = 1;
+
+      ctx.fillStyle = REF;
+      ctx.beginPath(); ctx.arc(XB(HREF), YB(speed(HREF) * 3.6), 4, 0, Math.PI * 2); ctx.fill();
+      ctx.globalAlpha = 0.85; ctx.textAlign = 'right';
+      ctx.fillText('4 000 m: 713 km/h', XB(HREF) - 7, YB(speed(HREF) * 3.6) + 3);
+      ctx.globalAlpha = 1;
+
+      ctx.fillStyle = MARK;
+      ctx.beginPath(); ctx.arc(XB(h), YB(v * 3.6), 6, 0, Math.PI * 2); ctx.fill();
+
+      // ---- Readout ----
+      const ratio = lam / h;
+      let note = '';
+      if (h <= 20) note = ' · <b>sát bờ: định luật Green vỡ, sóng đổ nhào — độ leo bờ có thể gấp 2–4 lần</b>';
+      else if (ratio < 20) note = ` · <b>λ/h = ${vn(ratio, 0)} &lt; 20: đã chớm chế độ nước sâu, √(g·h) hết chính xác</b>`;
+
+      readout.innerHTML =
+        `Đáy sâu ${th(h)} m → v = <b>${vn(v, 1)} m/s = ${vn(v * 3.6, v * 3.6 < 100 ? 1 : 0)} km/h</b>` +
+        ` · bước sóng ${vn(lam / 1000, 1)} km` +
+        ` · chiều cao ${vn(H, 2)} m (gấp <b>${vn(green(h), 2)} lần</b> mức ở 4 000 m)` +
+        note;
+    }
+
+    root.querySelectorAll('input').forEach((el) => el.addEventListener('input', draw));
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="toc-do-song-than-va-can-bac-hai-cua-do-sau"]').forEach(setup);
+</script>

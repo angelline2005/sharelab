@@ -1,0 +1,198 @@
+---
+// Periodically magnetised (multipole / one-sided Halbach) flexible magnet sheet.
+// Fundamental-harmonic field above the working face, period λ, thickness t, gap y:
+//   B(y) = B_r · (1 − e^(−2πt/λ)) · e^(−2πy/λ)      [Mallinson 1973, Halbach 1980]
+// Decay length λ/2π; holding force ∝ B².
+// Comparison curve: same sheet magnetised uniformly through its thickness, drawn as a
+// disc of radius R = 15 mm on axis:  B/B_r = ½[(y+t)/√((y+t)²+R²) − y/√(y²+R²)].
+// Validity: sheet many periods wide (λ ≤ 20 mm here, i.e. ≥ 2 periods on a 44 mm strip),
+// gap small compared with the sheet's lateral size, linear (non-saturating) steel.
+---
+
+<figure class="demo" data-demo="nam-cham-deo-tu-lanh-chi-dinh-mot-mat">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Bước cực λ (mm) <output data-out="lam"></output>
+      <input type="range" data-in="lam" min="1" max="20" step="0.1" value="4" /></label>
+    <label>Bề dày lá từ t (mm) <output data-out="t"></output>
+      <input type="range" data-in="t" min="0.3" max="5" step="0.1" value="1" /></label>
+    <label>Khe hở y (mm) <output data-out="y"></output>
+      <input type="range" data-in="y" min="0" max="5" step="0.01" value="2" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Trên: mặt cắt lá nam châm dẻo — các sọc cực N (đỏ) và S (xanh) rộng λ/2 xen kẽ,
+    đường sức khép vòng ngay trên mặt làm việc; vạch đứt là khe hở y. Mặt sau gần
+    như trống vì các thành phần từ hoá cộng nhau ở mặt trước và triệt tiêu ở mặt sau.
+    Dưới: trục tung thang log. Đường xanh là lá nhiều cực — trên thang log nó là
+    đường thẳng, dấu hiệu của hàm mũ. Đường cam là cùng lá ấy nếu từ hoá đồng nhất
+    (đĩa bán kính 15 mm): yếu hơn hẳn lúc chạm, nhưng gần như không suy giảm.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const CURVE = '#2563eb', MARK = '#dc2626', ALT = '#f59e0b';
+  const SPAN = 44;   // mm of strip shown in the cross-section
+  const R = 15;      // mm, radius of the equivalent uniformly magnetised disc
+  const vi = (x: number, d = 1) => x.toFixed(d).replace('.', ',');
+
+  // Fundamental harmonic above a periodically magnetised slab, in units of B_r.
+  const Bstrip = (y: number, lam: number, t: number) => {
+    const k = (2 * Math.PI) / lam;
+    return (1 - Math.exp(-k * t)) * Math.exp(-k * y);
+  };
+  // Uniformly magnetised disc on axis, in units of B_r.
+  const Buni = (y: number, t: number) =>
+    0.5 * ((y + t) / Math.hypot(y + t, R) - y / Math.hypot(y, R));
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (k: string) => root.querySelector(`[data-in="${k}"]`) as HTMLInputElement;
+    const output = (k: string) => root.querySelector(`[data-out="${k}"]`) as HTMLOutputElement;
+
+    function draw() {
+      const lam = Number(input('lam').value);
+      const t = Number(input('t').value);
+      const y = Number(input('y').value);
+      output('lam').textContent = vi(lam);
+      output('t').textContent = vi(t);
+      output('y').textContent = vi(y, 2);
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.62);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+      ctx.font = '10px system-ui,sans-serif';
+
+      const padL = 46, padR = 10, padT = 10;
+      const W = cssW - padL - padR;
+      const hA = Math.round(cssH * 0.40);          // cross-section band
+      const sx = W / SPAN;                          // px per mm, horizontal and vertical
+      const sheetPx = Math.min(t * sx, hA * 0.3);
+      const ySurf = hA - sheetPx - 12;              // y-pixel of the working face
+      const avail = ySurf - padT;
+
+      // ---- cross-section: alternating N/S stripes on the working face ----
+      const nStripe = Math.ceil(SPAN / (lam / 2)) + 1;
+      for (let i = 0; i < nStripe; i++) {
+        const x0 = padL + i * (lam / 2) * sx;
+        const wpx = Math.min((lam / 2) * sx, padL + W - x0);
+        if (wpx <= 0) break;
+        ctx.fillStyle = i % 2 ? CURVE : MARK;
+        ctx.globalAlpha = 0.55;
+        ctx.fillRect(x0, ySurf, wpx, sheetPx);
+        ctx.globalAlpha = 1;
+        if (wpx > 12) {
+          ctx.fillStyle = fg; ctx.globalAlpha = 0.8; ctx.textAlign = 'center';
+          ctx.fillText(i % 2 ? 'S' : 'N', x0 + wpx / 2, ySurf + sheetPx / 2 + 3.5);
+          ctx.globalAlpha = 1;
+        }
+      }
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.5;
+      ctx.strokeRect(padL, ySurf, W, sheetPx);
+      ctx.globalAlpha = 1;
+
+      // Field loops closing from the centre of each N stripe to its S neighbour:
+      // span λ/2, so the loop rises about λ/4 above the face (capped to fit the band).
+      const rx = (lam / 4) * sx;
+      const ry = Math.min((lam / 4) * sx, avail * 0.92);
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.4; ctx.lineWidth = 1.2;
+      for (let i = 0; i < nStripe; i += 2) {
+        const cx = padL + (i + 1) * (lam / 2) * sx;
+        if (cx - rx > padL + W) break;
+        ctx.beginPath();
+        ctx.ellipse(cx, ySurf, rx, ry, 0, Math.PI, 2 * Math.PI);
+        ctx.stroke();
+      }
+      ctx.lineWidth = 1; ctx.globalAlpha = 1;
+
+      // Gap line at the true mm scale.
+      const yGap = Math.max(padT, ySurf - y * sx);
+      ctx.strokeStyle = MARK; ctx.setLineDash([4, 3]);
+      ctx.beginPath(); ctx.moveTo(padL, yGap); ctx.lineTo(padL + W, yGap); ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillStyle = MARK; ctx.textAlign = 'left';
+      ctx.fillText(`khe ${vi(y, 2)} mm`, padL + 4, yGap < padT + 12 ? yGap + 11 : yGap - 4);
+
+      ctx.fillStyle = fg; ctx.globalAlpha = 0.55; ctx.textAlign = 'left';
+      ctx.fillText('mặt sau — gần như trống', padL + 4, ySurf + sheetPx + 11);
+      ctx.globalAlpha = 1;
+
+      // ---- graph: B/B_r vs gap, log vertical axis ----
+      const gT = hA + 14, gB = cssH - 24;
+      const X = (yy: number) => padL + (yy / 5) * W;
+      const LO = -3;
+      const Y = (b: number) => {
+        const l = Math.max(LO, Math.log10(Math.max(b, 1e-12)));
+        return gB - ((l - LO) / (0 - LO)) * (gB - gT);
+      };
+
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.3;
+      ctx.beginPath(); ctx.moveTo(padL, gT); ctx.lineTo(padL, gB); ctx.lineTo(padL + W, gB); ctx.stroke();
+      ctx.globalAlpha = 0.55; ctx.fillStyle = fg;
+      ctx.textAlign = 'center';
+      for (const g of [0, 1, 2, 3, 4, 5]) ctx.fillText(g === 5 ? '5 mm' : String(g), X(g), gB + 13);
+      ctx.textAlign = 'right';
+      for (const [b, lab] of [[1, '1'], [0.1, '0,1'], [0.01, '0,01'], [0.001, '0,001']] as Array<[number, string]>)
+        ctx.fillText(lab, padL - 4, Y(b) + 3);
+      ctx.textAlign = 'left';
+      ctx.fillText('B/Br', padL - 40, gT + 3);
+      ctx.globalAlpha = 1;
+
+      ctx.strokeStyle = ALT; ctx.lineWidth = 2; ctx.beginPath();
+      for (let i = 0; i <= 200; i++) {
+        const yy = (5 * i) / 200;
+        i ? ctx.lineTo(X(yy), Y(Buni(yy, t))) : ctx.moveTo(X(yy), Y(Buni(yy, t)));
+      }
+      ctx.stroke();
+      ctx.strokeStyle = CURVE; ctx.beginPath();
+      for (let i = 0; i <= 200; i++) {
+        const yy = (5 * i) / 200;
+        i ? ctx.lineTo(X(yy), Y(Bstrip(yy, lam, t))) : ctx.moveTo(X(yy), Y(Bstrip(yy, lam, t)));
+      }
+      ctx.stroke(); ctx.lineWidth = 1;
+
+      ctx.fillStyle = CURVE; ctx.textAlign = 'left';
+      ctx.fillText('lá nhiều cực', padL + 6, Math.max(gT + 9, Y(Bstrip(0, lam, t)) - 6));
+      ctx.fillStyle = ALT; ctx.textAlign = 'right';
+      ctx.fillText('cùng lá, từ hoá đồng nhất', padL + W - 4, Y(Buni(4.6, t)) - 7);
+
+      const bs = Bstrip(y, lam, t), bu = Buni(y, t);
+      ctx.fillStyle = MARK;
+      ctx.beginPath(); ctx.arc(X(y), Y(bs), 6, 0, Math.PI * 2); ctx.fill();
+
+      const k = (2 * Math.PI) / lam;
+      const rel = Math.exp(-k * y);
+      const pct = (p: number) =>
+        p >= 10 ? vi(p) : p < 1e-4 ? '< 0,0001' : p.toPrecision(2).replace('.', ',');
+      const note = bs < bu
+        ? ' · <b>đã qua điểm hoà: khối đồng nhất giờ mạnh hơn</b>'
+        : ` · vẫn mạnh gấp <b>${vi(bs / bu)}×</b> khối đồng nhất cùng bề dày`;
+      readout.innerHTML =
+        `λ = ${vi(lam)} mm → chiều dài suy giảm λ/2π = <b>${vi(lam / (2 * Math.PI), 2)} mm</b>` +
+        ` · lá dày ${vi(t)} mm · khe ${vi(y, 2)} mm: B còn <b>${pct(100 * rel)}%</b> mức sát mặt,` +
+        ` lực còn <b>${pct(100 * rel * rel)}%</b>${note}`;
+    }
+
+    root.querySelectorAll('input').forEach((el) => el.addEventListener('input', draw));
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="nam-cham-deo-tu-lanh-chi-dinh-mot-mat"]').forEach(setup);
+</script>

@@ -1,0 +1,176 @@
+---
+// Sabine (1900): RT60 = 0,161·V/A, A = Σ S_i·α_i (SI; 0,161 = 24·ln10/343).
+// Đối chứng Eyring–Norris: RT60 = 0,161·V/(−S·ln(1−ᾱ)), đúng cả khi ᾱ lớn.
+// Phòng hộp tỉ lệ 1:1:1,25 (như 2×2×2,5 m) → S = 7·(V/1,25)^(2/3).
+// Vật liệu thêm vào lấy α = 0,50 (rèm vải dày gấp nếp, 500 Hz).
+// Sabine chỉ đúng khi ᾱ ≲ 0,3 và trường âm khuếch tán đều; slider α tường
+// dừng ở 0,30 vì lý do đó — vượt ngưỡng, đường Eyring tách hẳn ra.
+---
+
+<figure class="demo" data-demo="thoi-gian-vang-sabine-va-tam-rem-phong-tam">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Thể tích phòng V (m³) <output data-out="v"></output>
+      <input type="range" data-in="v" min="8" max="300" step="1" value="10" /></label>
+    <label>Hút âm của tường/sàn α <output data-out="a"></output>
+      <input type="range" data-in="a" min="0.02" max="0.30" step="0.01" value="0.03" /></label>
+    <label>Rèm, thảm, mút thêm vào (m²) <output data-out="s"></output>
+      <input type="range" data-in="s" min="0" max="20" step="0.5" value="0" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Bên trái là mặt cắt căn phòng theo đúng thể tích bạn chọn; đoạn màu cam
+    trên chu vi là phần bề mặt đã được phủ vật liệu hút âm. Bên phải là mức
+    âm tụt dần sau khi bạn ngừng hát: chạm vạch −60 dB là tai coi như đã tắt,
+    hoành độ chỗ đó chính là RT60. Đường liền là Sabine, đường nét đứt là
+    Eyring — chúng trùng nhau khi phòng ít hút âm và tách nhau khi hút nhiều.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const K = 0.161, C = 343, A_SOFT = 0.5;
+  const CURVE = '#2563eb', MARK = '#dc2626', ALT = '#f59e0b';
+  const STEPS = [0.02, 0.05, 0.1, 0.2, 0.25, 0.5, 1, 2];
+  const fmt = (x: number, n = 2) => x.toFixed(n).replace('.', ',');
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (k: string) => root.querySelector(`[data-in="${k}"]`) as HTMLInputElement;
+    const output = (k: string) => root.querySelector(`[data-out="${k}"]`) as HTMLOutputElement;
+
+    function draw() {
+      const V = Number(input('v').value);
+      const al = Number(input('a').value);
+      const sAdd = Math.min(Number(input('s').value), 0.9 * 7 * Math.pow(V / 1.25, 2 / 3));
+      output('v').textContent = String(V);
+      output('a').textContent = fmt(al);
+      output('s').textContent = fmt(sAdd, 1);
+
+      const side = Math.cbrt(V / 1.25), hRoom = 1.25 * side, S = 7 * side * side;
+      const A = (S - sAdd) * al + sAdd * A_SOFT;
+      const aBar = A / S;
+      const rtS = (K * V) / A;
+      const rtE = (K * V) / (-S * Math.log(1 - aBar));
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.46);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+      ctx.font = '10px system-ui,sans-serif';
+
+      // ---- panel trái: mặt cắt căn phòng ----
+      const roomW = cssW < 380 ? 0 : Math.min(140, cssW * 0.28);
+      if (roomW > 0) {
+        // Thang cố định (không phụ thuộc V) để hộp lớn dần theo thể tích, nhưng
+        // phải vừa cả chiều cao lẫn bề ngang panel ở V lớn nhất (6,2 × 7,8 m).
+        const baseY = cssH - 44, ppm = Math.min((baseY - 16) / 8, (roomW - 8) / 6.3);
+        const bw = side * ppm, bh = hRoom * ppm;
+        const x0 = roomW / 2 - bw / 2, y0 = baseY - bh;
+        ctx.strokeStyle = fg; ctx.globalAlpha = 0.35; ctx.lineWidth = 3;
+        ctx.strokeRect(x0, y0, bw, bh);
+        ctx.globalAlpha = 1;
+
+        // phần chu vi được phủ vật liệu hút âm, đi từ góc dưới-trái
+        const segs: Array<[number, number, number, number]> = [
+          [x0, baseY, x0 + bw, baseY],
+          [x0 + bw, baseY, x0 + bw, y0],
+          [x0 + bw, y0, x0, y0],
+          [x0, y0, x0, baseY],
+        ];
+        let left = (sAdd / S) * 2 * (bw + bh);
+        ctx.strokeStyle = ALT; ctx.lineWidth = 4;
+        for (const [ax, ay, bx, by] of segs) {
+          if (left <= 0) break;
+          const len = Math.hypot(bx - ax, by - ay), t = Math.min(1, left / len);
+          ctx.beginPath(); ctx.moveTo(ax, ay);
+          ctx.lineTo(ax + (bx - ax) * t, ay + (by - ay) * t); ctx.stroke();
+          left -= len;
+        }
+        ctx.lineWidth = 1;
+
+        ctx.fillStyle = fg; ctx.globalAlpha = 0.6; ctx.textAlign = 'center';
+        ctx.fillText(`${fmt(side, 1)}×${fmt(side, 1)}×${fmt(hRoom, 1)} m`, roomW / 2, cssH - 30);
+        ctx.fillText(`S = ${fmt(S, 1)} m²`, roomW / 2, cssH - 18);
+        ctx.fillStyle = ALT; ctx.globalAlpha = 1;
+        ctx.fillText(`hút âm ${fmt(sAdd, 1)} m²`, roomW / 2, cssH - 6);
+      }
+
+      // ---- panel phải: đường suy giảm mức âm ----
+      const padL = roomW + 40, padB = 26, padT = 12, padR = 10;
+      const step = STEPS.find((s) => 5 * s >= rtS * 1.3) ?? 2;
+      const tMax = 5 * step;
+      const X = (t: number) => padL + (t / tMax) * (cssW - padL - padR);
+      const Y = (L: number) => padT + (-L / 60) * (cssH - padB - padT);
+
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.3;
+      ctx.beginPath(); ctx.moveTo(padL, padT); ctx.lineTo(padL, cssH - padB);
+      ctx.lineTo(cssW - padR, cssH - padB); ctx.stroke();
+      ctx.setLineDash([3, 3]);
+      ctx.beginPath(); ctx.moveTo(padL, Y(-60)); ctx.lineTo(cssW - padR, Y(-60)); ctx.stroke();
+      for (const [t, lab] of [[0.6, 'nói rõ lời'], [1.85, 'nhà hát']] as Array<[number, string]>) {
+        if (t > tMax) continue;
+        ctx.beginPath(); ctx.moveTo(X(t), padT); ctx.lineTo(X(t), cssH - padB); ctx.stroke();
+        ctx.globalAlpha = 0.55; ctx.textAlign = 'left';
+        ctx.fillStyle = fg; ctx.fillText(lab, X(t) + 3, padT + 9);
+        ctx.globalAlpha = 0.3;
+      }
+      ctx.setLineDash([]);
+      ctx.globalAlpha = 0.55; ctx.fillStyle = fg; ctx.textAlign = 'center';
+      for (let i = 1; i <= 5; i++) ctx.fillText(`${fmt(i * step, step < 0.1 ? 2 : 1)} s`, X(i * step), cssH - padB + 14);
+      ctx.textAlign = 'right';
+      for (const L of [0, -20, -40, -60]) ctx.fillText(`${L} dB`.replace('-', '−'), padL - 4, Y(L) + 3);
+      ctx.globalAlpha = 1;
+
+      const line = (rt: number, color: string, dash: number[]) => {
+        ctx.strokeStyle = color; ctx.lineWidth = 2; ctx.setLineDash(dash);
+        ctx.beginPath();
+        ctx.moveTo(X(0), Y(0));
+        const tEnd = Math.min(rt, tMax);
+        ctx.lineTo(X(tEnd), Y(-60 * (tEnd / rt)));
+        ctx.stroke(); ctx.setLineDash([]); ctx.lineWidth = 1;
+      };
+      line(rtE, ALT, [6, 4]);
+      line(rtS, CURVE, []);
+
+      ctx.fillStyle = MARK;
+      if (rtS <= tMax) { ctx.beginPath(); ctx.arc(X(rtS), Y(-60), 6, 0, Math.PI * 2); ctx.fill(); }
+
+      ctx.textAlign = 'right'; ctx.globalAlpha = 0.85;
+      ctx.fillStyle = CURVE; ctx.fillText('Sabine', cssW - padR, padT + 22);
+      ctx.fillStyle = ALT; ctx.fillText('Eyring', cssW - padR, padT + 34);
+      ctx.globalAlpha = 1;
+
+      const regime = rtS >= 1.5 ? 'đuôi vang cỡ nhà hát — hát thì sướng, nói thì mất phụ âm'
+        : rtS >= 0.8 ? 'còn vang rõ, nghe nhạc dễ chịu'
+        : rtS >= 0.35 ? 'vùng nói chuyện lý tưởng'
+        : 'khô như phòng thu';
+      const off = 100 * (rtS / rtE - 1);
+      const warn = off > 5
+        ? ` · ᾱ = ${fmt(aBar)} nên Sabine thổi phồng <b>${off.toFixed(0)}%</b> so với Eyring (${fmt(rtE)} s)` : '';
+      readout.innerHTML =
+        `V = ${V} m³ · S = ${fmt(S, 1)} m² · A = ${fmt(A)} m² sabin → RT60 = <b>${fmt(rtS)} s</b>` +
+        ` · gấp ${fmt(rtS / 0.6, 1)} lần ngưỡng nói rõ lời (0,6 s) · ${regime}${warn}`;
+    }
+
+    root.querySelectorAll('input').forEach((el) => el.addEventListener('input', draw));
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="thoi-gian-vang-sabine-va-tam-rem-phong-tam"]').forEach(setup);
+</script>

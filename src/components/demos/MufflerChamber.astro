@@ -1,0 +1,178 @@
+---
+// Transmission loss of a simple expansion chamber (plane-wave theory, no mean
+// flow, no dissipation):
+//   TL = 10·log10[ 1 + 0.25·(m − 1/m)²·sin²(2πfL/c) ]
+// m = area ratio chamber/pipe, L = chamber length, c = 343 m/s (air, 20 °C).
+// Source: one-dimensional acoustic two-port / transfer-matrix result for a
+// sudden-expansion–sudden-contraction muffler (Munjal, "Acoustics of Ducts and
+// Mufflers"). Validity: plane waves only, i.e. below the chamber's first
+// transverse mode f_c = 1.8412·c/(π·D) — drawn on the plot when it falls inside
+// the 0–1200 Hz window — and low Mach number. Inlet/outlet pipe fixed at
+// ø38 mm, so D_chamber = 38·√m mm. Engine firing frequency of a 4-stroke
+// single = rpm/120 (one exhaust pulse per two crank revolutions).
+---
+
+<figure class="demo" data-demo="po-xe-may-va-tan-so-trong-suot">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Tỉ số tiết diện buồng/ống m <output data-out="m"></output>
+      <input type="range" data-in="m" min="2" max="30" step="1" value="9" /></label>
+    <label>Chiều dài buồng L (cm) <output data-out="l"></output>
+      <input type="range" data-in="l" min="10" max="80" step="1" value="30" /></label>
+    <label>Vòng tua máy (v/ph) <output data-out="r"></output>
+      <input type="range" data-in="r" min="1000" max="9000" step="100" value="5000" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Trên: mặt cắt pô — ống ø38 mm nở ra thành buồng rồi thắt lại, vẽ đúng tỉ
+    lệ theo hai thanh trượt. Dưới: độ suy giảm truyền âm TL của buồng ấy theo
+    tần số. Đường cong hình lược: đỉnh ở f = c/4L (và bội lẻ), chạm đúng 0 dB
+    ở f = c/2L — tại đó buồng nở không cản gì cả. Vạch đỏ là tần số nổ của
+    động cơ, các chấm cam là hài của nó, tức những vạch tiếng ồn thật sự đi
+    qua pô. Tính với c = 343 m/s (không khí 20 °C).
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const C = 343, F_MAX = 1200, TL_MAX = 26, PIPE_MM = 38;
+  const CURVE = '#2563eb', MARK = '#dc2626', HARM = '#f59e0b';
+
+  const TL = (m: number, L: number, f: number) =>
+    10 * Math.log10(1 + 0.25 * Math.pow(m - 1 / m, 2) * Math.pow(Math.sin((2 * Math.PI * f * L) / C), 2));
+  const vi = (x: number, n = 1) => x.toFixed(n).replace('.', ',');
+  const grp = (x: number) => String(Math.round(x)).replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (k: string) => root.querySelector(`[data-in="${k}"]`) as HTMLInputElement;
+    const output = (k: string) => root.querySelector(`[data-out="${k}"]`) as HTMLOutputElement;
+
+    function draw() {
+      const m = Number(input('m').value);
+      const L = Number(input('l').value) / 100;
+      const rpm = Number(input('r').value);
+      const f1 = rpm / 120;
+      const dCham = PIPE_MM * Math.sqrt(m);
+      const tlPeak = 10 * Math.log10(1 + 0.25 * Math.pow(m - 1 / m, 2));
+      const fPeak = C / (4 * L), fZero = C / (2 * L);
+      const fCut = (1.8412 * C) / (Math.PI * (dCham / 1000));
+
+      output('m').textContent = `${m}× (buồng ø${Math.round(dCham)} mm)`;
+      output('l').textContent = `${Math.round(L * 100)} cm`;
+      output('r').textContent = `${grp(rpm)} → nổ ${vi(f1)} Hz`;
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.68);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+      ctx.font = '10px system-ui,sans-serif';
+
+      // ---- top band: cutaway of pipe – chamber – pipe, drawn to scale ----
+      const topH = Math.round(cssH * 0.3), yc = topH / 2;
+      const maxRmm = (PIPE_MM * Math.sqrt(30)) / 2;
+      const sY = (topH / 2 - 12) / maxRmm;
+      const sX = (cssW - 16) / 1.04;
+      const rPipe = (PIPE_MM / 2) * sY, rCham = (dCham / 2) * sY;
+      const x0 = (cssW - (0.24 + L) * sX) / 2;
+      const xa = x0 + 0.12 * sX, xb = xa + L * sX, xe = xb + 0.12 * sX;
+
+      ctx.beginPath();
+      ctx.moveTo(x0, yc - rPipe); ctx.lineTo(xa, yc - rPipe); ctx.lineTo(xa, yc - rCham);
+      ctx.lineTo(xb, yc - rCham); ctx.lineTo(xb, yc - rPipe); ctx.lineTo(xe, yc - rPipe);
+      ctx.lineTo(xe, yc + rPipe); ctx.lineTo(xb, yc + rPipe); ctx.lineTo(xb, yc + rCham);
+      ctx.lineTo(xa, yc + rCham); ctx.lineTo(xa, yc + rPipe); ctx.lineTo(x0, yc + rPipe);
+      ctx.closePath();
+      ctx.fillStyle = CURVE; ctx.globalAlpha = 0.12; ctx.fill();
+      ctx.globalAlpha = 1; ctx.strokeStyle = CURVE; ctx.lineWidth = 1.5; ctx.stroke();
+      ctx.lineWidth = 1;
+
+      ctx.strokeStyle = fg; ctx.fillStyle = fg; ctx.globalAlpha = 0.55;
+      ctx.setLineDash([3, 3]);
+      ctx.beginPath(); ctx.moveTo(x0, yc); ctx.lineTo(xe, yc); ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.textAlign = 'center';
+      ctx.fillText(`buồng ø${Math.round(dCham)} mm`, (xa + xb) / 2, yc - rCham - 5);
+      ctx.fillText(`L = ${Math.round(L * 100)} cm`, (xa + xb) / 2, yc + rCham + 13);
+      ctx.textAlign = 'left';
+      ctx.fillText('ø38 mm', 4, yc - rPipe - 5);
+      ctx.globalAlpha = 1;
+
+      // ---- bottom panel: transmission-loss comb ----
+      const padL = 44, padR = 10, padB = 26, plotT = topH + 12;
+      const X = (f: number) => padL + (f / F_MAX) * (cssW - padL - padR);
+      const Y = (t: number) => plotT + ((TL_MAX - t) / TL_MAX) * (cssH - padB - plotT);
+
+      if (fCut < F_MAX) {
+        ctx.fillStyle = fg; ctx.globalAlpha = 0.07;
+        ctx.fillRect(X(fCut), plotT, cssW - padR - X(fCut), cssH - padB - plotT);
+        ctx.globalAlpha = 0.55; ctx.textAlign = 'right';
+        ctx.fillText('hết vùng sóng phẳng', X(fCut) - 4, plotT + 11);
+        ctx.globalAlpha = 1;
+      }
+
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.3;
+      ctx.beginPath(); ctx.moveTo(padL, plotT); ctx.lineTo(padL, cssH - padB); ctx.lineTo(cssW - padR, cssH - padB); ctx.stroke();
+      ctx.globalAlpha = 0.55; ctx.fillStyle = fg;
+      ctx.textAlign = 'center';
+      for (const f of [200, 400, 600, 800, 1000, 1200]) ctx.fillText(`${f} Hz`, X(f), cssH - padB + 14);
+      ctx.textAlign = 'right';
+      for (const t of [0, 5, 10, 15, 20, 25]) ctx.fillText(`${t} dB`, padL - 4, Y(t) + 3);
+      ctx.globalAlpha = 1;
+
+      ctx.strokeStyle = CURVE; ctx.lineWidth = 2; ctx.beginPath();
+      for (let i = 0; i <= 700; i++) {
+        const f = (F_MAX * i) / 700, y = Y(TL(m, L, f));
+        i ? ctx.lineTo(X(f), y) : ctx.moveTo(X(f), y);
+      }
+      ctx.stroke(); ctx.lineWidth = 1;
+
+      // harmonics of the firing frequency: the lines the engine actually emits
+      ctx.strokeStyle = HARM; ctx.fillStyle = HARM;
+      for (let n = 2; n <= 32; n++) {
+        const f = n * f1;
+        if (f > F_MAX) break;
+        const t = TL(m, L, f);
+        ctx.globalAlpha = 0.45;
+        ctx.beginPath(); ctx.moveTo(X(f), Y(0)); ctx.lineTo(X(f), Y(t)); ctx.stroke();
+        ctx.globalAlpha = 1;
+        ctx.beginPath(); ctx.arc(X(f), Y(t), 2.5, 0, Math.PI * 2); ctx.fill();
+      }
+
+      const tl1 = TL(m, L, f1);
+      ctx.strokeStyle = MARK; ctx.setLineDash([4, 3]);
+      ctx.beginPath(); ctx.moveTo(X(f1), plotT); ctx.lineTo(X(f1), cssH - padB); ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillStyle = MARK;
+      ctx.beginPath(); ctx.arc(X(f1), Y(tl1), 5, 0, Math.PI * 2); ctx.fill();
+      ctx.textAlign = 'left';
+      ctx.fillText(`tiếng nổ ${vi(f1)} Hz`, X(f1) + 6, plotT + 11);
+
+      const flag = tl1 < 3 ? ' · <b>buồng gần như trong suốt với tiếng nổ nền</b>' : '';
+      readout.innerHTML =
+        `m = ${m} · L = ${Math.round(L * 100)} cm → cắt tối đa <b>${vi(tlPeak)} dB</b> ở ${vi(fPeak, 0)} Hz,` +
+        ` nhưng <b>0 dB ở ${vi(fZero, 0)} Hz</b> · máy ${grp(rpm)} v/ph nổ ở ${vi(f1)} Hz →` +
+        ` chỉ được <b>${vi(tl1)} dB</b>${flag}`;
+    }
+
+    root.querySelectorAll('input').forEach((el) => el.addEventListener('input', draw));
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="po-xe-may-va-tan-so-trong-suot"]').forEach(setup);
+</script>

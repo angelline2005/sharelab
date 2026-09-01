@@ -1,0 +1,96 @@
+---
+title: "Thang dựa tường: leo tới bậc nào thì chân thang bắt đầu trượt?"
+seoTitle: "Thang dựa tường: góc dựng an toàn và điều kiện chống trượt"
+description: "Thang dựng 60° trên sàn có μ = 0,40 chỉ cho bạn leo tới 72% chiều dài rồi chân thang trượt. Nhích lên 65°: được 91%. Từ 66,8° trở lên: tới tận đỉnh. Cùng cây thang ấy, cùng cái sàn ấy — chỉ đổi vài độ."
+pubDate: 2026-09-02
+tags: ["vat-ly", "co-hoc", "javascript"]
+translationId: "thang-dua-tuong-leo-den-dau-thi-truot"
+---
+
+import LadderSlip from '../../../components/demos/LadderSlip.astro';
+
+Cây thang không bao giờ trượt lúc bạn còn đứng thấp. Bậc dưới cùng chắc
+như đóng đinh, nửa thang vẫn yên — tới một bậc nào đó gần đỉnh, chân thang
+mới khẽ nhích ra. Suốt quãng ấy cây thang chẳng yếu đi chút nào; thứ duy
+nhất đổi là **chỗ bạn đứng**:
+
+<LadderSlip />
+
+## Ba lực và một bất đẳng thức
+
+Tường sơn nhẵn không ghì được gì theo phương đứng: nó chỉ **đẩy ngang** đầu
+thang ra. Sàn ôm hai việc còn lại — đỡ trọng lượng, và giữ chân thang bằng
+ma sát. Lấy [mô-men quanh chân thang](/vi/posts/don-bay-cho-toi-mot-diem-tua):
+hai trọng lượng có cánh tay đòn nằm ngang, phản lực tường có cánh tay đòn
+thẳng đứng.
+
+```
+N_tường = (P_thang/2 + P_người · f) / tanθ
+```
+
+f là chỗ bạn đứng, đo từ chân thang theo tỉ lệ chiều dài: 0 ở bậc dưới, 1 ở
+đỉnh. Bên kia bàn cân, sàn ghì lại được nhiều nhất `μ·(P_thang + P_người)`,
+hết. Cho hai vế gặp nhau là ra bậc cuối cùng còn an toàn:
+
+```
+f_max = (μ · tanθ · (P_thang + P_người) − P_thang/2) / P_người
+```
+
+## Chỗ nguy hiểm luôn nằm ở gần đỉnh
+
+Vế đòi hỏi lớn dần đều theo f; vế cung cấp thì đứng im — leo cao không làm
+sàn bám tốt hơn chút nào. Thang 6 m nặng 10 kg, bạn 65 kg, dựng 60°: đứng ở
+bậc thấp nhất, sàn chỉ cần μ = **0,038**, trơn gần như mặt băng vẫn đủ giữ. Bò
+tới đỉnh, đòi hỏi vọt lên **0,539**: gấp đúng **14 lần**, mà 14 ấy chỉ là
+(5 + 65)/5, chẳng dính gì tới góc dựng.
+
+Lấy μ = 0,40 — con số quen thuộc cho chân thang trên sàn cứng, khô và sạch —
+thì bạn dừng ở **72% chiều dài — 4,33 m trên thang 6 m**, chỗ đứng ấy cao
+3,75 m so với sàn (đầu thang thì ở 5,20 m). Đúng lúc ấy thang đẩy tường
+**294 N** theo phương ngang, sàn đỡ 736 N theo phương đứng — và 40% của 736
+vừa đúng bằng 294: đẳng thức ấy là định nghĩa của sắp trượt.
+
+## Năm độ đổi cả bài toán
+
+Thủ phạm là tanθ, hàm dốc nhất trong nhà: `tan 60° = 1,73`, `tan 65° = 2,14`,
+`tan 75° = 3,73`. Nhích thang thêm **5°** thôi mà giới hạn nhảy từ 72,2% lên
+**91,3%** — thêm 1,14 m thang leo được, đổi lại chỉ là kéo chân thang vào
+gần tường **46 cm**. Từ **66,8°** trở lên, vẫn μ = 0,40 ấy, bạn leo tới tận
+đỉnh mà chưa chạm ngưỡng.
+
+Đó là gốc của câu thần chú **1:4** ngoài công trường — chân thang cách tường
+một khoảng bằng **một phần tư chiều dài thang**, tức cosθ = 0,25 hay
+**75,5°**, chính là con số "75 độ" in trên mọi tờ hướng dẫn. Ở góc đó, bậc
+trên cùng chỉ đòi μ ≥ **0,241**.
+
+## Nặng thêm 50 kg gần như vô can, bụi xi măng thì không
+
+Cùng 60° và μ = 0,40: người 40 kg leo được 74,1%, người 90 kg được 71,4% —
+chênh vỏn vẹn **2,7 điểm phần trăm** cho 50 kg. Cân nặng của bạn đứng ở cả
+hai vế: nó vừa bẩy đầu thang ra, vừa ép chân thang xuống cho ma sát mạnh
+thêm, nên phần lớn tự triệt tiêu — họ hàng của [cuộc đua vật
+lăn](/vi/posts/dua-vat-lan-hinh-dang-thang-khoi-luong), nơi khối lượng bị
+loại thẳng khỏi đáp số.
+
+Rắc bụi xi măng lên gạch men và μ tụt về quanh 0,25: cũng góc 60° đó, giới hạn rơi
+xuống **42,3% — 2,54 m**. Tệ hơn: [ngưỡng trượt của
+thang không người](/vi/posts/mat-phang-nghieng-va-goc-bat-dau-truot) là
+`tanθ = 1/(2μ)`, với μ = 0,25 thì bằng **63,4°** — cây thang rỗng dựng 60° đã
+tự tuột trước khi ai kịp leo. Nó đứng yên được chỉ vì có bạn: người ở bậc
+thấp bơm thêm trọng lượng vào ma sát mà gần như không thêm mô-men lật. Đó là
+vật lý của thói quen công trường **cắt một người chặn bậc dưới cùng** — anh
+ta không giữ thang bằng tay, anh ta giữ bằng cân nặng.
+
+## Trường hợp biên: bọc cao su đầu thang thì hết giải được
+
+Cho đầu thang tì vào tường nhám: an toàn hơn thật, nhưng bài toán vừa hỏng.
+Giờ có bốn ẩn — hai phản lực pháp tuyến, hai lực ma sát — mà tĩnh học chỉ
+phát ra ba phương trình cân bằng. Hệ **siêu tĩnh**: vô số bộ nghiệm thoả cả
+ba, muốn chọn bộ đúng phải giả thiết thêm về độ cứng của thang và của tường.
+
+Chiều ngược lại triệt để hơn: kê chân thang vào một gờ chặn — bậc thềm, thanh
+gỗ đóng đinh xuống sàn — và μ **biến mất khỏi đáp số**. Lực đẩy ngang do gờ
+chịu, không phải ma sát: không còn bất đẳng thức nào để vi phạm, mọi góc mọi
+bậc đều đứng cho tới khi thang gãy vì lý do khác hẳn. Một mẩu gỗ 5
+cm ở chân thang xoá sạch mọi con số phía trên — kể cả con số 72% mà bạn vừa
+kéo slider tìm ra.

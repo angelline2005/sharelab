@@ -1,0 +1,183 @@
+---
+// Rolling shutter (CMOS line-scan) geometry. Row y of the frame is exposed at
+// t = t_read·(y/H), so the blade set appears rotated by θ(y) = ω·t_read·(y/H),
+// with ω = 2π·rpm/60. The canvas rasterises exactly that mapping, pixel by
+// pixel, and overlays the true (undistorted) blade outline.
+// Fan tips touch the frame edges, so blade radius r = H/2 and the image folds
+// when ω·t_read·r > H, i.e. sweep > 2 rad: past that, φ(α) = α − (Ω/H)(y_c +
+// r·sin α) stops being monotonic and a band of blade angles lands in THREE
+// places at once (the middle copy mirrored), the rest squeezed into fewer rows.
+// Exposure time is taken as short compared with t_read, so no motion blur
+// within a row is drawn; the row-to-row shear itself is negligible (at 300 rpm
+// one 4 µs line pitch is 0,0072°).
+---
+
+<figure class="demo" data-demo="man-trap-cuon-canh-quat-cong-nhu-luoi-liem">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Tốc độ quay (vòng/phút) <output data-out="rpm"></output>
+      <input type="range" data-in="rpm" min="60" max="4000" step="10" value="300" /></label>
+    <label>Thời gian đọc hết khung (ms) <output data-out="t"></output>
+      <input type="range" data-in="t" min="2" max="33" step="1" value="16" /></label>
+    <label>Số cánh <output data-out="n"></output>
+      <input type="range" data-in="n" min="2" max="7" step="1" value="3" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Hình xanh là tấm ảnh mà cảm biến thật sự dựng ra: mỗi dòng ảnh được đọc
+    muộn hơn dòng trên nó một chút, nên mỗi dòng bắt cánh quạt ở một góc khác.
+    Nét đứt cam là hình dạng thật của cánh — thẳng, không cong bao giờ. Trục
+    đỏ bên trái là đồng hồ của cảm biến (dòng này được đọc lúc mấy mili-giây),
+    trục phải là góc cánh đã quay được tính tới dòng đó.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const CURVE = [37, 99, 235]; // #2563eb, tô thẳng vào ImageData
+  const MARK = '#dc2626', TRUE = '#f59e0b';
+  const BLADE_M = 0.6; // chiều dài cánh quạt trần lấy làm chuẩn, mét
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const off = document.createElement('canvas');
+    const octx = off.getContext('2d')!;
+    const input = (k: string) => root.querySelector(`[data-in="${k}"]`) as HTMLInputElement;
+    const output = (k: string) => root.querySelector(`[data-out="${k}"]`) as HTMLOutputElement;
+    const vn = (x: number, d: number) => x.toFixed(d).replace('.', ',');
+    const sep = (x: number) => String(x).replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+
+    function draw() {
+      const rpm = Number(input('rpm').value);
+      const tms = Number(input('t').value);
+      const N = Number(input('n').value);
+      output('rpm').textContent = sep(rpm);
+      output('t').textContent = String(tms);
+      output('n').textContent = String(N);
+
+      const sweep = (rpm * Math.PI / 30) * (tms / 1000); // radian quét hết khung
+      const sweepDeg = sweep * 180 / Math.PI;
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.5);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+
+      const padL = 46, padR = 50, padT = 28, padB = 10;
+      const H = cssH - padT - padB;   // chiều cao khung = số dòng ảnh
+      const R = H / 2;                // mút cánh chạm mép khung
+      const cx = (padL + cssW - padR) / 2, cy = padT + R;
+      const hub = 0.11 * R, halfChord = 0.115 * R, step = (2 * Math.PI) / N;
+
+      // --- ảnh do màn trập cuốn dựng ra: quét từng dòng, từng pixel ---
+      const w = Math.ceil(2 * R) + 2, h = Math.ceil(H) + 2;
+      off.width = w; off.height = h;
+      const img = octx.createImageData(w, h);
+      const data = img.data;
+      for (let j = 0; j < h; j++) {
+        const th = sweep * (j / H);        // góc cánh đã quay tới dòng này
+        const dy = j - R;
+        for (let i = 0; i < w; i++) {
+          const dx = i - R;
+          const r = Math.sqrt(dx * dx + dy * dy);
+          if (r > R) continue;
+          let on = r < hub;
+          if (!on) {
+            let m = (Math.atan2(dy, dx) - th + Math.PI / 2) % step;
+            if (m < 0) m += step;
+            on = Math.min(m, step - m) < Math.asin(Math.min(1, halfChord / r));
+          }
+          if (!on) continue;
+          const p = (j * w + i) * 4;
+          data[p] = CURVE[0]; data[p + 1] = CURVE[1]; data[p + 2] = CURVE[2]; data[p + 3] = 230;
+        }
+      }
+      octx.putImageData(img, 0, 0);
+      ctx.drawImage(off, cx - R, padT);
+
+      // --- hình dạng thật của cánh (θ = 0), nét đứt ---
+      ctx.strokeStyle = TRUE; ctx.lineWidth = 1.4; ctx.setLineDash([5, 4]);
+      for (let k = 0; k < N; k++) {
+        const phi = k * step - Math.PI / 2;
+        ctx.beginPath();
+        for (let s = 0; s <= 24; s++) {
+          const r = hub + ((R - hub) * s) / 24;
+          const a = phi + Math.asin(Math.min(1, halfChord / r));
+          s ? ctx.lineTo(cx + r * Math.cos(a), cy + r * Math.sin(a))
+            : ctx.moveTo(cx + r * Math.cos(a), cy + r * Math.sin(a));
+        }
+        for (let s = 24; s >= 0; s--) {
+          const r = hub + ((R - hub) * s) / 24;
+          const a = phi - Math.asin(Math.min(1, halfChord / r));
+          ctx.lineTo(cx + r * Math.cos(a), cy + r * Math.sin(a));
+        }
+        ctx.closePath(); ctx.stroke();
+      }
+      ctx.setLineDash([]); ctx.lineWidth = 1;
+
+      // --- trục thời gian (trái) và trục góc quay (phải) ---
+      ctx.font = '10px system-ui,sans-serif';
+      const ax = padL - 8, bx = cssW - padR + 8;
+      ctx.strokeStyle = MARK; ctx.fillStyle = MARK; ctx.globalAlpha = 0.85; ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.moveTo(ax, padT); ctx.lineTo(ax, padT + H); ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(ax, padT + H); ctx.lineTo(ax - 4, padT + H - 8); ctx.lineTo(ax + 4, padT + H - 8);
+      ctx.closePath(); ctx.fill();
+      ctx.lineWidth = 1; ctx.globalAlpha = 1;
+
+      ctx.strokeStyle = fg; ctx.fillStyle = fg;
+      for (const f of [0, 0.25, 0.5, 0.75, 1]) {
+        const y = padT + f * H;
+        ctx.globalAlpha = 0.18; ctx.setLineDash([2, 5]);
+        ctx.beginPath(); ctx.moveTo(padL, y); ctx.lineTo(cssW - padR, y); ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.globalAlpha = 0.6;
+        const deg = f * sweepDeg;
+        ctx.textAlign = 'right'; ctx.fillText(vn(f * tms, 1), ax - 5, y + 3);
+        ctx.textAlign = 'left';
+        ctx.fillText(deg < 100 ? `${vn(deg, 1)}°` : `${Math.round(deg)}°`, bx, y + 3);
+      }
+      ctx.globalAlpha = 0.6;
+      ctx.textAlign = 'right'; ctx.fillText('ms', ax - 5, padT - 13);
+      ctx.textAlign = 'left'; ctx.fillText('góc', bx, padT - 13);
+      ctx.globalAlpha = 1; ctx.textAlign = 'left';
+
+      // --- readout ---
+      // Gấp nếp khi Ω·r > H; ở đây mút cánh chạm mép khung nên r = H/2 ⇒ Ω > 2 rad.
+      // Dưới ngưỡng ấy ảnh còn đọc được. Gốc cánh nằm giữa khung nên nó được
+      // đọc ở Ω/2; cánh lệch nhiều nhất là cánh hiện ra dựng đứng, mút của nó
+      // cách phương gốc cánh đúng Ω/2 — dây cung 2·r·sin(Ω/4).
+      let note: string;
+      if (sweep <= 2) {
+        const bend = 2 * BLADE_M * Math.sin(sweep / 4) * 100; // cm
+        note = ` · mút cánh dài 60 cm lệch tới <b>${vn(bend, 1)} cm</b> khỏi phương của gốc cánh`;
+      } else {
+        note = ' · <b>vùng gấp nếp: một dải cánh hiện ra ba chỗ, không còn đếm được số cánh</b>';
+        if (sweep > 2 * Math.PI) note += ' · cánh quay hơn trọn một vòng trong một khung';
+      }
+      readout.innerHTML =
+        `${sep(rpm)} vòng/phút · đọc hết khung ${tms} ms → từ dòng ảnh đầu tới dòng cuối, ` +
+        `cánh quay <b>${vn(sweepDeg, 1)}°</b>${note}`;
+    }
+
+    root.querySelectorAll('input').forEach((el) => el.addEventListener('input', draw));
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="man-trap-cuon-canh-quat-cong-nhu-luoi-liem"]').forEach(setup);
+</script>

@@ -1,0 +1,93 @@
+---
+title: "Cây đũa dựng ngược không chịu đổ: chỉ cần rung chân đế 32 lần mỗi giây"
+seoTitle: "Con lắc Kapitza: điều kiện ổn định của con lắc ngược khi rung điểm treo"
+description: "Cây đũa 30 cm dựng ngược, chân đế rung biên độ 1 cm: vượt 31,5 Hz là nó đứng thẳng, lên 45 Hz thì gạt nghiêng 60° vẫn tự bò về. Cả điều kiện gói trong một tích duy nhất — tốc độ đỉnh của đế phải vượt 1,98 m/s, đạt bằng biên độ hay bằng tần số đều được."
+pubDate: 2026-09-02
+tags: ["vat-ly", "dao-dong", "mo-phong", "javascript"]
+translationId: "con-lac-nguoc-dung-vung-nho-rung-nhanh"
+---
+
+import KapitzaPendulum from '../../../components/demos/KapitzaPendulum.astro';
+
+Giữ cán chổi thăng bằng trên lòng bàn tay thì khó, nhưng ai cũng làm được. Đổi
+sang cây đũa 30 cm là gần như vô vọng — nó đổ trước khi tay bạn kịp nhúc nhích.
+Vậy mà bắt bản lề đúng cây đũa ấy lên một cái đế đang rung, nó dựng ngược lên
+trời và ở yên đó, không ai đỡ:
+
+<KapitzaPendulum />
+
+## Chổi dễ hơn đũa vì cái đồng hồ đổ chạy chậm hơn
+
+Thanh dựng ngược lệch khỏi thẳng đứng thì góc nghiêng phình theo hàm mũ, hằng số
+thời gian τ = √(L_qđ/g) — và L_qđ không phải chiều dài thanh: khối lượng trải
+dọc suốt thân, nên [cách xếp khối lượng quanh
+trục](/vi/posts/dua-vat-lan-hinh-dang-thang-khoi-luong) rút thanh đồng chất quay
+quanh đầu dưới thành chiều dài quy đổi `L_qđ = 2L/3`. Cán chổi 1,5 m có
+τ = 0,32 s, cây đũa 30 cm chỉ 0,14 s — trong khi vòng mắt–não–tay tiêu cỡ 0,2 s
+mỗi lần chỉnh. Với chổi, hết một vòng chỉnh mà sai số chưa kịp gấp đôi nên tay
+bạn còn đuổi kịp; với đũa, mỗi vòng chỉnh nó đã phình hơn **bốn lần**. Nghiêng
+1° rồi buông tay, chổi cho bạn **1,31 giây** để ngả tới 30°, đũa cho đúng
+**0,58 giây**. Bạn thua vì hết giờ, không phải vì vụng.
+
+## Rung nhanh bẻ trọng lực thành 80 g mỗi chiều
+
+Trong hệ quy chiếu gắn với cái đế, trọng lực không đứng yên:
+`g_hd = g − a·ω²·cos(ωt)`. Với a = 10 mm và f = 45 Hz, số hạng thứ hai có biên
+độ **81 g**: mỗi 1/45 giây, "trọng lực" quét từ 82 g hướng xuống sang 80 g
+hướng lên. Trung bình trọn chu kỳ nó vẫn đúng bằng g — nếu chỉ có thế, cây đũa
+vẫn phải đổ.
+
+Chỗ tinh tế là thanh cũng rung theo, đúng nhịp ω và khoá pha với chính lực đã
+gây ra nó. Tích của một lực dao động với một độ lệch dao động cùng tần số
+**không** trung bình về 0 — phần dư ấy luôn kéo thanh về trục rung, và thanh
+chuyển động như thể sống trong thế năng:
+
+```
+U_hd(θ) = (g/L_qđ)·cos θ + (a²ω²/4L_qđ²)·sin²θ
+```
+
+Số hạng đầu là trọng lực, cực đại đúng tại θ = 0 — đỉnh đồi mà thanh chực lăn
+xuống; số hạng sau, do rung sinh ra, cực tiểu cũng tại θ = 0. Đỉnh đồi thành đáy
+hố khi vế sau thắng vế trước:
+
+```
+(a·ω)² > 2·g·L_qđ
+```
+
+## Cả cái ngưỡng nằm gọn trong một vận tốc: 1,98 m/s
+
+Tích a·ω chính là **tốc độ đỉnh của cái đế**, và ngưỡng
+√(2 × 9,81 × 0,20) = **1,98 m/s** cho cây đũa 30 cm (L_qđ = 0,20 m). Đi đường
+nào tới đó là việc của bạn: biên độ 10 mm cần 31,5 Hz, còn 20 mm chỉ cần
+15,8 Hz. Vì thế trò biểu diễn kinh điển của giảng đường chỉ cần một cái máy cưa
+lọng — 3 000 nhát mỗi phút là 50 Hz, hành trình lưỡi 20 mm cho a = 10 mm, ra
+3,14 m/s, vừa đủ dựng ngược một thanh dài tới **75 cm**.
+
+## Nó không chỉ đứng yên, nó còn tự bò về
+
+Vị trí thẳng đứng ở đây không phải điểm cân bằng mong manh mà là **đáy một cái
+hố thật**: gạt thanh nghiêng rồi buông, nó leo ngược lên, miễn là chưa quá góc
+θ_max với cos θ_max = (1,98 / (a·ω))² — ở 45 Hz và 10 mm là **60,6°**, còn ngay
+tại ngưỡng 31,5 Hz thì bằng 0. Bàn tay bạn giữ chổi bằng phản hồi: mắt đo, não
+tính, tay bù; cái đế rung không đo gì hết, chẳng biết thanh đang ngả bên nào. Ổn
+định ở đây mua bằng chuyển động nhanh, hệt như [bánh xe quay tít từ chối
+đổ](/vi/posts/con-quay-hoi-chuyen-vi-sao-khong-chiu-do) — chỉ khác là con quay
+trả bằng mô-men động lượng, còn ở đây [nhịp lắc riêng của con
+lắc](/vi/posts/chu-ky-con-lac-don-co-that-su-khong-phu-thuoc-bien-do) bị một
+nhịp nhanh gấp bốn mươi lần đè lên.
+
+## Trường hợp biên: rung chậm lại thì bất đẳng thức nói dối
+
+Kéo thanh xuống 7 cm rồi vặn biên độ lên 30 mm: bất đẳng thức tuyên bố chỉ cần
+**5,1 Hz** là đứng vững, thực tế nó đổ như thường. Phép trung bình hoá dựng trên
+giả định ω ≫ ω₀ = √(g/L_qđ), mà mẩu 7 cm có ω₀ = 14,5 rad/s còn 5,1 Hz mới là
+32,0 rad/s — **gấp 2,2 lần**, không ai gọi thế là "rất lớn hơn"; biên độ 30 mm
+lúc đó cũng bằng 43% chiều dài thanh. Vạch cam trong demo đánh dấu đúng ranh
+giới ấy: bên trái nó, dòng chữ "ĐỨNG VỮNG" là chữ rỗng.
+
+Bức tường phía bên kia là gia tốc: ngay tại ngưỡng, đỉnh gia tốc của đế bằng
+`2·L_qđ/a` lần g — **40 g** với cây đũa 30 cm ở biên độ 10 mm, **101 g** với máy
+cưa lọng 50 Hz. Đó là lý do thanh phải bắt bản lề vào đế: vật chỉ đặt lên mặt đế
+đã tách ra từ 5,0 Hz ở biên độ 10 mm, và khắp vùng đứng vững của demo thì đỉnh
+gia tốc không bao giờ xuống dưới 2,6 g. Cây đũa muốn đứng ngược vẫn phải có
+người giữ chân nó; chỉ mỗi phần thẳng đứng là nó tự lo.

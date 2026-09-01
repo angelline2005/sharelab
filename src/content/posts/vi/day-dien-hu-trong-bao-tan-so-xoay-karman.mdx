@@ -1,0 +1,89 @@
+---
+title: "Dây điện hú trong bão: gió 15 m/s cho gần đúng nốt Fa thăng"
+seoTitle: "Xoáy Kármán và số Strouhal: vì sao dây điện kêu khi gió thổi"
+description: "Gió 15 m/s qua sợi dây ⌀8 mm buông xoáy 375 nhịp mỗi giây — nghe ra gần đúng nốt Fa#4, và tần số ấy tỉ lệ thẳng với tốc độ gió: bão cấp 12 đẩy lên 825 Hz. Cao độ tiếng hú là một cái đồng hồ đo gió mà tai bạn đọc được."
+pubDate: 2026-09-02
+tags: ["vat-ly", "chat-luu", "am-thanh", "javascript"]
+translationId: "day-dien-hu-trong-bao-tan-so-xoay-karman"
+---
+
+import VortexShedding from '../../../components/demos/VortexShedding.astro';
+
+Đêm bão, đường dây ngoài cửa sổ không lạch cạch mà **hú** — một tiếng ngân
+cao, đều, sạch hơn hẳn tiếng gió rít qua khe cửa. Sợi dây không kêu vì bị
+gió đẩy. Nó kêu vì thứ không khí mà nó **bỏ lại phía sau**:
+
+<VortexShedding />
+
+## Mỗi giây 375 nhịp buông xoáy
+
+Không khí lách quanh sợi dây rồi phải vòng ra sau nó — và ở mặt sau nó
+không bám nổi: dòng tách khỏi bề mặt, cuộn lại thành xoáy. Trò tinh quái
+nằm ở chỗ hai bên **không tách cùng lúc**. Xoáy lớn dần ở mép trái hút dòng
+sang, ép mép phải tách; xoáy phải lớn lên lại đuổi xoáy trái đi. Kết quả là
+một hàng xoáy so le đều tăm tắp trôi về hạ lưu — **dãy xoáy Kármán** — và
+mỗi xoáy rời đi lại giật sợi dây về phía ngược lại. Một xoáy trái rồi một
+xoáy phải mới trọn một nhịp đẩy–kéo, tức một chu kỳ âm. Đó là một cái loa:
+375 nhịp mỗi giây — 750 xoáy, chia đều hai bên — thì tai nghe ra 375 Hz.
+
+```
+f = St · v / d        St ≈ 0,2 khi 300 < Re < 200 000
+```
+
+Con số Strouhal St ≈ 0,2 lì lạ thường: nó gần như không đổi suốt gần ba bậc
+của [số Reynolds](/vi/posts/so-reynolds-vi-khuan-boi-trong-mat-ong), mà dây
+điện ⌀8 mm trong gió 15 m/s nằm gọn giữa dải ấy (**Re = 8 000**). Thay số:
+**375 Hz** — cách nốt Fa#4 chuẩn (369,99 Hz) đúng **23 cent**, chưa tới một
+phần tư cung (50 cent). Và vì St cố định, hình học của dãy xoáy cũng cố
+định: hai xoáy cùng bên cách nhau cỡ **5 lần đường kính**, tức 40 mm sau
+sợi dây ấy — dù gió mạnh hay yếu. Gió chỉ đổi tốc độ dãy ấy trôi đi.
+
+## Cao độ là một cái đồng hồ đo gió
+
+Vì f tỉ lệ thẳng với v, mỗi lần gió mạnh gấp đôi thì tiếng hú lên **đúng
+một quãng tám**: 15 m/s cho Fa#4, 30 m/s cho Fa#5, không cần ai lên dây.
+Bão cấp 12 (33 m/s) đẩy sợi dây ấy lên **825 Hz**, sát nốt Sol#5 — lệch
+−12 cent, còn nhỏ hơn sai số 13,7 cent mà quãng ba trưởng trên cây piano
+nhà bạn [cố ý mang](/vi/posts/vi-sao-dan-piano-co-y-chinh-sai-moi-not).
+
+Đường kính thì kéo ngược lại. Cùng cơn gió 15 m/s: cáp bọc ⌀16 mm tụt
+xuống Fa#3, còn cột đèn ⌀100 mm chỉ cho **30 Hz** — sát đáy dải nghe, thấp
+tới mức tai thôi bắt ra nốt: bạn không nghe cột đèn hát, bạn *sờ* thấy nó
+rung. Bão qua thành phố vì thế nghe như dàn nhạc lệch tông: dây ăng-ten
+the thé, lan can chỉ ù. Vincenc Strouhal tìm ra hằng số mang tên mình năm
+1878 đúng bằng cách này — ông buộc dây vào một cánh tay quay, quay nhanh
+dần và nghe nốt đi lên.
+
+## Vì sao phải chờ tới bão mới nghe thấy
+
+Ngay ở gió 2 m/s, sợi dây ⌀8 mm đã ngân 50 Hz — thừa cao để tai bắt được.
+Thứ còn thiếu chưa bao giờ là cao độ, mà là **công suất**. Nguồn âm kiểu
+này là nguồn lưỡng cực, và công suất nó phát ra tỉ lệ với **luỹ thừa sáu**
+của tốc độ gió. Gió gấp đôi: âm thanh mạnh gấp **64 lần**, tức to thêm
+18 dB. Từ 5 m/s lên 15 m/s — cao độ mới gấp ba, cường độ đã tăng **29 dB**,
+đủ để một tiếng ngân không ai để ý biến thành thứ xuyên qua lớp kính đóng.
+Cơn bão không tạo ra tiếng hú. Nó chỉ vặn to một thứ vẫn kêu suốt cả năm.
+
+## Trường hợp biên: cơn gió hiền mới là cơn gió làm đứt dây
+
+Đẩy tần số xoáy tới đúng tần số dao động riêng của chính sợi dây thì công
+thức trên **thôi có hiệu lực**. Dây bắt đầu đung đưa, và chuyển động ấy tự
+điều khiển điểm tách dòng: xoáy bỏ nhịp của gió để bám lấy nhịp của dây,
+giữ nguyên tần số ngay cả khi gió đổi ±25–30%. Đây là *khoá pha* — [cộng
+hưởng](/vi/posts/cong-huong-vi-sao-day-nho-thang-luc-lon) tự nuôi mình,
+biên độ ngang vọt lên cỡ trọn một đường kính và không có gì tự dập nó.
+
+Chỗ ấy không nằm trong bão. Dây tải điện ⌀25 mm trong gió **hiu hiu 2–7 m/s**
+buông xoáy ở 16–56 Hz, đúng rừng tần số riêng của một nhịp dây căng — và
+đó là loại rung làm mỏi rồi đứt sợi nhôm ngay chỗ kẹp đầu trụ. Những quả tạ
+hình tay chuông treo lủng lẳng gần cột điện là để chữa đúng bệnh này, không
+phải để chống bão.
+
+Còn cầu Tacoma Narrows thì không phải ca này, dù sách phổ thông vẫn kể vậy.
+Gió hôm sập cầu ~19 m/s, mặt cắt dầm chữ H sâu 2,4 m — tiết diện vuông vức
+nên St ≈ 0,11 chứ không phải 0,2: tần số buông xoáy cỡ **0,85 Hz**, trong
+khi dao động xoắn xé cầu ra chỉ **0,2 Hz** — chênh bốn lần thì không cộng
+hưởng với cái gì cả. Cầu chết vì *flutter* xoắn, một cơ chế khác hẳn: mặt
+cầu vặn mình làm đổi góc tấn, gió trả lại đúng cú vặn tiếp theo. Khoá pha
+xoáy còn tự giới hạn — ra khỏi dải ±30% tốc độ gió là thôi. Flutter thì
+càng gió mạnh càng dữ, và không có trần.

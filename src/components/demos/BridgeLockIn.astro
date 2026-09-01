@@ -1,0 +1,183 @@
+---
+// Pedestrian lateral lock-in (Dallard et al., Arup, "The London Millennium
+// Footbridge", The Structural Engineer 2001). Each walker on a laterally
+// moving deck exerts a force in phase with deck VELOCITY: F = k·v with
+// k ≈ 300 N·s/m, measured for lateral modes in 0,5–1,1 Hz. Averaged along a
+// half-sine mode shape each walker removes k/2 = 150 N·s/m from the mode.
+// Modal damping coefficient c = 4π·ζ·m·f  →  N_tới hạn = 8π·ζ·m·f / k.
+// Linear, small-amplitude model: valid only while walkers keep walking
+// normally (deck amplitude below ~30–40 mm). Slider ranges cover the
+// Millennium spans before and after the retrofit: ζ 0,2–20 % (0,7 % as built,
+// ~20 % with dampers), m 50–300 tấn, f 0,4–1,5 Hz.
+---
+
+<figure class="demo" data-demo="cau-di-bo-lac-ngang-va-66-nguoi">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Cản kết cấu ζ (%) <output data-out="z"></output>
+      <input type="range" data-in="z" min="0.2" max="20" step="0.1" value="0.7" /></label>
+    <label>Khối lượng dao động của nhịp (tấn) <output data-out="m"></output>
+      <input type="range" data-in="m" min="50" max="300" step="1" value="113" /></label>
+    <label>Tần số riêng ngang f (Hz) <output data-out="f"></output>
+      <input type="range" data-in="f" min="0.4" max="1.5" step="0.01" value="1" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Đường xanh là tổng cản của nhịp cầu khi có N người đi bộ trên đó: mỗi
+    người kéo nó xuống 150 N·s/m. Chỗ đường xanh cắt trục 0 là số người tới
+    hạn — bên trái cầu tự dập dao động, bên phải cản mang dấu âm và biên độ
+    tăng theo hàm mũ. Đường cam (trục phải) là thời gian biên độ nhân đôi
+    trong vùng đỏ. Không có đỉnh cộng hưởng nào ở đây, chỉ có một ngưỡng.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const CURVE = '#2563eb', MARK = '#dc2626', TIME = '#f59e0b';
+  const K = 300;          // N·s/m per pedestrian, at the pedestrian's location
+  const KEFF = K / 2;     // averaged along a half-sine mode shape
+  const TMAX = 120;       // s, top of the right-hand doubling-time axis
+
+  const cStruct = (z: number, m: number, f: number) => 4 * Math.PI * z * m * f;
+  const nCrit = (z: number, m: number, f: number) => cStruct(z, m, f) / KEFF;
+
+  const MULT = [1, 1.5, 2, 3, 4, 5, 6, 8, 10];
+  function nice(x: number) {
+    const e = Math.pow(10, Math.floor(Math.log10(x)));
+    const r = x / e;
+    return (MULT.find((v) => r <= v + 1e-9) ?? 10) * e;
+  }
+  const th = (x: number) =>
+    Math.round(x).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+  const dec = (x: number, n: number) => x.toFixed(n).replace('.', ',');
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (k: string) => root.querySelector(`[data-in="${k}"]`) as HTMLInputElement;
+    const output = (k: string) => root.querySelector(`[data-out="${k}"]`) as HTMLOutputElement;
+
+    function draw() {
+      const zPc = Number(input('z').value);
+      const mT = Number(input('m').value);
+      const f = Number(input('f').value);
+      output('z').textContent = dec(zPc, 1) + ' %';
+      output('m').textContent = th(mT) + ' tấn';
+      output('f').textContent = dec(f, 2) + ' Hz';
+
+      const z = zPc / 100, m = mT * 1000;
+      const c0 = cStruct(z, m, f);
+      const nc = nCrit(z, m, f);
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.5);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+
+      const padL = 58, padR = 46, padT = 14, padB = 42;
+      const x0 = padL, x1 = cssW - padR, y0 = padT, y1 = cssH - padB;
+
+      const xMax = Math.max(20, nice(2.5 * nc));
+      const yHi = 1.25 * c0;
+      const yLo = -1.15 * (KEFF * xMax - c0);
+      const X = (n: number) => x0 + (n / xMax) * (x1 - x0);
+      const Y = (c: number) => y0 + ((yHi - c) / (yHi - yLo)) * (y1 - y0);
+      const Y2 = (t: number) => y1 - (t / TMAX) * (y1 - y0);
+
+      // Unstable region: net damping negative.
+      ctx.fillStyle = MARK; ctx.globalAlpha = 0.08;
+      ctx.fillRect(X(Math.min(nc, xMax)), y0, Math.max(0, x1 - X(nc)), y1 - y0);
+      ctx.globalAlpha = 1;
+
+      // Axes + zero line.
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.3;
+      ctx.beginPath(); ctx.moveTo(x0, y0); ctx.lineTo(x0, y1); ctx.lineTo(x1, y1); ctx.stroke();
+      ctx.globalAlpha = 0.6; ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.moveTo(x0, Y(0)); ctx.lineTo(x1, Y(0)); ctx.stroke();
+      ctx.lineWidth = 1;
+
+      // Ticks.
+      ctx.globalAlpha = 0.55; ctx.fillStyle = fg; ctx.font = '10px system-ui,sans-serif';
+      ctx.textAlign = 'center';
+      for (let i = 1; i <= 5; i++) {
+        const n = (xMax * i) / 5;
+        ctx.fillText(th(n), X(n), y1 + 14);
+      }
+      ctx.globalAlpha = 0.4;
+      ctx.fillText('số người đi bộ trên nhịp', (x0 + x1) / 2, y1 + 30);
+      ctx.globalAlpha = 0.55;
+      ctx.textAlign = 'right';
+      const step = nice((yHi - yLo) / 5);
+      for (let c = -Math.ceil(-yLo / step) * step; c <= yHi; c += step) {
+        if (c < yLo) continue;
+        ctx.fillText(th(c), x0 - 5, Y(c) + 3);
+      }
+      ctx.globalAlpha = 0.4;
+      ctx.save(); ctx.translate(11, (y0 + y1) / 2); ctx.rotate(-Math.PI / 2);
+      ctx.textAlign = 'center'; ctx.fillText('tổng cản (N·s/m)', 0, 0); ctx.restore();
+      ctx.globalAlpha = 1;
+
+      // Right axis: doubling time.
+      ctx.fillStyle = TIME; ctx.textAlign = 'left';
+      for (const t of [30, 60, 90, 120]) ctx.fillText(`${t} s`, x1 + 5, Y2(t) + 3);
+
+      // Net damping line: c(N) = c0 − 150·N.
+      ctx.strokeStyle = CURVE; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.moveTo(X(0), Y(c0)); ctx.lineTo(X(xMax), Y(c0 - KEFF * xMax)); ctx.stroke();
+
+      // Doubling time of the amplitude where damping is negative.
+      ctx.strokeStyle = TIME; ctx.beginPath();
+      let started = false;
+      for (let i = 0; i <= 300; i++) {
+        const n = (xMax * i) / 300;
+        const cNet = KEFF * n - c0;
+        if (cNet <= 0) { started = false; continue; }
+        const t2 = (Math.LN2 * 2 * m) / cNet;
+        if (t2 > TMAX) { started = false; continue; }
+        started ? ctx.lineTo(X(n), Y2(t2)) : ctx.moveTo(X(n), Y2(t2));
+        started = true;
+      }
+      ctx.stroke(); ctx.lineWidth = 1;
+
+      // Critical point.
+      if (nc <= xMax) {
+        ctx.fillStyle = MARK;
+        ctx.beginPath(); ctx.arc(X(nc), Y(0), 6, 0, Math.PI * 2); ctx.fill();
+        ctx.font = '11px system-ui,sans-serif'; ctx.textAlign = 'left';
+        ctx.fillText(`${th(Math.floor(nc))} người`, X(nc) + 9, Y(0) - 7);
+      }
+      ctx.font = '10px system-ui,sans-serif'; ctx.globalAlpha = 0.65; ctx.fillStyle = fg;
+      ctx.textAlign = 'left'; ctx.fillText('cầu tự dập dao động', x0 + 6, y1 - 8);
+      ctx.textAlign = 'right'; ctx.fillStyle = MARK;
+      ctx.fillText('cản âm — biên độ bung ra', x1 - 6, y1 - 8);
+      ctx.globalAlpha = 1;
+
+      const flag = nc < 150
+        ? ' · <b>ngưỡng nằm dưới sức chứa bình thường của nhịp</b>'
+        : '';
+      readout.innerHTML =
+        `ζ = ${dec(zPc, 1)} % · m = ${th(mT)} tấn · f = ${dec(f, 2)} Hz → cản kết cấu ` +
+        `<b>${th(c0)} N·s/m</b>; mỗi người đi bộ góp −${KEFF} N·s/m → ` +
+        `<b>N tới hạn = ${th(Math.floor(nc))} người</b>${flag}`;
+    }
+
+    root.querySelectorAll('input').forEach((el) => el.addEventListener('input', draw));
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="cau-di-bo-lac-ngang-va-66-nguoi"]').forEach(setup);
+</script>

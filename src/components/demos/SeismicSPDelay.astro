@@ -1,0 +1,230 @@
+---
+// Khoảng cách tâm chấn từ độ trễ S−P, mô hình vỏ đồng nhất:
+//   d = Δt / (1/vS − 1/vP),  với vP/vS = √3 (vật rắn Poisson, ν = 0,25)
+//   ⇒ d = Δt · vP/(√3 − 1) = 1,366 · vP · Δt   (vP = 6,0 km/s → 8,20 km mỗi giây)
+// Nguồn: quan hệ vP/vS = √((2−2ν)/(1−2ν)); nomogram S−P kinh điển của Richter.
+// Miền hợp lệ: sóng trực tiếp trong vỏ, tức d nhỏ hơn cự ly giao cắt Moho
+//   x_c = 2h·√((v2+vP)/(v2−vP)) với h = 35 km, v2 = 8,0 km/s (x_c = 185 km khi vP = 6,0).
+//   Quá x_c sóng đầu khúc xạ dọc Moho tới trước — demo cảnh báo chế độ này.
+---
+
+<figure class="demo" data-demo="dem-giay-giua-hai-con-rung-tam-chan-cach-bao-xa">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Khoảng cách tới tâm chấn (km) <output data-out="d"></output>
+      <input type="range" data-in="d" min="10" max="500" step="1" value="100" /></label>
+    <label>Thời gian từ lúc vỡ (s) <output data-out="t"></output>
+      <input type="range" data-in="t" min="0" max="150" step="0.5" value="35" /></label>
+    <label>Vận tốc sóng P (km/s) <output data-out="vp"></output>
+      <input type="range" data-in="vp" min="5" max="8" step="0.1" value="6" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Trên: nhìn từ trên xuống — hai mặt sóng lan từ tâm chấn, vòng ngoài là
+    sóng P (nén), vòng trong là sóng S (ngang), vẽ đứng yên tại thời điểm
+    bạn chọn. Dưới: băng địa chấn của trạm đo, vẽ tới đúng thời điểm ấy.
+    Khoảng trống giữa hai mốc P và S chính là thứ duy nhất cần đo: mỗi giây
+    trễ ứng với 8,20 km khi vỏ chạy 6,0 km/s. Mô hình vỏ đồng nhất; băng
+    sóng vẽ theo lược đồ, không phải số liệu đo thật.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const PW = '#2563eb', MARK = '#dc2626', SW = '#f59e0b';
+  const R3 = Math.sqrt(3);
+  const D_MAX = 520, T_MAX = 150;
+  const MOHO = 35, V_MANTLE = 8.0;
+  const LAG = 5; // giây trễ xử lý của một máy cảnh báo tại chỗ
+
+  const vi = (x: number, n: number) => x.toFixed(n).replace('.', ',');
+  // Nhiễu tất định: cùng đầu vào cho cùng hình vẽ, không cần vòng lặp động.
+  const wig = (u: number) =>
+    Math.sin(u * 2.3) * 0.6 + Math.sin(u * 5.7 + 1.1) * 0.3 +
+    Math.sin(u * 11.3 + 2.4) * 0.18 + Math.sin(u * 19.1 + 0.7) * 0.1;
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (k: string) => root.querySelector(`[data-in="${k}"]`) as HTMLInputElement;
+    const output = (k: string) => root.querySelector(`[data-out="${k}"]`) as HTMLOutputElement;
+
+    function draw() {
+      const d = Number(input('d').value);
+      const t = Number(input('t').value);
+      const vP = Number(input('vp').value);
+      const vS = vP / R3;
+      const tP = d / vP, tS = d / vS, dt = tS - tP;
+      const kmPerSec = vP / (R3 - 1);
+      const xc = vP < V_MANTLE ? 2 * MOHO * Math.sqrt((V_MANTLE + vP) / (V_MANTLE - vP)) : Infinity;
+      // Quá x_c: sóng đầu chạy dọc Moho tới trước, cùng góc tới hạn cho cả P và S.
+      const cosC = vP < V_MANTLE ? Math.sqrt(1 - (vP / V_MANTLE) ** 2) : 0;
+      const dtTrue =
+        Math.min(tS, d / (V_MANTLE / R3) + (2 * MOHO * cosC) / vS) -
+        Math.min(tP, d / V_MANTLE + (2 * MOHO * cosC) / vP);
+
+      output('d').textContent = String(d);
+      output('t').textContent = vi(t, 1);
+      output('vp').textContent = vi(vP, 1);
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.66);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+      ctx.font = '10px system-ui,sans-serif';
+
+      const padL = 40, padR = 12, padT = 12, padB = 22;
+      const aTop = padT, aBot = padT + Math.round((cssH - padT - padB) * 0.46);
+      const bTop = aBot + 44, bBot = cssH - padB;
+      const yc = (aTop + aBot) / 2;
+      const X = (km: number) => padL + (km / D_MAX) * (cssW - padL - padR);
+      const T = (s: number) => padL + (s / T_MAX) * (cssW - padL - padR);
+      const pxPerKm = (cssW - padL - padR) / D_MAX;
+
+      // ---- Bảng trên: mặt bằng, hai mặt sóng đồng tâm quanh tâm chấn ----
+      ctx.save();
+      ctx.beginPath(); ctx.rect(padL - 6, aTop, cssW - padL - padR + 6, aBot - aTop); ctx.clip();
+      const rP = vP * t * pxPerKm, rS = vS * t * pxPerKm;
+      // Vành khăn giữa hai mặt sóng: vùng đã rung P nhưng chưa tới S.
+      if (rP - rS > 1) {
+        ctx.fillStyle = SW; ctx.globalAlpha = 0.14;
+        ctx.beginPath();
+        ctx.arc(X(0), yc, rP, 0, Math.PI * 2);
+        ctx.arc(X(0), yc, rS, 0, Math.PI * 2, true);
+        ctx.fill(); ctx.globalAlpha = 1;
+        if (rP - rS > 80 && yc + 36 < aBot) {
+          ctx.fillStyle = SW; ctx.textAlign = 'center';
+          ctx.fillText('vùng chờ sóng S', X(0) + (rP + rS) / 2, yc + 32);
+        }
+      }
+      for (const [v, col, lab] of [[vP, PW, 'P'], [vS, SW, 'S']] as Array<[number, string, string]>) {
+        const r = v * t * pxPerKm;
+        if (r <= 0.5) continue;
+        ctx.strokeStyle = col; ctx.lineWidth = 2; ctx.globalAlpha = 0.9;
+        ctx.beginPath(); ctx.arc(X(0), yc, r, 0, Math.PI * 2); ctx.stroke();
+        ctx.globalAlpha = 1; ctx.lineWidth = 1;
+        ctx.fillStyle = col; ctx.textAlign = 'center';
+        ctx.fillText(lab, X(0) + r, yc - 8);
+      }
+      ctx.restore();
+
+      // Đường mặt đất, tâm chấn, trạm đo.
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.25;
+      ctx.beginPath(); ctx.moveTo(X(0), yc); ctx.lineTo(cssW - padR, yc); ctx.stroke();
+      ctx.beginPath(); ctx.setLineDash([3, 3]);
+      ctx.moveTo(X(d), yc); ctx.lineTo(X(d), aBot); ctx.stroke(); ctx.setLineDash([]);
+      ctx.globalAlpha = 1;
+
+      ctx.fillStyle = MARK;
+      ctx.beginPath(); ctx.arc(X(0), yc, 5, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath();
+      ctx.moveTo(X(d), yc - 9); ctx.lineTo(X(d) + 7, yc + 4); ctx.lineTo(X(d) - 7, yc + 4);
+      ctx.closePath(); ctx.fill();
+      ctx.fillStyle = fg; ctx.globalAlpha = 0.7; ctx.textAlign = 'left';
+      ctx.fillText('tâm chấn', X(0) + 8, yc + 18);
+      ctx.textAlign = d > D_MAX * 0.8 ? 'right' : 'center';
+      ctx.fillText('trạm đo', X(d) + (d > D_MAX * 0.8 ? -8 : 0), yc - 15);
+      ctx.globalAlpha = 1;
+
+      // Trục khoảng cách.
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.3;
+      ctx.beginPath(); ctx.moveTo(padL, aBot); ctx.lineTo(cssW - padR, aBot); ctx.stroke();
+      ctx.globalAlpha = 0.55; ctx.fillStyle = fg; ctx.textAlign = 'center';
+      for (const km of [0, 100, 200, 300, 400, 500]) {
+        ctx.globalAlpha = 0.3;
+        ctx.beginPath(); ctx.moveTo(X(km), aBot); ctx.lineTo(X(km), aBot + 4); ctx.stroke();
+        ctx.globalAlpha = 0.55;
+        ctx.fillText(km === 0 ? '0' : `${km} km`, X(km), aBot + 15);
+      }
+      ctx.globalAlpha = 1;
+
+      // ---- Bảng dưới: băng địa chấn, vẽ tới đúng thời điểm t ----
+      const yBase = (bTop + bBot) / 2, amp = (bBot - bTop) / 2 * 0.86;
+      if (tP < t) {
+        ctx.fillStyle = SW; ctx.globalAlpha = 0.1;
+        ctx.fillRect(T(tP), bTop, T(Math.min(tS, t)) - T(tP), bBot - bTop);
+        ctx.globalAlpha = 1;
+      }
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.25;
+      ctx.beginPath(); ctx.moveTo(padL, yBase); ctx.lineTo(cssW - padR, yBase); ctx.stroke();
+      ctx.globalAlpha = 1;
+
+      ctx.strokeStyle = fg; ctx.lineWidth = 1; ctx.globalAlpha = 0.85; ctx.beginPath();
+      const steps = Math.max(2, Math.round(T(t) - padL));
+      for (let i = 0; i <= steps; i++) {
+        const s = (t * i) / steps;
+        let a = 0;
+        if (s >= tP) a += 0.22 * Math.exp(-(s - tP) / 14) * wig((s - tP) * 3.1);
+        if (s >= tS) a += 1.0 * Math.exp(-(s - tS) / 22) * wig((s - tS) * 1.7 + 5);
+        const y = yBase - a * amp;
+        i ? ctx.lineTo(T(s), y) : ctx.moveTo(T(s), y);
+      }
+      ctx.stroke(); ctx.globalAlpha = 1;
+
+      const rows: Array<[number, string, string, number, CanvasTextAlign]> = [
+        [tP, PW, 'P', bTop - 18, 'right'], [tS, SW, 'S', bTop - 5, 'left'],
+      ];
+      for (const [s, col, lab, ly, align] of rows) {
+        if (s > t || s > T_MAX) continue;
+        ctx.strokeStyle = col; ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.moveTo(T(s), bTop); ctx.lineTo(T(s), bBot); ctx.stroke();
+        ctx.lineWidth = 1; ctx.fillStyle = col; ctx.textAlign = align;
+        ctx.fillText(`${lab} tới ${vi(s, 1)} s`, T(s) + (align === 'right' ? -4 : 4), ly);
+      }
+      if (tS <= t && tS <= T_MAX && T(tS) - T(tP) > 45) {
+        ctx.fillStyle = SW; ctx.textAlign = 'center';
+        ctx.fillText(`Δt = ${vi(dt, 1)} s`, (T(tP) + T(tS)) / 2, bBot - 14);
+      }
+      ctx.strokeStyle = MARK; ctx.globalAlpha = 0.8;
+      ctx.beginPath(); ctx.moveTo(T(t), bTop); ctx.lineTo(T(t), bBot); ctx.stroke();
+      ctx.globalAlpha = 1;
+
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.3;
+      ctx.beginPath(); ctx.moveTo(padL, bBot); ctx.lineTo(cssW - padR, bBot); ctx.stroke();
+      ctx.fillStyle = fg; ctx.textAlign = 'center';
+      for (const s of [0, 30, 60, 90, 120, 150]) {
+        ctx.globalAlpha = 0.3;
+        ctx.beginPath(); ctx.moveTo(T(s), bBot); ctx.lineTo(T(s), bBot + 4); ctx.stroke();
+        ctx.globalAlpha = 0.55;
+        ctx.fillText(s === 0 ? '0' : `${s} s`, T(s), bBot + 15);
+      }
+      ctx.globalAlpha = 1;
+
+      // ---- Dòng số ----
+      const lead = dt - LAG;
+      const warn = lead > 0
+        ? `còn <b>${vi(lead, 1)} s</b> trước khi sóng S tới`
+        : `<b>trong vùng mù</b> — sóng S tới trước khi báo kịp`;
+      const regime = d > xc
+        ? ` · <b>quá ${vi(xc, 0)} km: sóng đầu khúc xạ dọc Moho tới trước — trễ thật chỉ ` +
+          `${vi(dtTrue, 1)} s, nhân ${vi(kmPerSec, 2)} ra ${vi(dtTrue * kmPerSec, 0)} km, ` +
+          `hụt ${vi(100 * (1 - (dtTrue * kmPerSec) / d), 0)}%</b>`
+        : '';
+      readout.innerHTML =
+        `d = ${d} km · v<sub>P</sub> = ${vi(vP, 1)} km/s, v<sub>S</sub> = ${vi(vS, 2)} km/s → ` +
+        `P tới sau ${vi(tP, 1)} s, S tới sau ${vi(tS, 1)} s, <b>trễ ${vi(dt, 1)} s</b> ` +
+        `(${vi(kmPerSec, 2)} km cho mỗi giây trễ)<br />` +
+        `t = ${vi(t, 1)} s: mặt sóng P ở ${vi(vP * t, 0)} km, S ở ${vi(vS * t, 0)} km · ` +
+        `trừ ${LAG} s xử lý, máy cảnh báo tại trạm ${warn}${regime}`;
+    }
+
+    root.querySelectorAll('input').forEach((el) => el.addEventListener('input', draw));
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="dem-giay-giua-hai-con-rung-tam-chan-cach-bao-xa"]').forEach(setup);
+</script>

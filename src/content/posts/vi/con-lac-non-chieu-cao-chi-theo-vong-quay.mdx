@@ -1,0 +1,94 @@
+---
+title: "Con lắc nón: 60 vòng/phút luôn cho đúng 24,85 xentimét"
+seoTitle: "Con lắc nón và bộ điều tốc Watt: chiều cao h = g/ω²"
+description: "Quay một quả nặng trên dây thành hình nón: chiều cao từ điểm treo xuống mặt phẳng quay chỉ phụ thuộc số vòng/phút — 60 v/p cho đúng 24,85 cm, dù dây dài hay ngắn, quả nặng nặng hay nhẹ. Lên 120 v/p, con số chia bốn còn 6,21 cm. Bộ điều tốc máy hơi nước của Watt sống nhờ đúng một dòng đó."
+pubDate: 2026-09-02
+tags: ["vat-ly", "co-hoc", "dao-dong", "javascript"]
+translationId: "con-lac-non-chieu-cao-chi-theo-vong-quay"
+---
+
+import ConicalPendulum from '../../../components/demos/ConicalPendulum.astro';
+
+Buộc chùm chìa khoá vào sợi dây rồi quay cho nó chạy vòng tròn đều, vẽ
+trong không khí một hình nón. Dây dài hay ngắn, chìa nặng hay nhẹ đều
+không đổi được một điều: giữ đúng **60 vòng mỗi phút** thì mặt phẳng quay
+luôn nằm thấp hơn ngón tay bạn đúng **24,85 cm**.
+
+<ConicalPendulum />
+
+## Khối lượng biến mất ngay ở dòng thứ hai
+
+Quả nặng chỉ chịu hai lực: trọng lượng mg kéo thẳng xuống và sức căng T
+dọc dây. Phương đứng cân bằng — T·cosθ = mg — còn phương ngang thì không:
+nó là lực hướng tâm giữ vật trên vòng tròn bán kính r = L·sinθ, tức
+T·sinθ = m·ω²·L·sinθ. Chia hai dòng cho nhau, **m biến mất**; nhân lại
+với L, **L cũng biến mất**:
+
+```
+h = g / ω²          với ω = 2π · (vòng/phút) / 60
+cos θ = h / L       (chỉ có nghiệm khi h ≤ L)
+```
+
+Còn lại đúng một biến. 60 v/p cho h = 24,85 cm; 120 v/p không cho một nửa
+mà cho **6,21 cm** — đúng một phần tư, vì h đi theo 1/ω². Và đây là kết
+quả *chính xác*, không phải gần đúng góc nhỏ như [chu kỳ con lắc
+đơn](/vi/posts/chu-ky-con-lac-don-co-that-su-khong-phu-thuoc-bien-do): dây
+40 cm quay 60 v/p mở góc tới **51,6°** mà công thức không sai một chữ số.
+Kéo dây lên 1 m, góc thành 75,6°, vòng tròn rộng gấp ba — chiều cao nón
+vẫn đúng 24,85 cm.
+
+## Cùng một tam giác với khúc cua nghiêng
+
+Chia hai lực theo kiểu khác thì được tanθ = ω²r/g — chính là công thức
+[đường cong nghiêng](/vi/posts/duong-cong-nghieng-khuc-cua-khong-can-ma-sat),
+nơi mặt đường nghiêng đi thay cho sợi dây. Cũng vì m đã biến mất mà đu
+quay dây văng treo người lớn 70 kg và đứa trẻ 25 kg ngồi cạnh nhau ở
+**cùng một góc**: hình dạng chỉ hỏi ω và bán kính, y như [trọng lực nhân
+tạo trên vành trạm
+quay](/vi/posts/trong-luc-nhan-tao-va-cai-gia-cua-vong-quay). Khối lượng
+không vô dụng, nó chỉ chuyển sang cột khác: dây 40 cm quay 60 v/p, quả
+nặng 0,2 kg kéo dây **3,16 N** — 1,61 lần trọng lượng của nó, đúng bằng
+1/cosθ; đổi sang quả 2 kg, lực căng gấp mười mà hình nón không nhúc nhích
+một milimét.
+
+## Chiếc đồng hồ giấu trong chiều cao nón
+
+Viết h = g/ω² theo thời gian một vòng thì được t = 2π·√(h/g) — đúng từng
+ký tự công thức chu kỳ của con lắc đơn dài h. Hình nón quay một vòng mất
+đúng bằng thời gian một con lắc thường dài bằng *chiều cao nón* của nó đi
+hết một chu kỳ. Một vòng mỗi giây ↔ 24,85 cm; chậm còn 30 v/p, tức hai giây
+một vòng, h nhảy lên **99,40 cm** — chính là chiều dài quả lắc giây trong
+đồng hồ quả lắc.
+
+## Watt cho công thức này đi làm ca nhà máy
+
+Năm 1788, xưởng Boulton–Watt treo lên máy hơi nước hai quả cầu trên khớp
+quay và cho trục máy quay chúng: con lắc nón đi làm nghề điều khiển. Máy
+nhanh lên, ω tăng, h tụt, hai quả cầu bay ra ngoài kéo ống trượt lên, van
+hơi khép bớt — toàn bộ luật điều khiển gói trong dòng h = g/ω².
+
+Con số cho thấy vì sao nó chạy được: lệch 10% tốc độ (60 → 66 v/p) làm h
+rơi từ 24,85 xuống 20,54 cm — **mặt phẳng quay dâng lên 4,31 cm**, thừa
+hành trình để cần gạt khép van; lệch 1% vẫn còn 4,9 mm. Điều phản trực giác nằm ở chỗ khác:
+**quả cầu nặng hơn không làm máy chạy chậm hơn** — muốn đổi tốc độ đặt
+phải đổi tỉ số truyền, đổi khối lượng chỉ đổi lực đẩy ống trượt. Đám máy
+ấy hay "săn" tốc độ, dao động quanh điểm đặt, đủ phiền để năm 1868 Maxwell
+viết hẳn một bài toán về chúng — bài báo ngành điều khiển nhận làm mốc
+khai sinh.
+
+## Trường hợp biên: dưới 47,3 vòng/phút thì hình nón không tồn tại
+
+Quay chậm dần, h phình ra tới lúc nó đòi dài hơn cả sợi dây. Dây 40 cm có
+ngưỡng ω = √(g/L), tức **47,3 v/p**: ở 47 v/p công thức đòi h = 40,5 cm —
+vô nghiệm; nhích lên 48 v/p, nón mở ra ở góc 13,9°. Dưới ngưỡng không tồn
+tại hình nón nào dù bạn khéo tay đến đâu, thứ tiếp quản là con lắc phẳng
+đung đưa qua lại. Dây 1 m hạ ngưỡng xuống 29,9 v/p.
+
+Đầu kia của thang không có ngưỡng, nhưng có một tiệm cận tàn nhẫn: θ tiến
+tới 90° và không bao giờ chạm, vì luôn cần một thành phần thẳng đứng gánh
+mg — dây không thể nằm ngang. Ở 200 v/p với dây 40 cm, góc đã là 86,8°,
+lực căng bằng 17,9 lần trọng lượng, còn cả hình nón cao vỏn vẹn
+**2,24 cm**: lệch 1% tốc độ chỉ hạ nó thêm **0,44 mm**, không cơ cấu cơ
+khí nào cảm nổi. Bộ điều tốc kiểu Watt vì thế mù dần khi máy chạy nhanh,
+và thế hệ sau phải thay trọng lực bằng lò xo — lò xo muốn cứng bao nhiêu cũng được, còn
+g thì Trái Đất đã chốt sẵn ở 9,81.

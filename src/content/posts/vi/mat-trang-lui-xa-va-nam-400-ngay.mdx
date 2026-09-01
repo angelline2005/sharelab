@@ -1,0 +1,91 @@
+---
+title: "San hô hoá thạch chép lại rằng một năm từng có 400 ngày"
+seoTitle: "Mặt Trăng lùi 3,83 cm mỗi năm và ngày Trái Đất dài thêm"
+description: "Thuỷ triều là cái phanh: nó rút mômen động lượng khỏi vòng quay Trái Đất rồi đổ sang quỹ đạo Mặt Trăng. Ngày dài thêm 1,8 ms mỗi thế kỷ, Mặt Trăng lùi 3,83 cm mỗi năm — và vạch tăng trưởng trên san hô kỷ Devon đếm được 400 ngày trong một năm."
+pubDate: 2026-09-02
+tags: ["vat-ly", "thien-van", "co-hoc", "javascript"]
+translationId: "mat-trang-lui-xa-va-nam-400-ngay"
+---
+
+import LunarRecession from '../../../components/demos/LunarRecession.astro';
+
+San hô đắp vôi mỗi ngày một vạch mảnh, mỗi năm một vành dày — như vân gỗ,
+nhưng có cả nhịp ngày lẫn nhịp năm. Đếm số vạch trong một vành của san hô
+kỷ Devon, người ta ra **khoảng 400**. Không ai đếm nhầm; ngày hồi ấy ngắn hơn:
+
+<LunarRecession />
+
+## Búi nước chạy trước Mặt Trăng 12 phút
+
+[Mặt Trăng nhào Trái Đất thành quả bóng bầu dục](/vi/posts/thuy-trieu-mat-trang-thang-kien-mat-troi)
+— hai búi nước, một hướng về nó, một ở phía đối diện. Với hành tinh đứng
+yên thì hai búi ấy nằm gọn trên đường nối hai thiên thể; nhưng Trái Đất
+quay nhanh hơn Mặt Trăng đi quanh nó, ma sát đáy biển lôi búi nước đi
+theo, và búi nước **chạy trước Mặt Trăng khoảng 3°** — 12 phút quay.
+
+Ba độ lệch ấy là tất cả. Búi nước có khối lượng nên nó cũng hút: nó kéo
+Mặt Trăng *tới trước* trên quỹ đạo, Mặt Trăng kéo ngược lại làm chậm vòng
+quay Trái Đất. Mà [mômen động lượng không bốc hơi
+được](/vi/posts/bao-toan-momen-dong-luong-cu-xoay-khong-mien-phi):
+
+```
+C·ω   +   μ·√(G·M·a)   =   hằng số
+(Trái Đất quay)  (quỹ đạo Mặt Trăng)
+```
+
+Khoản Trái Đất thua phải chui hết vào vế phải, mà vế ấy chỉ có một cách nở
+ra: **a lớn hơn**. Con số đo được là **3,83 cm mỗi năm**, xấp xỉ tốc độ
+móng tay bạn mọc dài — và nó là phép đo chứ không phải suy luận: trạm mặt
+đất bắn laser vào tấm gương phản xạ mà [phi hành đoàn Apollo để
+lại](/vi/posts/vi-sao-khong-kinh-nao-thay-la-co-tren-mat-trang), chờ 2,564
+giây cho ánh sáng đi và về, đọc ra 384 400 km với sai số cỡ milimét.
+
+## Cái ví nhỏ luôn là cái ví cạn trước
+
+Thanh mômen động lượng trên đầu demo không đổi chiều dài, chỉ đổi chỗ vạch
+chia — và vạch ấy chia rất lệch. Vòng quay Trái Đất giữ 5,86 × 10³³
+kg·m²/s, quỹ đạo Mặt Trăng giữ 2,86 × 10³⁴, **gấp 4,88 lần**: hôm nay
+hành tinh chỉ nắm **17,0%** tổng tài sản. Nên mỗi khoản nó nhả ra làm quỹ
+đạo phình thêm chút xíu mà ngày thì dài trông thấy — 100 triệu năm nữa Mặt
+Trăng mới lùi thêm 3 830 km, đúng 1% quỹ đạo, nhưng ngày đã **24,6 giờ**.
+Chỗ đổi chủ ấy cũng không im lặng: ma sát triều xé ra chừng **3,7 TW**
+nhiệt, phần lớn ở các thềm biển nông, gần bằng toàn bộ công suất điện của
+loài người (3,4 TW).
+
+## San hô ghi nhật ký, và nhật ký khớp
+
+Ngày dài thêm **1,8 ms mỗi thế kỷ** nghe như số đo vô nghĩa, cho tới khi
+cộng dồn: cho một đồng hồ "ngày luôn đúng 24 giờ" chạy lùi 2 700 năm, nó
+lệch **6,7 giờ** so với Trái Đất thật — đủ để một lần nhật thực toàn phần
+rơi lệch **100 độ kinh tuyến**, sang hẳn lục địa khác, và đó chính là cách
+người ta đọc vòng quay Trái Đất ra từ mấy bảng đất sét Babylon. (Riêng
+thuỷ triều đóng 2,3 ms; vỏ Trái Đất còn nảy lên sau kỷ băng hà, dồn khối
+lượng về gần trục và trừ bớt phần chênh — hệt vận động viên thu tay.)
+
+Giờ đặt thanh tốc độ ở 3,83 cm/năm rồi kéo thời gian về **−380 triệu năm**,
+tuổi của đám san hô kia. Demo trả lời: ngày **21,95 giờ**, một năm
+**399,4 ngày** — san hô đếm được khoảng 400.
+
+## Trường hợp biên: lùi thêm 240 triệu năm nữa thì đá cãi lại
+
+Kéo tiếp về **−620 triệu năm**. Tuổi ấy chưa có san hô, nhưng có thứ tốt
+hơn: đá nhịp triều Elatina ở Úc, từng lớp cát mỏng đếm được từng con nước.
+Đá chép **21,9 giờ, 400 ngày** — gần y hệt kỷ Devon. Demo với 3,83 cm/năm
+lại cho **20,81 giờ và 421,3 ngày**: dư ra 21 ngày. Hạ tốc độ xuống
+**2,41 cm/năm** thì khớp được đá, nhưng khi ấy kỷ Devon chỉ còn 386,7
+ngày, hụt mất san hô. Không tốc độ cố định nào xuyên qua được cả hai ô đỏ,
+nên **3,83 cm/năm là con số bất thường cao của riêng thời đại chúng ta**:
+hiệu suất tiêu tán triều không phải hằng số vật lý mà là hình dạng các bồn
+đại dương, và cấu hình lục địa hôm nay tình cờ đưa Đại Tây Dương gần cộng
+hưởng với sóng triều nửa ngày.
+
+Đẩy đến chỗ công thức gãy hẳn: mô-men triều rơi rất nhanh theo khoảng
+cách, `da/dt ∝ a^(−11/2)` — gần hơn 10% thì lùi nhanh hơn 78%. Tích phân
+ngược đúng luật ấy, Mặt Trăng chạm mặt Trái Đất chỉ **1,54 tỉ năm trước**,
+trong khi mẫu đá Apollo mang về đã định tuổi 4,5 tỉ năm. Lối thoát nằm ở địa lý
+chứ không nằm trong công thức: thời siêu lục địa — Pannotia quanh mốc 620
+triệu năm, rồi Pangaea — đại dương gần như một vành tròn ít thềm nông,
+sóng triều không có chỗ để vỡ, cái phanh gần như nhả. Phía kia trục thời
+gian thì kết cục sạch sẽ hơn: ngày và tháng gặp nhau ở **47 ngày**, Mặt
+Trăng treo bất động trên một nửa hành tinh — chỉ có điều Mặt Trời phồng
+thành sao kềnh đỏ sau 5 tỉ năm nữa, sớm hơn nhiều.

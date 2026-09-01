@@ -1,0 +1,175 @@
+---
+// Greenshields (1935) fundamental diagram, linear speed–density model:
+//   v = v_f·(1 − k/k_j);  q = k·v;  q_max = v_f·k_j/4 at k = k_j/2, v = v_f/2.
+// Valid only for 0 ≤ k ≤ k_j (beyond k_j the model would give v < 0, so the
+// stream is clamped to a standstill). Units: k xe/km/làn, v km/h, q xe/giờ/làn.
+// Wave speed of a small disturbance = dq/dk = v_f·(1 − 2k/k_j).
+---
+
+<figure class="demo" data-demo="lan-xe-may-cho-duoc-4000-xe-moi-gio">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Mật độ k (xe/km/làn) <output data-out="k"></output>
+      <input type="range" data-in="k" min="10" max="400" step="5" value="200" /></label>
+    <label>Tốc độ tự do v_f (km/h) <output data-out="vf"></output>
+      <input type="range" data-in="vf" min="20" max="80" step="5" value="40" /></label>
+    <label>Mật độ kẹt k_j (xe/km/làn) <output data-out="kj"></output>
+      <input type="range" data-in="kj" min="100" max="450" step="10" value="400" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Dải trên là 100 m đường nhìn từ trên xuống, vẽ đúng số xe và đúng khoảng
+    cách ứng với mật độ bạn chọn. Dưới là lưu lượng q = k·v: càng thêm xe thì
+    tốc độ càng tụt, nên tích của chúng là một parabol có đỉnh. Nhánh xanh là
+    vùng thông (thêm xe vẫn thêm lưu lượng), nhánh cam là vùng tắc (thêm xe là
+    bớt lưu lượng). Mặc định: xe máy đô thị, v_f 40 km/h, k_j 400 xe/km.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const FREE = '#2563eb', MARK = '#dc2626', JAM = '#f59e0b';
+  // Body length is a fixed fraction of the jam spacing, so vehicles sit almost
+  // bumper to bumper at k = k_j for any parameter set: 0.76·(1000/400) = 1,9 m
+  // for the motorbike default, 0.76·(1000/140) = 5,4 m for the car set.
+  const KMAX = 450, BODY_FRAC = 0.76;
+
+  const speed = (k: number, vf: number, kj: number) => Math.max(0, vf * (1 - k / kj));
+  const flow = (k: number, vf: number, kj: number) => k * speed(k, vf, kj);
+
+  const th = (n: number) => Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+  const dec = (n: number, d = 1) => n.toFixed(d).replace('.', ',');
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (s: string) => root.querySelector(`[data-in="${s}"]`) as HTMLInputElement;
+    const output = (s: string) => root.querySelector(`[data-out="${s}"]`) as HTMLOutputElement;
+
+    function draw() {
+      const k = Number(input('k').value);
+      const vf = Number(input('vf').value);
+      const kj = Number(input('kj').value);
+      output('k').textContent = th(k);
+      output('vf').textContent = String(vf);
+      output('kj').textContent = th(kj);
+
+      const v = speed(k, vf, kj);
+      const q = flow(k, vf, kj);
+      const qmax = (vf * kj) / 4;
+      const kStar = kj / 2;
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.62);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+      ctx.font = '10px system-ui,sans-serif';
+
+      const padL = 52, padR = 12, padB = 28, chartT = 84;
+      const roadX0 = padL, roadX1 = cssW - padR, roadW = roadX1 - roadX0;
+      const roadY = 26, roadH = 30;
+
+      // ---- top strip: 100 m of one lane, seen from above -------------------
+      ctx.globalAlpha = 0.14; ctx.fillStyle = fg;
+      ctx.fillRect(roadX0, roadY, roadW, roadH);
+      ctx.globalAlpha = 0.6; ctx.textAlign = 'left';
+      ctx.fillText(
+        roadW > 380 ? '100 m một làn đường, nhìn từ trên xuống →' : '100 m một làn →',
+        roadX0, roadY - 8);
+      ctx.textAlign = 'right';
+      ctx.fillText(`${dec(1000 / k, 1)} m mỗi xe`, roadX1, roadY - 8);
+      ctx.globalAlpha = 1;
+
+      const gap = 1000 / k;                       // metres between bikes
+      const n = Math.floor(100 / gap);
+      const bodyM = Math.min(BODY_FRAC * (1000 / kj), gap);   // never overlap
+      const bw = Math.max(2, (bodyM / 100) * roadW);
+      ctx.fillStyle = k <= kStar ? FREE : JAM;
+      for (let i = 0; i < n; i++) {
+        const xm = i * gap + gap / 2;
+        ctx.fillRect(roadX0 + (xm / 100) * roadW - bw / 2, roadY + 9, bw, roadH - 18);
+      }
+      ctx.globalAlpha = 0.6; ctx.fillStyle = fg; ctx.textAlign = 'left';
+      ctx.fillText(`${n} xe trên 100 m`, roadX0, roadY + roadH + 14);
+      ctx.globalAlpha = 1;
+
+      // ---- axes for q(k) ---------------------------------------------------
+      const steps = [250, 500, 1000, 2000, 2500, 5000];
+      const step = steps.find((s) => (qmax * 1.2) / s <= 5) || 5000;
+      const yMax = Math.max(step, Math.ceil((qmax * 1.2) / step) * step);
+      const X = (kk: number) => padL + (kk / KMAX) * (roadX1 - padL);
+      const Y = (qq: number) => cssH - padB - (qq / yMax) * (cssH - padB - chartT);
+
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.3;
+      ctx.beginPath();
+      ctx.moveTo(padL, chartT); ctx.lineTo(padL, cssH - padB); ctx.lineTo(roadX1, cssH - padB);
+      ctx.stroke();
+      ctx.globalAlpha = 0.55; ctx.fillStyle = fg;
+      ctx.textAlign = 'center';
+      for (const kk of [100, 200, 300, 400]) ctx.fillText(`${kk}`, X(kk), cssH - padB + 14);
+      ctx.fillText('mật độ k (xe/km)', (padL + roadX1) / 2, cssH - 3);
+      ctx.textAlign = 'right';
+      for (let qq = step; qq <= yMax + 1; qq += step) ctx.fillText(th(qq), padL - 5, Y(qq) + 3);
+      ctx.globalAlpha = 1;
+
+      // ---- the parabola, two coloured branches ------------------------------
+      const branch = (a: number, b: number, colour: string) => {
+        ctx.strokeStyle = colour; ctx.lineWidth = 2.5; ctx.beginPath();
+        for (let i = 0; i <= 120; i++) {
+          const kk = a + ((b - a) * i) / 120;
+          i ? ctx.lineTo(X(kk), Y(flow(kk, vf, kj))) : ctx.moveTo(X(kk), Y(flow(kk, vf, kj)));
+        }
+        ctx.stroke(); ctx.lineWidth = 1;
+      };
+      branch(0, kStar, FREE);
+      branch(kStar, Math.min(kj, KMAX), JAM);
+      if (kj < KMAX) {
+        ctx.strokeStyle = JAM; ctx.globalAlpha = 0.4; ctx.setLineDash([3, 3]);
+        ctx.beginPath(); ctx.moveTo(X(kj), Y(0)); ctx.lineTo(X(KMAX), Y(0)); ctx.stroke();
+        ctx.setLineDash([]); ctx.globalAlpha = 1;
+      }
+
+      // ---- peak marker ------------------------------------------------------
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.35; ctx.setLineDash([4, 4]);
+      ctx.beginPath(); ctx.moveTo(X(kStar), Y(0)); ctx.lineTo(X(kStar), Y(qmax));
+      ctx.lineTo(padL, Y(qmax)); ctx.stroke();
+      ctx.setLineDash([]); ctx.globalAlpha = 0.75;
+      ctx.fillStyle = fg; ctx.textAlign = 'center';
+      ctx.fillText(`đỉnh ${th(qmax)} xe/giờ`, X(kStar), Y(qmax) - 9);
+      ctx.globalAlpha = 1;
+
+      // ---- current state ----------------------------------------------------
+      ctx.fillStyle = MARK;
+      ctx.beginPath(); ctx.arc(X(k), Y(q), 6, 0, Math.PI * 2); ctx.fill();
+
+      const zone = k >= kj
+        ? ' · <b>kẹt cứng: dòng đứng yên, lưu lượng bằng 0</b>'
+        : k > kStar
+          ? ' · bạn đang ở <b>NHÁNH TẮC</b>: thêm xe là bớt lưu lượng'
+          : ' · nhánh thông: thêm xe vẫn thêm lưu lượng';
+      readout.innerHTML =
+        `k = ${th(k)} xe/km → v = ${dec(v)} km/h, q = <b>${th(q)} xe/giờ</b>` +
+        ` (${dec((100 * q) / qmax, 0)}% của đỉnh) · đỉnh ${th(qmax)} xe/giờ tại` +
+        ` k = ${th(kStar)}, v = ${dec(vf / 2)} km/h${zone}`;
+    }
+
+    root.querySelectorAll('input').forEach((el) => el.addEventListener('input', draw));
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="lan-xe-may-cho-duoc-4000-xe-moi-gio"]').forEach(setup);
+</script>

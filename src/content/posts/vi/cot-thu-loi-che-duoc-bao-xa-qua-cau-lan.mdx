@@ -1,0 +1,99 @@
+---
+title: "Cột thu lôi 10 mét che được bán kính 28 mét — nhưng chỉ với cú sét đủ mạnh"
+seoTitle: "Phạm vi bảo vệ của cột thu lôi: phương pháp quả cầu lăn"
+description: "Sét 'chọn' điểm đánh khi đầu tia tiên đạo còn cách vật một khoảng tỉ lệ với dòng điện: 44,7 m với cú 10 kA, chỉ 20,4 m với cú yếu 3 kA. Lăn quả cầu bán kính đó qua ngôi nhà là ra vùng an toàn — cột 10 m che 28,2 m ở mặt đất, co còn 17,6 m trước cú 3 kA, và chỉ còn 5,8 m nếu mái nhà cao 6 m."
+pubDate: 2026-09-02
+tags: ["vat-ly", "dien-tu", "khi-hau", "javascript"]
+translationId: "cot-thu-loi-che-duoc-bao-xa-qua-cau-lan"
+---
+
+import RollingSphere from '../../../components/demos/RollingSphere.astro';
+
+Trên nóc nhà hàng xóm có một cây kim inox và sợi dây đồng chạy xuống góc
+tường. Câu hỏi chẳng ai hỏi: nó che được tới đâu? Hoá ra cùng một cây
+kim che rộng hẹp khác nhau, tuỳ vào cú sét sắp đánh:
+
+<RollingSphere />
+
+## Sét không nhắm, nó chỉ với tay tới chỗ gần nhất
+
+Tia tiên đạo từ đám mây đi xuống mù loà, từng bước giật một, không "thấy"
+ngôi nhà nào cả. Chỉ khi đầu tia xuống đủ gần một vật thì điện trường
+giữa hai đầu mới đủ đánh thủng không khí; vật ấy phóng ngược lên một tia
+đón, hai bên gặp nhau và toàn bộ dòng đổ xuống. **Khoảng cách lúc "chốt"
+ấy gọi là khoảng cách bắt R**, và nó lớn nhỏ theo lượng điện tích trên
+tia — tức theo cường độ dòng sét sắp tới.
+
+Quan trắc mấy chục năm cho một công thức thực nghiệm gọn lỏn (R bằng mét,
+I bằng kiloampe):
+
+```
+R = 10 · I^0,65
+```
+
+Cú 10 kA chốt từ **44,7 m**; cú yếu 3 kA phải xuống tới **20,4 m**. Còn
+[cú sét trung vị 30 kA](/vi/posts/tia-set-gia-bao-nhieu-tien-dien) đã
+quyết định từ tận **91,2 m** — nó với tới cây kim của bạn từ độ cao một
+toà ba mươi tầng.
+
+## Lăn một quả cầu qua ngôi nhà
+
+Lấy quả cầu bán kính R, lăn khắp mặt đất và trườn qua mọi mái nhà, cột,
+cây. Chỗ nào vỏ cầu chạm được là chỗ sét đánh được; chỗ nào nó không luồn
+tới là vùng an toàn. Đó là toàn bộ "phương pháp quả cầu lăn" của tiêu
+chuẩn IEC 62305 — không mô phỏng, không siêu máy tính, chỉ một cái compa.
+
+Với cột cao h, quả cầu tì đồng thời lên đỉnh cột và mặt đất, tâm ở độ cao
+R, và điểm chạm đất cách chân cột:
+
+```
+r = √(2Rh − h²)
+```
+
+Cột 10 m trước cú 10 kA: **28,2 m**. Cùng cây cột ấy trước cú 3 kA:
+**17,6 m**, hụt **1,6 lần**. Trực giác lộn ngược đúng ở đây — cú sét
+*yếu* mới là cú nguy hiểm về hình học, vì quả cầu nhỏ luồn được sát chân
+cột.
+
+## Con số 28 mét chỉ đúng ở sát mặt đất
+
+Vùng an toàn không phải hình trụ mà là một khối lõm. Vẫn cột 10 m, vẫn cú
+10 kA — bán kính che ở từng cao độ: **12,1 m** với mái 3 m, **5,8 m** với
+mái 6 m, và **đúng 0** ở mái 10 m, nơi mái ngang bằng đỉnh cột.
+
+Cây kim có đỉnh ở 10 mét so với mặt đất, dựng trên căn nhà mái 6 mét, vì
+thế chỉ phủ vòng tròn bán kính 5,8 m ngay trên mái — chưa hết một nếp
+nhà phố; trước cú 3 kA còn 3,1 m. Đó là lý do công trình thật rải **lưới
+kim thu ngắn dọc bờ mái và bốn góc** thay vì cắm một cây kim cao: mỗi
+kim chỉ cần che vài mét, nhưng phải có mặt đúng chỗ quả cầu định chạm
+xuống.
+
+## Vì sao tiêu chuẩn giả định cú sét yếu
+
+IEC 62305 chia bốn cấp bảo vệ, và cả bốn thực chất chỉ là bốn giá trị R
+lấy từ công thức trên: **cấp I dùng R = 20 m** (3 kA), cấp II 30 m (5 kA
+cho 28,5 m), cấp III 45 m (10 kA cho 44,7 m), cấp IV 60 m (16 kA cho
+60,6 m). Kho thuốc nổ lấy cấp I, nhà xưởng thường lấy cấp III.
+
+Thiết kế theo cú trung vị 30 kA thì quả cầu 91,2 m cho cây cột 10 m một
+bán kính 41,5 m nghe rất dễ chịu — và bỏ ngỏ đúng những cú yếu luồn vào
+trong. Cấp I chịu vẽ quả cầu bé nhất để bắt cả cú 3 kA, tức khoảng 99% số
+cú sét. Cột thu lôi không chống được sét: nó [mở sẵn đường trở kháng thấp
+nhất](/vi/posts/dien-tro-song-song-nho-hon-ca-nhanh-nho-nhat) rồi đẩy
+dòng xuống hệ tiếp địa, nơi bài toán đổi thành [điện áp
+bước](/vi/posts/dien-ap-buoc-vi-sao-phai-nhay-lo-co).
+
+## Trường hợp biên: cột 100 mét và căn bậc hai của số âm
+
+Căn thức r = √(2Rh − h²) không tăng mãi. Đạo hàm triệt tiêu ở **h = R**,
+và cực đại đúng bằng R: với cú 10 kA, cây cột tối ưu cao 44,7 m, che bán
+kính 44,7 m. Cao hơn nữa thì công thức *giảm*, về 0 ở h = 2R = 89,3 m, và
+với cột 100 m nó bắt bạn khai căn −1 066. Công thức tự phá sản.
+
+Chỗ nó phá sản là chỗ hình học đổi chủ: quả cầu không với tới đỉnh nữa mà
+kẹt vào **sườn cột ở độ cao đúng bằng R**. Bán kính che dưới đất đứng lại
+ở 44,7 m, còn toàn bộ phần cột trên mốc ấy thành mục tiêu bị đánh *ngang
+hông* — đó là lý do IEC 62305 buộc công trình cao quá 60 m phải rải kim
+thu dọc cả phần thân trên chứ không riêng chóp; tháp như Empire State
+hứng cỡ hai chục cú sét mỗi năm. Kéo thanh trượt chiều cao qua mốc đó,
+đoạn cột trong demo đổi sang đỏ đúng lúc ấy.

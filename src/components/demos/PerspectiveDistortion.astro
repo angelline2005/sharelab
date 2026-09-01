@@ -1,0 +1,178 @@
+---
+// Perspective (viewpoint) magnification for a feature that sits Δ in front of
+// a reference plane, camera treated as a pinhole at distance d:
+//     k = d / (d − Δ)          [exact for a pinhole; d, Δ from the entrance pupil]
+// Framing constraint (angular field of view on a 36 mm full-frame equivalent):
+//     f = 36 · d / W  (mm), with d and W in the same units.
+// Valid while d > Δ and d ≫ f (close-focus lens extension ignored — under 1% for
+// d ≥ 0,25 m at these focal lengths). Sliders: d 0,25–5 m, Δ 2–10 cm, W 20–90 cm.
+---
+
+<figure class="demo" data-demo="tieu-cu-hay-khoang-cach-lam-meo-mat">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Khoảng cách máy–mặt d (m) <output data-out="d"></output>
+      <input type="range" data-in="d" min="0.25" max="5" step="0.01" value="0.30" /></label>
+    <label>Mũi nhô trước mốc so sánh Δ (cm) <output data-out="p"></output>
+      <input type="range" data-in="p" min="2" max="10" step="0.5" value="4" /></label>
+    <label>Bề ngang khuôn hình (cm) <output data-out="w"></output>
+      <input type="range" data-in="w" min="20" max="90" step="1" value="40" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Đường xanh: mũi được phóng to bao nhiêu phần trăm so với mốc so sánh
+    (mặc định là mặt phẳng gò má), theo khoảng cách chụp. Đường cam (trục phải):
+    tiêu cự cần có để giữ nguyên khuôn hình ở khoảng cách ấy — nó là hệ quả,
+    không phải nguyên nhân. Trên khuôn mặt vẽ kèm: nét đứt là mũi thật, nét đỏ
+    là mũi trong ảnh. d luôn đo tới mốc so sánh, nên để so mũi với vành tai
+    trong chính cú selfie 30 cm ấy, đặt Δ = 10 cm và d = 0,36 m.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const CURVE = '#2563eb', MARK = '#dc2626', SECOND = '#f59e0b';
+  const SENSOR = 36; // full-frame equivalent frame width, mm
+  const DMIN = 0.25, DMAX = 5;
+  const FACE_CM = 14.5, NOSE_W_CM = 3.6, NOSE_H_CM = 4.8;
+
+  const ratio = (d: number, dz: number) => d / (d - dz);
+  const focal = (d: number, w: number) => (SENSOR * d) / w; // d, w in m -> mm
+  const vi = (x: number, n: number) => x.toFixed(n).replace('.', ',');
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (k: string) => root.querySelector(`[data-in="${k}"]`) as HTMLInputElement;
+    const output = (k: string) => root.querySelector(`[data-out="${k}"]`) as HTMLOutputElement;
+
+    function draw() {
+      const d = Number(input('d').value);
+      const dz = Number(input('p').value) / 100;
+      const wFrame = Number(input('w').value) / 100;
+      output('d').textContent = vi(d, 2);
+      output('p').textContent = vi(dz * 100, 1);
+      output('w').textContent = String(Math.round(wFrame * 100));
+
+      const k = ratio(d, dz), f = focal(d, wFrame);
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32;
+      // Narrow screens stack the face under the graph instead of beside it.
+      const narrow = cssW < 430;
+      const graphH = Math.round(cssW * (narrow ? 0.66 : 0.46));
+      const faceH = narrow ? 160 : 0;
+      const cssH = graphH + faceH;
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+      ctx.font = '10px system-ui,sans-serif';
+
+      const padL = 40, padT = 28, padB = 26, padR = 8, gapR = 44;
+      const panelW = narrow ? Math.min(120, cssW * 0.45) : Math.max(92, Math.min(170, cssW * 0.26));
+      const gR = cssW - padR - (narrow ? 0 : panelW) - gapR; // right edge of the graph
+      const gB = graphH - padB, gT = padT;
+
+      // --- axis scales -------------------------------------------------
+      const pctAtMin = (ratio(DMIN, dz) - 1) * 100;
+      const LAD = [15, 20, 30, 40, 60, 80, 100, 120];
+      const yMax = LAD.find((v) => v >= pctAtMin) ?? 120;
+      const fAtMax = focal(DMAX, wFrame);
+      const FLAD = [50, 100, 150, 200, 250];
+      const fStep = FLAD.find((v) => v * 4 >= fAtMax) ?? 250;
+      const fMax = fStep * 4;
+
+      const X = (dd: number) => padL + ((dd - DMIN) / (DMAX - DMIN)) * (gR - padL);
+      const Y1 = (p: number) => gB - (p / yMax) * (gB - gT);
+      const Y2 = (mm: number) => gB - (mm / fMax) * (gB - gT);
+
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.3;
+      ctx.beginPath(); ctx.moveTo(padL, gT); ctx.lineTo(padL, gB); ctx.lineTo(gR, gB); ctx.stroke();
+      ctx.globalAlpha = 0.55; ctx.fillStyle = fg;
+      ctx.textAlign = 'center';
+      const XT = narrow ? [1, 2, 3, 4, 5] : [0.5, 1, 2, 3, 4, 5];
+      for (const dd of XT) ctx.fillText(`${vi(dd, dd < 1 ? 1 : 0)} m`, X(dd), gB + 14);
+      ctx.textAlign = 'right';
+      for (let i = 1; i <= 4; i++) ctx.fillText(`${Math.round((yMax * i) / 4)}%`, padL - 4, Y1((yMax * i) / 4) + 3);
+      ctx.globalAlpha = 1;
+
+      // right-hand focal axis, outside the plot, in the amber of its curve
+      ctx.strokeStyle = SECOND; ctx.globalAlpha = 0.35;
+      ctx.beginPath(); ctx.moveTo(gR, gT); ctx.lineTo(gR, gB); ctx.stroke();
+      ctx.globalAlpha = 0.9; ctx.fillStyle = SECOND; ctx.textAlign = 'left';
+      for (let i = 1; i <= 4; i++) ctx.fillText(`${fStep * i} mm`, gR + 5, Y2(fStep * i) + 3);
+      if (narrow) { ctx.textAlign = 'right'; ctx.fillText('tiêu cự (mm)', cssW - 2, gT - 12); ctx.textAlign = 'left'; }
+      else ctx.fillText('tiêu cự', gR + 5, gT - 12);
+      ctx.globalAlpha = 1;
+      ctx.fillStyle = CURVE; ctx.textAlign = 'left';
+      ctx.fillText('% mũi to thêm', padL - 2, gT - 12);
+
+      // --- focal-length line (linear in d) -----------------------------
+      ctx.strokeStyle = SECOND; ctx.lineWidth = 2; ctx.beginPath();
+      ctx.moveTo(X(DMIN), Y2(focal(DMIN, wFrame))); ctx.lineTo(X(DMAX), Y2(fAtMax)); ctx.stroke();
+
+      // --- enlargement curve -------------------------------------------
+      ctx.strokeStyle = CURVE; ctx.beginPath();
+      for (let i = 0; i <= 240; i++) {
+        const dd = DMIN + ((DMAX - DMIN) * i) / 240;
+        const y = Math.max(gT, Y1((ratio(dd, dz) - 1) * 100));
+        i ? ctx.lineTo(X(dd), y) : ctx.moveTo(X(dd), y);
+      }
+      ctx.stroke(); ctx.lineWidth = 1;
+
+      ctx.fillStyle = MARK;
+      ctx.beginPath(); ctx.arc(X(d), Math.max(gT, Y1((k - 1) * 100)), 6, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = SECOND;
+      ctx.beginPath(); ctx.arc(X(d), Y2(f), 4, 0, Math.PI * 2); ctx.fill();
+
+      // --- the resulting face ------------------------------------------
+      const cx = narrow ? cssW / 2 : cssW - padR - panelW / 2;
+      const cy = narrow ? graphH + faceH / 2 : gT + (gB - gT) / 2;
+      const capTop = narrow ? graphH + 10 : gT + 9;
+      const capBot = narrow ? cssH - 3 : gB - 2;
+      const px = (panelW * 0.72) / FACE_CM; // pixels per cm on the cheek plane
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.55; ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.ellipse(cx, cy, (FACE_CM / 2) * px, (FACE_CM * 0.68) * px, 0, 0, Math.PI * 2); ctx.stroke();
+      ctx.fillStyle = fg;
+      for (const s of [-1, 1]) {
+        ctx.beginPath(); ctx.ellipse(cx + s * 3.1 * px, cy - 2.4 * px, 0.9 * px, 0.45 * px, 0, 0, Math.PI * 2); ctx.fill();
+      }
+      ctx.globalAlpha = 0.75; ctx.setLineDash([4, 3]); ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.ellipse(cx, cy + 1.6 * px, (NOSE_W_CM / 2) * px, (NOSE_H_CM / 2) * px, 0, 0, Math.PI * 2); ctx.stroke();
+      ctx.setLineDash([]); ctx.globalAlpha = 1;
+      ctx.strokeStyle = MARK; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.ellipse(cx, cy + 1.6 * px, (NOSE_W_CM / 2) * px * k, (NOSE_H_CM / 2) * px * k, 0, 0, Math.PI * 2); ctx.stroke();
+      ctx.lineWidth = 1;
+      ctx.textAlign = 'center'; ctx.fillStyle = MARK;
+      ctx.fillText(`mũi ×${vi(k, 3)}`, cx, capBot);
+      ctx.fillStyle = fg; ctx.globalAlpha = 0.6;
+      ctx.fillText('mốc so sánh ×1,000', cx, capTop);
+      ctx.globalAlpha = 1;
+
+      const zone = k >= 1.1 ? ' · <b>vùng méo kiểu selfie</b>'
+        : k <= 1.03 ? ' · vùng chân dung phẳng' : '';
+      readout.innerHTML =
+        `d = <b>${vi(d, 2)} m</b> · Δ = ${vi(dz * 100, 1)} cm → mũi phóng đại <b>${vi(k, 3)}×</b>` +
+        ` (to hơn <b>${vi((k - 1) * 100, 1)}%</b>) · giữ khuôn hình ${Math.round(wFrame * 100)} cm cần tiêu cự ` +
+        `<b>${vi(f, 0)} mm</b> quy đổi full-frame${zone}`;
+    }
+
+    root.querySelectorAll('input').forEach((el) => el.addEventListener('input', draw));
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="tieu-cu-hay-khoang-cach-lam-meo-mat"]').forEach(setup);
+</script>

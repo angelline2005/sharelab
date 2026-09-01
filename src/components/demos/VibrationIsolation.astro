@@ -1,0 +1,188 @@
+---
+// Force/motion transmissibility of a 1-DOF viscously damped mount:
+//   TR(r, z) = sqrt(1 + (2·z·r)^2) / sqrt((1 − r^2)^2 + (2·z·r)^2),  r = f/f0
+// Standard result (Den Hartog, Mechanical Vibrations, ch. 2). TR = 1 exactly
+// at r = sqrt(2) for every z; TR < 1 only for r > sqrt(2).
+// Valid for: rigid mass, linear spring + viscous damper, rigid foundation,
+// steady state at one excitation frequency. Real elastomers stiffen with
+// frequency, so the true f0 sits above the static-deflection estimate
+// f0 = (1/2pi)·sqrt(g/delta).
+---
+
+<figure class="demo" data-demo="de-cao-su-chong-rung-va-nguong-can-hai">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Tần số máy f (Hz) <output data-out="f"></output>
+      <input type="range" data-in="f" min="5" max="100" step="0.5" value="48" /></label>
+    <label>Tần số riêng của đệm f₀ (Hz) <output data-out="f0"></output>
+      <input type="range" data-in="f0" min="3" max="50" step="0.1" value="10" /></label>
+    <label>Hệ số cản ζ của đệm <output data-out="z"></output>
+      <input type="range" data-in="z" min="0.02" max="1" step="0.01" value="0.05" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Trục ngang là tỉ số r = f/f₀, trục dọc là hệ số truyền TR — phần lực rung
+    của máy thực sự đi xuống sàn. Cả hai trục vẽ theo thang logarit. Vùng đỏ
+    bên trái vạch √2 là vùng đệm làm rung nặng thêm (TR > 1), vùng xanh bên
+    phải mới là cách ly thật. Đường cam là cùng hệ ấy nhưng cản mạnh (ζ = 0,30):
+    nó dìm đỉnh cộng hưởng xuống, đồng thời nâng đuôi bên phải lên.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const CURVE = '#2563eb', MARK = '#dc2626', ALT = '#f59e0b';
+  const RMIN = 0.1, RMAX = 35, TMIN = 0.001, TMAX = 30;
+  const ROOT2 = Math.SQRT2;
+
+  const TR = (r: number, z: number) =>
+    Math.sqrt(1 + Math.pow(2 * z * r, 2)) /
+    Math.sqrt(Math.pow(1 - r * r, 2) + Math.pow(2 * z * r, 2));
+
+  const vn = (x: number, n: number) => x.toFixed(n).replace('.', ',');
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (k: string) => root.querySelector(`[data-in="${k}"]`) as HTMLInputElement;
+    const output = (k: string) => root.querySelector(`[data-out="${k}"]`) as HTMLOutputElement;
+
+    function draw() {
+      const f = Number(input('f').value);
+      const f0 = Number(input('f0').value);
+      const z = Number(input('z').value);
+      output('f').textContent = vn(f, 1);
+      output('f0').textContent = vn(f0, 1);
+      output('z').textContent = vn(z, 2);
+
+      const r = f / f0;
+      const tr = TR(r, z);
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.5);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+
+      const padL = 42, padB = 26, padT = 12, padR = 10;
+      const X = (rr: number) =>
+        padL + (Math.log10(rr / RMIN) / Math.log10(RMAX / RMIN)) * (cssW - padL - padR);
+      const Y = (tt: number) =>
+        padT + (Math.log10(TMAX / tt) / Math.log10(TMAX / TMIN)) * (cssH - padB - padT);
+      const clampT = (tt: number) => Math.min(TMAX, Math.max(TMIN, tt));
+
+      // Regimes: amplification left of sqrt(2), isolation right of it.
+      ctx.fillStyle = 'rgba(220,38,38,.10)';
+      ctx.fillRect(padL, padT, X(ROOT2) - padL, cssH - padB - padT);
+      ctx.fillStyle = 'rgba(37,99,235,.09)';
+      ctx.fillRect(X(ROOT2), padT, cssW - padR - X(ROOT2), cssH - padB - padT);
+
+      // Axes.
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.3;
+      ctx.beginPath();
+      ctx.moveTo(padL, padT); ctx.lineTo(padL, cssH - padB); ctx.lineTo(cssW - padR, cssH - padB);
+      ctx.stroke();
+
+      // TR = 1 break-even line, and the sqrt(2) boundary.
+      ctx.setLineDash([5, 4]);
+      ctx.beginPath(); ctx.moveTo(padL, Y(1)); ctx.lineTo(cssW - padR, Y(1)); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(X(ROOT2), padT); ctx.lineTo(X(ROOT2), cssH - padB); ctx.stroke();
+      ctx.setLineDash([]);
+
+      ctx.globalAlpha = 0.55; ctx.fillStyle = fg; ctx.font = '10px system-ui,sans-serif';
+      ctx.textAlign = 'center';
+      for (const t of [0.2, 0.5, 1, 2, 5, 10, 20])
+        ctx.fillText(vn(t, t < 1 ? 1 : 0), X(t), cssH - padB + 14);
+      ctx.textAlign = 'right';
+      for (const t of [0.001, 0.01, 0.1, 1, 10])
+        ctx.fillText(t < 1 ? vn(t, t === 0.1 ? 1 : t === 0.01 ? 2 : 3) : String(t), padL - 4, Y(t) + 3);
+      ctx.textAlign = 'left';
+      ctx.fillText('TR = 1 (hoà vốn)', padL + 5, Y(1) - 4);
+      ctx.globalAlpha = 1;
+
+      ctx.fillStyle = MARK; ctx.globalAlpha = 0.85; ctx.textAlign = 'right';
+      ctx.fillText('r = √2', X(ROOT2) - 4, padT + 11);
+      ctx.fillText('KHUẾCH ĐẠI', X(ROOT2) - 4, padT + 24);
+      ctx.fillStyle = CURVE; ctx.textAlign = 'left';
+      ctx.fillText('CÁCH LY', X(ROOT2) + 5, padT + 24);
+      ctx.globalAlpha = 1;
+
+      // Reference curve at heavy damping.
+      ctx.strokeStyle = ALT; ctx.lineWidth = 1.5; ctx.globalAlpha = 0.85; ctx.beginPath();
+      for (let i = 0; i <= 300; i++) {
+        const rr = RMIN * Math.pow(RMAX / RMIN, i / 300);
+        const y = Y(clampT(TR(rr, 0.3)));
+        i ? ctx.lineTo(X(rr), y) : ctx.moveTo(X(rr), y);
+      }
+      ctx.stroke(); ctx.globalAlpha = 1;
+
+      // Curve at the chosen damping.
+      ctx.strokeStyle = CURVE; ctx.lineWidth = 2; ctx.beginPath();
+      for (let i = 0; i <= 300; i++) {
+        const rr = RMIN * Math.pow(RMAX / RMIN, i / 300);
+        const y = Y(clampT(TR(rr, z)));
+        i ? ctx.lineTo(X(rr), y) : ctx.moveTo(X(rr), y);
+      }
+      ctx.stroke(); ctx.lineWidth = 1;
+
+      // Working point.
+      const rc = Math.min(RMAX, Math.max(RMIN, r));
+      ctx.fillStyle = MARK;
+      ctx.beginPath(); ctx.arc(X(rc), Y(clampT(tr)), 6, 0, Math.PI * 2); ctx.fill();
+
+      // Schematic: machine block on two pads, arrow = what reaches the floor.
+      const bx = cssW - padR - 104, by = padT + 8, bw = 96;
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.6; ctx.lineWidth = 1.2;
+      ctx.strokeRect(bx + 16, by, 64, 20);
+      ctx.globalAlpha = 0.5; ctx.textAlign = 'center'; ctx.fillStyle = fg;
+      ctx.fillText('máy', bx + 48, by + 14);
+      ctx.globalAlpha = 0.6;
+      for (const sx of [bx + 30, bx + 66]) {
+        ctx.beginPath(); ctx.moveTo(sx, by + 20);
+        for (let k = 0; k < 4; k++) {
+          ctx.lineTo(sx + (k % 2 ? -5 : 5), by + 23 + k * 4);
+        }
+        ctx.lineTo(sx, by + 39); ctx.stroke();
+      }
+      ctx.beginPath(); ctx.moveTo(bx + 8, by + 39); ctx.lineTo(bx + bw, by + 39); ctx.stroke();
+      ctx.globalAlpha = 1;
+      const aLen = 5 + 26 * Math.min(1, tr / 2);
+      ctx.strokeStyle = tr > 1 ? MARK : CURVE; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.moveTo(bx + 48, by + 41); ctx.lineTo(bx + 48, by + 41 + aLen); ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(bx + 44, by + 41 + aLen - 5); ctx.lineTo(bx + 48, by + 41 + aLen);
+      ctx.lineTo(bx + 52, by + 41 + aLen - 5); ctx.stroke();
+      ctx.lineWidth = 1;
+
+      let tail: string;
+      if (tr < 1) {
+        tail = `giảm <b>${vn(100 * (1 - tr), 1)}%</b> lực rung truyền xuống sàn`;
+      } else {
+        tail = `lực rung xuống sàn <b>tăng ${vn(tr, 2)} lần</b> — đệm đang phản tác dụng`;
+      }
+      const zone = r < ROOT2 ? ' · <b>vùng khuếch đại (r &lt; √2)</b>' : '';
+      const res = r > 0.85 && r < 1.18 ? ' · <b>sát cộng hưởng</b>' : '';
+      readout.innerHTML =
+        `Máy <b>${vn(f, 1)} Hz</b> trên đệm f₀ = ${vn(f0, 1)} Hz, ζ = ${vn(z, 2)} → ` +
+        `r = <b>${vn(r, 2)}</b> · TR = <b>${tr < 0.01 ? vn(tr, 4) : vn(tr, 3)}</b> → ${tail}${zone}${res}`;
+    }
+
+    root.querySelectorAll('input').forEach((el) => el.addEventListener('input', draw));
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="de-cao-su-chong-rung-va-nguong-can-hai"]').forEach(setup);
+</script>

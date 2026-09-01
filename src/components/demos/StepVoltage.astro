@@ -1,0 +1,182 @@
+---
+// Điện áp bước quanh điểm chạm đất.
+// Thế đất của nguồn điểm bơm dòng I vào bán không gian đồng nhất điện trở
+// suất ρ:  V(r) = I·ρ / (2π·r)   →   U_bước = (I·ρ/2π)·(1/r − 1/(r+d)).
+// Nguồn: mô hình điện cực bán cầu, IEEE Std 80 (Guide for Safety in AC
+// Substation Grounding), §14–16.
+// Ngưỡng chịu đựng vẽ kèm: E_step,50kg = (1000 + 6ρ)·0,116/√t, t = 0,5 s.
+// Miền hợp lệ: r ≥ 0,5 m (lớn hơn bán kính tiếp xúc thực ~0,25 m của dây nằm
+// trên đất), đất đồng nhất, dòng một chiều/tần số công nghiệp, bỏ qua điện
+// trở của chính dây dẫn.
+---
+
+<figure class="demo" data-demo="dien-ap-buoc-vi-sao-phai-nhay-lo-co">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Dòng chạm đất I (A) <output data-out="i"></output>
+      <input type="range" data-in="i" min="40" max="1000" step="10" value="200" /></label>
+    <label>Điện trở suất đất ρ (Ω·m) <output data-out="p"></output>
+      <input type="range" data-in="p" min="20" max="500" step="5" value="100" /></label>
+    <label>Đứng cách điểm chạm r (m) <output data-out="r"></output>
+      <input type="range" data-in="r" min="0.5" max="20" step="0.1" value="1" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Mặt cắt đứng: đường xanh là thế của mặt đất, dựng lên như một cái phễu úp
+    quanh chỗ dây chạm. Hai vạch dưới chân đường cong là hai bàn chân bạn;
+    thanh đỏ là hiệu thế giữa chúng — thứ thật sự đẩy dòng qua người. Thanh
+    cam là sải 1,50 m: hai chân trước và hai chân sau con trâu, hoặc tay và
+    chân của người vừa ngã. Kéo r ra xa để thấy phễu tắt nhanh cỡ nào.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const CURVE = '#2563eb', MARK = '#dc2626', SPAN = '#f59e0b';
+  const RMAX = 22, STEP = 0.7, SHUFFLE = 0.05, QUAD = 1.5, RPLOT = 0.5;
+  // Bán kính chỗ tiếp xúc thực của sợi dây nằm trên đất, và thế pha của lưới
+  // 22 kV. Trần của phễu là thế nguồn: V(a) không thể vượt 22000/√3 = 12 702 V.
+  const APOINT = 0.25, VPHASE = 22000 / Math.sqrt(3);
+
+  const V = (I: number, p: number, r: number) => (I * p) / (2 * Math.PI * r);
+  const U = (I: number, p: number, r: number, d: number) =>
+    ((I * p) / (2 * Math.PI)) * (1 / r - 1 / (r + d));
+  // IEEE Std 80 tolerable step voltage, 50 kg, thời gian cắt 0,5 s.
+  const tolerable = (p: number) => ((1000 + 6 * p) * 0.116) / Math.sqrt(0.5);
+
+  const vn = (x: number, d = 0) => {
+    const parts = x.toFixed(d).split('.');
+    const int = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+    return parts[1] ? int + ',' + parts[1] : int;
+  };
+  // Dưới 100 V thì một chữ số thập phân mới còn ý nghĩa.
+  const vv = (x: number) => vn(x, x < 100 ? 1 : 0);
+  const niceStep = (vmax: number) => {
+    const raw = vmax / 4, pw = Math.pow(10, Math.floor(Math.log10(raw))), m = raw / pw;
+    return (m <= 1 ? 1 : m <= 2 ? 2 : m <= 5 ? 5 : 10) * pw;
+  };
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (k: string) => root.querySelector(`[data-in="${k}"]`) as HTMLInputElement;
+    const output = (k: string) => root.querySelector(`[data-out="${k}"]`) as HTMLOutputElement;
+
+    function draw() {
+      const I = Number(input('i').value);
+      const p = Number(input('p').value);
+      const r = Number(input('r').value);
+      output('i').textContent = vn(I);
+      output('p').textContent = vn(p);
+      output('r').textContent = r.toFixed(1).replace('.', ',');
+
+      const uStep = U(I, p, r, STEP);
+      const uShuf = U(I, p, r, SHUFFLE);
+      const uQuad = U(I, p, r, QUAD);
+      const limit = tolerable(p);
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.46);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+
+      const padL = 52, padB = 28, padT = 14, padR = 12;
+      const vmax = V(I, p, RPLOT);
+      const X = (rr: number) => padL + (rr / RMAX) * (cssW - padL - padR);
+      const Y = (vv: number) => cssH - padB - (vv / vmax) * (cssH - padB - padT);
+
+      // Trục: đáy là mặt đất (thế 0 so với đất xa vô cùng).
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.3;
+      ctx.beginPath();
+      ctx.moveTo(padL, padT); ctx.lineTo(padL, cssH - padB);
+      ctx.lineTo(cssW - padR, cssH - padB); ctx.stroke();
+      ctx.globalAlpha = 0.55; ctx.fillStyle = fg; ctx.font = '10px system-ui,sans-serif';
+      ctx.textAlign = 'center';
+      for (const m of [5, 10, 15, 20]) ctx.fillText(`${m} m`, X(m), cssH - padB + 15);
+      ctx.textAlign = 'right';
+      const ts = niceStep(vmax);
+      for (let v = ts; v <= vmax * 1.001; v += ts) ctx.fillText(`${vn(v)} V`, padL - 4, Y(v) + 3);
+      ctx.textAlign = 'left';
+      ctx.fillText('mặt đất — thế 0 ở xa vô cùng', padL + 6, cssH - padB - 5);
+      ctx.globalAlpha = 1;
+
+      // Phễu thế V(r).
+      ctx.strokeStyle = CURVE; ctx.lineWidth = 2; ctx.beginPath();
+      for (let i = 0; i <= 260; i++) {
+        const rr = RPLOT + ((RMAX - RPLOT) * i) / 260;
+        i ? ctx.lineTo(X(rr), Y(V(I, p, rr))) : ctx.moveTo(X(rr), Y(V(I, p, rr)));
+      }
+      ctx.stroke(); ctx.lineWidth = 1;
+
+      // Điểm chạm.
+      ctx.fillStyle = SPAN;
+      ctx.beginPath(); ctx.arc(X(0), cssH - padB, 5, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = fg; ctx.globalAlpha = 0.7; ctx.textAlign = 'left';
+      ctx.fillText('dây chạm đất', X(0) + 7, cssH - padB + 15);
+      ctx.globalAlpha = 1;
+
+      // Sải 1,50 m (cam) rồi bước 0,70 m (đỏ) — vẽ cam trước cho đỏ nằm trên.
+      const yTop = Y(V(I, p, r));
+      const bar = (d: number, col: string, u: number, lift: number) => {
+        const x = X(r + d), yb = Y(V(I, p, r + d));
+        ctx.strokeStyle = col; ctx.globalAlpha = 0.35;
+        ctx.beginPath(); ctx.moveTo(X(r), yTop); ctx.lineTo(x, yTop); ctx.stroke();
+        ctx.globalAlpha = 1; ctx.lineWidth = 4;
+        ctx.beginPath(); ctx.moveTo(x, yTop); ctx.lineTo(x, yb); ctx.stroke();
+        ctx.lineWidth = 1;
+        ctx.fillStyle = col;
+        const right = x < cssW - padR - 62;
+        ctx.textAlign = right ? 'left' : 'right';
+        ctx.fillText(`${vv(u)} V`, x + (right ? 6 : -6), (yTop + yb) / 2 + lift);
+        // bàn chân / móng trên mặt đất
+        ctx.globalAlpha = 0.35;
+        ctx.beginPath(); ctx.moveTo(x, yb); ctx.lineTo(x, cssH - padB); ctx.stroke();
+        ctx.globalAlpha = 1;
+        ctx.fillRect(x - 5, cssH - padB - 3, 10, 3);
+      };
+      bar(QUAD, SPAN, uQuad, 10);
+      bar(STEP, MARK, uStep, -2);
+
+      // Bàn chân đứng tại r.
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.35;
+      ctx.beginPath(); ctx.moveTo(X(r), yTop); ctx.lineTo(X(r), cssH - padB); ctx.stroke();
+      ctx.globalAlpha = 1;
+      ctx.fillStyle = MARK; ctx.fillRect(X(r) - 5, cssH - padB - 3, 10, 3);
+      ctx.beginPath(); ctx.arc(X(r), yTop, 4, 0, Math.PI * 2); ctx.fill();
+
+      const zone = uStep >= limit
+        ? ` · <b>vượt ngưỡng chịu đựng ${vn(limit)} V (IEEE Std 80, cắt trong 0,5 s)</b>`
+        : uStep >= 50
+          ? ' · trên ngưỡng tiếp xúc an toàn 50 V'
+          : ' · dưới ngưỡng tiếp xúc an toàn 50 V';
+      // Biên 2%: tổ hợp mặc định (200 A, 100 Ω·m) đòi 12 732 V, tức chính thế
+      // pha 12 702 V sau làm tròn — đó là ca chuẩn của bài, không phải cảnh báo.
+      const over = V(I, p, APOINT) > VPHASE * 1.02
+        ? ` · ⚠ tổ hợp này đòi thế ${vn(V(I, p, APOINT))} V tại điểm chạm, quá thế pha 12 700 V của lưới 22 kV`
+        : '';
+      readout.innerHTML =
+        `I = ${vn(I)} A · ρ = ${vn(p)} Ω·m · đứng cách ${r.toFixed(1).replace('.', ',')} m → ` +
+        `bước 0,70 m: <b>${vv(uStep)} V</b> · chụm chân 5 cm: ${vv(uShuf)} V · ` +
+        `sải 1,50 m: ${vv(uQuad)} V${zone}${over}`;
+    }
+
+    root.querySelectorAll('input').forEach((el) => el.addEventListener('input', draw));
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="dien-ap-buoc-vi-sao-phai-nhay-lo-co"]').forEach(setup);
+</script>

@@ -1,0 +1,181 @@
+---
+// Mô hình lưỡng cực trục (geocentric axial dipole):
+//   tan I = 2·tan(φ) ; B_ngang = B_e·cos φ ; B_đứng = 2·B_e·sin φ
+//   B_toàn phần = B_e·√(1 + 3·sin²φ)     với B_e ≈ 31 µT tại xích đạo.
+// Nguồn: mọi giáo trình địa từ (Merrill & McElhinny, "The Magnetic Field of
+// the Earth"), là dạng đóng chính xác của trường lưỡng cực đặt tại tâm.
+// Phạm vi hợp lệ: chỉ là xấp xỉ bậc nhất. Các chấm cam là giá trị đo thật
+// (mô hình WMM 2025, tra ngày 2026-09-02) — lệch ~2° ở Paris nhưng tới 11°
+// ở TP.HCM, vì trục lưỡng cực nghiêng 9,2° (cực địa từ 80,79°N / 72,76°T,
+// WMM 2025) và lõi Trái Đất không phải một thanh nam châm thẳng. Vĩ độ chạy
+// hết 0–90° để kéo được trường hợp biên: ở 90° thì B_ngang → 0 và kim mất
+// hẳn thứ giữ nó lại đúng hướng.
+---
+
+<figure class="demo" data-demo="kim-la-ban-o-ha-noi-chuc-xuong-dat">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Vĩ độ (°) <output data-out="lat"></output>
+      <input type="range" data-in="lat" min="0" max="90" step="0.1" value="21" /></label>
+    <label>Từ trường xích đạo B_e (µT) <output data-out="be"></output>
+      <input type="range" data-in="be" min="25" max="35" step="0.5" value="31" /></label>
+    <label>Vĩ độ kim được cân (°) <output data-out="bal"></output>
+      <input type="range" data-in="bal" min="0" max="80" step="0.1" value="48.9" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Đường xanh: từ khuynh theo mô hình lưỡng cực, tan I = 2·tan(vĩ độ). Ô nhỏ
+    góc trên vẽ vectơ từ trường tại vĩ độ bạn chọn cùng hai thành phần ngang
+    và thẳng đứng — chỉ thành phần ngang mới xoay được kim. Chấm cam là giá
+    trị đo thật (WMM 2025): mô hình vống lên 2° ở Paris nhưng tới 11° ở
+    TP.HCM. Thanh trượt thứ ba là vĩ độ mà đối trọng trên kim được tính cho;
+    đường đứt nét tím là mức từ khuynh nó cân đúng. Kéo vĩ độ tới 90° để thấy
+    thành phần ngang — thứ duy nhất xoay được kim — tụt về 0.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const CURVE = '#2563eb', MARK = '#dc2626', REAL = '#f59e0b', BAL = '#7c3aed';
+  const D = Math.PI / 180, R = 180 / Math.PI;
+  const dip = (lat: number) => Math.atan(2 * Math.tan(lat * D)) * R;
+  const vn = (x: number, n = 1) => x.toFixed(n).replace('.', ',');
+  // Giá trị đo thật, mô hình WMM 2025 cho ngày 2026-09-02:
+  // [vĩ độ, từ khuynh, tên, bề rộng canvas tối thiểu để còn chỗ vẽ nhãn]
+  const MEASURED: Array<[number, number, string, number]> = [
+    [10.8, 9.88, 'TP.HCM', 0], [16.05, 21.71, 'Đà Nẵng', 420],
+    [21.03, 31.91, 'Hà Nội', 0], [48.86, 64.42, 'Paris', 0],
+  ];
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (k: string) => root.querySelector(`[data-in="${k}"]`) as HTMLInputElement;
+    const output = (k: string) => root.querySelector(`[data-out="${k}"]`) as HTMLOutputElement;
+
+    function draw() {
+      const lat = Number(input('lat').value);
+      const be = Number(input('be').value);
+      const bal = Number(input('bal').value);
+      output('lat').textContent = vn(lat);
+      output('be').textContent = vn(be);
+      output('bal').textContent = vn(bal);
+
+      const I = dip(lat), Ibal = dip(bal);
+      const bh = be * Math.cos(lat * D), bv = 2 * be * Math.sin(lat * D);
+      const bt = Math.sqrt(bh * bh + bv * bv);
+      const torque = 100 * Math.cos(lat * D);
+      const gap = I - Ibal;
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.5);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+
+      const padL = 44, padB = 26, padT = 12, padR = 12;
+      const plotW = cssW - padL - padR, plotH = cssH - padT - padB;
+      const X = (l: number) => padL + (l / 90) * plotW;
+      const Y = (i: number) => padT + ((90 - i) / 90) * plotH;
+
+      // Trục và vạch chia.
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.3;
+      ctx.beginPath(); ctx.moveTo(padL, padT); ctx.lineTo(padL, cssH - padB);
+      ctx.lineTo(cssW - padR, cssH - padB); ctx.stroke();
+      ctx.globalAlpha = 0.55; ctx.fillStyle = fg; ctx.font = '10px system-ui,sans-serif';
+      ctx.textAlign = 'center';
+      for (const l of [0, 30, 60, 90]) ctx.fillText(`${l}°`, X(l), cssH - padB + 14);
+      ctx.fillText('vĩ độ', X(45), cssH - padB + 24);
+      ctx.textAlign = 'right';
+      for (const i of [0, 30, 60, 90]) ctx.fillText(`${i}°`, padL - 4, Y(i) + 3);
+      ctx.globalAlpha = 1;
+
+      // Mức từ khuynh mà đối trọng trên kim được tính cho.
+      ctx.strokeStyle = BAL; ctx.globalAlpha = 0.7; ctx.setLineDash([4, 4]);
+      ctx.beginPath(); ctx.moveTo(padL, Y(Ibal)); ctx.lineTo(cssW - padR, Y(Ibal)); ctx.stroke();
+      ctx.setLineDash([]); ctx.globalAlpha = 1;
+
+      // Đường cong mô hình.
+      ctx.strokeStyle = CURVE; ctx.lineWidth = 2; ctx.beginPath();
+      for (let k = 0; k <= 270; k++) {
+        const l = (90 * k) / 270;
+        k ? ctx.lineTo(X(l), Y(dip(l))) : ctx.moveTo(X(l), Y(dip(l)));
+      }
+      ctx.stroke(); ctx.lineWidth = 1;
+
+      // Giá trị đo thật.
+      MEASURED.forEach(([l, i, name, minW], k) => {
+        if (cssW < minW) return;
+        ctx.fillStyle = REAL;
+        ctx.beginPath(); ctx.arc(X(l), Y(i), 4, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = fg; ctx.globalAlpha = 0.7;
+        // Điểm sát trục hoành: đẩy nhãn sang trái cho khỏi đè vạch chia và
+        // khỏi chồng lên nhãn của thành phố kế bên.
+        const tw = ctx.measureText(name).width;
+        if (Y(i) + 30 > cssH - padB && X(l) - 9 - tw > 2) {
+          ctx.textAlign = 'right';
+          ctx.fillText(name, X(l) - 9, Y(i) + 3);
+        } else {
+          ctx.textAlign = 'center';
+          ctx.fillText(name, X(l), Y(i) + 16 + (k % 2) * 11);
+        }
+        ctx.globalAlpha = 1;
+      });
+
+      ctx.fillStyle = MARK;
+      ctx.beginPath(); ctx.arc(X(lat), Y(I), 6, 0, Math.PI * 2); ctx.fill();
+
+      // Ô nhỏ: kim (đỏ) nằm dọc theo trường, cùng hai thành phần ngang và đứng.
+      const ih = plotH * 0.42;
+      const ox = padL + 26, oy = padT + 22;
+      const len = (bt / 70) * ih * 0.82;
+      const dx = len * Math.cos(I * D), dy = len * Math.sin(I * D);
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.3; ctx.setLineDash([3, 3]);
+      ctx.beginPath(); ctx.moveTo(ox, oy); ctx.lineTo(ox + Math.max(dx, 40) + 18, oy); ctx.stroke();
+      ctx.setLineDash([]); ctx.globalAlpha = 0.45;
+      ctx.beginPath(); ctx.arc(ox, oy, 16, 0, I * D); ctx.stroke();
+      ctx.globalAlpha = 0.85; ctx.lineWidth = 2;
+      ctx.strokeStyle = CURVE;
+      ctx.beginPath(); ctx.moveTo(ox, oy); ctx.lineTo(ox + dx, oy); ctx.stroke();
+      ctx.strokeStyle = REAL;
+      ctx.beginPath(); ctx.moveTo(ox + dx, oy); ctx.lineTo(ox + dx, oy + dy); ctx.stroke();
+      ctx.globalAlpha = 1;
+      ctx.strokeStyle = MARK; ctx.lineWidth = 3; ctx.lineCap = 'round';
+      ctx.beginPath(); ctx.moveTo(ox, oy); ctx.lineTo(ox + dx, oy + dy); ctx.stroke();
+      ctx.lineWidth = 1; ctx.lineCap = 'butt';
+      if (ih > 80) {
+        ctx.fillStyle = fg; ctx.globalAlpha = 0.75; ctx.textAlign = 'left';
+        ctx.fillText(`kim chúc I = ${vn(I)}°`, ox + 20, oy - 7);
+        ctx.globalAlpha = 1;
+      }
+
+      const torquePhrase = torque < 25
+        ? `mô-men định hướng <b>chỉ còn ${vn(torque)}% mức xích đạo</b>`
+        : `mô-men định hướng còn ${vn(torque)}% mức xích đạo`;
+      const balPhrase = Math.abs(gap) > 20
+        ? `kim cân cho vĩ độ ${vn(bal)}° (I = ${vn(Ibal)}°) → lệch ${vn(Math.abs(gap))}°: <b>quá một vùng cân kim, kim nghiêng và quay sượng</b>`
+        : `kim cân cho vĩ độ ${vn(bal)}° → lệch ${vn(Math.abs(gap))}°: kim còn nằm ngang`;
+      readout.innerHTML =
+        `Vĩ độ ${vn(lat)}° → từ khuynh <b>I = ${vn(I)}°</b> · B ngang ${vn(bh)} µT · ` +
+        `B đứng ${vn(bv)} µT · ${torquePhrase} · ${balPhrase}`;
+    }
+
+    root.querySelectorAll('input').forEach((el) => el.addEventListener('input', draw));
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="kim-la-ban-o-ha-noi-chuc-xuong-dat"]').forEach(setup);
+</script>

@@ -1,0 +1,248 @@
+---
+// Thị sai sao. Định nghĩa parsec (IAU 2015 B2): d(pc) = 1 / p(giây cung),
+// với 1 pc = 648000/π AU = 206 264,806 AU = 3,26156 năm ánh sáng.
+// Góc nhỏ: góc(giây cung) = 206 265 × (kích thước / khoảng cách).
+// Ellipse thị sai: bán trục lớn = p, bán trục nhỏ = p·sin(β) với β là vĩ độ
+// hoàng đạo của sao. Thanh trượt đi theo p (1–1000 mas) tức d = 1–1000 pc;
+// xấp xỉ góc nhỏ sai < 1e-11 trong toàn dải nên dùng công thức đóng vô tư.
+// Ngưỡng so sánh: nhiễu động khí quyển ~1″, sai số Gaia end-of-mission ~20 µas.
+---
+
+<figure class="demo" data-demo="thi-sai-sao-va-goc-nho-nhat-do-duoc">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Thị sai p (mili-giây cung) — kéo phải là sao gần lại <output data-out="p"></output>
+      <input type="range" data-in="p" min="1" max="1000" step="0.01" value="768.07" /></label>
+    <label>Vĩ độ hoàng đạo của sao β (°) <output data-out="b"></output>
+      <input type="range" data-in="b" min="0" max="90" step="1" value="45" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Trái: hệ Mặt Trời nhìn từ trên xuống. Hai đường ngắm cách nhau sáu tháng
+    xuất phát từ hai đầu quỹ đạo Trái Đất (cách nhau 2 AU = 299 triệu km) và gặp
+    nhau ở ngôi sao; góc tại đỉnh là 2p. Trục hoành nén theo thang log, và
+    góc trong hình được phóng đại hàng chục nghìn lần — vẽ đúng tỉ lệ thì
+    hai đường ngắm chồng khít lên nhau. Phải: mảnh trời quanh ngôi sao,
+    phóng to tới cỡ giây cung. Suốt một năm, vị trí biểu kiến của sao chạy
+    hết một ellipse rộng 2p; β quyết định ellipse ấy dẹt thành đoạn thẳng
+    (sao nằm trên hoàng đạo) hay tròn vành vạnh (sao ở cực hoàng đạo).
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const CURVE = '#2563eb', MARK = '#dc2626', LM = '#f59e0b';
+  const PC_AU = 648000 / Math.PI;        // 206 264,806 AU trong 1 pc
+  const LY_PER_PC = 3.261563;
+  const SEEING = 1.0;                    // đĩa nhiễu động khí quyển, giây cung
+  const GAIA = 20e-6;                    // sai số Gaia end-of-mission, giây cung
+
+  const vi = (n: number, d: number) => n.toFixed(d).replace('.', ',');
+  const nice = (x: number) => {
+    const e = Math.pow(10, Math.floor(Math.log10(x)));
+    for (const m of [1, 2, 5]) if (e * m >= x) return e * m;
+    return e * 10;
+  };
+  const km = (m: number) => {
+    const k = m / 1000;
+    if (k < 10) return `${vi(k, 2)} km`;
+    if (k < 1000) return `${vi(k, 1)} km`;
+    return `${Math.round(k).toLocaleString('vi-VN').replace(/\./g, ' ')} km`;
+  };
+  // Góc: giây cung khi còn đọc được, mili-giây cung khi đã quá nhỏ.
+  const ang = (a: number, ref = a) => (ref >= 0.05 ? `${vi(a, 4)}″` : `${vi(a * 1000, 2)} mas`);
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (k: string) => root.querySelector(`[data-in="${k}"]`) as HTMLInputElement;
+    const output = (k: string) => root.querySelector(`[data-out="${k}"]`) as HTMLOutputElement;
+
+    function draw() {
+      const pmas = Number(input('p').value), beta = Number(input('b').value);
+      const p = pmas / 1000;                 // giây cung
+      const dpc = 1 / p, dly = dpc * LY_PER_PC;
+      const major = 2 * p, minor = 2 * p * Math.sin((beta * Math.PI) / 180);
+      const coin = 0.01 * PC_AU / p;         // mét: đồng xu 1 cm nhìn từ đâu
+      output('p').textContent = `${vi(pmas, 2)} → ${vi(dpc, 3)} pc`;
+      output('b').textContent = `${beta}°`;
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32;
+      const stacked = cssW < 480;
+      const gap = 12;
+      const cssH = stacked ? Math.round(cssW * 1.1) : Math.round(cssW * 0.46);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+      ctx.font = '10px system-ui,sans-serif';
+
+      let gR, sR;
+      if (stacked) {
+        const h = (cssH - gap) / 2;
+        gR = { x: 0, y: 0, w: cssW, h };
+        sR = { x: 0, y: h + gap, w: cssW, h };
+      } else {
+        const wL = Math.round((cssW - gap) * 0.56);
+        gR = { x: 0, y: 0, w: wL, h: cssH };
+        sR = { x: wL + gap, y: 0, w: cssW - wL - gap, h: cssH };
+      }
+
+      // ---------- Khung trái: hình học tam giác thị sai ----------
+      const padL = 8, padR = 10, padT = 18, padB = 26;
+      const sunX = gR.x + padL + 12;
+      const ax0 = gR.x + padL + 52, ax1 = gR.x + gR.w - padR;
+      const midY = gR.y + padT + (gR.h - padT - padB) / 2;
+      const rOrb = Math.max(8, Math.min(16, (gR.h - padT - padB) / 2 - 20));
+      const X = (dd: number) => ax0 + (Math.log10(dd) / 3) * (ax1 - ax0);
+      const starX = X(dpc), axY = gR.y + gR.h - padB;
+
+      ctx.strokeStyle = fg; ctx.fillStyle = fg;
+      ctx.globalAlpha = 0.3;
+      ctx.beginPath(); ctx.moveTo(ax0, axY); ctx.lineTo(ax1, axY); ctx.stroke();
+      ctx.globalAlpha = 0.55; ctx.textAlign = 'center';
+      for (const t of [1, 10, 100, 1000]) {
+        ctx.beginPath(); ctx.moveTo(X(t), axY); ctx.lineTo(X(t), axY + 4); ctx.stroke();
+        ctx.fillText(t === 1 ? '1 pc' : String(t), X(t), axY + 15);
+      }
+      ctx.textAlign = 'left';
+      ctx.fillText('Hệ Mặt Trời nhìn từ trên xuống', gR.x + padL, gR.y + 11);
+      ctx.globalAlpha = 1;
+
+      // quỹ đạo Trái Đất + hai vị trí cách nhau sáu tháng
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.35;
+      ctx.beginPath(); ctx.arc(sunX, midY, rOrb, 0, Math.PI * 2); ctx.stroke();
+      ctx.globalAlpha = 1;
+      ctx.fillStyle = LM;
+      ctx.beginPath(); ctx.arc(sunX, midY, 3.5, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = MARK;
+      ctx.beginPath(); ctx.arc(sunX, midY - rOrb, 3, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.arc(sunX, midY + rOrb, 3, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = fg; ctx.globalAlpha = 0.65; ctx.textAlign = 'center';
+      ctx.fillText('một thời điểm', sunX, midY - rOrb - 7);
+      ctx.fillText('sáu tháng sau', sunX, midY + rOrb + 14);
+      ctx.globalAlpha = 1;
+
+      // hai đường ngắm
+      ctx.strokeStyle = CURVE; ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(sunX, midY - rOrb); ctx.lineTo(starX, midY);
+      ctx.moveTo(sunX, midY + rOrb); ctx.lineTo(starX, midY);
+      ctx.stroke(); ctx.lineWidth = 1;
+
+      // ngôi sao + góc tại đỉnh
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.25;
+      ctx.beginPath(); ctx.moveTo(starX, midY); ctx.lineTo(starX, axY); ctx.stroke();
+      ctx.globalAlpha = 1;
+      const arcR = Math.max(9, Math.min(20, (starX - sunX) * 0.4));
+      const aTop = Math.atan2(midY - rOrb - midY, sunX - starX);
+      const aBot = Math.atan2(midY + rOrb - midY, sunX - starX);
+      ctx.strokeStyle = MARK;
+      ctx.beginPath(); ctx.arc(starX, midY, arcR, aTop, aBot); ctx.stroke();
+      ctx.fillStyle = LM;
+      ctx.beginPath(); ctx.arc(starX, midY, 4.5, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = MARK; ctx.textAlign = 'right';
+      ctx.fillText(`2p = ${ang(major)}`, starX - arcR - 4, midY - 5);
+      const exag = (Math.atan2(rOrb, starX - sunX) * PC_AU) / p;
+      const exagTxt = exag >= 1e6
+        ? `${vi(exag / 1e6, 1)} triệu`
+        : `${Math.round(exag / 1000).toLocaleString('vi-VN')} nghìn`;
+      ctx.fillStyle = fg; ctx.globalAlpha = 0.65;
+      ctx.fillText(`góc vẽ phóng đại ×${exagTxt}`, gR.x + gR.w - padR, gR.y + 11);
+      ctx.textAlign = 'left';
+      ctx.fillText('2 AU = 299 triệu km', gR.x + padL, axY - 6);
+      ctx.globalAlpha = 1;
+
+      // ---------- Khung phải: mảnh trời phóng đại ----------
+      const sL = 34, sR2 = 12, sT = 20, sB = 26;
+      const cx = sR.x + sL + (sR.w - sL - sR2) / 2;
+      const cy = sR.y + sT + (sR.h - sT - sB) / 2;
+      const halfW = (sR.w - sL - sR2) / 2, halfH = (sR.h - sT - sB) / 2;
+      const HW = 1.35 * p;                       // nửa bề rộng khung, giây cung
+      const S = Math.min(halfW, halfH) / HW;     // pixel trên mỗi giây cung
+
+      ctx.save();
+      ctx.beginPath(); ctx.rect(sR.x + sL, sR.y + sT, sR.w - sL - sR2, sR.h - sT - sB); ctx.clip();
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.2;
+      ctx.beginPath(); ctx.moveTo(cx - halfW, cy); ctx.lineTo(cx + halfW, cy);
+      ctx.moveTo(cx, cy - halfH); ctx.lineTo(cx, cy + halfH); ctx.stroke();
+      ctx.globalAlpha = 1;
+
+      if (SEEING / 2 <= HW * 1.45) {
+        ctx.strokeStyle = fg; ctx.globalAlpha = 0.35; ctx.setLineDash([4, 4]);
+        ctx.beginPath(); ctx.arc(cx, cy, (SEEING / 2) * S, 0, Math.PI * 2); ctx.stroke();
+        ctx.setLineDash([]); ctx.globalAlpha = 0.6; ctx.fillStyle = fg; ctx.textAlign = 'center';
+        ctx.fillText('đĩa nhiễu động ~1″', cx, cy - (SEEING / 2) * S - 5);
+        ctx.globalAlpha = 1;
+      }
+
+      ctx.strokeStyle = CURVE; ctx.lineWidth = 2;
+      if (minor * S < 1.2) {
+        ctx.beginPath(); ctx.moveTo(cx - p * S, cy); ctx.lineTo(cx + p * S, cy); ctx.stroke();
+      } else {
+        ctx.beginPath(); ctx.ellipse(cx, cy, p * S, (minor / 2) * S, 0, 0, Math.PI * 2); ctx.stroke();
+      }
+      ctx.lineWidth = 1;
+      ctx.fillStyle = MARK;
+      ctx.beginPath(); ctx.arc(cx - p * S, cy, 4, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.arc(cx + p * S, cy, 4, 0, Math.PI * 2); ctx.fill();
+      ctx.restore();
+
+      // trục có vạch chia ghi số
+      const useMas = HW < 0.05;
+      const step = nice(HW / 2.2);
+      ctx.strokeStyle = fg; ctx.fillStyle = fg;
+      ctx.globalAlpha = 0.55; ctx.textAlign = 'center';
+      for (let k = -3; k <= 3; k++) {
+        if (k === 0) continue;
+        const a = k * step;
+        if (Math.abs(a) * S > halfW) continue;
+        ctx.globalAlpha = 0.3;
+        ctx.beginPath(); ctx.moveTo(cx + a * S, cy - 3); ctx.lineTo(cx + a * S, cy + 3); ctx.stroke();
+        ctx.globalAlpha = 0.55;
+        const lab = useMas ? `${vi(a * 1000, Math.abs(a * 1000) < 10 ? 1 : 0)}` : `${vi(a, step < 0.1 ? 2 : 1)}`;
+        ctx.fillText(lab, cx + a * S, sR.y + sR.h - sB + 14);
+      }
+      ctx.textAlign = 'left';
+      ctx.fillText('Mảnh trời quanh ngôi sao', sR.x + sL, sR.y + 12);
+      ctx.textAlign = 'right';
+      ctx.fillText(useMas ? 'mili-giây cung' : 'giây cung', sR.x + sR.w - sR2, sR.y + sR.h - sB + 14);
+      ctx.globalAlpha = 1;
+
+      // ---------- Dòng số ----------
+      const regime = p >= 0.1
+        ? '<b>kính mặt đất thế kỷ 19 đã đo nổi</b>'
+        : '<b>ngoài tầm kính thế kỷ 19</b>';
+      const ratio = SEEING / major;
+      const seeing = major >= SEEING
+        ? `rộng gấp <b>${vi(major / SEEING, 2)}</b> lần đĩa nhiễu động 1″`
+        : `nhỏ hơn đĩa nhiễu động 1″ <b>${vi(ratio, ratio < 10 ? 1 : 0)}</b> lần`;
+      const relPct = (100 * GAIA) / p;
+      const dTxt = dpc < 10 ? vi(dpc, 3) : dpc < 100 ? vi(dpc, 2) : Math.round(dpc).toLocaleString('vi-VN').replace(/\./g, ' ');
+      const lyTxt = dly < 100 ? vi(dly, 2) : Math.round(dly).toLocaleString('vi-VN').replace(/\./g, ' ');
+      readout.innerHTML =
+        `Thị sai <b>${ang(p)}</b> → d = <b>${dTxt} pc</b> = ${lyTxt} năm ánh sáng` +
+        ` · ellipse thị sai ${ang(major)} × ${ang(minor, major)}, ${seeing}` +
+        ` · đúng bằng góc nhìn đồng xu 1 cm đặt cách <b>${km(coin)}</b>` +
+        ` · sai số Gaia (20 µas) ±${vi(relPct, relPct < 0.1 ? 3 : 1)}% · ${regime}`;
+    }
+
+    root.querySelectorAll('input').forEach((el) => el.addEventListener('input', draw));
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="thi-sai-sao-va-goc-nho-nhat-do-duoc"]').forEach(setup);
+</script>

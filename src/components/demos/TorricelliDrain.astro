@@ -1,0 +1,215 @@
+---
+// Torricelli 1643 (Bernoulli applied to a free jet):
+//   v = sqrt(2gh);  A dh/dt = -C*a*v  =>  h(t) = (sqrt(h0) - k t)^2, k = (C*a/(2A))*sqrt(2g)
+//   t_can = (A/(C*a)) * sqrt(2*h0/g)
+// C = 0,62 = discharge coefficient of a sharp-edged orifice (vena contracta;
+// inviscid theory gives pi/(pi+2) = 0,611). Valid while the orifice Reynolds
+// number is large and a << A: over the whole slider range Re = v*d/nu stays
+// above ~3 900 and A/a above ~200, so the inviscid quasi-steady form holds.
+// Jet range drawn as R = 2*sqrt(h*y) with the tank on a y = 0,5 m stand.
+// Surface-tension floor 2*gamma/(rho*g*r) reported separately in the readout.
+---
+
+<figure class="demo" data-demo="torricelli-thoi-gian-can-cua-mot-be-nuoc">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Diện tích đáy bể A (m²) <output data-out="a"></output>
+      <input type="range" data-in="a" min="0.25" max="4" step="0.05" value="1" /></label>
+    <label>Mực nước ban đầu h₀ (m) <output data-out="h"></output>
+      <input type="range" data-in="h" min="0.2" max="2" step="0.05" value="1" /></label>
+    <label>Đường kính lỗ (mm) <output data-out="d"></output>
+      <input type="range" data-in="d" min="2" max="40" step="1" value="5" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Trái: mặt cắt bể đặt trên bệ cao 0,5 m, lỗ sát đáy. Tia nước phun đi xa
+    theo √h — nét đứt đỏ là lúc bể còn nửa nước, tia đã ngắn lại 29%.
+    Phải: mực nước theo thời gian, h(t) = (√h₀ − k·t)² — một parabol chúc
+    xuống, không phải đường thẳng. Đường xanh tính với hệ số co dòng
+    C = 0,62 của lỗ khoét sắc cạnh; đường vàng là trường hợp lý tưởng C = 1.
+    Chấm đỏ đánh dấu thời điểm bể vơi đúng một nửa.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const G = 9.81, CD = 0.62, GAMMA = 0.0728, RHO = 998, STAND = 0.5;
+  const CURVE = '#2563eb', MARK = '#dc2626', IDEAL = '#f59e0b';
+
+  const vn = (x: number, n = 2) => x.toFixed(n).replace('.', ',');
+  const orifice = (dmm: number) => Math.PI * (dmm / 2000) ** 2;
+
+  function fmtT(s: number) {
+    if (s < 90) return `${vn(s, 1)} s`;
+    if (s < 5400) return `${vn(s / 60, 1)} phút`;
+    if (s < 172800) return `${vn(s / 3600, 1)} giờ`;
+    return `${vn(s / 86400, 1)} ngày`;
+  }
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (k: string) => root.querySelector(`[data-in="${k}"]`) as HTMLInputElement;
+    const output = (k: string) => root.querySelector(`[data-out="${k}"]`) as HTMLOutputElement;
+
+    function draw() {
+      const A = Number(input('a').value);
+      const h0 = Number(input('h').value);
+      const dmm = Number(input('d').value);
+      output('a').textContent = vn(A);
+      output('h').textContent = vn(h0);
+      output('d').textContent = String(dmm);
+
+      const a = orifice(dmm);
+      const v0 = Math.sqrt(2 * G * h0);
+      const Qid = a * v0, Qre = CD * a * v0;
+      const Tid = (A / a) * Math.sqrt(2 * h0 / G);
+      const Tre = Tid / CD;
+      const Thalf = Tre * (1 - Math.SQRT1_2);
+      const hStop = (2 * GAMMA) / (RHO * G * (dmm / 2000));
+      const hOf = (t: number) => (Math.sqrt(h0) - (CD * a / (2 * A)) * Math.sqrt(2 * G) * t) ** 2;
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.46);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+      ctx.font = '10px system-ui,sans-serif';
+
+      const padB = 26, padT = 16, padR = 12, gap = 16;
+      const narrow = cssW < 460;
+      const leftW = Math.round((cssW - gap) * (narrow ? 0.46 : 0.40));
+
+      // ---------- left panel: tank cross-section + jet ----------
+      const xSpan = 4.05, ySpan = 2.8;   // max: √4 + 2√(2·0,5) = 4,0 m wide; 0,5 + 2 + lề
+      const originX = 34, originY = cssH - padB;
+      const S = Math.min((leftW - originX - 4) / xSpan, (cssH - padB - padT) / ySpan);
+      const WX = (x: number) => originX + x * S;
+      const WY = (y: number) => originY - y * S;
+      const wT = Math.sqrt(A);                       // square base, side √A
+
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.3;   // ground
+      ctx.beginPath(); ctx.moveTo(WX(0), WY(0)); ctx.lineTo(WX(xSpan), WY(0)); ctx.stroke();
+      ctx.beginPath();                               // stand
+      ctx.moveTo(WX(0.12), WY(0)); ctx.lineTo(WX(0.12), WY(STAND));
+      ctx.moveTo(WX(wT - 0.12), WY(0)); ctx.lineTo(WX(wT - 0.12), WY(STAND));
+      ctx.stroke(); ctx.globalAlpha = 1;
+
+      ctx.fillStyle = CURVE; ctx.globalAlpha = 0.18; // water body
+      ctx.fillRect(WX(0), WY(STAND + h0), wT * S, h0 * S);
+      ctx.globalAlpha = 1;
+
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.75;  // tank walls
+      ctx.beginPath();
+      ctx.moveTo(WX(0), WY(STAND + h0 + 0.12));
+      ctx.lineTo(WX(0), WY(STAND)); ctx.lineTo(WX(wT), WY(STAND));
+      ctx.lineTo(WX(wT), WY(STAND + h0 + 0.12));
+      ctx.stroke(); ctx.globalAlpha = 1;
+
+      const jet = (h: number, col: string, dash: boolean) => {
+        const v = Math.sqrt(2 * G * h), Rg = 2 * Math.sqrt(h * STAND);
+        ctx.strokeStyle = col; ctx.lineWidth = 2;
+        ctx.setLineDash(dash ? [4, 3] : []);
+        ctx.beginPath();
+        for (let i = 0; i <= 60; i++) {
+          const x = (Rg * i) / 60, y = STAND - (G * x * x) / (2 * v * v);
+          i ? ctx.lineTo(WX(wT + x), WY(y)) : ctx.moveTo(WX(wT + x), WY(y));
+        }
+        ctx.stroke(); ctx.setLineDash([]); ctx.lineWidth = 1;
+        return Rg;
+      };
+      const Rfull = jet(h0, CURVE, false);
+      const Rhalf = jet(h0 / 2, MARK, true);
+
+      ctx.strokeStyle = MARK; ctx.globalAlpha = 0.8; // half-full water line
+      ctx.setLineDash([4, 3]); ctx.beginPath();
+      ctx.moveTo(WX(0), WY(STAND + h0 / 2)); ctx.lineTo(WX(wT), WY(STAND + h0 / 2));
+      ctx.stroke(); ctx.setLineDash([]); ctx.globalAlpha = 1;
+
+      ctx.fillStyle = fg; ctx.globalAlpha = 0.55;    // depth ticks on the tank
+      ctx.textAlign = 'right';
+      for (const m of h0 <= 0.6 ? [0, 0.2, 0.4, 0.6] : [0, 0.5, 1, 1.5, 2]) {
+        if (m > h0 + 0.01) continue;
+        ctx.strokeStyle = fg;
+        ctx.beginPath(); ctx.moveTo(WX(0) - 4, WY(STAND + m)); ctx.lineTo(WX(0), WY(STAND + m)); ctx.stroke();
+        ctx.fillText(`${vn(m, 1)} m`, WX(0) - 6, WY(STAND + m) + 3);
+      }
+      ctx.textAlign = 'center';
+      ctx.fillText(`tầm xa ${vn(Rfull)} m`, WX(wT + Rfull / 2), WY(0) + 14);
+      ctx.textAlign = 'left';
+      ctx.fillText(`bể rộng ${vn(wT)} m`, WX(0), WY(STAND + h0 + 0.22));
+      ctx.globalAlpha = 1;
+
+      // ---------- right panel: h(t) ----------
+      const rL = leftW + gap + 34, rR = cssW - padR;
+      const [uDiv, uName] =
+        Tre < 90 ? [1, 's'] : Tre < 5400 ? [60, 'phút'] : Tre < 172800 ? [3600, 'giờ'] : [86400, 'ngày'];
+      const CX = (t: number) => rL + (t / Tre) * (rR - rL);
+      const CY = (h: number) => (cssH - padB) - (h / h0) * (cssH - padB - padT);
+
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.3;
+      ctx.beginPath();
+      ctx.moveTo(rL, padT); ctx.lineTo(rL, cssH - padB); ctx.lineTo(rR, cssH - padB);
+      ctx.stroke();
+      ctx.globalAlpha = 0.55; ctx.fillStyle = fg; ctx.textAlign = 'center';
+      for (const i of narrow ? [2, 4] : [1, 2, 3, 4]) {
+        const t = (Tre * i) / 4;
+        ctx.fillText(`${vn(t / uDiv, 1)}`, CX(t), cssH - padB + 14);
+      }
+      ctx.textAlign = 'left';
+      ctx.fillText(uName, rL + 2, cssH - padB + 14);
+      ctx.textAlign = 'right';
+      for (const fr of [0, 0.5, 1]) ctx.fillText(`${vn(h0 * fr)} m`, rL - 5, CY(h0 * fr) + 3);
+      ctx.globalAlpha = 1;
+
+      ctx.strokeStyle = IDEAL; ctx.lineWidth = 2; ctx.beginPath();  // ideal C = 1
+      for (let i = 0; i <= 160; i++) {
+        const t = (Tid * i) / 160, y = CY(h0 * (1 - i / 160) ** 2);
+        i ? ctx.lineTo(CX(t), y) : ctx.moveTo(CX(t), y);
+      }
+      ctx.stroke();
+
+      ctx.strokeStyle = CURVE; ctx.beginPath();                     // real C = 0,62
+      for (let i = 0; i <= 200; i++) {
+        const t = (Tre * i) / 200, y = CY(Math.max(0, hOf(t)));
+        i ? ctx.lineTo(CX(t), y) : ctx.moveTo(CX(t), y);
+      }
+      ctx.stroke(); ctx.lineWidth = 1;
+
+      ctx.fillStyle = MARK;
+      ctx.beginPath(); ctx.arc(CX(Thalf), CY(h0 / 2), 6, 0, Math.PI * 2); ctx.fill();
+      ctx.globalAlpha = 0.75; ctx.textAlign = 'left';
+      ctx.fillText('vơi nửa nước', CX(Thalf) + 9, CY(h0 / 2) - 4);
+      ctx.fillStyle = IDEAL; ctx.textAlign = 'right';
+      ctx.fillText('lý tưởng C = 1', CX(Tid), CY(0) - 8);
+      ctx.globalAlpha = 1;
+
+      const slow = hStop >= 10 ? ' — <b>đáng kể so với cột nước</b>' : '';
+      readout.innerHTML =
+        `Lỗ ⌀${dmm} mm, nước sâu ${vn(h0)} m → tia phun <b>${vn(v0)} m/s</b>, ` +
+        `lưu lượng ${vn(Qre * 60000, 2)} L/phút (lý tưởng ${vn(Qid * 60000, 2)}) · ` +
+        `cạn sau <b>${fmtT(Tre)}</b>, lý tưởng ${fmtT(Tid)} · ` +
+        `nửa nước đầu chỉ mất ${fmtT(Thalf)}, nửa sau ${fmtT(Tre - Thalf)}<br />` +
+        `Tia co lại còn ⌀${vn(dmm * Math.sqrt(CD))} mm ngay sau lỗ (thắt dòng) · ` +
+        `cỡ ${vn(hStop * 1000, 1)} mm nước cuối không tự chảy nổi vì sức căng bề mặt${slow}`;
+    }
+
+    root.querySelectorAll('input').forEach((el) => el.addEventListener('input', draw));
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="torricelli-thoi-gian-can-cua-mot-be-nuoc"]').forEach(setup);
+</script>

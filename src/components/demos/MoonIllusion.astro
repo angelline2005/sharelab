@@ -1,0 +1,190 @@
+---
+// Topocentric distance to the Moon for an observer on the surface:
+//   d(alt) = √(D² − R²·cos²alt) − R·sin(alt)      (law of cosines, exact)
+//   θ = 2·arctan(r_MT / d)
+// R = 6 371 km (mean Earth radius), r_MT = 1 737,4 km, D = geocentric
+// Earth–Moon distance. Valid for any D > R; slider limited to the real
+// orbital range 356 500–406 700 km (perigee…apogee). Ignores atmospheric
+// refraction, which flattens the disc vertically near the horizon.
+---
+
+<figure class="demo" data-demo="mat-trang-o-chan-troi-nho-hon-that">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Độ cao Mặt Trăng trên chân trời (°) <output data-out="alt"></output>
+      <input type="range" data-in="alt" min="0" max="90" step="1" value="0" /></label>
+    <label>Khoảng cách tâm Trái Đất–Mặt Trăng (km) <output data-out="dist"></output>
+      <input type="range" data-in="dist" min="356500" max="406700" step="100" value="384400" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Khung trên vẽ đúng tỉ lệ khoảng cách: Trái Đất chỉ là chấm nhỏ, Mặt
+    Trăng xa gấp 60 lần bán kính Trái Đất. Đường xanh là tia ngắm lúc Mặt
+    Trăng ở thiên đỉnh, đường đỏ là tia ngắm ở độ cao bạn chọn — chân trời
+    xa thêm gần trọn một bán kính Trái Đất. Khung dưới là đường kính góc
+    theo độ cao; hai vạch cam là cận điểm và viễn điểm quỹ đạo, thứ dao
+    động thật sự.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const R = 6371, RM = 1737.4, DMAX = 406700, DMIN = 356500;
+  const AM = (180 / Math.PI) * 60;
+  const CURVE = '#2563eb', MARK = '#dc2626', LM = '#f59e0b';
+
+  const dist = (D: number, alt: number) => {
+    const a = (alt * Math.PI) / 180;
+    return Math.sqrt(D * D - R * R * Math.cos(a) * Math.cos(a)) - R * Math.sin(a);
+  };
+  const theta = (D: number, alt: number) => 2 * Math.atan(RM / dist(D, alt)) * AM;
+
+  const km = (n: number) => Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+  const dec = (n: number, p = 2) => n.toFixed(p).replace('.', ',');
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (k: string) => root.querySelector(`[data-in="${k}"]`) as HTMLInputElement;
+    const output = (k: string) => root.querySelector(`[data-out="${k}"]`) as HTMLOutputElement;
+
+    function draw() {
+      const alt = Number(input('alt').value), D = Number(input('dist').value);
+      output('alt').textContent = String(alt);
+      output('dist').textContent = km(D);
+
+      const dNow = dist(D, alt), tNow = theta(D, alt);
+      const dH = dist(D, 0), tH = theta(D, 0);
+      const dZ = dist(D, 90), tZ = theta(D, 90);
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.66);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+      ctx.font = '10px system-ui,sans-serif';
+
+      // ---------- top panel: true-scale Earth–Moon geometry ----------
+      const topH = Math.round(cssH * 0.42);
+      const padL = 26, padR = 16;
+      const avail = cssW - padL - padR;
+      const sc = avail / (DMAX + 1.7 * R);       // px per km, fixed scale
+      const Rp = R * sc, x0 = padL + 1.7 * Rp, yE = Math.round(topH * 0.55);
+      const mx = x0 + D * sc, mr = Math.max(2.5, RM * sc);
+
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.25; ctx.setLineDash([3, 3]);
+      ctx.beginPath(); ctx.moveTo(x0, yE); ctx.lineTo(mx, yE); ctx.stroke();
+      ctx.setLineDash([]);
+
+      // Earth, true scale.
+      ctx.globalAlpha = 0.35; ctx.fillStyle = fg;
+      ctx.beginPath(); ctx.arc(x0, yE, Rp, 0, Math.PI * 2); ctx.fill();
+      ctx.globalAlpha = 1;
+
+      // Zenith sight line (observer at the sub-lunar point).
+      ctx.strokeStyle = CURVE; ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.moveTo(x0 + Rp, yE); ctx.lineTo(mx, yE); ctx.stroke();
+
+      // Observer at the chosen altitude: cos ψ = (R + d·sin alt)/D.
+      const cps = Math.min(1, (R + dNow * Math.sin((alt * Math.PI) / 180)) / D);
+      const sps = Math.sqrt(Math.max(0, 1 - cps * cps));
+      const ox = x0 + Rp * cps, oy = yE - Rp * sps;
+
+      ctx.strokeStyle = MARK; ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.moveTo(ox, oy); ctx.lineTo(mx, yE); ctx.stroke();
+      ctx.lineWidth = 1;
+
+      // Local horizon (tangent) and zenith (radial) markers at the observer.
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.45; ctx.setLineDash([2, 3]);
+      ctx.beginPath(); ctx.moveTo(ox - 24 * sps, oy - 24 * cps);
+      ctx.lineTo(ox + 24 * sps, oy + 24 * cps); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(ox, oy); ctx.lineTo(ox + 18 * cps, oy - 18 * sps); ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillStyle = MARK; ctx.globalAlpha = 1;
+      ctx.beginPath(); ctx.arc(ox, oy, 2.6, 0, Math.PI * 2); ctx.fill();
+
+      // Moon, true scale.
+      ctx.fillStyle = LM;
+      ctx.beginPath(); ctx.arc(mx, yE, mr, 0, Math.PI * 2); ctx.fill();
+
+      ctx.fillStyle = fg; ctx.globalAlpha = 0.65; ctx.textAlign = 'center';
+      ctx.fillText('Trái Đất', x0, yE + Rp + 13);
+      ctx.fillText('người quan sát', ox, oy - 24);
+      ctx.textAlign = 'right';
+      ctx.fillText('Mặt Trăng', mx - mr - 5, yE - 8);
+      ctx.textAlign = 'center';
+      ctx.fillStyle = MARK; ctx.globalAlpha = 0.95;
+      ctx.fillText(`d = ${km(dNow)} km`, (ox + mx) / 2, yE + 15);
+      ctx.globalAlpha = 1;
+
+      // ---------- bottom panel: angular diameter vs altitude ----------
+      const bT = topH + 6, bH = cssH - bT;
+      const pL = 44, pR = 12, pT = 12, pB = 20;
+      const YLO = 28.8, YHI = 34.4;
+      const X = (a: number) => pL + (a / 90) * (cssW - pL - pR);
+      const Y = (t: number) => bT + pT + ((YHI - t) / (YHI - YLO)) * (bH - pT - pB);
+
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.3;
+      ctx.beginPath(); ctx.moveTo(pL, bT + pT); ctx.lineTo(pL, bT + bH - pB);
+      ctx.lineTo(cssW - pR, bT + bH - pB); ctx.stroke();
+      ctx.globalAlpha = 0.55; ctx.fillStyle = fg;
+      ctx.textAlign = 'center';
+      for (const a of [0, 30, 60, 90]) ctx.fillText(`${a}°`, X(a), bT + bH - pB + 13);
+      ctx.textAlign = 'right';
+      for (const t of [29, 30, 31, 32, 33, 34]) ctx.fillText(`${t}′`, pL - 4, Y(t) + 3);
+      ctx.globalAlpha = 1;
+
+      // Perigee / apogee reference lines — the swing that is real.
+      ctx.strokeStyle = LM; ctx.setLineDash([5, 4]); ctx.globalAlpha = 0.9;
+      for (const [DD, lab] of [[DMIN, 'cận điểm'], [DMAX, 'viễn điểm']] as Array<[number, string]>) {
+        // Geocentric disc at the quoted distance — the 33,51′ / 29,37′ the
+        // article cites. The topocentric horizon value differs by 0,004′.
+        const t = 2 * Math.atan(RM / DD) * AM;
+        ctx.beginPath(); ctx.moveTo(pL, Y(t)); ctx.lineTo(cssW - pR, Y(t)); ctx.stroke();
+        ctx.fillStyle = LM; ctx.textAlign = 'left';
+        ctx.fillText(`${lab} ${dec(t)}′`, pL + 6, Y(t) - 4);
+      }
+      ctx.setLineDash([]); ctx.globalAlpha = 1;
+
+      // θ(alt) at the chosen distance.
+      ctx.strokeStyle = CURVE; ctx.lineWidth = 2; ctx.beginPath();
+      for (let i = 0; i <= 180; i++) {
+        const a = (90 * i) / 180, y = Y(theta(D, a));
+        i ? ctx.lineTo(X(a), y) : ctx.moveTo(X(a), y);
+      }
+      ctx.stroke(); ctx.lineWidth = 1;
+
+      ctx.fillStyle = CURVE; ctx.globalAlpha = 0.85; ctx.textAlign = 'right';
+      ctx.fillText(`cả đường cong chỉ nhấc ${dec(tZ - tH)}′`, cssW - pR, Y(tZ) - 7);
+      ctx.globalAlpha = 1;
+
+      ctx.fillStyle = MARK;
+      ctx.beginPath(); ctx.arc(X(alt), Y(tNow), 5.5, 0, Math.PI * 2); ctx.fill();
+
+      const regime = D <= 361000 ? ' · <b>vùng siêu trăng</b>'
+        : D >= 402000 ? ' · <b>vùng trăng cực tiểu</b>' : '';
+      readout.innerHTML =
+        `Độ cao 0° → ${km(dH)} km → <b>${dec(tH)}′</b> · độ cao 90° → ${km(dZ)} km → <b>${dec(tZ)}′</b>` +
+        ` · ở chân trời đĩa <b>nhỏ hơn ${dec(100 * (tZ - tH) / tZ)}%</b>` +
+        `<br />Vị trí đang chọn: ${alt}° → ${km(dNow)} km → ${dec(tNow)}′${regime}`;
+    }
+
+    root.querySelectorAll('input').forEach((el) => el.addEventListener('input', draw));
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="mat-trang-o-chan-troi-nho-hon-that"]').forEach(setup);
+</script>

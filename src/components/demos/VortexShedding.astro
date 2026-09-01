@@ -1,0 +1,223 @@
+---
+// Xoáy Kármán sau vật hình trụ: f = St·v/d, với St ≈ 0,2.
+// Lưu ý f là tần số CẶP xoáy (một trái + một phải = một chu kỳ lực ngang,
+// cũng là một chu kỳ âm). Số xoáy đơn lẻ mỗi giây là 2f — đừng dán nhãn
+// "f xoáy mỗi giây" lên canvas.
+// Nguồn: Strouhal 1878 (tiếng hú của dây căng); Roshko 1954; Blevins,
+// "Flow-Induced Vibration" — St gần như phẳng trong dải 0,19–0,21 suốt
+// khoảng Re = 3·10^2 … 2·10^5 (chế độ dưới tới hạn).
+// Ngoài dải đó demo cảnh báo: Re < 300 thì dãy xoáy chưa đều; Re > 2·10^5
+// thì lớp biên chuyển rối, điểm tách dòng lùi về sau, phổ tan thành nhiễu.
+// Không khí 20 °C: ν = 1,5·10^-5 m²/s. Cao độ theo bình quân luật, La4 = 440 Hz.
+// Trục đứng là log tần số — tức đúng trục cao độ mà tai người cảm nhận.
+---
+
+<figure class="demo" data-demo="day-dien-hu-trong-bao-tan-so-xoay-karman">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Tốc độ gió (m/s) <output data-out="v"></output>
+      <input type="range" data-in="v" min="2" max="40" step="0.5" value="15" /></label>
+    <label>Đường kính vật (mm) <output data-out="d"></output>
+      <input type="range" data-in="d" min="2" max="200" step="1" value="8" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Trên: dòng khí qua vật trụ, luân phiên buông xoáy sang trái rồi sang phải
+    thành dãy Kármán. Hình dạng dãy ấy bất biến — khoảng cách hai xoáy cùng bên
+    luôn cỡ 5 lần đường kính, bất kể gió mạnh hay yếu; gió chỉ quyết định dãy
+    trôi đi nhanh chậm, tức tần số.
+    Dưới: f = 0,2·v/d vẽ trên trục log–log nên thành đường thẳng dốc 1. Các vạch
+    ngang mờ là những nốt Do liên tiếp — mỗi lần gió gấp đôi, điểm đỏ leo đúng
+    một quãng tám.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const CURVE = '#2563eb', MARK = '#dc2626', WARN = '#f59e0b';
+  const ST = 0.2, NU = 1.5e-5;
+  const FLO = 1, FHI = 5000, VLO = 2, VHI = 40;
+
+  const NOTES = ['Do', 'Do#', 'Re', 'Re#', 'Mi', 'Fa', 'Fa#', 'Sol', 'Sol#', 'La', 'La#', 'Si'];
+  const OCTAVES: Array<[number, string]> = [
+    [16.352, 'Do0'], [32.703, 'Do1'], [65.406, 'Do2'], [130.813, 'Do3'], [261.626, 'Do4'],
+    [523.251, 'Do5'], [1046.502, 'Do6'], [2093.005, 'Do7'], [4186.009, 'Do8'],
+  ];
+  const BEAUFORT = [0.3, 1.6, 3.4, 5.5, 8, 10.8, 13.9, 17.2, 20.8, 24.5, 28.5, 32.7];
+  const LIMITS: Array<[number, string]> = [[300, 'Re = 300'], [2e5, 'Re = 2·10⁵']];
+
+  const vi = (x: number, k: number) => x.toFixed(k).replace('.', ',');
+  const cap = (v: number) => BEAUFORT.reduce((c, t) => (v >= t ? c + 1 : c), 0);
+
+  function noteOf(f: number) {
+    const n = Math.round(12 * Math.log2(f / 440));
+    const exact = 440 * Math.pow(2, n / 12);
+    const i = ((n + 9) % 12 + 12) % 12;
+    const oct = 4 + Math.floor((n + 9) / 12);
+    return { name: NOTES[i] + oct, cents: 1200 * Math.log2(f / exact) };
+  }
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (k: string) => root.querySelector(`[data-in="${k}"]`) as HTMLInputElement;
+    const output = (k: string) => root.querySelector(`[data-out="${k}"]`) as HTMLOutputElement;
+
+    function draw() {
+      const v = Number(input('v').value), dmm = Number(input('d').value);
+      const dm = dmm / 1000;
+      const f = ST * v / dm;
+      const Re = v * dm / NU;
+      output('v').textContent = `${vi(v, 1)} — cấp ${cap(v)}`;
+      output('d').textContent = String(dmm);
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32;
+      const narrow = cssW < 420;
+      const cssH = Math.round(cssW * (narrow ? 0.95 : 0.72));
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+      ctx.font = '10px system-ui,sans-serif';
+
+      const padL = 46, padR = 36, padB = 24;
+      const Wp = cssW - padL - padR;
+      const hA = Math.round(cssH * 0.34);
+      const gT = hA + 8, gB = cssH - padB;
+
+      // --- Bảng trên: dãy xoáy Kármán, cửa sổ rộng đúng 20 đường kính ---
+      const s = Wp / (20 * dm);      // pixel trên mét
+      const r = 0.5 * dm * s;        // bán kính trụ  = Wp/40
+      const a = 5 * dm * s;          // bước xoáy cùng bên = Wp/4
+      const hRow = 1.41 * dm * s;    // khoảng cách hai hàng xoáy (0,281·a)
+      const yc = Math.round(hA * 0.46);
+      const cx = padL + 0.55 * a;
+
+      const L = Math.min(12 + ((v - VLO) / (VHI - VLO)) * 40, cx - padL - r - 6);
+      ctx.globalAlpha = 0.45; ctx.strokeStyle = fg; ctx.fillStyle = fg; ctx.lineWidth = 1;
+      for (const dy of [-2.2 * r, 0, 2.2 * r]) {
+        const y = yc + dy;
+        ctx.beginPath(); ctx.moveTo(padL, y); ctx.lineTo(padL + L, y); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(padL + L, y); ctx.lineTo(padL + L - 5, y - 3);
+        ctx.lineTo(padL + L - 5, y + 3); ctx.closePath(); ctx.fill();
+      }
+      ctx.globalAlpha = 1;
+
+      for (let k = 0; k < 16; k++) {
+        const x = cx + r + 0.45 * a + k * (a / 2);
+        if (x > padL + Wp - 4) break;
+        const up = k % 2 === 0;
+        ctx.fillStyle = up ? CURVE : MARK; ctx.globalAlpha = 0.75;
+        ctx.beginPath();
+        ctx.arc(x, yc + (up ? -hRow / 2 : hRow / 2), Math.max(3, 0.55 * r), 0, Math.PI * 2);
+        ctx.fill(); ctx.globalAlpha = 1;
+      }
+
+      ctx.fillStyle = fg; ctx.globalAlpha = 0.75;
+      ctx.beginPath(); ctx.arc(cx, yc, r, 0, Math.PI * 2); ctx.fill();
+
+      ctx.globalAlpha = 0.6; ctx.textAlign = 'center';
+      ctx.fillText(`⌀ ${dmm} mm`, cx, yc + 2.2 * r + 13);
+      ctx.textAlign = 'left';
+      ctx.fillText(`gió ${vi(v, 1)} m/s`, padL, 12);
+      ctx.textAlign = 'right';
+      const rate = Math.round(f).toLocaleString('vi-VN');
+      ctx.fillText(narrow ? `${rate} cặp/giây` : `${rate} cặp xoáy mỗi giây`, padL + Wp, 12);
+
+      const sx = cx + r + 0.45 * a, sy = hA - 6;
+      ctx.globalAlpha = 0.4; ctx.strokeStyle = fg;
+      ctx.beginPath(); ctx.moveTo(sx, sy - 4); ctx.lineTo(sx, sy);
+      ctx.lineTo(sx + a, sy); ctx.lineTo(sx + a, sy - 4); ctx.stroke();
+      ctx.globalAlpha = 0.6; ctx.textAlign = 'center';
+      ctx.fillText(narrow ? `5d = ${5 * dmm} mm` : `bước xoáy 5d = ${5 * dmm} mm`, sx + a / 2, sy - 7);
+      ctx.globalAlpha = 1;
+
+      // --- Bảng dưới: f = St·v/d trên trục log–log ---
+      const X = (vv: number) =>
+        padL + ((Math.log10(vv) - Math.log10(VLO)) / (Math.log10(VHI) - Math.log10(VLO))) * Wp;
+      const Y = (ff: number) =>
+        gT + ((Math.log10(FHI) - Math.log10(ff)) / (Math.log10(FHI) - Math.log10(FLO))) * (gB - gT);
+
+      const octStep = (Y(FLO) - Y(FHI)) / (Math.log2(FHI / FLO)) < 12 ? 2 : 1;
+      ctx.textAlign = 'left'; ctx.strokeStyle = fg;
+      OCTAVES.forEach(([ff, lab], k) => {
+        ctx.globalAlpha = 0.13;
+        ctx.beginPath(); ctx.moveTo(padL, Y(ff)); ctx.lineTo(padL + Wp, Y(ff)); ctx.stroke();
+        if (k % octStep) return;
+        ctx.globalAlpha = 0.45; ctx.fillStyle = fg;
+        ctx.fillText(lab, padL + Wp + 4, Y(ff) + 3);
+      });
+
+      ctx.globalAlpha = 0.85; ctx.strokeStyle = WARN; ctx.setLineDash([4, 3]);
+      ctx.beginPath(); ctx.moveTo(padL, Y(20)); ctx.lineTo(padL + Wp, Y(20)); ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillStyle = WARN; ctx.textAlign = 'left';
+      ctx.fillText(narrow ? '20 Hz — ngưỡng nghe' : '20 Hz — dưới vạch này tai không nghe, chỉ thấy rung',
+        padL + 4, Y(20) - 4);
+      ctx.globalAlpha = 1;
+
+      for (const [reLim, lab] of LIMITS) {
+        const vLim = reLim * NU / dm;
+        if (vLim <= VLO || vLim >= VHI) continue;
+        ctx.strokeStyle = WARN; ctx.globalAlpha = 0.75; ctx.setLineDash([3, 3]);
+        ctx.beginPath(); ctx.moveTo(X(vLim), gT); ctx.lineTo(X(vLim), gB); ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.fillStyle = WARN; ctx.textAlign = 'right';
+        ctx.fillText(lab, X(vLim) - 3, gT + 10);
+        ctx.globalAlpha = 1;
+      }
+
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.3;
+      ctx.beginPath(); ctx.moveTo(padL, gT); ctx.lineTo(padL, gB); ctx.lineTo(padL + Wp, gB); ctx.stroke();
+      ctx.globalAlpha = 0.55; ctx.fillStyle = fg; ctx.textAlign = 'center';
+      for (const vv of narrow ? [2, 10, 40] : [2, 5, 10, 20, 40]) ctx.fillText(`${vv} m/s`, X(vv), gB + 14);
+      ctx.textAlign = 'right';
+      for (const ff of [1, 10, 100, 1000]) ctx.fillText(`${ff} Hz`, padL - 4, Y(ff) + 3);
+      ctx.globalAlpha = 1;
+
+      ctx.strokeStyle = CURVE; ctx.lineWidth = 2; ctx.beginPath();
+      for (let i = 0; i <= 160; i++) {
+        const vv = VLO * Math.pow(VHI / VLO, i / 160);
+        const ff = Math.min(FHI, Math.max(FLO, ST * vv / dm));
+        i ? ctx.lineTo(X(vv), Y(ff)) : ctx.moveTo(X(vv), Y(ff));
+      }
+      ctx.stroke(); ctx.lineWidth = 1;
+
+      ctx.fillStyle = MARK;
+      ctx.beginPath(); ctx.arc(X(v), Y(Math.min(FHI, Math.max(FLO, f))), 6, 0, Math.PI * 2); ctx.fill();
+
+      // --- Dòng số ---
+      let pitch = 'hạ âm, tai không nghe mà chỉ cảm được cột rung';
+      if (f >= 20) {
+        const n = noteOf(f);
+        const sign = n.cents >= 0 ? '+' : '−';
+        pitch = `gần nốt <b>${n.name}</b> (${sign}${Math.abs(n.cents).toFixed(0)} cent)`;
+      }
+      const reTxt = Math.round(Re).toLocaleString('vi-VN');
+      let regime = ` · Re = ${reTxt}, St ≈ 0,2 ổn định`;
+      if (Re < 300) regime = ` · Re = ${reTxt} < 300: <b>dãy xoáy chưa đều</b>, cao độ trôi`;
+      else if (Re > 2e5) regime = ` · Re = ${reTxt} > 2·10⁵: <b>lớp biên chuyển rối, dãy xoáy tan thành nhiễu</b> — hết nốt, còn tiếng gào`;
+
+      readout.innerHTML =
+        `Gió ${vi(v, 1)} m/s (cấp ${cap(v)}) qua vật ⌀${dmm} mm → <b>${vi(f, f < 100 ? 1 : 0)} Hz</b> — ${pitch}${regime}`;
+    }
+
+    root.querySelectorAll('input').forEach((el) => el.addEventListener('input', draw));
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="day-dien-hu-trong-bao-tan-so-xoay-karman"]').forEach(setup);
+</script>

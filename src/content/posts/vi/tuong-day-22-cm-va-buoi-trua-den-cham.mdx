@@ -1,0 +1,96 @@
+---
+title: "Tường 22 cm: cái nóng ban trưa gõ cửa phòng bạn lúc tám giờ rưỡi tối"
+seoTitle: "Quán tính nhiệt của tường: độ trễ và hệ số suy giảm của sóng nhiệt ngày đêm"
+description: "Sóng nhiệt ngày đêm chui vào gạch với độ sâu thấm 11,1 cm. Qua bức tường 22 cm, biên độ chỉ còn một phần 7,24 và đỉnh nóng đến chậm 7 giờ 34 phút — trong khi mái tôn 0,5 mm giao hàng sau 11,5 giây, gần như không suy giảm đồng nào."
+pubDate: 2026-09-02
+tags: ["vat-ly", "nhiet-hoc", "khi-hau", "javascript"]
+translationId: "tuong-day-22-cm-va-buoi-trua-den-cham"
+---
+
+import ThermalLag from '../../../components/demos/ThermalLag.astro';
+
+Mặt ngoài bức tường nóng nhất lúc một giờ chiều. Nhưng úp lòng bàn tay lên
+tường phòng ngủ lúc tám rưỡi tối, bạn thấy nó ấm — ấm nhất trong cả ngày.
+Cái nóng ban trưa không biến đi đâu; nó đang đi bộ xuyên tường, với tốc độ
+của riêng nó:
+
+<ThermalLag />
+
+## Tường không chặn cái nóng, nó làm cái nóng đến muộn
+
+Coi nhiệt độ mặt ngoài tường là một sóng hình sin: trung bình 30 °C, biên
+độ ±10 °C, đỉnh lúc 13h. Sóng ấy chui vào lòng gạch, vừa tắt dần vừa chậm
+lại — Fourier giải xong bài này năm 1822, và kết quả gói trong một độ dài
+duy nhất:
+
+```
+d = √(α · P / π)                       độ sâu thấm
+biên độ trong = biên độ ngoài · e^(−L/d)
+độ trễ = (L/d) · P / (2π)
+```
+
+α là hệ số khuếch tán nhiệt, P là chu kỳ — 86 400 giây cho vòng ngày đêm.
+Gạch đặc có α = 4,49·10⁻⁷ m²/s, thay vào ra **d = 11,1 cm**: cứ mỗi 11,1 cm
+đi sâu, sóng nhiệt yếu đi e lần, đúng vai trò của hằng số τ ở [tụ điện đang
+nạp](/vi/posts/mach-rc-va-chiec-thang-63-phan-tram) — chỉ khác là ở đây nó
+đo bằng centimét.
+
+Bức tường 22 cm quen thuộc dày đúng **1,98 lần d**. Ra tới mặt trong, biên
+độ còn e^(−1,98) = **13,8%** — chia cho 7,24: ±10 °C ngoài sân thành ±1,38 °C
+trong phòng. Và pha chậm đúng 1,98 radian, quy ra thời gian là **7 giờ
+34 phút**: đỉnh nóng 13h gõ cửa lúc **20h34**.
+
+## Mái tôn nhận cùng cái nắng ấy mà không được món quà nào
+
+Thép dẫn nhiệt gấp 70 lần gạch nhưng mỗi mét khối cũng chứa nhiệt gấp 2,4 lần,
+nên α chỉ gấp 29 lần — và d, tỉ lệ với căn của α, gấp 5,4 lần: **59,8 cm**.
+Tấm tôn thì dày 0,5 mm — tức 0,08% của d. Biên độ giữ nguyên **99,9%**, độ
+trễ **11,5 giây**. Chỗ dễ nhầm: thép là nhà vô địch *dẫn* nhiệt, [thứ làm tay
+bạn buốt khi chạm](/vi/posts/vi-sao-kim-loai-so-vao-thay-lanh), nhưng ở trận
+này nó thua vì quá mỏng — thứ tính điểm là bề dày đo bằng chính d của nó.
+
+Thứ giao tới cũng không phải nhiệt độ không khí: tấm tôn hấp thụ chừng 0,6
+của 900 W/m² nắng đứng bóng, thải lại qua đối lưu và bức xạ với hệ số cỡ
+20 W/m²·K, nên nó đứng ở mức **nóng hơn không khí 27 °C** — trưa 35 độ thì
+mặt tôn hơn 60 độ, chuyển thẳng xuống trần trong một hơi thở.
+
+## Muốn trễ thêm giờ nào cũng phải trả bằng biên độ
+
+Cả độ trễ lẫn độ suy giảm đều chỉ do tỉ số L/d điều khiển, nên tỉ giá giữa
+giờ và biên độ là cố định: không vật liệu nào lách được. Tường 110 dày một
+nửa: trễ tụt còn **3 giờ 47 phút**, đưa đỉnh nóng về đúng 16h47 lúc bạn vừa
+tới nhà, đổi lại biên độ lọt vào **37,2%** — gấp gần ba lần tường 220. Đổi
+22 cm gạch sang 22 cm bê tông thì nặng hơn mà lại *nhanh*
+hơn: α = 6,92·10⁻⁷ m²/s kéo d lên 13,8 cm, nên chỉ trễ **6 giờ 06 phút** và
+lọt **20,3%**. Người quyết định là α = k/(ρ·c) — dẫn nhiệt chia cho khả năng
+chứa nhiệt — chứ không phải cân nặng.
+
+Muốn dời trọn nửa vòng ngày thì cần L/d = π, tức **34,9 cm gạch**: trưa 13h
+hoá thành 1h sáng. Nhưng ở bề dày ấy biên độ chỉ còn 4,3%, cái đỉnh nóng đến
+muộn kia gần như không còn là đỉnh nữa.
+
+## Đổi chu kỳ thì thang độ sâu đổi theo căn bậc hai
+
+P nằm dưới dấu căn, nên sóng năm thấm sâu hơn sóng ngày đúng √365 = **19,1
+lần**. Đất vườn (α ≈ 5·10⁻⁷ m²/s) có d ngày đêm 11,7 cm nhưng d năm tới
+**2,24 m**. Xuống 5 m, biên độ mùa còn 10,7% và mùa hè đến chậm **130 ngày**
+— đỉnh nóng tháng Bảy chạm đáy hầm vào tháng Mười Một. Hang đá mát quanh năm
+và ống địa nhiệt chôn 2 m sống bằng đúng công thức trên, chỉ thay P bằng
+31,6 triệu giây.
+
+## Trường hợp biên: quá 33 cm thì tường hết trò, và đêm thì tường đòi nợ
+
+Kéo bề dày lên nữa. Ở L = 3d — **33,3 cm gạch** — biên độ còn 5,0%, và mỗi
+11 cm dày thêm chỉ chia cái phần thừa ấy cho 2,7 lần nữa. Sóng ngày
+đêm tắt hẳn; thứ còn đi qua tường không còn là sóng mà là **dòng nhiệt
+dừng**, do chênh lệch nhiệt độ *trung bình* điều khiển — bài toán rơi về hệ
+số U của sách cách nhiệt, nơi dày thêm chỉ mua được kháng nhiệt, không mua
+được thêm giờ nào.
+
+Chiều ngược lại khó chịu hơn: 7 giờ 34 phút chỉ là quà nếu **ban đêm đủ mát
+để tường xả ngược ra ngoài**. Sa mạc đêm 12 độ thì đó là điều hoà miễn phí.
+Còn đêm Sài Gòn 27 độ, bức tường nạp cả ngày nhả mạnh nhất vào lúc 20h34 và
+còn nằm trên mức trung bình của chính nó tới 2h34 — đúng quãng bạn ngủ, mặt
+trong 30 độ lặng lẽ bức xạ vào da bạn, và [cái máy
+lạnh](/vi/posts/may-lanh-khong-tao-lanh-no-chuyen-nha-cho-nhiet) è cổ trả nợ
+cho buổi trưa hôm qua.

@@ -1,0 +1,210 @@
+---
+// Meteor entry speed from the encounter vector triangle.
+//   v_diatam = sqrt(v_h^2 + v_TD^2 - 2*v_h*v_TD*cos(theta))
+//   v_vacham = sqrt(v_diatam^2 + v_esc_TD^2)
+// Constants (IAU/JPL): GM_sun = 1.32712440018e20 m^3/s^2, 1 AU = 1.495978707e11 m
+//   -> v_TD (tron, 1 AU) = 29.7847 km/s ; v_thoat_MatTroi (1 AU) = 42.1219 km/s
+//   GM_TD = 3.986004418e14, R = 6371 km -> v_thoat o do cao 100 km = 11.0994 km/s
+//   (o mat dat la 11.186 km/s; sao bang boc chay o ~80-120 km nen dung 100 km).
+// Validity: quy dao Trai Dat coi nhu tron ban kinh 1 AU. Do lech tam that (e = 0,0167)
+//   lam tran dao dong 71,93 (vien nhat) - 73,61 km/s (can nhat).
+// Shower entry speeds: IMO Meteor Shower Working List.
+---
+
+<figure class="demo" data-demo="tran-72-km-moi-giay-cua-sao-bang">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Tốc độ nhật tâm của thiên thạch (km/s) <output data-out="v"></output>
+      <input type="range" data-in="v" min="5" max="50" step="0.01" value="42.12" /></label>
+    <label>Góc giữa hai vectơ (°) <output data-out="a"></output>
+      <input type="range" data-in="a" min="0" max="180" step="1" value="106" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Nửa trên: tam giác vectơ tại điểm gặp. Mũi tên xanh là vận tốc Trái Đất
+    (29,78 km/s, cố định); mũi tên cam là vận tốc nhật tâm của thiên thạch;
+    mũi tên đỏ nối hai đầu chính là tốc độ Trái Đất "nhìn thấy". Vòng nét đứt
+    42,12 km/s là ngưỡng thoát ly hệ Mặt Trời — mũi tên cam vượt ra ngoài thì
+    vật đó không còn là công dân của hệ Mặt Trời nữa.
+    Nửa dưới: thang tốc độ chạm khí quyển, sau khi lực hút Trái Đất cộng thêm
+    phần của nó, với vị trí các trận mưa sao băng thật.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const EARTH = '#2563eb', MARK = '#dc2626', HELIO = '#f59e0b';
+  const V_TD = 29.7847;     // km/s — Earth orbital speed at 1 AU
+  const V_ESC_SUN = 42.1219; // km/s — solar escape speed at 1 AU
+  const V_ESC_TD = 11.0994;  // km/s — Earth escape speed at 100 km altitude
+  const VMAX = 52;           // km/s — radius of the vector plot (slider tops out at 50)
+  const SMAX = 85;           // km/s — full scale of the speed strip (fits the 80,23 interstellar case)
+
+  const SHOWERS: Array<[number, string, number]> = [
+    [27, 'Taurids', 0], [35, 'Geminids', 1], [59, 'Perseids', 0], [71, 'Leonids', 0],
+  ];
+
+  const vGeo = (vh: number, th: number) =>
+    Math.sqrt(vh * vh + V_TD * V_TD - 2 * vh * V_TD * Math.cos((th * Math.PI) / 180));
+  const nf = (x: number, d: number) => x.toFixed(d).replace('.', ',');
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (k: string) => root.querySelector(`[data-in="${k}"]`) as HTMLInputElement;
+    const output = (k: string) => root.querySelector(`[data-out="${k}"]`) as HTMLOutputElement;
+
+    function arrow(x0: number, y0: number, x1: number, y1: number, col: string, w: number) {
+      const a = Math.atan2(y1 - y0, x1 - x0), h = 9;
+      ctx.strokeStyle = col; ctx.fillStyle = col; ctx.lineWidth = w;
+      ctx.beginPath(); ctx.moveTo(x0, y0); ctx.lineTo(x1, y1); ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(x1, y1);
+      ctx.lineTo(x1 - h * Math.cos(a - 0.4), y1 - h * Math.sin(a - 0.4));
+      ctx.lineTo(x1 - h * Math.cos(a + 0.4), y1 - h * Math.sin(a + 0.4));
+      ctx.closePath(); ctx.fill();
+      ctx.lineWidth = 1;
+    }
+
+    function draw() {
+      const vh = Number(input('v').value), th = Number(input('a').value);
+      output('v').textContent = nf(vh, 2);
+      output('a').textContent = String(th);
+      const g = vGeo(vh, th);
+      const imp = Math.hypot(g, V_ESC_TD);
+      const kJ = 0.5 * 0.001 * Math.pow(imp * 1000, 2); // 1 gram, joules
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      // clientWidth is 0 while the figure is collapsed/hidden; without the floor
+      // the plot scale goes negative and ctx.arc throws before the readout is set.
+      const cssW = Math.max(root.clientWidth - 32, 260), cssH = Math.round(cssW * 0.66);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+      ctx.font = '10px system-ui,sans-serif';
+
+      const padL = 12, padR = 12, SH = 74;
+      const baseY = cssH - SH - 18;
+      const s = Math.min((cssW / 2 - 34) / VMAX, (baseY - 14) / VMAX);
+      const ox = cssW / 2;
+      const PX = (v: number, ang: number) => [ox + v * s * Math.cos((ang * Math.PI) / 180),
+                                              baseY - v * s * Math.sin((ang * Math.PI) / 180)];
+
+      // ---- vector plot: polar grid + labelled baseline ----
+      ctx.strokeStyle = fg; ctx.fillStyle = fg;
+      ctx.globalAlpha = 0.16;
+      for (const r of [10, 20, 30, 40]) {
+        ctx.beginPath(); ctx.arc(ox, baseY, r * s, Math.PI, 0); ctx.stroke();
+      }
+      ctx.globalAlpha = 0.35;
+      ctx.beginPath(); ctx.moveTo(ox - VMAX * s, baseY); ctx.lineTo(ox + VMAX * s, baseY); ctx.stroke();
+      ctx.globalAlpha = 0.55; ctx.textAlign = 'center';
+      for (const r of [-40, -20, 0, 20, 40]) {
+        ctx.beginPath(); ctx.moveTo(ox + r * s, baseY); ctx.lineTo(ox + r * s, baseY + 4); ctx.stroke();
+        ctx.fillText(r === 0 ? '0' : String(Math.abs(r)), ox + r * s, baseY + 15);
+      }
+      ctx.textAlign = 'left';
+      ctx.fillText('km/s', ox + 42 * s + 4, baseY + 15);
+      ctx.globalAlpha = 1;
+
+      // solar escape ring
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.5; ctx.setLineDash([4, 4]);
+      ctx.beginPath(); ctx.arc(ox, baseY, V_ESC_SUN * s, Math.PI, 0); ctx.stroke();
+      ctx.setLineDash([]);
+      const [lx, ly] = PX(V_ESC_SUN, 141);
+      ctx.fillStyle = fg; ctx.textAlign = 'left';
+      ctx.fillText('thoát ly Mặt Trời 42,12', lx + 5, ly + 13);
+      ctx.globalAlpha = 1;
+
+      // vectors
+      const [ex, ey] = PX(V_TD, 0);
+      const [mx, my] = PX(vh, th);
+      arrow(ox, baseY, ex, ey, EARTH, 2.5);
+      arrow(ox, baseY, mx, my, HELIO, 2.5);
+      arrow(ex, ey, mx, my, MARK, 2.5);
+
+      ctx.fillStyle = EARTH; ctx.textAlign = 'center';
+      ctx.fillText('Trái Đất 29,78', (ox + ex) / 2, baseY - 7);
+      ctx.fillStyle = HELIO;
+      const hl = `thiên thạch ${nf(vh, 2)}`, hw = ctx.measureText(hl).width;
+      let hx = mx - 6, ha: CanvasTextAlign = 'right';
+      if (mx >= ox || hx - hw < 2) { hx = mx + 6; ha = 'left'; }
+      if (ha === 'left' && hx + hw > cssW - 2) { hx = mx - 6; ha = 'right'; }
+      ctx.textAlign = ha;
+      ctx.fillText(hl, hx, my - 4);
+      // geocentric label: pushed off the arrow along its outward normal
+      const dx = mx - ex, dy = my - ey, dl = Math.hypot(dx, dy) || 1;
+      let nx = -dy / dl, ny = dx / dl;
+      const cx = (ex + mx) / 2, cy = (ey + my) / 2;
+      if (Math.hypot(cx + nx - ox, cy + ny - baseY) < Math.hypot(cx - nx - ox, cy - ny - baseY)) {
+        nx = -nx; ny = -ny;
+      }
+      if (dl > 26) {
+        ctx.fillStyle = MARK; ctx.textAlign = nx >= 0 ? 'left' : 'right';
+        ctx.fillText(`địa tâm ${nf(g, 2)}`, cx + nx * 12, cy + ny * 12 + 3);
+      }
+
+      // ---- speed strip ----
+      const X = (v: number) => padL + (v / SMAX) * (cssW - padL - padR);
+      const barY = cssH - SH + 40, up = cssH - SH + 10, lo = cssH - SH + 23;
+
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.3; ctx.lineWidth = 5;
+      ctx.beginPath(); ctx.moveTo(X(V_ESC_TD), barY); ctx.lineTo(X(72.758), barY); ctx.stroke();
+      ctx.lineWidth = 1; ctx.globalAlpha = 0.45;
+      ctx.beginPath(); ctx.moveTo(padL, barY); ctx.lineTo(cssW - padR, barY); ctx.stroke();
+      ctx.globalAlpha = 0.55; ctx.fillStyle = fg; ctx.textAlign = 'center';
+      for (let v = 0; v <= SMAX; v += 10) {
+        ctx.beginPath(); ctx.moveTo(X(v), barY); ctx.lineTo(X(v), barY + 4); ctx.stroke();
+        ctx.fillText(String(v), X(v), barY + 16);
+      }
+      ctx.globalAlpha = 1;
+
+      ctx.strokeStyle = MARK; ctx.fillStyle = MARK; ctx.setLineDash([3, 3]);
+      for (const [v, lab] of [[V_ESC_TD, 'sàn 11,1'], [72.758, 'trần 72,8']] as Array<[number, string]>) {
+        ctx.beginPath(); ctx.moveTo(X(v), lo + 3); ctx.lineTo(X(v), barY + 6); ctx.stroke();
+        ctx.fillText(lab, X(v), lo);
+      }
+      ctx.setLineDash([]);
+
+      ctx.fillStyle = HELIO;
+      for (const [v, lab, row] of SHOWERS) {
+        ctx.beginPath(); ctx.arc(X(v), barY, 3.5, 0, Math.PI * 2); ctx.fill();
+        ctx.fillText(`${lab} ${v}`, X(v), row ? lo : up);
+      }
+
+      ctx.fillStyle = MARK;
+      ctx.beginPath(); ctx.arc(X(imp), barY, 6, 0, Math.PI * 2); ctx.fill();
+
+      // ---- readout ----
+      let flag = '';
+      if (vh > V_ESC_SUN)
+        flag = ' · <b>vượt ngưỡng thoát ly: vật thể liên sao, trần 72,8 hết hiệu lực</b>';
+      else {
+        const near = SHOWERS.find(([v]) => Math.abs(v - imp) <= 2.5);
+        if (near) flag = ` · gần đúng một hạt <b>${near[1]}</b>`;
+      }
+      readout.innerHTML =
+        `Nhật tâm ${nf(vh, 2)} km/s, lệch ${th}° → địa tâm ${nf(g, 2)} km/s → ` +
+        `chạm khí quyển <b>${nf(imp, 2)} km/s</b> · hạt 1 gram mang ` +
+        `<b>${nf(kJ / 1e6, 2)} MJ</b> = ${nf(kJ / 4184, 0)} g TNT${flag}`;
+    }
+
+    root.querySelectorAll('input').forEach((el) => el.addEventListener('input', draw));
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="tran-72-km-moi-giay-cua-sao-bang"]').forEach(setup);
+</script>

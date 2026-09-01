@@ -1,0 +1,159 @@
+---
+// Shuttlecock horizontal deceleration under quadratic drag.
+// m·v·dv/dx = −½ρ·C_d·A·v²  →  v(x) = v0·exp(−x/L),  L = 2m/(ρ·C_d·A)
+// Time from the same ODE: t(x) = L·(e^(x/L) − 1)/v0.
+// Parameters: skirt diameter d = 6,5 cm (A = 33,2 cm²), C_d = 0,62 (feather
+// shuttle, measured 0,6–0,65 at Re 1e4–6e5 — Cooke 1999; Chan & Rossmann 2012;
+// Cohen et al., New J. Phys. 17 (2015) 063001), air ρ = 1,20 kg/m³ (~21 °C).
+// Validity: gravity is neglected, so the closed form only holds while
+// v >> v_t = sqrt(g·L) ≈ 6,3 m/s. Below ~2·v_t the readout flags the regime;
+// the amber line on the chart is v_t. At the very top of the speed range the
+// feather skirt also deforms and closes slightly, so real C_d dips a little.
+// The article's max-range figures come from the full 2D system this demo does
+// NOT solve: dv/dt = −g·ĵ − (|v|/L)·v, optimised over launch angle from a
+// 2,5 m contact point — 246 km/h → 12,8 m, 493 km/h → 15,6 m. The gain per
+// doubling of v₀ is L·ln2 = 2,81 m, the same constant the 1D solution gives.
+---
+
+<figure class="demo" data-demo="cau-long-mat-toc-do-moi-bon-met">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Tốc độ rời vợt v₀ (km/h) <output data-out="v"></output>
+      <input type="range" data-in="v" min="100" max="500" step="1" value="493" /></label>
+    <label>Khối lượng quả cầu (g) <output data-out="m"></output>
+      <input type="range" data-in="m" min="4.5" max="6" step="0.01" value="5" /></label>
+    <label>Quãng đường tới người đỡ (m) <output data-out="x"></output>
+      <input type="range" data-in="x" min="1" max="13.4" step="0.05" value="6.7" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Đường xanh là tốc độ quả cầu còn lại sau mỗi mét bay; chấm đỏ là nơi vợt
+    đối phương đón. Dãy chấm mờ phía trên là vị trí quả cầu tại những khoảng
+    thời gian bằng nhau — chúng dồn cục ở cuối đường bay, đó chính là hình
+    ảnh của sự hãm. Vạch cam là tốc độ rơi giới hạn: xuống dưới vùng đó thì
+    trọng lực chiếm ưu thế và nghiệm e-mũ này hết hiệu lực.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const CURVE = '#2563eb', MARK = '#dc2626', LIM = '#f59e0b';
+  const G = 9.81, RHO = 1.2, CD = 0.62, D = 0.065;
+  const AREA = (Math.PI * D * D) / 4;
+  const XMAX = 13.4;
+
+  const lengthScale = (mg: number) => (2 * (mg / 1000)) / (RHO * CD * AREA);
+  const vi = (n: number, dp: number) => n.toFixed(dp).replace('.', ',');
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (k: string) => root.querySelector(`[data-in="${k}"]`) as HTMLInputElement;
+    const output = (k: string) => root.querySelector(`[data-out="${k}"]`) as HTMLOutputElement;
+
+    function draw() {
+      const v0 = Number(input('v').value);
+      const mg = Number(input('m').value);
+      const x = Number(input('x').value);
+      output('v').textContent = String(v0);
+      output('m').textContent = vi(mg, 2);
+      output('x').textContent = vi(x, 2);
+
+      const L = lengthScale(mg);
+      const vt = Math.sqrt(G * L) * 3.6;
+      const v = v0 * Math.exp(-x / L);
+      const t = (L * (Math.exp(x / L) - 1)) / (v0 / 3.6);
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.5);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+
+      const padL = 50, padB = 28, padT = 52, padR = 12;
+      const yHi = v0;
+      const X = (xx: number) => padL + (xx / XMAX) * (cssW - padL - padR);
+      const Y = (vv: number) => cssH - padB - (vv / yHi) * (cssH - padB - padT);
+
+      // Strobe: positions at equal time steps, x(t) = L·ln(1 + v0·t/L).
+      const bandY = 24;
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.25;
+      ctx.beginPath(); ctx.moveTo(padL, bandY); ctx.lineTo(X(x), bandY); ctx.stroke();
+      for (let i = 0; i <= 15; i++) {
+        const tt = (t * i) / 15;
+        const xx = L * Math.log(1 + ((v0 / 3.6) * tt) / L);
+        ctx.globalAlpha = 0.3 + 0.6 * (i / 15);
+        ctx.fillStyle = i === 15 ? MARK : fg;
+        ctx.beginPath(); ctx.arc(X(xx), bandY, 3.2, 0, Math.PI * 2); ctx.fill();
+      }
+      ctx.globalAlpha = 0.55; ctx.fillStyle = fg;
+      ctx.font = '10px system-ui,sans-serif'; ctx.textAlign = 'left';
+      ctx.fillText(`vị trí quả cầu sau mỗi ${vi((t / 15) * 1000, 1)} ms`, padL, bandY - 10);
+
+      // Axes.
+      ctx.globalAlpha = 0.3; ctx.strokeStyle = fg;
+      ctx.beginPath(); ctx.moveTo(padL, padT); ctx.lineTo(padL, cssH - padB); ctx.lineTo(cssW - padR, cssH - padB); ctx.stroke();
+      ctx.globalAlpha = 0.55; ctx.fillStyle = fg; ctx.textAlign = 'center';
+      for (const xx of [0, 3, 6, 9, 12]) ctx.fillText(`${xx} m`, X(xx), cssH - padB + 14);
+      const step = yHi <= 120 ? 25 : yHi <= 250 ? 50 : 100;
+      ctx.textAlign = 'right';
+      for (let k = step; k <= yHi; k += step) ctx.fillText(`${k}`, padL - 4, Y(k) + 3);
+      ctx.fillText('0', padL - 4, Y(0) + 3);
+      ctx.textAlign = 'left'; ctx.globalAlpha = 0.5;
+      ctx.fillText('km/h', padL - 44, padT - 6);
+      ctx.globalAlpha = 1;
+
+      // Terminal-velocity line: below it the drag-only solution is meaningless.
+      ctx.strokeStyle = LIM; ctx.setLineDash([4, 4]);
+      ctx.beginPath(); ctx.moveTo(padL, Y(vt)); ctx.lineTo(cssW - padR, Y(vt)); ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillStyle = LIM; ctx.textAlign = 'right';
+      ctx.fillText(`rơi giới hạn ${vi(vt, 1)} km/h`, cssW - padR, Y(vt) - 5);
+
+      // One characteristic length: where 63,2% of the speed is already gone.
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.25; ctx.setLineDash([2, 3]);
+      ctx.beginPath(); ctx.moveTo(X(L), Y(0)); ctx.lineTo(X(L), Y(v0 / Math.E)); ctx.stroke();
+      ctx.setLineDash([]); ctx.globalAlpha = 0.6; ctx.fillStyle = fg; ctx.textAlign = 'center';
+      ctx.fillText(`L = ${vi(L, 2)} m`, X(L), Y(0) - 6);
+      ctx.globalAlpha = 1;
+
+      // v(x) curve.
+      ctx.strokeStyle = CURVE; ctx.lineWidth = 2; ctx.beginPath();
+      for (let i = 0; i <= 240; i++) {
+        const xx = (XMAX * i) / 240;
+        const yy = Y(v0 * Math.exp(-xx / L));
+        i ? ctx.lineTo(X(xx), yy) : ctx.moveTo(X(xx), yy);
+      }
+      ctx.stroke(); ctx.lineWidth = 1;
+
+      ctx.fillStyle = MARK;
+      ctx.beginPath(); ctx.arc(X(x), Y(v), 6, 0, Math.PI * 2); ctx.fill();
+
+      const note = v < 2 * vt
+        ? ' · <b>đã xuống dưới 2× tốc độ rơi giới hạn: trọng lực chiếm quyền, nghiệm e-mũ hết đúng</b>'
+        : '';
+      readout.innerHTML =
+        `v₀ = ${v0} km/h · cầu ${vi(mg, 2)} g → L = <b>${vi(L, 2)} m</b> · tại ${vi(x, 2)} m còn ` +
+        `<b>${vi(v, 1)} km/h</b> (mất ${vi(100 * (1 - Math.exp(-x / L)), 1)}% tốc độ, ` +
+        `${vi(100 * (1 - Math.exp((-2 * x) / L)), 1)}% động năng) · bay hết ${vi(t, 3)} s${note}`;
+    }
+
+    root.querySelectorAll('input').forEach((el) => el.addEventListener('input', draw));
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="cau-long-mat-toc-do-moi-bon-met"]').forEach(setup);
+</script>

@@ -1,0 +1,204 @@
+---
+// Water hammer at a closing valve. Joukowsky: Δp = ρ·c·Δv (instant closure,
+// t_khoá ≤ 2L/c); Michaud/Allievi: Δp = ρ·c·Δv·(2L/c)/t_khoá for slower
+// closure. Both branches emerge from one reflection series at the valve:
+//   P(t) = p0 + ρcΔv·[ f(t) − 2f(t−2L/c) + 2f(t−4L/c) − … ],  f = ramp
+//   saturating over t_khoá — verified to reproduce Joukowsky and Michaud
+//   exactly at the first peak, and ±Δp square wave of period 4L/c after.
+// Fixed: ρ = 1000 kg/m³, c = 1200 m/s (nước trong ống thép/đồng gia dụng,
+// Korteweg với E = 200 GPa, D/e ≈ 50), áp tĩnh p0 = 3 bar.
+// Validity: single-phase liquid, rigid supports, linear valve closure. The
+// model stops being true once P dips below the vapour line (~−1 bar gauge):
+// the column separates and the real rejoin spike exceeds Joukowsky.
+// Damping after the first peak is an empirical envelope exp(−(t−tp)/τ),
+// τ = 20L/c, not a computed friction loss.
+---
+
+<figure class="demo" data-demo="bua-nuoc-cu-dap-18-bar-khi-khoa-voi">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Tốc độ dòng ban đầu (m/s) <output data-out="v"></output>
+      <input type="range" data-in="v" min="0.5" max="3" step="0.1" value="1.5" /></label>
+    <label>Thời gian khoá van (ms) <output data-out="t"></output>
+      <input type="range" data-in="t" min="5" max="1000" step="1" value="20" /></label>
+    <label>Chiều dài ống tới bể (m) <output data-out="l"></output>
+      <input type="range" data-in="l" min="5" max="100" step="1" value="20" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Áp suất đo ngay tại van, theo thời gian; ống thép/đồng, c cố định
+    1 200 m/s. Đường ngang mảnh là áp tĩnh
+    3 bar; xung áp là cú búa, đảo dấu sau mỗi 2L/c và lặp với chu kỳ
+    4L/c — đó chính là tiếng "cạch cạch" trong tường. Kéo thanh thời gian
+    khoá: chừng nào còn khoá nhanh hơn 2L/c thì đỉnh xung không nhúc nhích,
+    vì sóng chưa kịp về báo tin. Dải ống phía dưới cho biết sóng chạy được
+    bao xa trong lúc van đang đóng.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const CURVE = '#2563eb', MARK = '#dc2626', LIMIT = '#f59e0b';
+  // VAC là áp kế tại ngưỡng hoá hơi của nước 20 °C: 2,34 kPa tuyệt đối,
+  // tức 2340 − 101325 Pa = −0,99 bar tương đối (không phải chân không tuyệt đối).
+  const RHO = 1000, C = 1200, G = 9.80665, P0 = 3, PLIM = 20, VAC = -0.99;
+  const vi = (x: number, d = 1) => x.toFixed(d).replace('.', ',');
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (k: string) => root.querySelector(`[data-in="${k}"]`) as HTMLInputElement;
+    const output = (k: string) => root.querySelector(`[data-out="${k}"]`) as HTMLOutputElement;
+
+    function draw() {
+      const v = Number(input('v').value);
+      const tcMs = Number(input('t').value);
+      const L = Number(input('l').value);
+      output('v').textContent = vi(v);
+      output('t').textContent = String(tcMs);
+      output('l').textContent = String(L);
+
+      const tc = tcMs / 1000;
+      const rt = (2 * L) / C;                 // 2L/c, thời gian sóng đi và về
+      const dpFull = (RHO * C * v) / 1e5;     // Joukowsky, bar
+      const tp = Math.min(tc, rt);            // thời điểm đỉnh đầu tiên
+      const tau = (20 * L) / C;
+
+      const ramp = (x: number) => (x <= 0 ? 0 : Math.min(1, x / tc));
+      const series = (t: number) => {
+        let s = ramp(t);
+        for (let n = 1; n <= 400; n++) {
+          const a = ramp(t - n * rt);
+          if (a === 0) break;
+          s += (n % 2 ? -2 : 2) * a;
+        }
+        return s;
+      };
+      const P = (t: number) => {
+        const env = t <= tp ? 1 : Math.exp(-(t - tp) / tau);
+        return P0 + dpFull * env * series(t);
+      };
+
+      const dp = dpFull * series(tp);         // đỉnh thật, đã tính cả khoá chậm
+      const peak = P0 + dp;
+      const head = (dp * 1e5) / (RHO * G);
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.56);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+      ctx.font = '10px system-ui,sans-serif';
+
+      // --- khung đồ thị áp suất (phần trên) ---
+      const padL = 52, padR = 12, padT = 12;
+      const plotH = Math.round(cssH * 0.70), padB = cssH - plotH;
+      const W = Math.min(3, Math.max(6 * 2 * rt, 2.5 * tc, 0.12));
+      const yHi = Math.max(24, peak * 1.12), yLo = Math.min(-2.5, P0 - dp * 1.12);
+      const X = (t: number) => padL + (t / W) * (cssW - padL - padR);
+      const Y = (p: number) => padT + ((yHi - p) / (yHi - yLo)) * (plotH - padT);
+
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.3;
+      ctx.beginPath(); ctx.moveTo(padL, padT); ctx.lineTo(padL, plotH); ctx.lineTo(cssW - padR, plotH); ctx.stroke();
+
+      // áp tĩnh
+      ctx.setLineDash([4, 4]);
+      ctx.beginPath(); ctx.moveTo(padL, Y(P0)); ctx.lineTo(cssW - padR, Y(P0)); ctx.stroke();
+      // vạch hoá hơi: dưới mức này nước sôi ở 20 °C, cột nước tách đôi, mô hình hết đúng
+      ctx.beginPath(); ctx.moveTo(padL, Y(VAC)); ctx.lineTo(cssW - padR, Y(VAC)); ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.globalAlpha = 0.55; ctx.fillStyle = fg; ctx.textAlign = 'left';
+      ctx.fillText('áp tĩnh 3 bar', padL + 6, Y(P0) - 4);
+      ctx.fillText('ngưỡng hoá hơi 20 °C (2,3 kPa) — dưới đây cột nước tách đôi', padL + 6, Y(VAC) - 4);
+      ctx.globalAlpha = 1;
+
+      // ngưỡng áp lực in trên ống nước dân dụng
+      if (PLIM < yHi) {
+        ctx.strokeStyle = LIMIT; ctx.globalAlpha = 0.8; ctx.setLineDash([6, 4]);
+        ctx.beginPath(); ctx.moveTo(padL, Y(PLIM)); ctx.lineTo(cssW - padR, Y(PLIM)); ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.fillStyle = LIMIT; ctx.textAlign = 'right';
+        ctx.fillText('20 bar — nhãn áp lực in trên ống nước', cssW - padR, Y(PLIM) - 4);
+        ctx.globalAlpha = 1;
+      }
+
+      // trục
+      ctx.globalAlpha = 0.55; ctx.fillStyle = fg; ctx.textAlign = 'center';
+      for (let k = 1; k <= 4; k++) {
+        const t = (W * k) / 4;
+        ctx.fillText(`${vi(t * 1000, 0)} ms`, X(t), plotH + 13);
+      }
+      ctx.textAlign = 'right';
+      const ticks = [-40, -30, -20, -10, 0, 10, 20, 30, 40].filter((p) => p <= yHi && p >= yLo);
+      for (const p of ticks) ctx.fillText(`${p} bar`.replace('-', '−'), padL - 5, Y(p) + 3);
+      ctx.globalAlpha = 1;
+
+      // --- đường áp suất tại van ---
+      ctx.strokeStyle = CURVE; ctx.lineWidth = 2; ctx.beginPath();
+      const N = 1400;
+      for (let i = 0; i <= N; i++) {
+        const t = (W * i) / N;
+        const y = Math.max(padT, Math.min(plotH, Y(P(t))));
+        i ? ctx.lineTo(X(t), y) : ctx.moveTo(X(t), y);
+      }
+      ctx.stroke(); ctx.lineWidth = 1;
+
+      // đỉnh
+      ctx.fillStyle = MARK;
+      ctx.beginPath(); ctx.arc(X(tp), Y(peak), 5, 0, Math.PI * 2); ctx.fill();
+      ctx.textAlign = 'left';
+      ctx.fillText(`đỉnh ${vi(peak)} bar`, X(tp) + 8, Y(peak) + 3);
+
+      // --- dải ống phía dưới ---
+      const pipeY = plotH + 26, pipeH = 16;
+      const pxL = padL, pxR = cssW - padR;
+      const reach = Math.min(1, (C * tc) / L);
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.45;
+      ctx.strokeRect(pxL, pipeY, pxR - pxL, pipeH);
+      ctx.globalAlpha = 1;
+      ctx.fillStyle = CURVE; ctx.globalAlpha = 0.35;
+      ctx.fillRect(pxR - reach * (pxR - pxL), pipeY + 1, reach * (pxR - pxL) - 1, pipeH - 2);
+      ctx.globalAlpha = 1;
+      ctx.fillStyle = MARK; ctx.fillRect(pxR - 3, pipeY - 3, 4, pipeH + 6);
+      ctx.fillStyle = fg; ctx.globalAlpha = 0.6;
+      ctx.textAlign = 'left'; ctx.fillText('bể / trục đứng', pxL, pipeY - 5);
+      ctx.textAlign = 'right'; ctx.fillText('van', pxR, pipeY - 5);
+      ctx.textAlign = 'center';
+      ctx.fillText(
+        `ống ${L} m — trong ${tcMs} ms van đóng, sóng chạy ${vi(C * tc, 0)} m`,
+        (pxL + pxR) / 2, pipeY + pipeH + 13,
+      );
+      ctx.globalAlpha = 1;
+
+      // --- readout ---
+      const fast = tc <= rt;
+      const regime = fast
+        ? '<b>khoá nhanh — vùng Joukowsky đầy đủ</b>'
+        : `khoá chậm hơn 2L/c, cú búa bị cắt còn <b>${vi((100 * rt) / tc, 0)}%</b>`;
+      const burst = peak > PLIM ? ' · <b>vượt nhãn áp lực 20 bar của ống</b>' : '';
+      const cav = P0 - dp < VAC ? ' · nửa chu kỳ âm chạm ngưỡng hoá hơi: cột nước tách đôi' : '';
+      readout.innerHTML =
+        `Δp = <b>${vi(dp)} bar</b> = ${vi(head)} m cột nước, dồn lên áp tĩnh thành đỉnh ` +
+        `<b>${vi(peak)} bar</b>${burst} · ngưỡng 2L/c = <b>${vi(rt * 1000)} ms</b> — ${regime}` +
+        ` · tiếng gõ lặp ${vi(C / (4 * L), 0)} lần/giây${cav}`;
+    }
+
+    root.querySelectorAll('input').forEach((el) => el.addEventListener('input', draw));
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="bua-nuoc-cu-dap-18-bar-khi-khoa-voi"]').forEach(setup);
+</script>

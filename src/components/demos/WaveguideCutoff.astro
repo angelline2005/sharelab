@@ -1,0 +1,267 @@
+---
+// Rectangular-waveguide TE10 cutoff applied to a tunnel of width a:
+//   f_c = c/(2a)
+//   f < f_c: evanescent, alpha = (2*pi/lambda)*sqrt((f_c/f)^2 - 1)  [Np/m]
+//            -> alpha -> pi/a as f -> 0 (saturation)
+//   f > f_c: propagating, lambda_g = lambda/sqrt(1 - (f_c/f)^2),
+//            v_p = c/sqrt(1 - (f_c/f)^2),  v_g = c*sqrt(1 - (f_c/f)^2)
+// Source: Pozar, Microwave Engineering, ch. 3 (TE10 mode of a hollow guide).
+// Validity: perfectly conducting walls, empty guide, single dominant mode.
+// A real tunnel has lossy concrete walls, so the real cutoff is a steep
+// slope rather than a cliff; the threshold and the order of magnitude of
+// the attenuation are still right. c taken as 3,00e8 m/s.
+---
+
+<figure class="demo" data-demo="duong-ham-la-mot-ong-dan-song">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Bề rộng hầm a (m) <output data-out="a"></output>
+      <input type="range" data-in="a" min="1" max="20" step="0.1" value="8" /></label>
+    <label>Tần số phát f <output data-out="f"></output>
+      <input type="range" data-in="f" min="0" max="40" step="1" value="4" /></label>
+    <label>Chiều sâu vào hầm z (m) <output data-out="z"></output>
+      <input type="range" data-in="z" min="10" max="500" step="1" value="30" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Trên: biên độ sóng dọc theo chiều sâu hầm. Dưới ngưỡng cắt sóng không
+    truyền mà tắt theo hàm mũ ngay từ miệng hầm; trên ngưỡng nó chạy suốt
+    với bước sóng ống λ_g dài hơn bước sóng tự do.
+    Dưới: độ suy hao dB mỗi mét theo tần số, vạch cam là tần số cắt
+    f_c = c/(2a). Kéo bề rộng hầm và xem cả hai hình dịch theo.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const C = 3e8, NP2DB = 20 / Math.log(10);
+  const CURVE = '#2563eb', MARK = '#dc2626', LM = '#f59e0b';
+
+  // Log-spaced frequency ladder in MHz; every value the article quotes is on it.
+  const FREQS = [
+    0.5, 0.6, 0.7, 0.8, 1, 1.2, 1.5, 2, 2.5, 3, 4, 5, 6, 8, 10, 12, 15, 18, 20,
+    25, 30, 40, 50, 60, 80, 100, 120, 150, 200, 250, 300, 400, 500, 600, 800,
+    1000, 1200, 1500, 2000, 2450, 3000,
+  ];
+  const FMIN = 0.5, FMAX = 3000;
+
+  const fcut = (a: number) => C / (2 * a);          // Hz
+  const alphaNp = (f: number, a: number) => {
+    const fc = fcut(a);
+    return f < fc ? ((2 * Math.PI * f) / C) * Math.sqrt((fc / f) ** 2 - 1) : 0;
+  };
+  const alphaDb = (f: number, a: number) => alphaNp(f, a) * NP2DB;
+  const lamG = (f: number, a: number) => (C / f) / Math.sqrt(1 - (fcut(a) / f) ** 2);
+  const vRatio = (f: number, a: number) => 1 / Math.sqrt(1 - (fcut(a) / f) ** 2);
+
+  const vi = (x: number, d: number) => x.toFixed(d).replace('.', ',');
+  // 2 decimals, trailing zeros dropped: 18,75 · 12 · 0,5 · 2,45
+  const trim = (x: number) => x.toFixed(2).replace(/\.?0+$/, '').replace('.', ',');
+  const fLabel = (mhz: number) =>
+    mhz >= 1000 ? `${trim(mhz / 1000)} GHz` : `${trim(mhz)} MHz`;
+  const niceTop = (v: number) => {
+    const p = Math.pow(10, Math.floor(Math.log10(v)));
+    for (const m of [1, 1.5, 2, 3, 4, 5, 6, 8, 10]) if (m * p >= v) return m * p;
+    return 10 * p;
+  };
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (k: string) => root.querySelector(`[data-in="${k}"]`) as HTMLInputElement;
+    const output = (k: string) => root.querySelector(`[data-out="${k}"]`) as HTMLOutputElement;
+
+    function draw() {
+      const a = Number(input('a').value);
+      const fMHz = FREQS[Number(input('f').value)];
+      const z = Number(input('z').value);
+      const f = fMHz * 1e6, fc = fcut(a), fcMHz = fc / 1e6;
+      // f can land exactly on f_c (a = 6 m & 25 MHz, a = 7,5 m & 20 MHz, ...);
+      // lambda_g and v_p diverge there, so treat it as its own case.
+      const atCut = Math.abs(f - fc) <= 1e-6 * fc;
+      const below = !atCut && f < fc;
+      const aDb = alphaDb(f, a), aNp = alphaNp(f, a);
+
+      output('a').textContent = `${vi(a, 1)} m`;
+      output('f').textContent = fLabel(fMHz);
+      output('z').textContent = `${z} m`;
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.66);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+      ctx.font = '10px system-ui,sans-serif';
+
+      const padL = 46, padR = 12, plotW = cssW - padL - padR;
+
+      // ---------------- Panel A: field amplitude along the tunnel ----------------
+      const aTop = 14, aBot = Math.round(cssH * 0.50);
+      const yc = (aTop + aBot) / 2, Hh = (aBot - aTop) / 2 - 8;
+      const X1 = (zz: number) => padL + (zz / z) * plotW;
+
+      // tunnel walls
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.35; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.moveTo(padL, aTop); ctx.lineTo(cssW - padR, aTop);
+      ctx.moveTo(padL, aBot); ctx.lineTo(cssW - padR, aBot); ctx.stroke();
+      ctx.lineWidth = 1; ctx.globalAlpha = 0.18;
+      for (let x = padL; x <= cssW - padR; x += 12) {
+        ctx.beginPath(); ctx.moveTo(x, aTop); ctx.lineTo(x - 5, aTop - 5);
+        ctx.moveTo(x, aBot); ctx.lineTo(x - 5, aBot + 5); ctx.stroke();
+      }
+      ctx.beginPath(); ctx.setLineDash([3, 3]);
+      ctx.moveTo(padL, yc); ctx.lineTo(cssW - padR, yc); ctx.stroke();
+      ctx.setLineDash([]); ctx.globalAlpha = 1;
+
+      // amplitude envelope, normalised to 1 at the mouth
+      const amp = (zz: number) => (below ? Math.exp(-aNp * zz) : 1);
+      const N = 400;
+      ctx.fillStyle = CURVE; ctx.globalAlpha = 0.16;
+      ctx.beginPath();
+      for (let i = 0; i <= N; i++) { const zz = (z * i) / N; ctx.lineTo(X1(zz), yc - Hh * amp(zz)); }
+      for (let i = N; i >= 0; i--) { const zz = (z * i) / N; ctx.lineTo(X1(zz), yc + Hh * amp(zz)); }
+      ctx.closePath(); ctx.fill(); ctx.globalAlpha = 1;
+
+      ctx.strokeStyle = CURVE; ctx.lineWidth = 2;
+      for (const s of [-1, 1]) {
+        ctx.beginPath();
+        for (let i = 0; i <= N; i++) {
+          const zz = (z * i) / N, y = yc + s * Hh * amp(zz);
+          i ? ctx.lineTo(X1(zz), y) : ctx.moveTo(X1(zz), y);
+        }
+        ctx.stroke();
+      }
+
+      // above cutoff: draw the actual oscillation when it is resolvable
+      let lg = 0;
+      if (!below && !atCut) {
+        lg = lamG(f, a);
+        const pxPerLam = (plotW / z) * lg;
+        if (pxPerLam >= 10) {
+          ctx.strokeStyle = CURVE; ctx.lineWidth = 1.4; ctx.globalAlpha = 0.9;
+          ctx.beginPath();
+          const M = Math.max(400, Math.round((plotW / pxPerLam) * 24));
+          for (let i = 0; i <= M; i++) {
+            const zz = (z * i) / M;
+            const y = yc - Hh * Math.cos((2 * Math.PI * zz) / lg);
+            i ? ctx.lineTo(X1(zz), y) : ctx.moveTo(X1(zz), y);
+          }
+          ctx.stroke(); ctx.globalAlpha = 1;
+        }
+      }
+      ctx.lineWidth = 1;
+
+      // the −40 dB depth (signal effectively gone), when it is inside the view
+      if (below && aDb > 0 && 40 / aDb <= z) {
+        const z40 = 40 / aDb;
+        ctx.strokeStyle = LM; ctx.setLineDash([4, 3]);
+        ctx.beginPath(); ctx.moveTo(X1(z40), aTop); ctx.lineTo(X1(z40), aBot); ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.fillStyle = LM; ctx.textAlign = 'left';
+        ctx.fillText(`−40 dB tại ${vi(z40, 1)} m`, X1(z40) + 4, aTop + 12);
+      }
+
+      // marker at the far end
+      ctx.fillStyle = MARK;
+      ctx.beginPath(); ctx.arc(X1(z), yc - Hh * amp(z), 5, 0, Math.PI * 2); ctx.fill();
+
+      ctx.fillStyle = fg; ctx.globalAlpha = 0.6; ctx.textAlign = 'center';
+      for (const q of [0, 0.25, 0.5, 0.75, 1]) {
+        const zz = z * q;
+        ctx.fillText(`${Math.round(zz)} m`, X1(zz), aBot + 14);
+      }
+      ctx.textAlign = 'left';
+      ctx.fillText('miệng hầm', padL, aTop - 4);
+      ctx.textAlign = 'right';
+      ctx.fillText(
+        atCut ? 'đúng tại ngưỡng — sóng đứng yên'
+          : below ? 'biên độ tắt theo e mũ −αz'
+          : 'biên độ giữ nguyên — sóng truyền',
+        cssW - padR, aTop - 4);
+      ctx.globalAlpha = 1;
+
+      // ---------------- Panel B: attenuation vs frequency ----------------
+      const bTop = Math.round(cssH * 0.63), bBot = cssH - 24;
+      const lgMin = Math.log10(FMIN), span = Math.log10(FMAX) - lgMin;
+      const X2 = (mhz: number) => padL + ((Math.log10(mhz) - lgMin) / span) * plotW;
+      const yMax = niceTop((Math.PI / a) * NP2DB);
+      const Y2 = (db: number) => bBot - (db / yMax) * (bBot - bTop);
+
+      // propagating region
+      if (fcMHz < FMAX) {
+        ctx.fillStyle = CURVE; ctx.globalAlpha = 0.07;
+        ctx.fillRect(X2(Math.max(fcMHz, FMIN)), bTop, cssW - padR - X2(Math.max(fcMHz, FMIN)), bBot - bTop);
+        ctx.globalAlpha = 1;
+      }
+
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.3;
+      ctx.beginPath(); ctx.moveTo(padL, bTop); ctx.lineTo(padL, bBot); ctx.lineTo(cssW - padR, bBot); ctx.stroke();
+      ctx.globalAlpha = 0.6; ctx.fillStyle = fg; ctx.textAlign = 'center';
+      for (const t of [1, 10, 100, 1000]) ctx.fillText(`${t} MHz`, X2(t), bBot + 14);
+      ctx.textAlign = 'right';
+      for (const q of [0, 0.5, 1]) ctx.fillText(`${vi(yMax * q, 1)}`, padL - 4, Y2(yMax * q) + 3);
+      ctx.save(); ctx.translate(11, (bTop + bBot) / 2); ctx.rotate(-Math.PI / 2);
+      ctx.textAlign = 'center'; ctx.fillText('dB/m', 0, 0); ctx.restore();
+      ctx.globalAlpha = 1;
+
+      ctx.strokeStyle = CURVE; ctx.lineWidth = 2; ctx.beginPath();
+      for (let i = 0; i <= 300; i++) {
+        const mhz = Math.pow(10, lgMin + (span * i) / 300);
+        const y = Y2(Math.min(alphaDb(mhz * 1e6, a), yMax));
+        i ? ctx.lineTo(X2(mhz), y) : ctx.moveTo(X2(mhz), y);
+      }
+      ctx.stroke(); ctx.lineWidth = 1;
+
+      if (fcMHz > FMIN && fcMHz < FMAX) {
+        ctx.strokeStyle = LM; ctx.setLineDash([4, 3]);
+        ctx.beginPath(); ctx.moveTo(X2(fcMHz), bTop); ctx.lineTo(X2(fcMHz), bBot); ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.fillStyle = LM;
+        ctx.textAlign = fcMHz > 300 ? 'right' : 'left';
+        ctx.fillText(`f_c = ${fLabel(fcMHz)}`, X2(fcMHz) + (fcMHz > 300 ? -4 : 4), bTop + 10);
+        ctx.fillStyle = fg; ctx.globalAlpha = 0.6; ctx.textAlign = 'right';
+        ctx.fillText('truyền được', cssW - padR, bTop + 10);
+        ctx.globalAlpha = 1;
+      }
+
+      ctx.fillStyle = MARK;
+      ctx.beginPath(); ctx.arc(X2(fMHz), Y2(Math.min(aDb, yMax)), 5, 0, Math.PI * 2); ctx.fill();
+
+      // ---------------- readout ----------------
+      const head = `Hầm rộng ${vi(a, 1)} m → f_c = <b>${fLabel(fcMHz)}</b> · ${fLabel(fMHz)}`;
+      if (atCut) {
+        readout.innerHTML =
+          `${head} rơi <b>đúng tại ngưỡng</b>: λ_g → ∞, v_p → ∞ mà ` +
+          `v_g → 0 — sóng không mang tin đi được mét nào`;
+      } else if (below) {
+        const loss = aDb * z;
+        readout.innerHTML =
+          `${head} nằm <b>dưới ngưỡng</b>: tắt <b>${vi(aDb, 2)} dB/m</b> — vào ${z} m mất ` +
+          `<b>${vi(loss, 0)} dB</b>, công suất còn 10<sup>−${vi(loss / 10, 1)}</sup> lần`;
+      } else {
+        const vp = vRatio(f, a);
+        readout.innerHTML =
+          `${head} nằm <b>trên ngưỡng</b>: <b>truyền được</b> hết ${z} m · ` +
+          `λ_g = <b>${vi(lg, 2)} m</b> · v_p = ${vi(vp, 2)}c, v_g = ${vi(1 / vp, 2)}c`;
+      }
+    }
+
+    root.querySelectorAll('input').forEach((el) => el.addEventListener('input', draw));
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="duong-ham-la-mot-ong-dan-song"]').forEach(setup);
+</script>

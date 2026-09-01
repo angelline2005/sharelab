@@ -1,0 +1,248 @@
+---
+// Gió địa chuyển (geostrophic wind), cân bằng hai lực trên đường đẳng áp thẳng:
+//   V_g = (1/(rho*f)) * dp/dn,   f = 2*Omega*sin(phi),  Omega = 7,2921e-5 rad/s
+// Lấy rho = 1,2 kg/m3 (không khí ~20 °C, 1013 hPa). Gradient nhập theo hPa/100 km.
+// Ma sát mặt đất, mô hình cản tuyến tính (Holton): gió lệch góc alpha vào phía áp
+// thấp và giảm còn V_g*cos(alpha) — quỹ tích ngọn vectơ là đường tròn đường kính V_g.
+//
+// Phạm vi hợp lệ: đường đẳng áp THẲNG (không có lực ly tâm), ma sát bỏ qua ở tầng
+// tự do, và số Rossby nhỏ. Vì thế slider vĩ độ dừng ở 5° (dưới đó f -> 0, công thức
+// phân kỳ) và gradient dừng ở 3 hPa/100 km. Ngoài khoảng đó phải dùng gió gradient
+// hoặc cân bằng ly tâm — readout cảnh báo khi V_g vượt 35 m/s.
+---
+
+<figure class="demo" data-demo="gio-dia-chuyen-vi-sao-gio-thoi-doc-duong-dang-ap">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Gradient áp suất (hPa/100 km) <output data-out="g"></output>
+      <input type="range" data-in="g" min="0.2" max="3" step="0.1" value="1" /></label>
+    <label>Vĩ độ (°) <output data-out="lat"></output>
+      <input type="range" data-in="lat" min="5" max="70" step="1" value="20" /></label>
+    <label>Ma sát mặt đất — góc lệch (°) <output data-out="a"></output>
+      <input type="range" data-in="a" min="0" max="35" step="1" value="25" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Nhìn từ trên xuống, Bắc bán cầu: áp thấp ở trên, áp cao ở dưới, đường đẳng áp
+    vẽ cách nhau 4 hPa như bản đồ thời tiết thật — gradient càng lớn thì hai đường
+    càng sát nhau. Lực gradient áp (xanh) đẩy thẳng lên phía áp thấp, lực Coriolis
+    (cam) kéo ngược lại đúng bằng ấy, nên khối khí không đi lên mà chạy ngang: gió
+    thổi <em>dọc</em> đường đẳng áp. Mũi tên đứt là gió sát mặt đất — ma sát bẻ nó
+    lệch vào phía áp thấp và làm nó chậm đi. Biểu đồ dưới: cùng một gradient, tốc
+    độ gió vọt lên khi về gần xích đạo.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const PGF = '#2563eb', MARK = '#dc2626', COR = '#f59e0b';
+  const OMEGA = 7.2921e-5, RHO = 1.2, DEG = Math.PI / 180;
+
+  const fcor = (lat: number) => 2 * OMEGA * Math.sin(lat * DEG);
+  // grad in hPa/100 km -> dp/dn = grad*1e-3 Pa/m
+  const vgeo = (grad: number, lat: number) => (grad * 1e-3) / (RHO * fcor(lat));
+  const vn = (x: number, d: number) => x.toFixed(d).replace('.', ',');
+
+  const BEAU: Array<[number, number]> = [
+    [0.3, 0], [1.6, 1], [3.4, 2], [5.5, 3], [8.0, 4], [10.8, 5], [13.9, 6],
+    [17.2, 7], [20.8, 8], [24.5, 9], [28.5, 10], [32.7, 11],
+  ];
+  const beaufort = (v: number) => (BEAU.find(([lim]) => v < lim) ?? [0, 12])[1];
+
+  const NICE = [10, 15, 20, 30, 40, 50, 75, 100, 150, 200, 300, 400, 500, 750, 1000];
+  const TICK = [1, 2, 5, 10, 20, 25, 50, 100, 200, 250, 500];
+
+  function arrow(
+    ctx: CanvasRenderingContext2D, x0: number, y0: number, x1: number, y1: number,
+    color: string, dashed: boolean,
+  ) {
+    const ang = Math.atan2(y1 - y0, x1 - x0), head = 9;
+    ctx.strokeStyle = color; ctx.fillStyle = color; ctx.lineWidth = 2.4;
+    ctx.setLineDash(dashed ? [6, 4] : []);
+    ctx.beginPath();
+    ctx.moveTo(x0, y0);
+    ctx.lineTo(x1 - head * 0.75 * Math.cos(ang), y1 - head * 0.75 * Math.sin(ang));
+    ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.beginPath();
+    ctx.moveTo(x1, y1);
+    ctx.lineTo(x1 - head * Math.cos(ang - 0.42), y1 - head * Math.sin(ang - 0.42));
+    ctx.lineTo(x1 - head * Math.cos(ang + 0.42), y1 - head * Math.sin(ang + 0.42));
+    ctx.closePath(); ctx.fill();
+    ctx.lineWidth = 1;
+  }
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (k: string) => root.querySelector(`[data-in="${k}"]`) as HTMLInputElement;
+    const output = (k: string) => root.querySelector(`[data-out="${k}"]`) as HTMLOutputElement;
+
+    function draw() {
+      const grad = Number(input('g').value);
+      const lat = Number(input('lat').value);
+      const alpha = Number(input('a').value);
+      output('g').textContent = vn(grad, 1);
+      output('lat').textContent = String(lat);
+      output('a').textContent = String(alpha);
+
+      const vg = vgeo(grad, lat);
+      const vs = vg * Math.cos(alpha * DEG);
+      const spacing = 400 / grad; // km giữa hai đường đẳng áp cách nhau 4 hPa
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32;
+      const narrow = cssW < 480;
+      const mapH = Math.round(cssW * (narrow ? 0.62 : 0.44));
+      const chartH = Math.round(cssW * (narrow ? 0.44 : 0.32));
+      const gapH = 30;
+      const cssH = mapH + gapH + chartH;
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+      ctx.font = '10px system-ui,sans-serif';
+
+      // ---------- Bản đồ nhìn từ trên ----------
+      // Mảnh bản đồ cao đúng SPAN km theo hướng bắc–nam và vẽ theo tỉ lệ thật, nên
+      // gradient càng lớn thì hai đường đẳng áp 4 hPa càng sát nhau trên hình.
+      const mL = 54, mR = 12, mT = 14, mB = 14;
+      const plotW = cssW - mL - mR;
+      const mapTop = mT, mapBot = mapH - mB, SPAN = 2000;
+      const isoGap = ((mapBot - mapTop) * spacing) / SPAN;
+      const nIso = Math.max(2, Math.floor((mapBot - mapTop) / isoGap + 1e-6) + 1);
+      const kMid = Math.round((nIso - 1) / 2);
+      const isoY = (k: number) => mapTop + k * isoGap;
+      const every = isoGap < 24 ? 2 : 1;
+
+      for (let k = 0; k < nIso; k++) {
+        ctx.strokeStyle = fg; ctx.globalAlpha = 0.3;
+        ctx.beginPath(); ctx.moveTo(mL, isoY(k)); ctx.lineTo(cssW - mR, isoY(k)); ctx.stroke();
+        if (k % every) continue;
+        ctx.globalAlpha = 0.6; ctx.fillStyle = fg; ctx.textAlign = 'right';
+        ctx.fillText(`${1012 + (k - kMid) * 4} hPa`, mL - 5, isoY(k) + 3);
+      }
+      ctx.globalAlpha = 0.6; ctx.fillStyle = fg; ctx.textAlign = 'left';
+      ctx.fillText('↑ áp thấp', mL + 4, mapTop - 4);
+      ctx.fillText('↓ áp cao', mL + 4, mapBot + 11);
+      ctx.globalAlpha = 1;
+
+      // thước khoảng cách giữa hai đường đẳng áp liền kề
+      const kR = kMid + 1 < nIso ? kMid : kMid - 1;
+      const sx = cssW - mR - Math.min(120, plotW * 0.22);
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.45;
+      ctx.beginPath();
+      ctx.moveTo(sx, isoY(kR)); ctx.lineTo(sx, isoY(kR + 1));
+      ctx.moveTo(sx - 4, isoY(kR)); ctx.lineTo(sx + 4, isoY(kR));
+      ctx.moveTo(sx - 4, isoY(kR + 1)); ctx.lineTo(sx + 4, isoY(kR + 1));
+      ctx.stroke();
+      ctx.globalAlpha = 0.75; ctx.fillStyle = fg; ctx.textAlign = 'right';
+      ctx.fillText(
+        `${Math.round(spacing).toLocaleString('vi-VN')} km`,
+        sx - 7, (isoY(kR) + isoY(kR + 1)) / 2 + 3,
+      );
+      ctx.globalAlpha = 1;
+
+      // gốc các vectơ: giữa mảnh bản đồ, gió chạy ngang nên song song với đẳng áp
+      const ox = mL + plotW * 0.30, oy = (mapTop + mapBot) / 2;
+      const LF = (mapBot - mapTop) * 0.2;
+      const LV = Math.min(plotW * 0.34, 190);
+
+      // quỹ tích ngọn vectơ gió khi góc lệch tăng: nửa đường tròn đường kính V_g
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.22; ctx.setLineDash([3, 4]);
+      ctx.beginPath(); ctx.arc(ox + LV / 2, oy, LV / 2, Math.PI, 2 * Math.PI); ctx.stroke();
+      ctx.setLineDash([]); ctx.globalAlpha = 1;
+
+      arrow(ctx, ox, oy, ox, oy - LF, PGF, false);
+      arrow(ctx, ox, oy, ox, oy + LF, COR, false);
+      arrow(ctx, ox, oy, ox + LV, oy, MARK, false);
+      const c = Math.cos(alpha * DEG);
+      const tipX = ox + LV * c * c, tipY = oy - LV * c * Math.sin(alpha * DEG);
+      arrow(ctx, ox, oy, tipX, tipY, MARK, true);
+
+      ctx.globalAlpha = 0.85; ctx.textAlign = 'left';
+      ctx.fillStyle = PGF; ctx.fillText('lực gradient áp', ox + 6, oy - LF + 2);
+      ctx.fillStyle = COR; ctx.fillText('lực Coriolis', ox + 6, oy + LF - 1);
+      ctx.fillStyle = MARK;
+      ctx.fillText(`gió địa chuyển ${vn(vg * 3.6, 0)} km/h`, ox + 4, oy + 15);
+      ctx.textAlign = 'center';
+      ctx.fillText(
+        `gió sát đất ${vn(vs * 3.6, 0)} km/h`,
+        Math.min(Math.max(tipX, mL + 58), cssW - mR - 58), tipY - 9,
+      );
+      ctx.globalAlpha = 1;
+
+      // ---------- Biểu đồ V_g theo vĩ độ ----------
+      const cT = mapH + gapH, cB = cssH - 22, cL = 58, cR = 12;
+      // Thang đứng cắt ở vĩ độ 8 cho vùng 10–70° dễ đọc, nhưng phải nới ra khi người
+      // đọc kéo xuống dưới 8° — nếu không chấm đánh dấu bị ghim ở mép trên và nói dối.
+      const vRef = Math.max(vgeo(grad, 8), vg) * 3.6;
+      const yMax = NICE.find((n) => n >= vRef) ?? 1000;
+      const X = (la: number) => cL + ((la - 5) / 65) * (cssW - cL - cR);
+      const Y = (kmh: number) => cB - (kmh / yMax) * (cB - cT);
+
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.3;
+      ctx.beginPath(); ctx.moveTo(cL, cT); ctx.lineTo(cL, cB); ctx.lineTo(cssW - cR, cB); ctx.stroke();
+      ctx.globalAlpha = 0.55; ctx.fillStyle = fg;
+      ctx.textAlign = 'center';
+      for (const la of [10, 20, 30, 45, 60]) ctx.fillText(`${la}°`, X(la), cB + 14);
+      ctx.textAlign = 'right';
+      const step = TICK.filter((n) => n <= yMax / 3).pop() ?? TICK[0];
+      for (let t = step; t <= yMax + 0.01; t += step) {
+        ctx.fillText(t === yMax ? `${t} km/h` : `${t}`, cL - 4, Y(t) + 3);
+      }
+      ctx.globalAlpha = 1;
+
+      ctx.save();
+      ctx.beginPath(); ctx.rect(cL, cT - 4, cssW - cL - cR, cB - cT + 4); ctx.clip();
+      for (const [col, mul] of [[PGF, 1], [COR, c]] as Array<[string, number]>) {
+        ctx.strokeStyle = col; ctx.lineWidth = 2; ctx.beginPath();
+        for (let i = 0; i <= 240; i++) {
+          const la = 5 + (65 * i) / 240;
+          const y = Y(vgeo(grad, la) * 3.6 * mul);
+          i ? ctx.lineTo(X(la), y) : ctx.moveTo(X(la), y);
+        }
+        ctx.stroke(); ctx.lineWidth = 1;
+      }
+      ctx.fillStyle = MARK;
+      ctx.beginPath(); ctx.arc(X(lat), Math.max(cT + 6, Y(vg * 3.6)), 6, 0, Math.PI * 2); ctx.fill();
+      ctx.restore();
+
+      ctx.globalAlpha = 0.7; ctx.textAlign = 'right';
+      ctx.fillStyle = PGF; ctx.fillText('địa chuyển', cssW - cR, cT + 10);
+      ctx.fillStyle = COR; ctx.fillText('sát mặt đất', cssW - cR, cT + 22);
+      ctx.globalAlpha = 1;
+
+      // ---------- Readout ----------
+      let note = '';
+      if (lat < 10) {
+        note = ' · <b>dưới 10° cân bằng địa chuyển đã lung lay: f quá nhỏ, gió thật chậm hơn nhiều</b>';
+      } else if (vg > 35) {
+        note = ' · <b>vượt ngưỡng: gradient mạnh thế này chỉ có quanh tâm bão, nơi đẳng áp cong và phải cộng lực ly tâm</b>';
+      }
+      readout.innerHTML =
+        `Gradient <b>${vn(grad, 1)} hPa/100 km</b> — hai đường đẳng áp 4 hPa cách nhau ` +
+        `${Math.round(spacing).toLocaleString('vi-VN')} km · vĩ độ ${lat}° → gió địa chuyển ` +
+        `<b>${vn(vg, 1)} m/s = ${vn(vg * 3.6, 0)} km/h</b>, thổi dọc đường đẳng áp · ` +
+        `ma sát bẻ lệch ${alpha}° vào phía áp thấp: còn ${vn(vs, 1)} m/s = ${vn(vs * 3.6, 0)} km/h ` +
+        `(cấp ${beaufort(vs)})${note}`;
+    }
+
+    root.querySelectorAll('input').forEach((el) => el.addEventListener('input', draw));
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="gio-dia-chuyen-vi-sao-gio-thoi-doc-duong-dang-ap"]').forEach(setup);
+</script>

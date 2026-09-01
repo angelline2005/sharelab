@@ -1,0 +1,101 @@
+---
+title: "Ánh sáng xanh dưới đáy bể lò phản ứng: một cú nổ siêu thanh của ánh sáng"
+seoTitle: "Bức xạ Cherenkov: vì sao nước quanh lò phản ứng phát sáng xanh"
+description: "Trong nước, ánh sáng chỉ còn đi 224 901 km/s — nên chỉ cần 0,26 MeV là một electron đã bắt kịp rồi vượt mặt nó, để lại vệt sáng hình nón đúng kiểu máy bay siêu thanh để lại sóng xung kích. Nón ấy mở tối đa 41,4°, và mỗi centimet đường đi đẻ ra 215 photon nhìn thấy được."
+pubDate: 2026-09-02
+tags: ["vat-ly", "quang-hoc", "hat-nhan", "javascript"]
+translationId: "anh-sang-cherenkov-va-goc-41-do"
+---
+
+import CherenkovCone from '../../../components/demos/CherenkovCone.astro';
+
+Bức ảnh ai cũng từng thấy: đáy bể chứa của một lò phản ứng hạt nhân, thanh
+nhiên liệu chìm dưới mấy mét nước, cả khối nước phát thứ xanh lam sắc lạnh
+như đèn neon. Không có bóng đèn nào dưới đó. Thứ đang phát sáng là **một cú
+nổ siêu thanh** — chỉ khác, kẻ bị vượt mặt ở đây là ánh sáng:
+
+<CherenkovCone />
+
+## Trong nước, ánh sáng đi chậm lại — và có kẻ đuổi kịp
+
+Chiết suất n = 1,333 của nước không phải con số trang trí cho [phép khúc
+xạ](/vi/posts/khuc-xa-va-phan-xa-toan-phan): nó là **tỉ số tốc độ**. Trong
+nước, ánh sáng bò với **224 901 km/s**, đúng 75,0% tốc độ nó có trong chân
+không. Hàng rào ấy là hàng rào địa phương — nên có kẻ vượt được.
+
+Vé vào cửa tính theo khối lượng:
+
+```
+E_động (ngưỡng) = mc²·(n/√(n²−1) − 1)
+```
+
+Ngưỡng tốc độ trong nước là β = 1/n = **0,750**, nên electron chỉ phải trả
+**0,26 MeV** động năng — mức mà một phân rã beta tầm thường cũng thừa sức
+cấp. Muon mất 54 MeV, proton mất **481 MeV**: đắt hơn electron đúng **1 836
+lần**, y hệt tỉ số khối lượng của chúng. Bể nhiên liệu đã qua sử dụng thì
+đầy mảnh vỡ phân hạch phân rã beta ở mức vài MeV — gấp chục lần giá vé, và
+bắn ra hàng loạt. Cốc nước trên bàn bạn không sáng chỉ vì ở đó không ai bán
+vé.
+
+Từ đây mọi thứ lặp lại câu chuyện máy bay siêu thanh. Đóng vai "số Mach của
+ánh sáng" là tích **n·β**: electron chạy β = 0,99 trong nước có n·β =
+**1,32**. Mỗi điểm hạt đi qua phát một mặt sóng cầu nở với c/n; hạt bỏ xa
+chúng, chúng dồn lại phía sau và có chung một tiếp tuyến — tiếp tuyến chung
+ấy là mặt nón.
+
+## Góc 41,4°, và người anh em 42° của nó
+
+Hình học Huygens trong demo cho đáp số gọn tới mức đáng ngờ:
+
+```
+cos θ = 1/(n·β)
+```
+
+β tiến tới 1 thì cos θ chạm trần 1/n và góc dừng ở **41,4°** trong nước:
+không hạt nào mở nón rộng hơn được, dù mang năng lượng của cả một máy gia
+tốc. Ở đầu kia, ngay tại ngưỡng, θ = 0 — ánh sáng phóng thẳng về phía trước
+rồi mới ngả dần ra khi hạt tăng tốc.
+
+Trong cùng một cốc nước còn một hình nón nữa, [góc
+42°](/vi/posts/cau-vong-42-do-va-cu-don-toa-cua-anh-sang): cầu vồng. Hai
+con số cách nhau 0,6° mà chẳng họ hàng gì — cầu vồng là cực trị của góc
+lệch khi nắng *đi vào* giọt nước, còn nón Cherenkov là vết hằn của vật chất
+*chạy nhanh hơn* ánh sáng trong nước. Và vì góc chỉ phụ thuộc tốc độ, máy
+dò neutrino kiểu Super-Kamiokande đọc được cả hướng bay lẫn β từ một tấm
+ảnh: tâm vòng sáng in trên thành bể cho hướng, bán kính cho tốc độ.
+
+## Xanh, nhưng không xanh theo kiểu bầu trời
+
+Phổ Cherenkov **đều theo tần số** — mỗi khoảng tần số bằng nhau cho số
+photon bằng nhau. Quy về bước sóng, mật độ photon đi như 1/λ²: ở 400 nm
+nhiều hơn ở 700 nm **3,06 lần** trên mỗi nanomet, cộng lại ra xanh tím.
+[Bầu trời cũng xanh](/vi/posts/vi-sao-bau-troi-xanh-va-hoang-hon-do) nhưng
+bằng luật 1/λ⁴ dốc hơn, và bằng cách *đá lệch* nắng có sẵn; ánh sáng
+Cherenkov thì được **sinh ra từ chuyển động**, phổ liên tục trơn tru, không
+một vạch phổ nào — chẳng nguyên tử nào trong nước bị kích thích cả.
+
+Và nó mờ đến kinh ngạc: ở β sát 1 trong nước, mỗi centimet đường đi cho
+**215 photon** khả kiến, tổng cộng 523 eV. Cùng centimet ấy hạt bỏ lại
+chừng 2 MeV cho ion hoá — ánh sáng xanh chiếm **1 phần 3 800** ngân sách
+năng lượng. Một sai số làm tròn, mà chụp ảnh được.
+
+## Trường hợp biên: kéo chiết suất về không khí
+
+Không có gì ở đây vượt tốc độ ánh sáng theo nghĩa Einstein: β luôn nhỏ hơn
+1, tuyệt đối. Đẩy n về 1 là công thức tự thú nhận — cos θ = 1/β hoá ra lớn
+hơn 1, vô nghiệm. Trong chân không, bức xạ Cherenkov bị cấm bằng số học,
+đơn giản vì không còn ai để mà vượt.
+
+Nhưng không khí không phải chân không: ở mặt biển n = **1,0003**. Ngưỡng vọt
+lên β = 0,9997 — electron phải có **20 MeV** mới mua nổi vé — và nón co còn
+**1,4°**. Chính cái nón tí hon ấy là kính thiên văn: photon gamma từ vũ trụ
+đâm vào khí quyển đẻ ra cơn mưa electron — bản thuần điện từ của [cơn mưa
+tia vũ trụ vẫn rót muon xuống đầu
+bạn](/vi/posts/gian-thoi-gian-hat-muon-khong-du-tuoi-de-cham-dat). Chỉ có
+điều cơn mưa ấy bùng lên ở độ cao 10 km, nơi không khí loãng gấp ba: phần
+dư n − 1 tụt theo mật độ, còn **0,0001**, và trần của nón hẹp lại còn
+**0,8°**. Trải từ 10 km xuống, 0,8° cho vũng sáng bán kính **140 m**, loé
+lên trong vài nano giây. Các đài quan sát dưới đất không hề nhìn thấy tia
+gamma — họ đứng trong vũng sáng và đo cái nón. Cùng một hình nón: dưới năm
+mét nước nó tố cáo một thanh nhiên liệu, trên đỉnh núi nó tố cáo một thiên
+hà.

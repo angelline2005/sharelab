@@ -1,0 +1,98 @@
+---
+title: "Búa nước: khoá vòi quá nhanh, đường ống ăn cú đập 18 bar"
+seoTitle: "Hiện tượng búa nước: công thức Joukowsky Δp = ρ·c·Δv"
+description: "Dòng nước 1,5 m/s bị chặn đứng dựng lên xung áp 18 bar — 183,5 mét cột nước, gấp sáu lần áp lưới sinh hoạt. Chuyện không nằm ở chỗ bạn khoá mạnh hay nhẹ, mà ở chỗ khoá trong bao lâu so với 2L/c: với ống 20 m, ngưỡng ấy chỉ 33 mili-giây."
+pubDate: 2026-09-02
+tags: ["vat-ly", "chat-luu", "song", "javascript"]
+translationId: "bua-nuoc-cu-dap-18-bar-khi-khoa-voi"
+---
+
+import WaterHammer from '../../../components/demos/WaterHammer.astro';
+
+Máy giặt đang lấy nước thì ngắt cái rụp, và trong tường có tiếng *cạch* —
+đôi khi cả một tràng chạy dọc trần. Không ai gõ vào ống cả: thứ vừa đấm
+vào đường ống là chính cột nước bên trong nó.
+
+<WaterHammer />
+
+## Nước không có phanh
+
+Trong ống DN20, dòng 1,5 m/s là **28 lít mỗi phút** — một vòi rửa mở hết.
+Van sập xuống, lớp nước sát van dừng trước và bị cả cột phía sau dồn tới;
+nước gần như không nén được, nên cái giá của việc dừng nó trả bằng áp suất.
+Định luật Joukowsky (1898) gọn đến mức bực mình:
+
+```
+Δp = ρ · c · Δv
+```
+
+c là **tốc độ sóng áp trong hệ nước–ống**: 1 200 m/s với ống thép hay đồng
+— [tốc độ âm trong vật
+liệu](/vi/posts/nghe-tieng-tau-hai-lan-am-thanh-trong-vat-ran) hạ đi chút
+ít vì thành ống còn phình được. Thay số: 1 000 × 1 200 × 1,5 = **18 bar**,
+tức **183,5 mét cột nước**, gấp sáu lần áp lưới 3 bar; chồng lên áp tĩnh
+thành đỉnh 21 bar. Để ý cái gì mới thật sự nhanh ở đây: nước chỉ
+chậm đi 1,5 m/s, còn *tin tức* rằng van đã đóng thì phóng ngược về bể ở
+**4 320 km/h**.
+
+## Không phải khoá mạnh, mà là khoá trong bao lâu
+
+Cái van không biết ống dài bao nhiêu cho tới khi sóng chạy tới bể rồi dội
+về báo tin. Chuyến khứ hồi ấy mất **2L/c** — ống 20 m: **33 mili-giây**.
+Đóng xong trong 33 ms thì van chưa nhận được hồi âm nào: áp leo trọn 18 bar.
+Chậm hơn, sóng về kịp xả bớt, đỉnh tụt theo tỉ lệ 2L/c chia thời gian khoá:
+50 ms còn 12 bar, 100 ms còn 6 bar, 200 ms còn 3 bar, nửa giây còn 1,2 bar.
+
+Vòi vặn kiểu cũ cần cả giây mới bịt kín (**0,6 bar** — an toàn miễn phí);
+vòi gạt một cần hất phát là xong trong một phần mười giây (6 bar); van
+điện từ máy giặt đóng trong **cỡ 20 mili-giây** — nhanh hơn 2L/c của bất cứ
+đoạn ống nào dài quá 12 mét, nên gần như luôn ăn trọn suất Joukowsky. Búa
+nước trong nhà bạn hầu như luôn do một cái máy gây ra, không phải bàn tay.
+
+## Tiếng cạch trong tường là 15 nhịp mỗi giây
+
+Xung áp không tắt ngay mà dội tới lui giữa van và bể như sóng trên [sợi dây
+bị ghim đầu](/vi/posts/song-dung-tren-day-dan): van bịt kín, bể để ngỏ,
+phản xạ ngược dấu nhau — nên phải **hai** chuyến khứ hồi, 4L/c, áp mới về
+trạng thái cũ. Ống 20 m: 67 ms một vòng, tức **15 nhịp mỗi giây**.
+Không phải một nốt nhạc mà là tràng gõ khô, tắt dần trong khoảng một giây.
+
+Mỗi nhịp là cú đấm có thật: 18 bar nhân tiết diện DN20 cho 565 N, và ở
+khuỷu 90° hai lực vuông góc cộng vectơ thành **800 N — 82 kilôgam lực**
+giật theo đường phân giác. Ống không nổ ngay; kẹp ống long dần,
+mối nối nứt vi mô, ba năm sau thấm trần.
+
+## Ống cụt cạnh vòi: 3 phần nghìn khí cắt cú búa còn một phần ba
+
+Cách chữa không phải làm ống dày hơn mà là **hạ c xuống**. Khí ở 4 bar
+tuyệt đối dễ nén hơn nước gần **3 800 lần**, nên chỉ chút khí lẫn vào là
+tốc độ sóng sụp đổ: **0,3% thể tích** kéo c từ 1 200 xuống **407 m/s**, Δp
+từ 18 xuống **6,1 bar**.
+
+Gom khí về một chỗ thì cơ chế đổi: không hạ c nữa mà làm lò xo nuốt phần
+thể tích thừa — đó là đoạn ống cụt bịt đầu, đấu chữ T vào nhánh cấp ngay
+trước van (bình tích áp chỉ là bản công nghiệp hoá). Túi khí ấy tan dần vào
+nước sau vài tháng, nên ống cụt hết khí là ống cụt vô dụng. Ống PPR thì
+giảm chấn bằng chính vật liệu: mô đun đàn hồi 0,9 GPa so với 200 GPa của
+thép, c chỉ quanh 375 m/s, cùng dòng nước ấy chỉ dựng nổi **5,6 bar**.
+
+## Trường hợp biên: nửa chu kỳ âm, khi nước không chịu bị kéo
+
+Công thức đối xứng: nửa vòng sau nó trừ đi đúng 18 bar. Áp tĩnh 3 bar tương
+đối là 4 bar tuyệt đối, trừ 18 ra **−14 bar tuyệt đối** — con số vô nghĩa.
+Chất lỏng không chịu kéo: đúng như [cái trần 10 mét của mọi máy bơm
+hút](/vi/posts/ap-suat-khi-quyen-va-tran-10-met-cua-moi-may-bom), nước
+20 °C bốc hơi ngay khi áp chạm 2,3 kPa. Cái xảy ra thật là **cột nước tách
+đôi**: túi hơi mở ra sát van, hai đoạn nước rời nhau rồi bị dồn va sập lại
+— cú va ấy có thể *vượt* Joukowsky. Công thức không chỉ sai ở đây, nó sai
+theo chiều khó chịu nhất: đoán thấp hơn thực tế đúng lúc thực tế mạnh nhất.
+
+Đẩy phía ngược lại thì công thức vẫn đúng nhưng đổi vai. Cho 2% khí lẫn
+vào, c còn 167 m/s và Δp còn **2,5 bar** — chỉ có điều 2L/c của ống 20 m
+đồng thời nở thành **0,24 giây**, nên cú hất vòi gạt 0,1 giây từ chỗ bị cắt
+còn 6 bar nay rơi trọn vào vùng Joukowsky đầy đủ. Vùng ấy rộng ra gấp bảy
+đúng lúc cái "đầy đủ" teo còn một phần bảy. Còn vòi vặn cả giây thì khí
+chẳng đổi được gì: thay 2L/c vào công thức khoá chậm, c triệt tiêu sạch,
+còn `Δp = 2ρLΔv / t`, vẫn đúng 0,6 bar dù ống sạch khí hay đầy bọt. Cùng
+một tham số c vừa định cú đập mạnh cỡ nào, vừa định bạn có kịp tránh hay
+không.

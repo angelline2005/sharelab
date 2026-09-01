@@ -1,0 +1,212 @@
+---
+// Thang dựa tường: tường nhẵn (chỉ đẩy ngang), sàn nhám (đỡ + ghì).
+// Cân bằng mô-men quanh chân thang, cộng hai phương trình lực:
+//   N_tuong = (W_thang/2 + W_nguoi · f) / tanθ ,  N_san = W_thang + W_nguoi
+//   chưa trượt khi  N_tuong ≤ μ · N_san
+//   ⇒ f_max = (μ · tanθ · (W_thang + W_nguoi) − W_thang/2) / W_nguoi
+// f là vị trí người đo TỪ CHÂN thang, theo tỉ lệ chiều dài (0 = chân, 1 = đỉnh).
+// Thang không người tự trượt khi tanθ < 1/(2μ).
+// Nguồn: Meriam & Kraige, "Engineering Mechanics: Statics", chương ma sát khô
+// (Coulomb); đây là bài toán mẫu của mọi giáo trình tĩnh học.
+// Giả thiết: thang cứng, đồng chất, tiếp xúc điểm, tường hệ số ma sát = 0,
+// tĩnh học thuần (không có gia tốc khi leo).
+// Miền slider: θ 45–80°, μ 0,15–0,80, người 40–90 kg; thang cố định 6 m/10 kg.
+// Trong toàn miền này f_max > 0. Nếu tường cũng có ma sát, hệ thành siêu tĩnh
+// và công thức trên không còn dùng được.
+---
+
+<figure class="demo" data-demo="thang-dua-tuong-leo-den-dau-thi-truot">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Góc dựng θ (°) <output data-out="th"></output>
+      <input type="range" data-in="th" min="45" max="80" step="1" value="60" /></label>
+    <label>Hệ số ma sát sàn μ <output data-out="mu"></output>
+      <input type="range" data-in="mu" min="15" max="80" step="1" value="40" /></label>
+    <label>Khối lượng người (kg) <output data-out="m"></output>
+      <input type="range" data-in="m" min="40" max="90" step="1" value="65" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Tường nhẵn chỉ đẩy ngang; sàn vừa đỡ vừa ghì. Càng leo cao, lực đẩy ngang
+    ở đầu thang càng lớn, trong khi ma sát ở chân thang không tăng thêm chút
+    nào — nên chỗ nguy hiểm luôn nằm phía trên, không phải phía dưới. Vạch
+    xanh–đỏ trên thân thang là bậc cuối cùng còn an toàn; đồ thị bên phải là
+    đúng con số ấy quét theo góc dựng. Thang cố định 6 m, 10 kg.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const CURVE = '#2563eb', MARK = '#dc2626', FORCE = '#f59e0b';
+  const L = 6, ML = 10, RAD = Math.PI / 180;
+
+  const fmax = (th: number, mu: number, mp: number) =>
+    (mu * Math.tan(th * RAD) * (ML + mp) - ML / 2) / mp;
+  const muTop = (th: number, mp: number) =>
+    (ML / 2 + mp) / ((ML + mp) * Math.tan(th * RAD));
+  const vn = (x: number, d: number) => x.toFixed(d).replace('.', ',');
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (k: string) => root.querySelector(`[data-in="${k}"]`) as HTMLInputElement;
+    const output = (k: string) => root.querySelector(`[data-out="${k}"]`) as HTMLOutputElement;
+
+    function arrow(x: number, y: number, dx: number, dy: number,
+                   label: string, ldx: number, ldy: number, showLab: boolean) {
+      const len = Math.hypot(dx, dy) || 1;
+      const ux = dx / len, uy = dy / len;
+      ctx.strokeStyle = FORCE; ctx.fillStyle = FORCE; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x + dx, y + dy); ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(x + dx, y + dy);
+      ctx.lineTo(x + dx - 7 * ux + 4 * uy, y + dy - 7 * uy - 4 * ux);
+      ctx.lineTo(x + dx - 7 * ux - 4 * uy, y + dy - 7 * uy + 4 * ux);
+      ctx.closePath(); ctx.fill();
+      ctx.lineWidth = 1;
+      if (showLab) { ctx.textAlign = 'center'; ctx.fillText(label, x + dx + ldx, y + dy + ldy); }
+    }
+
+    function draw() {
+      const th = Number(input('th').value);
+      const mu = Number(input('mu').value) / 100;
+      const mp = Number(input('m').value);
+      output('th').textContent = String(th);
+      output('mu').textContent = vn(mu, 2);
+      output('m').textContent = String(mp);
+
+      const f = fmax(th, mu, mp);
+      const fc = Math.max(0, Math.min(1, f));
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.62);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+      ctx.font = '10px system-ui,sans-serif';
+
+      const padT = 14, padB = 38, sceneL = 34, XM = 4.6, YM = 6.4;
+      const s = Math.min((Math.round(cssW * 0.44) - sceneL - 6) / XM, (cssH - padT - padB) / YM);
+      const oy = cssH - padB;
+      const SX = (m: number) => sceneL + m * s;
+      const SY = (m: number) => oy - m * s;
+
+      // --- Bên trái: hình chiếu cạnh, tường bên trái, sàn nằm ngang. ---
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.35; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.moveTo(SX(0), SY(YM)); ctx.lineTo(SX(0), oy); ctx.lineTo(SX(XM), oy); ctx.stroke();
+      ctx.lineWidth = 1;
+      ctx.globalAlpha = 0.55; ctx.fillStyle = fg;
+      ctx.textAlign = 'right';
+      for (const h of [2, 4, 6]) {
+        ctx.beginPath(); ctx.moveTo(SX(0) - 3, SY(h)); ctx.lineTo(SX(0), SY(h)); ctx.stroke();
+        ctx.fillText(`${h} m`, SX(0) - 5, SY(h) + 3);
+      }
+      ctx.textAlign = 'center';
+      for (const d of [1, 2, 3, 4]) {
+        ctx.beginPath(); ctx.moveTo(SX(d), oy); ctx.lineTo(SX(d), oy + 3); ctx.stroke();
+        ctx.fillText(`${d} m`, SX(d), oy + 13);
+      }
+      ctx.fillText('thang 6 m · 10 kg', SX(XM / 2), oy + 27);
+      ctx.globalAlpha = 1;
+
+      const c = Math.cos(th * RAD), sn = Math.sin(th * RAD);
+      const bx = L * c, ty = L * sn;
+      const PX = (fr: number) => SX(bx * (1 - fr));
+      const PY = (fr: number) => SY(ty * fr);
+
+      ctx.lineWidth = 4; ctx.lineCap = 'round';
+      ctx.strokeStyle = CURVE;
+      ctx.beginPath(); ctx.moveTo(PX(0), PY(0)); ctx.lineTo(PX(fc), PY(fc)); ctx.stroke();
+      if (fc < 1) {
+        ctx.strokeStyle = MARK;
+        ctx.beginPath(); ctx.moveTo(PX(fc), PY(fc)); ctx.lineTo(PX(1), PY(1)); ctx.stroke();
+      }
+      ctx.lineWidth = 1; ctx.lineCap = 'butt';
+
+      ctx.globalAlpha = 0.75;
+      for (let k = 1; k <= 11; k++) {
+        const fr = k / 12, rx = PX(fr), ry = PY(fr);
+        ctx.strokeStyle = fr <= fc ? CURVE : MARK;
+        ctx.beginPath();
+        ctx.moveTo(rx - 5 * sn, ry + 5 * c); ctx.lineTo(rx + 5 * sn, ry - 5 * c);
+        ctx.stroke();
+      }
+      ctx.globalAlpha = 1;
+
+      ctx.fillStyle = fc >= 1 ? CURVE : MARK;
+      ctx.beginPath(); ctx.arc(PX(fc), PY(fc), 5, 0, Math.PI * 2); ctx.fill();
+
+      // Bốn lực, quy ra kgf rồi đổi sang chiều dài mũi tên.
+      const Nf = ML + mp;
+      const Nw = (ML / 2 + mp * fc) / Math.tan(th * RAD);
+      const NL = (v: number) => (0.22 + v / 110) * s;
+      const lab = s >= 34;
+      arrow(SX(0), SY(ty), NL(Nw), 0, 'N tường', 2, -7, lab);
+      arrow(SX(bx), oy, 0, -NL(Nf), 'N sàn', 0, -7, lab);
+      arrow(SX(bx), oy, -NL(Nw), 0, 'ma sát', 0, -7, lab);
+      arrow(PX(0.5), PY(0.5), 0, NL(ML), 'P thang', -14, 11, lab);
+      arrow(PX(fc), PY(fc), 0, NL(mp), 'P người', 16, 11, lab);
+
+      // --- Bên phải: f_max quét theo góc dựng. ---
+      const cL = Math.round(SX(XM)) + 40, cR = cssW - 8;
+      const CX = (t: number) => cL + ((t - 45) / 35) * (cR - cL);
+      const CY = (p: number) => oy - (p / 1.2) * (cssH - padT - padB);
+
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.35;
+      ctx.beginPath(); ctx.moveTo(cL, CY(1.2)); ctx.lineTo(cL, oy); ctx.lineTo(cR, oy); ctx.stroke();
+      ctx.setLineDash([4, 3]);
+      ctx.beginPath(); ctx.moveTo(cL, CY(1)); ctx.lineTo(cR, CY(1)); ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.globalAlpha = 0.55; ctx.fillStyle = fg;
+      ctx.textAlign = 'right';
+      for (const p of [0, 0.25, 0.5, 0.75, 1]) ctx.fillText(`${p * 100}%`, cL - 5, CY(p) + 3);
+      ctx.textAlign = 'center';
+      for (const t of [50, 60, 70, 80]) ctx.fillText(`${t}°`, CX(t), oy + 13);
+      ctx.fillText('góc dựng θ → % chiều dài leo được an toàn', (cL + cR) / 2, oy + 27);
+      ctx.textAlign = 'left';
+      ctx.fillText('đỉnh thang', cL + 6, CY(1) - 4);
+      ctx.globalAlpha = 1;
+
+      ctx.strokeStyle = CURVE; ctx.lineWidth = 2; ctx.beginPath();
+      for (let i = 0; i <= 140; i++) {
+        const t = 45 + (35 * i) / 140;
+        const v = Math.max(0, Math.min(1.2, fmax(t, mu, mp)));
+        i ? ctx.lineTo(CX(t), CY(v)) : ctx.moveTo(CX(t), CY(v));
+      }
+      ctx.stroke(); ctx.lineWidth = 1;
+      ctx.fillStyle = MARK;
+      ctx.beginPath(); ctx.arc(CX(th), CY(Math.max(0, Math.min(1.2, f))), 6, 0, Math.PI * 2); ctx.fill();
+
+      let msg = `θ = ${th}° · μ = ${vn(mu, 2)} · người ${mp} kg: `;
+      if (f <= 0) {
+        msg += 'thang trượt trước cả khi có ai đặt chân lên';
+      } else if (f >= 1) {
+        msg += `leo tới <b>đỉnh thang</b> vẫn chưa trượt — góc này chỉ đòi μ ≥ <b>${vn(muTop(th, mp), 2)}</b>`;
+      } else {
+        msg += `leo an toàn tới <b>${vn(fc * 100, 1)}%</b> chiều dài — <b>${vn(fc * L, 2)} m</b> trên thang 6 m; quá vạch đó chân thang trượt`;
+      }
+      if (mu * Math.tan(th * RAD) < 0.5) {
+        msg += ` · <b>thang không người đã tự trượt ở góc này</b> (μ = ${vn(mu, 2)} đòi tối thiểu ${vn(Math.atan(1 / (2 * mu)) / RAD, 1)}°) — chính sức nặng của người đứng bậc thấp mới ghì nổi nó`;
+      }
+      readout.innerHTML = msg + '.';
+    }
+
+    root.querySelectorAll('input').forEach((el) => el.addEventListener('input', draw));
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="thang-dua-tuong-leo-den-dau-thi-truot"]').forEach(setup);
+</script>

@@ -1,0 +1,90 @@
+---
+title: "Vân moiré: bộ khuếch đại 57 lần không cần nguồn điện"
+seoTitle: "Vân moiré là gì và vì sao ảnh chụp áo kẻ sọc bị vằn"
+description: "Hai lưới bước 0,25 mm lệch nhau 1° sinh hệ vân rộng 14,3 mm — sai lệch hình học được phóng to 57 lần mà không tốn một watt nào. Cùng phép trừ ấy nằm trong cây thước cặp, trong ảnh chụp áo kẻ sọc, và nó tắt ngóm ở đúng 60°."
+pubDate: 2026-09-02
+tags: ["vat-ly", "quang-hoc", "song", "javascript"]
+translationId: "van-moire-bo-khuech-dai-sai-lech-hinh-hoc"
+---
+
+import MoireFringes from '../../../components/demos/MoireFringes.astro';
+
+Hai lớp cửa lưới chống muỗi chồng nhau ở ban công. Mắt lưới 1,6 mm, nhỏ tới
+mức phải ghé sát mới đếm được. Vậy mà trên đó trôi những dải bóng rộng gấp
+mấy chục lần mắt lưới, uốn éo theo mỗi cơn gió. Không vật nào trong cảnh có
+kích thước ấy — dải bóng là **hiệu số** của hai tấm lưới:
+
+<MoireFringes />
+
+## Vân là phép trừ, không phải giao thoa ánh sáng
+
+Chồng hai lưới vạch song song cùng bước p, xoay lệch nhau một góc nhỏ. Chỗ
+vạch của lưới này rơi trúng khe của lưới kia thì tối; đi dọc tấm lưới, độ
+lệch tích luỹ dần, đến khi cộng đủ trọn một bước p thì vạch lại chồng vạch —
+sáng. Khoảng cách giữa hai lần trùng ấy là chu kỳ vân:
+
+```
+Λ = p / √(ε² + θ²)
+```
+
+với ε là chênh lệch tương đối giữa hai bước lưới và θ là góc lệch tính bằng
+radian. Lấy p = 0,25 mm (bốn vạch mỗi milimét), hai lưới cùng bước, θ = 1° =
+0,0175 rad: **Λ = 14,3 mm**.
+
+Dễ xếp nhầm nó cạnh [giao thoa màng
+mỏng](/vi/posts/mang-mong-giao-thoa-mau-cua-bong-xa-phong) hay [khe đôi
+Young](/vi/posts/khe-doi-young-do-buoc-song-bang-thuoc-ke), nhưng moiré không
+cần bước sóng, không cần nguồn kết hợp: nó chỉ là **tích của hai độ truyền
+qua**, và hai hàng rào sắt nhìn chồng lên nhau vẫn cho vân. Họ hàng thật của
+nó là [hiện tượng phách](/vi/posts/hien-tuong-phach-len-day-dan-bang-tai):
+đúng phép trừ ấy, chỉ diễn ra trong không gian thay vì trong thời gian.
+
+## Khuếch đại 57 lần, hoá đơn tiền điện bằng không
+
+Chia chu kỳ vân cho bước lưới ra **57,3**, và con số ấy không chỉ nói về bề
+rộng. Đẩy một trong hai lưới trượt ngang 10 micromét — một phần bảy sợi tóc —
+cả hệ vân trượt **0,57 mm**, rõ mồn một. Hệ số là 1/θ, tỉ số giữa hai chiều
+dài chứ không phải giữa hai công suất: ánh sáng ra khỏi hai tấm lưới vẫn ít
+hơn ánh sáng đi vào. Thứ được phóng to là *sai lệch hình học*, và hình học
+thì miễn phí. Trước khi có laser, biến dạng kim loại được đo đúng kiểu đó:
+mẫu giãn 1% so với lưới chuẩn thì vân xếp cách nhau p₁p₂/|p₁−p₂| =
+**25,25 mm** — một vân cho mỗi **101 bước lưới**.
+
+Cây thước cặp du xích 1/50 là moiré một chiều: thang chính vạch cách nhau
+1,00 mm, thang du xích có **50 vạch trải trên đúng 49 mm** — mỗi vạch
+0,98 mm, lệch 2%, và hai thang chỉ trùng khít nhau một lần trong 49 mm đó.
+Mở hàm kẹp thêm 0,02 mm, điểm trùng nhảy nguyên một vạch: **1 mm**. Bạn không
+hề đọc 0,02 mm; bạn đọc 1 mm rồi chia cho 50.
+
+## Áo kẻ sọc lên hình thành cầu vồng loang
+
+Áo kẻ sọc lên hình thành những dải màu không có ngoài đời: vẫn phép trừ ấy,
+nhưng lưới thứ hai là **lưới điểm ảnh của cảm biến**. Máy full-frame 24 MP có
+6 000 điểm trải trên 36 mm, bước 6,0 µm; nếu ảnh của sọc vải rơi xuống cảm
+biến với chu kỳ 6,5 µm thì hiệu số 0,5 µm sinh vân rộng 78 µm — **13 điểm
+ảnh**. Màu đến từ chỗ khác: trong lưới Bayer, đỏ và lam mỗi kênh chỉ chiếm
+một điểm trong mỗi ô 2×2, tức nằm trên mạng bước **12 µm** — gấp đôi bước
+điểm ảnh — và lệch nhau đúng một điểm ảnh, còn lục dày gấp đôi cả hai. Ba
+kênh vì thế bắt cùng một hệ vân ở ba pha khác nhau, và tổng của chúng ra màu
+chứ không ra xám. Hiệu số nằm dưới mẫu nên chu kỳ vân nhạy đến vô lý: nhích
+máy lại gần 5%, vân co còn **48,8 µm**; lùi ra 5%, vân phình lên **195 µm**.
+Dân quay phim trị moiré bằng một bước chân, không bằng một cái ống kính mới.
+
+## Trường hợp biên: 60° là chỗ vân nuốt chính nó
+
+Kéo góc lệch lên, hệ số rơi theo 1/θ: 5° còn **2,87 mm** (11,5 lần), 20°
+còn **0,72 mm** — mỗi vân chỉ chứa 2,9 vạch lưới, không đủ để thành dải sáng
+tối. Đến **60°**, công thức chính xác Λ = p/(2·sin(θ/2)) trả về đúng p: chu
+kỳ vân bằng chu kỳ lưới, hệ vân trùng khít với chính cái lưới đẻ ra nó và
+biến mất — không phải vì mắt kém mà vì không còn gì để nhìn.
+
+Đầu kia của thang có hoá đơn riêng: khuếch đại càng mạnh thì hệ vân càng cồng
+kềnh. Vặn góc xuống 0,1°, hệ số vọt lên **573 lần**, nhưng một vân giãn ra
+**143 mm** — tấm lưới phải rộng hơn 14 cm mới chứa nổi đúng một chu kỳ. Mà
+khoảng trượt đọc được không mơ hồ thì vẫn vỏn vẹn một bước lưới, **0,25 mm**,
+dù khuếch đại bao nhiêu: quá mốc đó vân lặp lại y hệt và bạn không biết mình
+đã đếm sót mấy vòng.
+
+Đi ngược về không thì hỏng theo kiểu khác: cho ε = 0 và θ = 0, mẫu số bằng 0,
+Λ vô hạn. Hai lưới trùng khớp tuyệt đối chỉ cho một tấm xám đều — nên những
+dải bóng trên cửa lưới ban công chỉ hiện ra khi có gió lay.

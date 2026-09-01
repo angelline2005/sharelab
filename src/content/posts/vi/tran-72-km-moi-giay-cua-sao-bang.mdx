@@ -1,0 +1,88 @@
+---
+title: "Không sao băng nào nhanh hơn 72,8 km/s — và đó là một phép cộng"
+seoTitle: "Tốc độ sao băng: vì sao trần là 72,8 km/s và sàn là 11,1 km/s"
+description: "Vật còn thuộc hệ Mặt Trời không thể vượt 42,12 km/s khi đi ngang quỹ đạo Trái Đất. Cộng 29,78 km/s Trái Đất đang chạy, rồi cộng nốt lực hút của chính nó: trần cứng 72,76 km/s. Sàn là 11,10 km/s — và không ai chạm tới được."
+pubDate: 2026-09-02
+tags: ["vat-ly", "thien-van", "co-hoc", "javascript"]
+translationId: "tran-72-km-moi-giay-cua-sao-bang"
+---
+
+import MeteorSpeed from '../../../components/demos/MeteorSpeed.astro';
+
+Đêm Perseids tháng 8, có vệt chớp một cái đã tắt. Đêm Taurids tháng 11, có
+vệt lừ đừ trôi ngang trời như đèn máy bay. Bạn nhìn không sai — nhưng cả
+hai đều bị kẹp giữa hai con số cứng, và bạn dựng lại được cả hai bằng một
+phép cộng vectơ:
+
+<MeteorSpeed />
+
+## Trần đến từ một phép cộng, không phải từ một quan sát
+
+Mọi công dân của hệ Mặt Trời đều chịu chung một ràng buộc: lúc đi ngang quỹ
+đạo Trái Đất, nó không được nhanh hơn tốc độ thoát ly của Mặt Trời tại chỗ
+ấy — nhanh hơn thì nó đã bay thẳng ra khỏi hệ từ lâu, chẳng còn quay lại
+gặp ai. Con số ấy bằng đúng [√2 lần tốc độ quỹ đạo
+tròn](/vi/posts/toc-do-vu-tru-va-khau-dai-bac-cua-newton): **42,12 km/s**.
+
+Trái Đất thì đang chạy 29,78 km/s. Cú gặp tệ nhất là đâm đối đầu — hai
+vectơ ngược chiều, độ lớn cộng thẳng: 71,9 km/s. Rồi tới lượt Trái Đất: rơi
+vào giếng hấp dẫn hành tinh, vật được cộng thêm đúng phần động năng ứng với
+tốc độ thoát ly — ở độ cao 100 km, nơi sao băng bắt đầu bốc cháy, là 11,10
+km/s (tới mặt đất mới thành 11,19). Cộng động năng là cộng bình phương tốc
+độ, nên hai số vào công thức như hai cạnh góc vuông:
+
+```
+v_chạm = √[ (42,12 + 29,78)² + 11,10² ] = 72,76 km/s
+```
+
+**261 930 km/h, Mach 212, gấp chín lần rưỡi trạm ISS.** Chưa vệt sáng nào
+vượt vạch đó — mà cũng không cần quan sát mới biết: nó rơi ra từ ba hằng số.
+
+## Mỗi trận mưa có tốc độ riêng, và nó không đổi
+
+Kéo góc trong demo và lý do hiện ra: tốc độ va chạm không phải tính chất
+của hạt bụi mà là **hình học quỹ đạo của thiên thể mẹ** — thứ năm nào cũng
+thế. Leonids lao vào 71 km/s, sát trần, vì sao chổi Tempel–Tuttle quay
+**ngược chiều** quanh Mặt Trời nên gặp Trái Đất gần như đối đầu. Geminids
+chỉ 35: tiểu hành tinh 3200 Phaethon đi cùng chiều, cắt chéo quỹ đạo Trái
+Đất chứ không đâm vào. Taurids thong thả 27, vì quỹ đạo sao chổi Encke vừa
+cùng chiều vừa nằm sát mặt phẳng hoàng đạo, góc gặp nông hơn nữa. Cùng
+[phép đọc vận tốc từ khoảng
+cách](/vi/posts/sao-choi-halley-luc-phong-54-km-moi-giay-luc-bo-di-bo) đã
+cho Halley 54,6 km/s lúc cận nhật, giờ cho bạn độ dài mũi tên cam.
+
+## Bình phương tốc độ định đoạt mọi thứ còn lại
+
+Một hạt cỡ hạt cát vạch được đường sáng nhìn rõ từ cách 100 km — chuyện đó
+chỉ hợp lý khi nhớ động năng đi theo v². **Một gram ở 59 km/s mang 1,74 MJ,
+tương đương 416 gram thuốc nổ TNT**, đủ đun sôi 5,5 lít nước. Cũng gram ấy
+ở sàn 11,1 km/s chỉ còn 0,062 MJ — 15 gram TNT: dải tốc độ gói gọn trong hệ
+số 6,6, dải năng lượng rộng **43 lần**.
+
+Số hạng v² còn quyết định chỗ vệt sáng bắt đầu. Áp suất khí động dồn lên
+mặt trước hạt tỉ lệ ρv² — [đúng số hạng đã định đoạt vận tốc tới hạn của
+người nhảy dù](/vi/posts/roi-tu-do-va-van-toc-toi-han). Ở 90 km, không khí
+loãng còn 3,4 phần triệu kilôgam mỗi mét khối, vậy mà hạt Perseid vẫn hứng
+**11,9 kPa**, hạt Draconid 20 km/s chỉ hứng 1,37 kPa — chênh 8,7 lần, đúng
+bằng (59/20)². Bụi sao chổi bền kéo cỡ vài kPa, nên hạt nhanh vỡ vụn và loé
+sáng cao hơn hẳn.
+
+## Trường hợp biên: cái sàn không ai chạm tới, cái trần gãy đúng một lần
+
+Đẩy demo về góc 0° với tốc độ nhật tâm 29,78 km/s: thiên thạch bay cùng
+chiều cùng tốc độ với Trái Đất, tốc độ địa tâm **bằng 0** — đáng lẽ nó lơ
+lửng cạnh ta chứ không thành sao băng. Công thức không cho phép: hấp dẫn
+Trái Đất vẫn tặng nguyên 11,10 km/s trước khi nó chạm lớp khí đầu tiên.
+**Không tồn tại sao băng chậm**, kể cả trên nguyên tắc.
+
+Cái trần thì mềm hơn vẻ ngoài. Nó thở trước: quỹ đạo Trái Đất hơi dẹt, nên
+đầu tháng 1 lúc cận nhật trần dâng tới 73,61 km/s, đầu tháng 7 tụt về 71,93
+— con số 72,76 là giá trị ở đúng 1 AU. Rồi nó gãy hẳn, đúng một kiểu: ràng
+buộc "không quá 42,12 km/s" chỉ ràng những vật thuộc hệ Mặt Trời. Vật thể
+liên sao 'Oumuamua tới với tốc độ dư 26,33 km/s ở vô cùng, nên lúc ngang
+quỹ đạo Trái Đất nó chạy 49,67 km/s — thừa 7,5 so với ngưỡng. Kéo thanh
+nhật tâm tới đó rồi vặn góc về 180°: một mảnh của vị khách kiểu ấy cháy ở
+**80,23 km/s**, một gram mang 3,22 MJ. Vì thế các mạng camera sao băng săn
+mọi con số trên 72,8 như săn chữ ký giả: một vạch sáng chưa đầy một giây,
+ghi bằng ba máy cách nhau vài chục cây số, đủ để nói hạt bụi vừa cháy trên
+đầu bạn không sinh ra ở hệ này.

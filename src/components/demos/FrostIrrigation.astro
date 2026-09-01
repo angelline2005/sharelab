@@ -1,0 +1,190 @@
+---
+// Chống sương giá bằng tưới nước — cân bằng nhiệt một chiếc lá trong đêm quang mây.
+//   Lá khô:   C_lá·dT/dt = −q_bức_xạ + h·(T_kk − T)  →  T(t) = T_∞ + (T_kk − T_∞)·e^(−t/τ)
+//             với T_∞ = T_kk − q/h,  τ = C/h
+//   Lá ướt:   thêm nhiệt dung của nước, và bị GHIM ở 0 °C suốt quãng đông đặc
+//             t_giữ = ρ·d·L_f / (q_bức_xạ − h·T_kk)
+// Hằng số: C_lá = 800 J/(m²·K) (lá dày 0,2 mm, chủ yếu là nước), h = 15 W/(m²·K)
+//   (đối lưu tự do đêm lặng gió), ρ = 1000 kg/m³, L_f = 334 kJ/kg,
+//   c_nước = 4180 J/(kg·K), c_băng = 2100 J/(kg·K).
+// Quy ước mốc t = 0: trời tối, lá đang bằng nhiệt độ không khí. Khi T_kk ≤ 0 °C,
+//   màng nước từ vòi coi như tới lá ở 0 °C nên quãng ghim bắt đầu ngay.
+// Vùng hợp lệ: áp suất khí quyển, nước tinh khiết (điểm đông 0 °C), không tính
+//   bay hơi và không tính gió mạnh (h lớn hơn nhiều thì mô hình một-lớp này hỏng).
+// q KHÔNG độc lập với T_kk: bầu trời lạnh hơn thì bức xạ trả về ít hơn, nên hụt
+//   bức xạ của một lá 0 °C là ≈70 W/m² khi không khí 2 °C và ≈93 W/m² khi −5 °C
+//   (ε_lá 0,97, ε_trời 0,75). Hạ thanh nhiệt độ thì phải đẩy q lên theo.
+---
+
+<figure class="demo" data-demo="tuoi-nuoc-cuu-cay-khoi-suong-gia">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Lớp nước phủ trên lá d (mm) <output data-out="d"></output>
+      <input type="range" data-in="d" min="0" max="4" step="0.1" value="1" /></label>
+    <label>Bức xạ mất về trời q (W/m²) <output data-out="q"></output>
+      <input type="range" data-in="q" min="30" max="120" step="1" value="70" /></label>
+    <label>Nhiệt độ không khí (°C) <output data-out="ta"></output>
+      <input type="range" data-in="ta" min="-5" max="5" step="0.5" value="2" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Hai chiếc lá cùng một đêm quang mây: đường vàng là lá khô, đường xanh là lá
+    được phủ nước. Vạch đỏ −2 °C là ngưỡng mô cây bắt đầu chết. Lá khô rơi thẳng
+    xuống dưới vạch trong vài phút; lá có nước tụt tới 0 °C rồi nằm ngang đúng
+    bằng thời gian nước nhả hết nhiệt ẩn đông đặc. Trời càng lạnh thì q càng
+    lớn, vì bầu trời lạnh trả lại càng ít: ≈70 W/m² với không khí 2 °C, ≈93 W/m²
+    với −5 °C. Trục thời gian vẽ theo thang lôga để cả quãng vài chục giây lẫn
+    quãng vài giờ cùng nhìn được.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const WET = '#2563eb', MARK = '#dc2626', DRY = '#f59e0b';
+  const C_LEAF = 800, H_CONV = 15, RHO = 1000, LF = 334000, CW = 4180, CI = 2100;
+  const T0 = 5, T1 = 43200; // trục thời gian: 5 giây → 12 giờ
+  const TICKS: Array<[number, string]> = [
+    [10, '10 giây'], [60, '1 phút'], [600, '10 phút'], [3600, '1 giờ'], [36000, '10 giờ'],
+  ];
+  const DEAD = -2;
+
+  const vn = (x: number, n: number) => x.toFixed(n).replace('.', ',').replace('-', '−');
+
+  function fmtT(s: number): string {
+    if (!isFinite(s)) return 'không bao giờ';
+    if (s <= 0) return '0 giây';
+    if (s < 90) return `${s.toFixed(0)} giây`;
+    if (s < 3600) {
+      const m = Math.floor(s / 60), r = Math.round(s - m * 60);
+      return r ? `${m} phút ${r} giây` : `${m} phút`;
+    }
+    const h = Math.floor(s / 3600), m = Math.round((s - h * 3600) / 60);
+    return m ? `${h} giờ ${m} phút` : `${h} giờ`;
+  }
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (k: string) => root.querySelector(`[data-in="${k}"]`) as HTMLInputElement;
+    const output = (k: string) => root.querySelector(`[data-out="${k}"]`) as HTMLOutputElement;
+
+    function draw() {
+      const d = Number(input('d').value), q = Number(input('q').value), Ta = Number(input('ta').value);
+      output('d').textContent = vn(d, 1);
+      output('q').textContent = String(q);
+      output('ta').textContent = vn(Ta, 1);
+
+      const Tinf = Ta - q / H_CONV;
+      const tauDry = C_LEAF / H_CONV;
+      const tauWet = (C_LEAF + RHO * (d / 1000) * CW) / H_CONV;
+      const tauIce = (C_LEAF + RHO * (d / 1000) * CI) / H_CONV;
+      const qNet = q - H_CONV * Ta;          // dòng nhiệt ròng khi lá đang ở 0 °C
+      const freezes = qNet > 0;              // tương đương T_∞ < 0
+      const wetStart = Math.max(Ta, 0);
+      const tPlateau = freezes && wetStart > 0
+        ? tauWet * Math.log((wetStart - Tinf) / (0 - Tinf)) : 0;
+      const hold = freezes ? RHO * (d / 1000) * LF / qNet : Infinity;
+
+      const dry = (t: number) => Tinf + (Ta - Tinf) * Math.exp(-t / tauDry);
+      const wet = (t: number) => {
+        if (!freezes) return Tinf + (Ta - Tinf) * Math.exp(-t / tauWet);
+        if (t < tPlateau) return Tinf + (wetStart - Tinf) * Math.exp(-t / tauWet);
+        if (t < tPlateau + hold) return 0;
+        return Tinf + (0 - Tinf) * Math.exp(-(t - tPlateau - hold) / tauIce);
+      };
+      const hit = (tau: number, from: number, at: number) =>
+        from <= at ? 0 : (Tinf >= at ? Infinity : tau * Math.log((from - Tinf) / (at - Tinf)));
+      const tDeadDry = hit(tauDry, Ta, DEAD);
+      const tDeadWet = freezes ? tPlateau + hold + hit(tauIce, 0, DEAD) : Infinity;
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.46);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+
+      const padL = 44, padB = 26, padT = 16, padR = 10;
+      const yHi = Math.max(3, Ta + 1), yLo = Math.min(-4, Tinf - 1);
+      const step = yHi - yLo > 12 ? 4 : 2;
+      const lg = Math.log(T1 / T0);
+      const X = (t: number) => padL + (Math.log(Math.max(t, T0) / T0) / lg) * (cssW - padL - padR);
+      const Y = (c: number) => padT + ((yHi - c) / (yHi - yLo)) * (cssH - padB - padT);
+
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.3;
+      ctx.beginPath(); ctx.moveTo(padL, padT); ctx.lineTo(padL, cssH - padB); ctx.lineTo(cssW - padR, cssH - padB); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(padL, Y(0)); ctx.lineTo(cssW - padR, Y(0)); ctx.stroke();
+      ctx.globalAlpha = 0.55; ctx.fillStyle = fg; ctx.font = '10px system-ui,sans-serif';
+      ctx.textAlign = 'center';
+      for (const [t, lab] of TICKS) ctx.fillText(lab, X(t), cssH - padB + 14);
+      ctx.textAlign = 'right';
+      for (let c = Math.ceil(yLo / step) * step; c <= yHi; c += step) ctx.fillText(`${vn(c, 0)} °C`, padL - 4, Y(c) + 3);
+      ctx.globalAlpha = 1;
+
+      // ngưỡng chết mô −2 °C
+      ctx.strokeStyle = MARK; ctx.globalAlpha = 0.75; ctx.setLineDash([5, 4]);
+      ctx.beginPath(); ctx.moveTo(padL, Y(DEAD)); ctx.lineTo(cssW - padR, Y(DEAD)); ctx.stroke();
+      ctx.setLineDash([]); ctx.fillStyle = MARK; ctx.textAlign = 'left';
+      ctx.fillText('−2 °C · mô cây bắt đầu chết', padL + 6, Y(DEAD) - 5);
+      ctx.globalAlpha = 1;
+
+      for (const [fn, col] of [[dry, DRY], [wet, WET]] as Array<[(t: number) => number, string]>) {
+        ctx.strokeStyle = col; ctx.lineWidth = 2; ctx.beginPath();
+        for (let i = 0; i <= 260; i++) {
+          const t = T0 * Math.exp((lg * i) / 260);
+          i ? ctx.lineTo(X(t), Y(fn(t))) : ctx.moveTo(X(t), Y(fn(t)));
+        }
+        ctx.stroke(); ctx.lineWidth = 1;
+      }
+
+      ctx.textAlign = 'left'; ctx.fillStyle = DRY;
+      ctx.fillText('lá khô', padL + 6, Y(dry(T0)) - 6);
+      ctx.fillStyle = WET;
+      ctx.fillText('lá phủ nước', padL + 6, Y(Math.max(wet(T0), 0)) + 15);
+
+      if (freezes && d > 0) {
+        const mid = Math.sqrt(Math.max(tPlateau, T0) * (tPlateau + hold));
+        ctx.fillStyle = WET; ctx.textAlign = 'center';
+        ctx.fillText(`ghim ở 0 °C: ${fmtT(hold)}`, X(mid), Y(0) - 8);
+      }
+
+      ctx.fillStyle = MARK;
+      for (const t of [tDeadDry, tDeadWet]) {
+        if (isFinite(t) && t <= T1) { ctx.beginPath(); ctx.arc(X(t), Y(DEAD), 5, 0, Math.PI * 2); ctx.fill(); }
+      }
+
+      const dryPhrase = tDeadDry <= 0 ? 'chạm −2 °C <b>ngay khi trời tối</b>'
+        : isFinite(tDeadDry) ? `chạm −2 °C sau <b>${fmtT(tDeadDry)}</b>`
+        : '<b>không bao giờ chạm −2 °C</b>';
+
+      let wetPhrase = '';
+      if (!freezes) wetPhrase = `<b>nước không đông</b> — không khí trên ${vn(q / H_CONV, 1)} °C thì lá còn dừng trên 0 °C, mẹo tưới không có việc gì để làm`;
+      else if (d === 0) wetPhrase = '<b>chưa có nước: hai đường trùng nhau</b>';
+      else {
+        wetPhrase = `lá phủ nước bị ghim ở 0 °C suốt <b>${fmtT(hold)}</b>`;
+        if (Ta <= DEAD) wetPhrase += ' · <b>lá khô đã dưới ngưỡng ngay khi trời tối</b>';
+        else if (isFinite(tDeadDry)) wetPhrase += ` · dài gấp <b>${(hold / tDeadDry).toFixed(0)} lần</b> quãng sống của lá khô`;
+      }
+      readout.innerHTML =
+        `${vn(d, 1)} mm nước · mất ${q} W/m² · không khí ${vn(Ta, 1)} °C → lá khô ${dryPhrase} ` +
+        `rồi dừng ở ${vn(Tinf, 1)} °C; ${wetPhrase}`;
+    }
+
+    root.querySelectorAll('input').forEach((el) => el.addEventListener('input', draw));
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="tuoi-nuoc-cuu-cay-khoi-suong-gia"]').forEach(setup);
+</script>

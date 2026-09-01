@@ -1,0 +1,208 @@
+---
+// So sánh hai cách hạ tốc quạt AC 220 V / 50 Hz bằng phần tử nối tiếp.
+// Mô hình: quạt = điện trở tương đương R_q không đổi (bậc 1).
+//   Kiểu điện trở: |Z| = R_q + R_s          → P_hộp = I²·R_s
+//   Kiểu tụ:       |Z| = √(R_q² + X_C²),  X_C = 1/(2πfC) → P_hộp = 0 (tụ lý tưởng)
+// Nguồn: mạch RC nối tiếp xoay chiều, công suất tác dụng P = I²·R (chỉ phần thực).
+// Phạm vi hợp lệ: chế độ chạy ổn định, quạt còn quay. Khi điện áp trên quạt tụt
+// dưới ~60 V động cơ có thể ngừng quay và trở kháng thực tế sụp xuống giá trị
+// hãm (locked-rotor) — lúc đó R_q không còn là hằng số và mô hình hết đúng.
+---
+
+<figure class="demo" data-demo="hop-so-quat-dung-tu-dien-khong-dot-dien">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Điện trở tương đương của quạt (Ω) <output data-out="rq"></output>
+      <input type="range" data-in="rq" min="200" max="800" step="10" value="440" /></label>
+    <label>Điện trở nối tiếp (Ω) <output data-out="rs"></output>
+      <input type="range" data-in="rs" min="0" max="800" step="10" value="440" /></label>
+    <label>Tụ nối tiếp (µF) <output data-out="c"></output>
+      <input type="range" data-in="c" min="1" max="10" step="0.1" value="4.2" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Trái: mặt phẳng trở kháng. Thêm điện trở là kéo dài cạnh nằm ngang; thêm tụ
+    là dựng một cạnh thẳng đứng. Hai cách cùng cho một cạnh huyền |Z| thì cùng
+    cho một dòng điện, tức cùng một tốc độ quạt.
+    Phải: phần vào quạt (cột vàng) là chung cho cả hai, nhưng phần đốt bỏ trong
+    hộp số (cột đỏ) chỉ mọc lên ở kiểu điện trở. Công suất tác dụng chỉ tính trên
+    phần thực của trở kháng, mà cạnh thẳng đứng thì không có phần thực nào.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const CAP = '#2563eb', RES = '#dc2626', FAN = '#f59e0b';
+  const V = 220, F = 50;
+  const vn = (x: number, d = 1) => x.toFixed(d).replace('.', ',');
+  // bước chia trục: chọn theo chỗ trống thật sự (px), không chỉ theo dải giá trị
+  const pickStep = (max: number, px: number) => {
+    for (const s of [200, 400, 500, 1000, 2000, 4000]) if ((s / max) * px >= 34) return s;
+    return 4000;
+  };
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (k: string) => root.querySelector(`[data-in="${k}"]`) as HTMLInputElement;
+    const output = (k: string) => root.querySelector(`[data-out="${k}"]`) as HTMLOutputElement;
+
+    function draw() {
+      const Rq = Number(input('rq').value);
+      const Rs = Number(input('rs').value);
+      const Cu = Number(input('c').value);
+      output('rq').textContent = String(Rq);
+      output('rs').textContent = String(Rs);
+      output('c').textContent = vn(Cu, 1);
+
+      const Xc = 1 / (2 * Math.PI * F * Cu * 1e-6);
+      const Zr = Rq + Rs;
+      const Zc = Math.hypot(Rq, Xc);
+      const Ir = V / Zr, Ic = V / Zc;
+      const fanR = Ir * Ir * Rq, wasteR = Ir * Ir * Rs;
+      const fanC = Ic * Ic * Rq, wasteC = 0;
+      const pf = Rq / Zc;
+      const Vfan = Ic * Rq;
+      const Cneed = Zr > Rq ? 1 / (2 * Math.PI * F * Math.sqrt(Zr * Zr - Rq * Rq)) * 1e6 : NaN;
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = Math.max(260, root.clientWidth - 32);
+      // màn hẹp: hai bảng xếp chồng nên khung cao hơn; màn rộng: nằm cạnh nhau
+      const narrow = cssW < 460;
+      const cssH = Math.round(cssW * (narrow ? 1.2 : 0.52));
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+      ctx.font = '10px system-ui,sans-serif';
+      ctx.lineWidth = 1;
+
+      // ---- Panel A: mặt phẳng trở kháng (R sang phải, X_C dựng lên) ----
+      const padL = 46, padT = 26, padB = 30, padR = 14;
+      const aW = narrow ? cssW : cssW * 0.46;
+      const aH = narrow ? cssH * 0.58 : cssH;
+      const side = Math.max(60, Math.min(aW - padL - padR, aH - padT - padB));
+      const ox = padL, oy = padT + side;
+      // khung bảng cột: nằm bên phải trên màn rộng, nằm dưới trên màn hẹp
+      const bLeft = narrow ? 10 : ox + side + 40;
+      const bAxis = bLeft + 30;
+      const rightLimit = narrow ? cssW - 6 : bLeft - 4;
+      const axMax = Math.max(1000, Math.ceil((Math.max(Zr, Xc, Zc) * 1.1) / 200) * 200);
+      const sc = side / axMax;
+      const X = (r: number) => ox + r * sc;
+      const Y = (x: number) => oy - x * sc;
+
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.3;
+      ctx.beginPath();
+      ctx.moveTo(ox, oy - side); ctx.lineTo(ox, oy); ctx.lineTo(ox + side, oy);
+      ctx.stroke();
+      ctx.globalAlpha = 0.55; ctx.fillStyle = fg;
+      const st = pickStep(axMax, side);
+      ctx.textAlign = 'center';
+      for (let r = st; r <= axMax; r += st) ctx.fillText(`${r}`, X(r), oy + 13);
+      ctx.textAlign = 'right';
+      for (let x = st; x <= axMax; x += st) ctx.fillText(`${x}`, ox - 5, Y(x) + 3);
+      ctx.fillText('R (Ω)', ox + side, oy + 25);
+      ctx.textAlign = 'left';
+      ctx.fillText('X_C (Ω)', ox - 8, padT - 9);
+      ctx.globalAlpha = 1;
+
+      // cung tròn bán kính |Z| của nhánh tụ: cùng cạnh huyền = cùng dòng
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.35; ctx.setLineDash([3, 3]);
+      ctx.beginPath(); ctx.arc(ox, oy, Zc * sc, -Math.PI / 2, 0); ctx.stroke();
+      ctx.setLineDash([]); ctx.globalAlpha = 1;
+
+      // nhánh điện trở: một cạnh nằm ngang duy nhất
+      ctx.strokeStyle = FAN; ctx.lineWidth = 5;
+      ctx.beginPath(); ctx.moveTo(X(0), Y(0)); ctx.lineTo(X(Rq), Y(0)); ctx.stroke();
+      ctx.strokeStyle = RES;
+      ctx.beginPath(); ctx.moveTo(X(Rq), Y(0)); ctx.lineTo(X(Zr), Y(0)); ctx.stroke();
+      ctx.fillStyle = RES;
+      ctx.beginPath(); ctx.arc(X(Zr), Y(0), 4.5, 0, Math.PI * 2); ctx.fill();
+
+      // nhánh tụ: cạnh ngang R_q + cạnh đứng X_C + cạnh huyền
+      ctx.strokeStyle = CAP; ctx.lineWidth = 3;
+      ctx.beginPath(); ctx.moveTo(X(Rq), Y(0)); ctx.lineTo(X(Rq), Y(Xc)); ctx.stroke();
+      ctx.lineWidth = 2.5;
+      ctx.beginPath(); ctx.moveTo(X(0), Y(0)); ctx.lineTo(X(Rq), Y(Xc)); ctx.stroke();
+      ctx.fillStyle = CAP;
+      ctx.beginPath(); ctx.arc(X(Rq), Y(Xc), 4.5, 0, Math.PI * 2); ctx.fill();
+      ctx.lineWidth = 1;
+
+      // nhãn cạnh chỉ vẽ khi lọt trong chính đoạn của nó — khỏi chồng chữ
+      const fit = (full: string, short: string, px: number) =>
+        ctx.measureText(full).width < px - 4 ? full : ctx.measureText(short).width < px - 4 ? short : '';
+      ctx.textAlign = 'center'; ctx.fillStyle = FAN;
+      const labFan = fit(`quạt ${Rq} Ω`, 'quạt', Rq * sc);
+      if (labFan) ctx.fillText(labFan, X(Rq / 2), Y(0) - 6);
+      ctx.fillStyle = RES;
+      const labRes = Rs > 0 ? fit(`+ ${Rs} Ω`, '+R', Rs * sc) : '';
+      if (labRes) ctx.fillText(labRes, X((Rq + Zr) / 2), Y(0) - 6);
+      // hai giá trị |Z| đặt cố định ở góc trên-phải — vùng tam giác không bao giờ với tới
+      ctx.textAlign = 'right'; ctx.fillStyle = RES;
+      ctx.fillText(fit(`điện trở |Z| = ${Zr} Ω`, `|Z| = ${Zr} Ω`, side), ox + side, oy - side + 10);
+      ctx.fillStyle = CAP;
+      ctx.fillText(fit(`tụ |Z| = ${Zc.toFixed(0)} Ω`, `|Z| = ${Zc.toFixed(0)} Ω`, side), ox + side, oy - side + 22);
+      ctx.textAlign = 'left';
+      const tX = `X_C = ${Xc.toFixed(0)} Ω`;
+      const lx = Math.min(X(Rq) + 7, rightLimit - ctx.measureText(tX).width);
+      if (Xc * sc > 70) ctx.fillText(tX, lx, Y(Xc / 2) + 3);
+
+      // ---- Panel B: hai cột công suất ----
+      const b0 = cssH - padB - 12;
+      const bTop = narrow ? Math.round(cssH * 0.58) + 16 : padT + 6;
+      const bw = Math.max(24, (cssW - 26 - bAxis - 16) / 2);
+      const pMax = Math.max(60, Math.ceil(Math.max(fanR + wasteR, fanC) / 20) * 20);
+      const PY = (p: number) => b0 - (p / pMax) * (b0 - bTop);
+
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.3;
+      ctx.beginPath(); ctx.moveTo(bAxis, bTop); ctx.lineTo(bAxis, b0); ctx.lineTo(cssW - 8, b0); ctx.stroke();
+      ctx.globalAlpha = 0.55; ctx.fillStyle = fg; ctx.textAlign = 'right';
+      for (let p = pMax / 4; p <= pMax; p += pMax / 4) ctx.fillText(`${p.toFixed(0)} W`, bAxis - 4, PY(p) + 3);
+      ctx.globalAlpha = 1;
+
+      const cols: Array<[number, number, number, string]> = [
+        [bAxis + 12, fanR, wasteR, 'điện trở'],
+        [bAxis + 28 + bw, fanC, wasteC, 'tụ'],
+      ];
+      ctx.textAlign = 'center';
+      for (const [cx, pf1, pw, lab] of cols) {
+        ctx.fillStyle = FAN;
+        ctx.fillRect(cx, PY(pf1), bw, b0 - PY(pf1));
+        ctx.fillStyle = RES;
+        ctx.fillRect(cx, PY(pf1 + pw), bw, PY(pf1) - PY(pf1 + pw));
+        ctx.fillStyle = fg; ctx.globalAlpha = 0.75;
+        ctx.fillText(lab, cx + bw / 2, b0 + 14);
+        ctx.globalAlpha = 1;
+        ctx.fillStyle = RES;
+        ctx.fillText(pw > 0.05 ? `đốt ${vn(pw)} W` : 'đốt 0 W', cx + bw / 2, PY(pf1 + pw) - 5);
+      }
+      const same = Math.abs(Ic - Ir) / Ir < 0.02
+        ? ' · <b>hai nhánh đang cùng một tốc độ quạt</b>' : '';
+      const stall = Vfan < 60
+        ? ' · <b>quạt chỉ còn ' + vn(Vfan, 0) + ' V — dưới ngưỡng quay, mô hình hết đúng</b>' : '';
+      readout.innerHTML =
+        `Điện trở ${Rs} Ω: dòng ${vn(Ir, 3)} A · quạt nhận ${vn(fanR)} W · hộp số đốt <b>${vn(wasteR)} W</b>` +
+        ` — Tụ ${vn(Cu)} µF (X_C = ${Xc.toFixed(0)} Ω): dòng ${vn(Ic, 3)} A · quạt nhận ${vn(fanC)} W` +
+        ` · hộp số đốt <b>0,0 W</b>, cos φ = ${vn(pf, 2)}${same}${stall}` +
+        (isFinite(Cneed) ? `<br>Muốn tụ cho đúng dòng của nhánh điện trở: <b>${vn(Cneed, 2)} µF</b>.` : '');
+    }
+
+    root.querySelectorAll('input').forEach((el) => el.addEventListener('input', draw));
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="hop-so-quat-dung-tu-dien-khong-dot-dien"]').forEach(setup);
+</script>

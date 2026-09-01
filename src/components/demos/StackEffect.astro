@@ -1,0 +1,206 @@
+---
+// Hiệu ứng ống khói (stack effect) trong thông gió tự nhiên.
+// Áp suất động lực toàn phần theo chiều cao giếng trời (ASHRAE Fundamentals,
+// ch. Ventilation and Infiltration):
+//     Δp = ρ_ngoài · g · h · (T_trong − T_ngoài) / T_trong      [Pa]
+// Lưu lượng qua cặp lỗ thoáng (CIBSE AM10, tiết diện hiệu dụng
+//     A_eff = 1/√(1/A_dưới² + 1/A_trên²) = A/√2 khi hai lỗ bằng nhau):
+//     v = C_d · √(Δp / ρ_ngoài),  C_d = 0,65 (lỗ thoáng có chớp/lam, ASHRAE)
+// Trần lý tưởng (toàn bộ Δp thành động năng, một lỗ thắt duy nhất):
+//     v_lt = √(2·g·h·ΔT / T_trong)  — không phụ thuộc khối lượng riêng.
+// Quy ước: nhiệt độ ngoài trời cố định 30 °C; nhà ống mặt bằng 60 m²,
+// thể tích V = 60·h. Giả thiết: khí lý tưởng, nhiệt độ đồng nhất trong và
+// ngoài, lặng gió tuyệt đối, hai lỗ thoáng bằng nhau ở đúng đáy và đỉnh.
+// Miền hợp lệ: ΔT ≤ 15 °C (ΔT/T < 5%, xấp xỉ Boussinesq còn tốt);
+// Re qua lỗ ~10^5 nên C_d ổn định. Ngoài miền này phải giải lại bằng CFD.
+---
+
+<figure class="demo" data-demo="gieng-troi-nha-ong-va-hieu-ung-ong-khoi">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Chiều cao giếng trời h (m) <output data-out="h"></output>
+      <input type="range" data-in="h" min="3" max="30" step="0.5" value="15" /></label>
+    <label>Chênh nhiệt trong − ngoài ΔT (°C) <output data-out="dt"></output>
+      <input type="range" data-in="dt" min="1" max="15" step="0.5" value="10" /></label>
+    <label>Diện tích mỗi lỗ thoáng (m²) <output data-out="a"></output>
+      <input type="range" data-in="a" min="0.1" max="3" step="0.1" value="1" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Trái: mặt cắt đứng căn nhà ống — khí mát chui vào lỗ thoáng tầng trệt,
+    khí nóng leo giếng trời rồi thoát qua đỉnh; bề dày mũi tên tỉ lệ lưu lượng.
+    Phải: hiệu áp trong − ngoài theo độ cao, một tam giác đổi dấu tại mặt phẳng
+    trung hoà (nét đứt đỏ) — dưới mặt ấy nhà bị hút vào, trên mặt ấy nhà bị đẩy ra.
+    Nhiệt độ ngoài trời lấy cố định 30 °C, nhà mặt bằng 60 m², hệ số lưu lượng 0,65.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const CURVE = '#2563eb', MARK = '#dc2626', WARM = '#f59e0b';
+  const G = 9.81, P0 = 101325, R = 287.05, CD = 0.65;
+  const TOUT = 303.15;   // 30 °C ngoài trời
+  const FOOT = 60;       // m² mặt bằng nhà ống
+
+  const fmt = (x: number, d: number) => x.toFixed(d).replace('.', ',');
+  const niceStep = (x: number) => {
+    const e = Math.pow(10, Math.floor(Math.log10(x)));
+    const m = x / e;
+    return (m < 1.5 ? 1 : m < 3.5 ? 2 : m < 7.5 ? 5 : 10) * e;
+  };
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (k: string) => root.querySelector(`[data-in="${k}"]`) as HTMLInputElement;
+    const output = (k: string) => root.querySelector(`[data-out="${k}"]`) as HTMLOutputElement;
+
+    function arrow(x0: number, y0: number, x1: number, y1: number, lw: number, col: string) {
+      const a = Math.atan2(y1 - y0, x1 - x0), head = 5 + lw;
+      ctx.strokeStyle = col; ctx.fillStyle = col; ctx.lineWidth = lw; ctx.lineCap = 'round';
+      ctx.beginPath(); ctx.moveTo(x0, y0); ctx.lineTo(x1 - head * Math.cos(a) * 0.6, y1 - head * Math.sin(a) * 0.6); ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(x1, y1);
+      ctx.lineTo(x1 - head * Math.cos(a - 0.42), y1 - head * Math.sin(a - 0.42));
+      ctx.lineTo(x1 - head * Math.cos(a + 0.42), y1 - head * Math.sin(a + 0.42));
+      ctx.closePath(); ctx.fill();
+      ctx.lineWidth = 1;
+    }
+
+    function draw() {
+      const h = Number(input('h').value);
+      const dT = Number(input('dt').value);
+      const A = Number(input('a').value);
+      output('h').textContent = fmt(h, 1);
+      output('dt').textContent = fmt(dT, 1);
+      output('a').textContent = fmt(A, 1);
+
+      const Tin = TOUT + dT;
+      const rhoO = P0 / (R * TOUT);
+      const dp = rhoO * G * h * dT / Tin;        // hiệu áp toàn phần, Pa
+      const vIdeal = Math.sqrt(2 * G * h * dT / Tin);
+      const v = CD * Math.sqrt(dp / rhoO);       // qua mỗi lỗ thoáng
+      const Q = v * A;                           // m³/s
+      const Qh = Q * 3600;
+      const ach = Qh / (FOOT * h);
+      const watt = Q * dp;
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.62);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+      ctx.font = '10px system-ui,sans-serif';
+
+      const padT = 30, padB = 34, padL = 26, padR = 12;
+      const HW = Math.min(118, Math.max(62, (cssW - padL - padR) * 0.26));
+      const hx = padL;
+      const labelX = hx + HW + 38;
+      const cx0 = labelX + 10, cx1 = cssW - padR, xc = (cx0 + cx1) / 2;
+      const y0 = cssH - padB, y1 = padT;
+      const Y = (z: number) => y0 - (z / h) * (y0 - y1);
+      const pm = Math.max(dp / 2, 1e-6) * 1.2;
+      const X = (p: number) => xc + (p / pm) * (cx1 - cx0) / 2;
+
+      // ---- mặt cắt căn nhà ----
+      const sx0 = hx + HW * 0.56, sx1 = hx + HW * 0.94;   // giếng trời
+      const ventTop = Y(Math.min(2, h * 0.16));
+      ctx.globalAlpha = 0.12; ctx.fillStyle = WARM;
+      ctx.fillRect(sx0, y1, sx1 - sx0, y0 - y1);
+      ctx.globalAlpha = 0.45; ctx.strokeStyle = fg;
+      ctx.beginPath();
+      ctx.moveTo(hx, ventTop); ctx.lineTo(hx, y1);          // tường trái (chừa lỗ thoáng)
+      ctx.lineTo(sx0, y1);                                   // mái, ngắt tại giếng trời
+      ctx.moveTo(sx1, y1); ctx.lineTo(hx + HW, y1); ctx.lineTo(hx + HW, y0);
+      ctx.moveTo(hx, y0); ctx.lineTo(hx + HW, y0);           // nền
+      ctx.stroke();
+      ctx.setLineDash([2, 3]); ctx.globalAlpha = 0.22;
+      for (let z = 3; z < h - 0.5; z += 3) {
+        ctx.beginPath(); ctx.moveTo(hx, Y(z)); ctx.lineTo(sx0, Y(z)); ctx.stroke();
+      }
+      ctx.setLineDash([]); ctx.globalAlpha = 1;
+
+      const lw = 1 + 8 * Math.sqrt(Math.min(Q, 7.3) / 7.3);
+      const yv = (ventTop + y0) / 2;
+      arrow(hx - 22, yv, hx + HW * 0.34, yv, lw, CURVE);
+      arrow((sx0 + sx1) / 2, y0 - 6, (sx0 + sx1) / 2, y1 + 20, lw, WARM);
+      arrow((sx0 + sx1) / 2, y1 + 1, (sx0 + sx1) / 2, y1 - 13, lw, WARM);
+      ctx.globalAlpha = 0.6; ctx.fillStyle = fg;
+      ctx.textAlign = 'left'; ctx.fillText('vào', hx - 22, yv - 6);
+      ctx.textAlign = 'center'; ctx.fillText('giếng trời', (sx0 + sx1) / 2, y1 - 16);
+      ctx.globalAlpha = 1;
+
+      // ---- biểu đồ hiệu áp ----
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.3;
+      ctx.beginPath(); ctx.moveTo(cx0, y0); ctx.lineTo(cx1, y0); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(xc, y0); ctx.lineTo(xc, y1); ctx.stroke();
+      ctx.globalAlpha = 0.55; ctx.fillStyle = fg;
+
+      const step = niceStep(pm / (cx1 - cx0 > 260 ? 3 : 2));
+      const dec = Math.max(0, -Math.floor(Math.log10(step)));
+      ctx.textAlign = 'center';
+      for (let k = -4; k <= 4; k++) {
+        const p = k * step;
+        if (Math.abs(p) > pm) continue;
+        ctx.fillText(k === 0 ? '0' : fmt(p, dec).replace('-', '−'), X(p), y0 + 14);
+      }
+      ctx.fillText('hiệu áp trong − ngoài (Pa)', xc, y0 + 26);
+      ctx.textAlign = 'right';
+      // nhãn giữa đẩy lên trên để không bị nét đứt mặt trung hoà gạch ngang
+      for (const z of [0, h / 2, h]) {
+        ctx.fillText(`${fmt(z, z % 1 === 0 ? 0 : 1)} m`, labelX, Y(z) + (z === h / 2 ? -5 : 3));
+      }
+      ctx.globalAlpha = 1;
+
+      // tam giác áp suất: −dp/2 ở đáy, +dp/2 ở đỉnh, đổi dấu ở giữa
+      ctx.globalAlpha = 0.16;
+      ctx.fillStyle = CURVE;
+      ctx.beginPath(); ctx.moveTo(xc, y0); ctx.lineTo(X(-dp / 2), y0); ctx.lineTo(xc, Y(h / 2)); ctx.closePath(); ctx.fill();
+      ctx.fillStyle = WARM;
+      ctx.beginPath(); ctx.moveTo(xc, Y(h / 2)); ctx.lineTo(X(dp / 2), y1); ctx.lineTo(xc, y1); ctx.closePath(); ctx.fill();
+      ctx.globalAlpha = 1;
+      ctx.strokeStyle = CURVE; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.moveTo(X(-dp / 2), y0); ctx.lineTo(X(dp / 2), y1); ctx.stroke();
+      ctx.lineWidth = 1;
+
+      // mặt phẳng trung hoà
+      ctx.strokeStyle = MARK; ctx.setLineDash([5, 4]);
+      ctx.beginPath(); ctx.moveTo(hx, Y(h / 2)); ctx.lineTo(cx1, Y(h / 2)); ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillStyle = MARK; ctx.textAlign = 'left';
+      // nhãn nằm dưới nét đứt, tránh đè lên nhãn độ cao ở trên nó
+      ctx.fillText('mặt phẳng trung hoà', hx + 2, Y(h / 2) + 12);
+      ctx.beginPath(); ctx.arc(X(-dp / 2), y0, 4, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.arc(X(dp / 2), y1, 4, 0, Math.PI * 2); ctx.fill();
+
+      const note = ach >= 6
+        ? ' · <b>vượt mức 6 lần/giờ của phòng bệnh viện</b>'
+        : ach < 1.5
+          ? ' · <b>dưới ngưỡng thông thoáng, gần như nhà kín</b>'
+          : '';
+      readout.innerHTML =
+        `Δp = <b>${fmt(dp, 2)} Pa</b> (mỗi lỗ thoáng gánh một nửa: ${fmt(dp / 2, 2)} Pa) · ` +
+        `khí vào <b>${fmt(v, 2)} m/s</b>, trần lý tưởng ${fmt(vIdeal, 2)} m/s · ` +
+        `<b>${Math.round(Qh).toLocaleString('vi-VN')} m³/h</b> → ${fmt(ach, 1)} lần thay không khí mỗi giờ` +
+        ` · công suất khí động ${fmt(watt, watt < 0.1 ? 3 : watt < 1 ? 2 : 1)} W${note}`;
+    }
+
+    root.querySelectorAll('input').forEach((el) => el.addEventListener('input', draw));
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="gieng-troi-nha-ong-va-hieu-ung-ong-khoi"]').forEach(setup);
+</script>

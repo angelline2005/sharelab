@@ -1,0 +1,85 @@
+---
+title: "Phòng tắm hát hay 1,92 giây — treo một tấm rèm là mất hai phần ba"
+seoTitle: "Vì sao hát trong nhà tắm nghe hay hơn: thời gian vang và công thức Sabine"
+description: "Phòng tắm gạch men 2×2×2,5 m có thời gian vang 1,92 giây — nhỉnh hơn Boston Symphony Hall, và đó là lý do bạn hát hay hơn ở trong đó. Treo một tấm rèm 4 m² là tụt còn 0,59 giây, giảm 69%. Sabine chỉ cần thể tích chia cho tổng diện tích hút âm."
+pubDate: 2026-09-02
+tags: ["vat-ly", "song", "am-thanh", "javascript"]
+translationId: "thoi-gian-vang-sabine-va-tam-rem-phong-tam"
+---
+
+import ReverbTime from '../../../components/demos/ReverbTime.astro';
+
+Bạn hát trong phòng tắm nghe hay hơn hẳn: giọng dày lên, nốt cao đỡ chông
+chênh, câu nào cũng có đuôi. Ra phòng ngủ hát lại đúng bài ấy thì giọng
+xẹp xuống, trần trụi. Cùng một cái miệng — khác nhau ở đúng một con số:
+
+<ReverbTime />
+
+## 454 lần dội tường trước khi tắt
+
+Âm bạn phát ra không đi thẳng vào tai rồi thôi. Trong phòng tắm 2 × 2 × 2,5 m,
+quãng đường trung bình giữa hai lần chạm tường là 4V/S = **1,43 m**, tức 4,2
+phần nghìn giây. Gạch men chỉ nuốt chừng 3% năng lượng mỗi lần chạm — nghe
+như không đáng kể, nhưng phải **454 lần dội** thì 0,97 luỹ thừa 454 mới còn
+dưới một phần triệu, tức tụt hơn 60 dB, mức mà [tai đếm theo
+lôgarit](/vi/posts/thang-decibel-vi-sao-tai-nguoi-dem-bang-logarit) coi như
+đã tắt hẳn — gần hai giây.
+
+Wallace Sabine tìm ra quy luật từ năm 1895 tại Harvard bằng ống organ, đồng hồ
+bấm giây và từng chồng nệm ghế khiêng sang từ giảng đường bên cạnh:
+
+```
+RT60 = 0,161 · V / A     với A = Σ (S_i · α_i)
+```
+
+V là thể tích phòng, α là hệ số hút âm của từng bề mặt (0 = gương phản xạ
+hoàn hảo, 1 = nuốt sạch), A là tổng diện tích hút âm tính bằng m² sabin.
+Phòng tắm ấy có 28 m² bề mặt với α ≈ 0,03, nên A = 0,84 m² sabin và
+**RT60 = 1,92 giây**. Hình dạng phòng, chỗ bạn đứng, bài bạn hát: không có
+mặt trong công thức.
+
+## Đuôi vang hát đệm cho bạn
+
+Tiếng Việt chạy khoảng năm âm tiết mỗi giây, mỗi âm tiết chừng 0,2 giây. Với
+RT60 = 1,92 s, sau 0,2 giây âm cũ mới tụt **6,3 dB** — vẫn còn gần to bằng âm
+mới. Nốt vừa hát chưa kịp chết đã nằm đè lên nốt đang hát: bạn được đệm bằng
+chính mình, chỗ chuyển nốt vụng bị trám kín, ngân rung nghe dày hơn. Trong
+phòng thu 0,5 giây thì sau 0,2 giây âm cũ đã tụt **24 dB** — trơ trọi, mọi
+sai lệch cao độ phơi ra hết. Căn hộp ấy còn tặng thêm một món: nó là [hộp
+cộng hưởng](/vi/posts/song-dung-tren-day-dan), sóng dừng dọc cạnh 2 m ứng với
+343/(2 × 2) = **85,8 Hz**, đúng vùng nốt trầm của giọng nam.
+
+## Nhà hát 1,85 giây và một tấm rèm 4 m²
+
+Sabine đem công thức ra dùng thật: Boston Symphony Hall khánh thành năm 1900
+là công trình đầu tiên được thiết kế bằng tính toán âm học, RT60 khi kín khán
+giả là **1,85 giây**. Phòng tắm nhà bạn: 1,92. Nhưng chuẩn cho phòng học và
+phòng họp là **0,6 giây** — phòng tắm vượt gấp **3,2 lần**, và cùng cái đuôi
+vang ấy quay sang giết lời nói: âm tiết sau tới khi âm tiết trước còn nguyên,
+phụ âm bật chìm trong nền. Phòng ngủ 32 m³, to gấp hơn ba lần, lại chỉ vang
+**0,42 giây** vì nệm chăn rèm thảm kéo α trung bình lên 0,20.
+
+Muốn phòng tắm im tiếng thì treo lên tường một tấm rèm vải dày gấp nếp, 4 m²,
+α ≈ 0,5. Bốn mét vuông gạch α = 0,03 thành bốn mét vuông rèm: A nhảy từ 0,84
+lên **2,72 m² sabin**, RT60 tụt còn **0,59 giây** — giảm **69%**. Tấm rèm ấy
+một mình chiếm **74%** khả năng hút âm của cả căn phòng, còn 24 m² gạch men
+gộp lại chỉ được 0,72: hút âm là tích diện tích với α, mà α chênh nhau cả
+chục lần giữa các vật liệu trong khi diện tích thì không. Nên một bộ rèm và
+một tấm thảm cứu được phòng họp vọng tiếng, không ai phải đục tường.
+
+## Trường hợp biên: căn phòng câm tuyệt đối vẫn vang 57,5 mili giây
+
+Đẩy α lên 1 — mọi bề mặt nuốt sạch, không một tia phản xạ. Vật lý bảo âm chết
+ngay sau lần chạm tường đầu tiên, tức sau 4,2 mili giây. Sabine bảo RT60 =
+0,161 × 10 / 28 = **0,0575 giây**: vẫn vang, lâu gấp gần 14 lần thời gian âm
+cần để bay tới bức tường.
+
+Chỗ hỏng nằm ở giả định gốc: Sabine coi năng lượng rơi liên tục và đều, còn
+thực tế nó rơi từng nấc, mỗi lần chạm tường mất một phần α — [một chuỗi hàm
+mũ](/vi/posts/dao-dong-tat-dan-diem-vang-cua-giam-xoc) chứ không phải một dốc
+thẳng. Với α nhỏ, các nấc mịn tới mức xấp xỉ ấy hoàn hảo: ở α = 0,03 Sabine
+cho 1,92 s còn công thức Eyring — thay S·α bằng −S·ln(1−α) — cho 1,89 s, lệch
+1,5%. Ở α = 0,3 Sabine đã thổi phồng **19%**, ở α = 0,5 là **39%**, và ở
+α = 1 thì ln(1−α) chạy ra âm vô cùng nên Eyring trả về đúng 0 giây, còn
+Sabine thì không bao giờ. Đường nét đứt trong demo là Eyring: kéo diện tích
+hút âm lên cao, hai đường tách nhau đúng chỗ Sabine hết quyền phát biểu.

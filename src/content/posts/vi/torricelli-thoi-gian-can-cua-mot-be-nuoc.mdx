@@ -1,0 +1,100 @@
+---
+title: "Bồn nước 1 m³ thủng một lỗ 5 mm: bao lâu thì cạn?"
+seoTitle: "Định luật Torricelli: tính thời gian tháo cạn bể nước qua lỗ thủng"
+description: "Lỗ ⌀5 mm ở đáy bồn 1 m² tháo cạn 1 mét nước trong 6,4 giờ lý tưởng, 10,3 giờ nếu tính hệ số co dòng 0,62. Chai 1,5 lít thì công thức nói 2,7 giây — thực tế 18 giây, và lý do nằm ở chỗ không khí phải chen ngược vào."
+pubDate: 2026-09-02
+tags: ["vat-ly", "chat-luu", "javascript"]
+translationId: "torricelli-thoi-gian-can-cua-mot-be-nuoc"
+---
+
+import TorricelliDrain from '../../../components/demos/TorricelliDrain.astro';
+
+Bồn inox trên mái thủng một lỗ bằng đầu que tăm. Nhìn dòng nước rỉ ra,
+bạn đoán vài phút là hết, hay vài ngày? Câu trả lời không tỉ lệ với số lít
+trong bồn — nó rẽ qua một căn bậc hai:
+
+<TorricelliDrain />
+
+## Nước phun ra khỏi lỗ nhanh đúng bằng nước rơi từ mặt thoáng xuống
+
+Torricelli tìm ra năm 1643 một điều đến giờ vẫn hơi khó tin:
+
+```
+v = √(2gh)        t_cạn = (A / (C·a)) · √(2h₀ / g)
+```
+
+Ở đáy cột nước sâu 1 m, tia phun ra **4,43 m/s** — gần 16 km/h, đúng bằng
+tốc độ [hòn sỏi thả rơi tự do](/vi/posts/roi-tu-do-va-van-toc-toi-han) 1 m
+đạt được lúc chạm đất. Không phải trùng hợp:
+[Bernoulli](/vi/posts/nguyen-ly-bernoulli-nhanh-hon-la-loang-ap-hon) nói
+cả cột nước phía trên cũng đang đổi thế năng lấy động năng như hòn sỏi,
+chỉ khác là nó đi vòng qua áp suất rồi dồn hết cho nhúm nước chui qua lỗ.
+
+Hệ quả kỳ quặc: công thức không chứa khối lượng riêng. Bồn thuỷ ngân nặng
+gấp 13,6 lần vẫn phun ra đúng 4,43 m/s và cạn cùng lúc với bồn nước cùng
+hình dạng — nặng hơn thì bị đẩy mạnh hơn, nhưng cũng ì hơn đúng chừng ấy.
+
+## Nửa nước cuối lâu gấp 2,4 lần nửa nước đầu
+
+Mực nước tụt thì v tụt theo, nên bồn càng vơi càng chảy chậm — h(t) không
+phải đường thẳng mà là parabol chúc xuống. Kết quả đọc thẳng từ đồ thị bên
+phải: với lỗ ⌀5 mm và 1 m nước, **500 lít đầu mất 3,0 giờ, 500 lít sau mất
+7,3 giờ**. Tỉ số ấy là hằng số, không phụ thuộc bồn hay lỗ: đúng bằng
+1 + √2 = **2,414**.
+
+Đẩy tiếp: 10 cm nước đầu tiên trôi đi trong 32 phút, 10 cm cuối cùng ngốn
+**3,3 giờ** — gấp 6,2 lần cho cùng một lượng nước. Cái bồn trông sắp cạn
+đến nơi chính là lúc nó chảy chậm nhất, và bạn gặp cảnh ấy mỗi tối ở quy
+mô bồn tắm.
+
+## Lỗ 5 mm không phun ra tia 5 mm
+
+Đây là chỗ công thức sách giáo khoa và cái bồn thật chia tay nhau. Nước
+lao về phía lỗ từ mọi hướng, và các dòng chảy hội tụ ấy không dừng đột
+ngột ở mép lỗ — chúng vẫn chụm tiếp một đoạn nữa. Tia thật vì thế thắt
+lại còn **⌀3,9 mm ngay sau miệng lỗ 5 mm**, tiết diện chỉ còn 62%.
+
+Con số 0,62 ấy không phải kinh nghiệm mò mẫm: lý thuyết dòng lý tưởng qua
+lỗ khoét sắc cạnh cho π/(π+2) = **0,611**. Bỏ qua nó là hụt 38% lưu lượng,
+và thời gian cạn nhảy từ 6,4 giờ lên **10,3 giờ** — sai 61%, lớn hơn mọi
+sai số bạn có thể phạm khi đo cái lỗ. Bo tròn mép cho dòng khỏi bẻ gấp thì
+hệ số leo lên ~0,98: lý do mọi vòi phun đều loe miệng thay vì cắt phẳng.
+
+Lưu lượng qua lỗ ⌀5 mm ở mực nước 1 m là 3,24 lít mỗi phút — nghe như chuyện
+nhỏ, cho tới khi bạn nhớ phao tự động vẫn bơm bù suốt đêm để giữ mực nước:
+**4,7 m³ mỗi ngày** chảy thẳng xuống mái, từ một cái lỗ bạn phải soi đèn
+mới thấy.
+
+## Đổi cỡ lỗ ăn đứt đổi cỡ bồn
+
+Ba biến trong công thức không bình đẳng chút nào. Nới lỗ từ 5 lên 10 mm —
+diện tích gấp bốn — kéo 10,3 giờ xuống còn **2,6 giờ**. Nhân đôi lượng
+nước bằng cách dâng mực lên 2 m thì chỉ tốn thêm hệ số √2: **14,6 giờ**
+cho gấp đôi số lít, vì nước sâu hơn cũng đẩy mạnh hơn. Còn nới bồn ra
+2 m² mà giữ nguyên 1 m nước thì thời gian tăng thẳng gấp đôi, 20,6 giờ:
+cột nước không cao thêm nên chẳng có gì bù lại.
+
+Thử áp vào thứ bạn đo được sáng mai: bồn tắm 140 lít, đáy 0,7 m², lỗ xả
+⌀40 mm. Công thức nói **3,0 phút**. Bấm giờ đi.
+
+## Trường hợp biên: cái chai dốc ngược và ba con số cho cùng một lỗ
+
+Chai nước 1,5 lít, thân ⌀8,5 cm — đáy chỉ 0,0057 m², dưới xa nấc nhỏ nhất
+của thanh trượt trên kia — miệng ⌀25 mm, cột nước 26,4 cm. Công thức cho
+**2,7 giây** nếu coi cổ chai loe tròn là C ≈ 1, và 4,3 giây nếu vẫn giữ
+C = 0,62 của lỗ sắc cạnh. Dốc ngược chai thật, bấm đồng hồ: **khoảng 18
+giây** — xa cả hai. Torricelli không sai; ông chỉ lặng lẽ giả định có ai
+đó lo phần không khí phía trên mặt thoáng.
+
+Trong chai thì không ai lo cả. Nước ra được vài chục mililít, áp suất
+khoang trên tụt dưới khí quyển, và
+[khí quyển đẩy ngược vào](/vi/posts/ap-suat-khi-quyen-va-tran-10-met-cua-moi-may-bom)
+qua đúng cái miệng nước đang thoát. Hai dòng tranh nhau một ống nên chai
+chuyển sang chế độ "ợ" từng nhịp: mỗi nhịp một bóng khí chui lên, một ngụm
+nước rơi xuống, và phần lớn thời gian là chờ. Xoáy tròn chai trước khi dốc
+thì cái xoáy giữ một lõi khí thông suốt từ miệng lên tận đáy — hai dòng
+tách kênh, nước chảy liên tục, thời gian rơi về **~7 giây**.
+
+Cùng một lỗ, cùng một cột nước, ba con số. Cái bồn trên mái nhà bạn thì
+luôn khớp với công thức — không phải vì bồn ngoan hơn cái chai, mà vì nắp
+bồn hở.

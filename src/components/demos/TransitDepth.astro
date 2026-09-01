@@ -1,0 +1,204 @@
+---
+// Transit photometry of an exoplanet, central transit (impact parameter b = 0),
+// circular orbit, uniform stellar disc (no limb darkening).
+//   Depth       delta = (Rp/Rs)^2                    (ratio of disc areas)
+//   Light curve F(t) = 1 - A_overlap(d(t),Rp,Rs)/(pi*Rs^2), exact circle-circle
+//               overlap with sky-projected separation d(t) = a*|sin(2*pi*t/P)|
+//   Crossing    T = (P/pi)*asin(Rs/a)                (exact, not the small-angle form)
+//   Contact     tau = (P/2pi)*[asin((Rs+Rp)/a) - asin((Rs-Rp)/a)]
+//   Semi-axis   a = (G*M*P^2 / 4pi^2)^(1/3)          (Kepler III)
+//   Geometric transit probability p = Rs/a
+// Stellar mass from radius (main sequence only): M = (R/1.06)^(1/0.945) below
+// 0.7 Rsun (Boyajian 2012 M-dwarf relation, inverted), M = R^1.25 above — the
+// two branches agree to 0.6% at the joint. Mass is good to ~15%, so a is good
+// to ~5% and every duration to ~5%; depths carry no mass dependence and are exact.
+// Validity: main-sequence hosts 0.15-2 Rsun, P >= 1 d keeps a/Rs > 2.8 across the
+// whole range (orbit always outside the star), and Rp < Rs everywhere, so the
+// geometry never inverts. Limb darkening would round the flat bottom and deepen
+// mid-transit by ~10-20% in visible light; ignored here.
+---
+
+<figure class="demo" data-demo="do-sau-vach-mo-84-phan-trieu">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Bán kính hành tinh (lần Trái Đất) <output data-out="rp"></output>
+      <input type="range" data-in="rp" min="0.3" max="16" step="0.1" value="1" /></label>
+    <label>Bán kính sao chủ (lần Mặt Trời) <output data-out="rs"></output>
+      <input type="range" data-in="rs" min="0.15" max="2" step="0.01" value="1" /></label>
+    <label>Chu kỳ quỹ đạo (ngày) <output data-out="p"></output>
+      <input type="range" data-in="p" min="1" max="800" step="0.5" value="365" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Trên: đĩa sao và đĩa hành tinh vẽ đúng tỉ lệ đường kính thật, cùng đường
+    đi ngang qua tâm; hai vòng mờ là lúc chạm mép vào và ra. Dưới: độ sáng
+    ngôi sao theo giờ — phẳng, dốc xuống, đáy phẳng, dốc lên. Đáy sâu đúng
+    bằng tỉ lệ hai diện tích đĩa, không phụ thuộc khoảng cách tới ngôi sao;
+    còn bề rộng vạch mờ mới là thứ khai ra quỹ đạo.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const CURVE = '#2563eb', MARK = '#dc2626', STAR = '#f59e0b';
+  const RE = 6371, RSUN = 696000, AU = 1.495978707e8, YEAR = 365.256;
+
+  const vn = (x: number, d: number) => x.toFixed(d).replace('.', ',');
+  // Main-sequence mass from radius, both branches in solar units.
+  const massOf = (R: number) => (R < 0.7 ? Math.pow(R / 1.06, 1 / 0.945) : Math.pow(R, 1.25));
+  // Kepler III, a in km from P in days.
+  const axisOf = (Pd: number, M: number) => Math.cbrt(M * Math.pow(Pd / YEAR, 2)) * AU;
+
+  // Exact area of overlap between circles of radii r and R at centre distance d.
+  function overlap(d: number, r: number, R: number) {
+    if (d >= R + r) return 0;
+    if (d <= R - r) return Math.PI * r * r;
+    return (
+      r * r * Math.acos((d * d + r * r - R * R) / (2 * d * r)) +
+      R * R * Math.acos((d * d + R * R - r * r) / (2 * d * R)) -
+      0.5 * Math.sqrt((-d + r + R) * (d + r - R) * (d - r + R) * (d + r + R))
+    );
+  }
+
+  function niceStep(span: number, target: number) {
+    const raw = span / target, mag = Math.pow(10, Math.floor(Math.log10(raw))), n = raw / mag;
+    return (n < 1.5 ? 1 : n < 3 ? 2 : n < 7 ? 5 : 10) * mag;
+  }
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (k: string) => root.querySelector(`[data-in="${k}"]`) as HTMLInputElement;
+    const output = (k: string) => root.querySelector(`[data-out="${k}"]`) as HTMLOutputElement;
+
+    function draw() {
+      const rpE = Number(input('rp').value);
+      const rsS = Number(input('rs').value);
+      const Pd = Number(input('p').value);
+      output('rp').textContent = vn(rpE, 1);
+      output('rs').textContent = vn(rsS, 2);
+      output('p').textContent = vn(Pd, 1);
+
+      const r = rpE * RE, R = rsS * RSUN;
+      const a = axisOf(Pd, massOf(rsS));
+      const depth = (r / R) * (r / R);
+      const ppm = depth * 1e6;
+      // Half-durations, in hours.
+      const hCross = (Pd / (2 * Math.PI)) * Math.asin(R / a) * 24;
+      const hFull = (Pd / (2 * Math.PI)) * Math.asin((R + r) / a) * 24;
+      const hFlat = (Pd / (2 * Math.PI)) * Math.asin((R - r) / a) * 24;
+      const contactMin = (hFull - hFlat) * 60;
+      const prob = R / a;
+      const flux = (t: number) =>
+        1 - overlap(a * Math.abs(Math.sin((2 * Math.PI * (t / 24)) / Pd)), r, R) / (Math.PI * R * R);
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.62);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+      ctx.font = '10px system-ui,sans-serif';
+
+      // ---- Top panel: star disc with the planet drawn to true diameter ratio ----
+      const topH = Math.round(cssH * 0.34);
+      const cx = cssW / 2, cy = topH / 2 + 4;
+      const starPx = Math.min(topH * 0.42, cssW * 0.2);
+      const planetPx = Math.max(starPx * (r / R), 0.8);
+
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.28; ctx.setLineDash([4, 4]);
+      ctx.beginPath(); ctx.moveTo(cx - starPx - planetPx - 26, cy); ctx.lineTo(cx + starPx + planetPx + 26, cy); ctx.stroke();
+      ctx.setLineDash([]); ctx.globalAlpha = 1;
+
+      ctx.fillStyle = STAR; ctx.globalAlpha = 0.9;
+      ctx.beginPath(); ctx.arc(cx, cy, starPx, 0, Math.PI * 2); ctx.fill();
+      ctx.globalAlpha = 1;
+
+      // Ghost outlines at first and fourth contact, solid disc at mid-transit.
+      ctx.strokeStyle = CURVE; ctx.globalAlpha = 0.45;
+      for (const s of [-1, 1]) {
+        ctx.beginPath(); ctx.arc(cx + s * (starPx + planetPx), cy, planetPx, 0, Math.PI * 2); ctx.stroke();
+      }
+      ctx.globalAlpha = 1;
+      ctx.fillStyle = CURVE;
+      ctx.beginPath(); ctx.arc(cx, cy, planetPx, 0, Math.PI * 2); ctx.fill();
+
+      ctx.fillStyle = fg; ctx.globalAlpha = 0.6; ctx.textAlign = 'left';
+      ctx.fillText(`sao ${vn(rsS, 2)} R☉`, 6, cy - starPx - 6);
+      ctx.textAlign = 'right';
+      ctx.fillText(`hành tinh ${vn(rpE, 1)} R⊕ — đường kính bằng ${vn((100 * r) / R, 2)}% đĩa sao`, cssW - 6, cy + starPx + 14);
+      ctx.globalAlpha = 1;
+
+      // ---- Bottom panel: the light curve ----
+      const padL = 54, padR = 12, padT = topH + 20, padB = 26;
+      const xMax = hFull * 1.35;
+      const yLo = depth * 1.35;
+      const X = (t: number) => padL + ((t + xMax) / (2 * xMax)) * (cssW - padL - padR);
+      const Y = (f: number) => padT + ((1 - f) / yLo) * (cssH - padB - padT);
+
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.3;
+      ctx.beginPath(); ctx.moveTo(padL, padT); ctx.lineTo(padL, cssH - padB); ctx.lineTo(cssW - padR, cssH - padB); ctx.stroke();
+      ctx.globalAlpha = 0.55; ctx.fillStyle = fg;
+
+      const xs = niceStep(2 * xMax, 6);
+      const xd = Math.max(0, -Math.floor(Math.log10(xs)));
+      ctx.textAlign = 'center';
+      for (let t = -Math.floor(xMax / xs) * xs; t <= xMax + 1e-9; t += xs) {
+        ctx.fillText(`${vn(t, xd).replace('-', '−')} h`, X(t), cssH - padB + 14);
+      }
+      const usePpm = ppm < 2000;
+      ctx.textAlign = 'right';
+      for (const frac of [0, 0.5, 1]) {
+        const dd = depth * frac;
+        const lab = usePpm ? `${vn(dd * 1e6, 0)} ppm` : `${vn(100 * dd, 2)}%`;
+        ctx.fillText(lab, padL - 4, Y(1 - dd) + 3);
+      }
+      ctx.globalAlpha = 1;
+
+      // Depth reference line at the floor of the transit.
+      ctx.strokeStyle = MARK; ctx.globalAlpha = 0.55; ctx.setLineDash([3, 3]);
+      ctx.beginPath(); ctx.moveTo(padL, Y(1 - depth)); ctx.lineTo(cssW - padR, Y(1 - depth)); ctx.stroke();
+      ctx.setLineDash([]); ctx.globalAlpha = 1;
+
+      ctx.strokeStyle = CURVE; ctx.lineWidth = 2; ctx.beginPath();
+      for (let i = 0; i <= 400; i++) {
+        const t = -xMax + (2 * xMax * i) / 400;
+        const y = Y(flux(t));
+        i ? ctx.lineTo(X(t), y) : ctx.moveTo(X(t), y);
+      }
+      ctx.stroke(); ctx.lineWidth = 1;
+
+      ctx.fillStyle = MARK;
+      ctx.beginPath(); ctx.arc(X(0), Y(1 - depth), 5, 0, Math.PI * 2); ctx.fill();
+
+      const regime =
+        ppm >= 1000 ? ' · <b>kính mặt đất bắt được</b>'
+        : ppm >= 20 ? ' · <b>phải là quang kế trên quỹ đạo</b>'
+        : ' · <b>dưới ngưỡng 20 ppm của Kepler</b>';
+      const depthTxt = ppm < 2000
+        ? `<b>${vn(ppm, 1)} phần triệu</b> (${vn(100 * depth, 4)}%)`
+        : `<b>${vn(100 * depth, 2)}%</b>`;
+      const durTxt = hCross * 2 < 2 ? `${vn(hCross * 2 * 60, 0)} phút` : `${vn(hCross * 2, 2)} giờ`;
+      readout.innerHTML =
+        `Độ sâu vạch mờ ${depthTxt} · đi ngang ${durTxt} · mỗi lần chạm mép ${vn(contactMin, 1)} phút` +
+        ` · xác suất quỹ đạo đủ nghiêng để thấy: ${vn(100 * prob, 2)}%${regime}`;
+    }
+
+    root.querySelectorAll('input').forEach((el) => el.addEventListener('input', draw));
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="do-sau-vach-mo-84-phan-trieu"]').forEach(setup);
+</script>

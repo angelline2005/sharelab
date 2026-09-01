@@ -41,6 +41,10 @@ for (const file of readdirSync(DEMOS).filter((f) => f.endsWith('.astro'))) {
 }
 
 const titles = new Map();
+// Two posts importing the same component means one writer picked a filename
+// another had already taken: the second post renders the first one's demo, and
+// nothing else in the build complains. Only a cross-post check catches it.
+const componentUsers = new Map();
 
 for (const slug of slugs) {
   const path = existsSync(join(POSTS, `${slug}.mdx`))
@@ -102,6 +106,8 @@ for (const slug of slugs) {
     if (!rel.includes('components/demos/')) continue;
     if (!existsSync(target)) err(slug, `import trỏ tới file không tồn tại: ${rel}`);
     if (!new RegExp(`<${name}\\s*/>`).test(body)) err(slug, `import ${name} nhưng không render <${name} />`);
+    const file = basename(rel);
+    componentUsers.set(file, [...(componentUsers.get(file) ?? []), slug]);
   }
 
   if (!/^##\s+Trường hợp biên/mu.test(body)) err(slug, 'thiếu mục "## Trường hợp biên"');
@@ -128,6 +134,10 @@ for (const slug of slugs) {
   for (const line of prose) {
     if (/\{[^}]*\}/.test(line)) err(slug, `dấu ngoặc nhọn trong văn xuôi (MDX sẽ parse là JSX): ${line.trim().slice(0, 60)}`);
   }
+}
+
+for (const [file, users] of componentUsers) {
+  if (users.length > 1) err(file, `bị ${users.length} bài dùng chung: ${users.join(', ')}`);
 }
 
 const label = only.length ? `${slugs.length} bài được chỉ định` : `${slugs.length} bài`;

@@ -1,0 +1,90 @@
+---
+title: "10,7 km/h: tốc độ mà chân bạn từ chối đi bộ"
+seoTitle: "Số Froude và ngưỡng tốc độ chuyển từ đi bộ sang chạy"
+description: "Chân đi bộ là con lắc ngược: trọng tâm vẽ cung tròn quanh bàn chân trụ. Ở v = √(gL), trọng lực vừa đúng đủ để bẻ cong quỹ đạo và bàn chân không còn ép được xuống đất. Chân 0,9 m: 10,7 km/h. Trên Mặt Trăng chỉ 4,3 km/h."
+pubDate: 2026-09-02
+tags: ["vat-ly", "co-hoc", "javascript"]
+translationId: "so-froude-khi-nao-di-bo-thanh-chay"
+---
+
+import FroudeNumber from '../../../components/demos/FroudeNumber.astro';
+
+Muộn giờ, bạn rảo bước ngoài hành lang sân bay — nhanh nữa, nhanh nữa —
+rồi đến một lúc chân tự chuyển sang chạy mà không hỏi ý bạn. Cú chuyển ấy
+có một tốc độ chính xác, và bạn tính được nó từ chiều dài chân mình:
+
+<FroudeNumber />
+
+## Chân trụ của bạn là một con lắc ngược
+
+Giữa mỗi bước, bàn chân trụ cắm xuống đất còn trọng tâm cơ thể — ngay
+trên khớp hông — **lướt trên một cung tròn** lấy bàn chân làm tâm, bán
+kính bằng chiều dài chân, tức chiều cao khớp hông. Vì thế đỉnh đầu bạn
+nhô lên hạ xuống mỗi bước, đo được chừng 4–5 cm.
+
+Đã chạy trên cung tròn thì phải có lực hướng tâm, ở đây chĩa thẳng xuống
+đất, độ lớn mv²/L. Chỉ một nhà cung cấp duy nhất: trọng lực. Phần bị trưng
+dụng để bẻ cong quỹ đạo thì không còn để ép bàn chân xuống nền, và phản
+lực đất N là phần thừa ra:
+
+```
+N = mg − mv²/L = mg·(1 − Fr),   với Fr = v²/(g·L)
+```
+
+Thong thả 5 km/h với chân 0,90 m: Fr = 0,22, bàn chân vẫn nện đất bằng
+**78% trọng lượng**. Rảo bước 9 km/h: Fr = 0,71, còn **29%**. Tới **10,7
+km/h** thì Fr chạm 1: trọng lực vừa vặn đủ giữ trọng tâm bám cung, phản
+lực bằng không, bàn chân không còn gì để đạp.
+
+## Điều thú vị nằm ở mẫu số
+
+`Fr = v²/(g·L)` — số Froude — chia sạch mọi đơn vị, cùng họ với [số
+Reynolds](/vi/posts/so-reynolds-vi-khuan-boi-trong-mat-ong): thứ nó quyết
+định là **chế độ**, không phải con số. Mèo, người và voi đi ở cùng một Fr
+thì dáng đi chồng khít lên nhau.
+
+Chân 0,75 m — người cao chừng 1,45 m — có trần đi bộ **9,8 km/h**. Đứa bé
+hai tuổi chân 0,45 m: trần chỉ **7,6 km/h**, và nó bỏ cuộc sớm hơn thế
+nhiều. Bố mẹ sải 5,5 km/h, tốc độ người lớn đi bình thường, thì đứa bé đã
+ở Fr = 0,53 — phải chạy lon ton mới bám kịp. Nó không nghịch; nó đang bị
+mẫu số bắt nạt.
+
+Cũng tổ hợp √(L/g) ấy định đoạt [chu kỳ con
+lắc](/vi/posts/chu-ky-con-lac-don-co-that-su-khong-phu-thuoc-bien-do):
+chân đưa tới là con lắc thường, chân trụ là con lắc ngược, chung một chiếc
+đồng hồ — nhịp bước thoải mái của bạn là nhịp của cây con lắc treo ở hông,
+không phải thứ bạn chọn.
+
+## Trên Mặt Trăng, đi bộ hết cửa ở 4,3 km/h
+
+g cũng nằm dưới mẫu số. Với g = 1,62 m/s², ngưỡng của chân 0,90 m tụt còn
+**4,3 km/h** — chậm hơn cả nhịp 5 km/h thong thả ở đầu bài; Sao Hoả rộng
+rãi hơn chút, 6,6 km/h. Băng hình Apollo cho thấy hệ quả: phi hành gia
+không đi bộ mà **nhảy lò cò** kiểu kangaroo, chuyện thường bị đổ cho bộ đồ cồng kềnh
+trong khi con lắc ngược đã sụp từ trước đó rồi.
+
+Cũng tỉ số ấy cho cổ sinh vật học đọc dấu chân khủng long: khoảng cách hai
+vết chân cộng chiều cao hông ước lượng là ra Fr — phần lớn đường dấu hoá
+thạch cho Fr dưới 1, tức con vật đang đi dạo chứ không rượt ai.
+
+## Trường hợp biên: trọng tài đi bộ thể thao không rút thẻ
+
+Luật đi bộ thể thao cấm bay: lúc nào cũng phải có một bàn chân chạm đất.
+Vậy mà vận động viên đỉnh cao giữ trên **15 km/h** suốt 20 km; kỷ lục thế
+giới dưới 1 giờ 17 phút, tức trên 15,5 km/h. Với chân 0,90 m, riêng
+14 km/h đã cho Fr = **1,71**: đòi lực hướng tâm gấp 1,7 lần trọng lượng,
+mà trọng lực chỉ có một suất.
+
+Họ không phá vật lý — họ **sửa mẫu số**. Xoay hông, hạ trọng tâm, giữ gối
+duỗi: quỹ đạo trọng tâm bị kéo phẳng thành cung có bán kính hiệu dụng
+**1,54 m**, đúng bằng v²/g mà 14 km/h đòi. Dáng lắc hông buồn cười ấy là
+một người đang kéo dài L, mỗi bước một lần — và ai cũng gian lận kiểu đó
+chút đỉnh, nhờ vậy đỉnh đầu mới nhấp nhô 4–5 cm thay vì 7 cm như con lắc
+cứng dự đoán.
+
+Ở đầu kia, công thức lại quá hào phóng. Người thật đổi sang chạy quanh
+**Fr ≈ 0,5** — 7,6 km/h với chân 0,9 m, sớm hơn ngưỡng lý thuyết 29%, lúc
+bàn chân vẫn ép đất bằng nửa trọng lượng. Thứ bắt bạn chạy không phải định
+luật mà là hoá đơn: quanh 2 m/s (7,2 km/h), mỗi kilômét đi bộ bắt đầu đắt
+hơn mỗi kilômét chạy. Fr = 1 là chỗ đi bộ thành **bất khả**; Fr ≈ 0,5 là
+chỗ nó thành **không đáng**. Cơ thể bạn nghe theo cái thứ hai.

@@ -1,0 +1,94 @@
+---
+title: "Tìm hành tinh bằng cách đo một ngôi sao mờ đi 0,0084%"
+seoTitle: "Độ sâu vạch mờ khi hành tinh đi ngang sao: 84 phần triệu"
+description: "Trái Đất đi ngang trước Mặt Trời chỉ làm nó mờ đi (6 371/696 000)² = 84 phần triệu, trong 12,98 giờ. Sao Mộc dễ hơn 121 lần. Cả ngành săn ngoại hành tinh dựng trên một phép chia hai bán kính rồi bình phương — và trên 0,47% may mắn hình học."
+pubDate: 2026-09-02
+tags: ["vat-ly", "thien-van", "quang-hoc", "javascript"]
+translationId: "do-sau-vach-mo-84-phan-trieu"
+---
+
+import TransitDepth from '../../../components/demos/TransitDepth.astro';
+
+Sáng 6/6/2012, ai ở Việt Nam dậy sớm và có tấm kính lọc đều thấy một chấm
+đen tròn vành vạnh bò ngang Mặt Trời: Sao Kim đi ngang. Mắt thấy rõ cái
+chấm — nhưng nếu thay mắt bằng máy đo sáng, cả sự kiện chỉ là **Mặt Trời
+mờ đi 0,093%**. Dời người quan sát ra một ngôi sao khác, con số còn teo nữa:
+
+<TransitDepth />
+
+## Chỉ là phép chia hai bán kính, rồi bình phương
+
+Ngôi sao là một đĩa sáng, hành tinh đi ngang là một đĩa đen đè lên. Phần
+ánh sáng mất đi đúng bằng tỉ lệ hai **diện tích**, mà diện tích đĩa đi theo
+bình phương bán kính — nên toàn bộ phương pháp gói trong một dòng:
+
+```
+độ sâu = (R_hành-tinh / R_sao)²
+```
+
+Trái Đất 6 371 km, Mặt Trời 696 000 km: tỉ số 1/109, bình phương lại còn
+**84 phần triệu — 0,0084%**. Sao Mộc rộng gấp 11 lần Trái Đất nên nổi hơn
+hẳn: **1,01%**, gấp 121 lần.
+
+Chỗ phản trực giác là công thức **không chứa khoảng cách**: hành tinh nấp
+sát sao hay lang thang tận rìa hệ, vạch mờ vẫn sâu y hệt. Sao Kim hôm 2012
+che tới 0,093% không phải vì nó to, mà vì hôm ấy nó cách ta 0,29 AU trong
+khi Mặt Trời ở tận 1,01 AU. Kéo người quan sát ra ngoài hệ, đúng sự kiện ấy
+chỉ còn **76 phần triệu**.
+
+## 84 phần triệu là một con số tàn nhẫn
+
+Kính mặt đất giỏi lắm đo được độ sáng tới cỡ một phần nghìn: chính cái khí
+quyển làm sao "lấp lánh" cũng làm mọi phép đo rung theo. Một phần nghìn là
+**1 000 phần triệu — thô hơn vạch mờ của Trái Đất 12 lần**.
+
+Nên trình tự lịch sử đã bị vật lý sắp sẵn. Hành tinh đầu tiên bắt được lúc
+đi ngang, năm 1999, là HD 209458b: sao Mộc nóng 15,1 bán kính Trái Đất
+quanh ngôi sao 1,15 lần Mặt Trời, vạch mờ **1,44% — sâu gấp 172 lần** vạch
+Trái Đất, cỡ kính nghiệp dư cũng thấy. Muốn thấy một Trái Đất thì phải lên
+quỹ đạo: Kepler được thiết kế để đạt **20 phần triệu** mỗi 6,5 giờ với sao
+cỡ Mặt Trời cấp sao 12 — vậy mà một lần đi ngang vẫn chỉ là tín hiệu cao
+gấp 4,2 lần nhiễu, chưa ai dám công bố hành tinh với chừng đó.
+
+Chụp thẳng hành tinh còn khó hơn: [sóng chui qua lỗ thì
+loe](/vi/posts/vi-sao-khong-kinh-nao-thay-la-co-tren-mat-trang), mà đây là
+chấm mờ hơn sao chủ hàng tỉ lần, nấp cách nó chưa tới một giây cung.
+
+## Bề rộng vạch mờ mới là chỗ quỹ đạo lộ ra
+
+Độ sâu chỉ khai ra bán kính. Muốn biết hành tinh nằm đâu thì phải đo **bề
+rộng**:
+
+```
+T = (P/π) · arcsin(R_sao / a)      với  a = (G·M·P² / 4π²)^(1/3)
+```
+
+Bán trục lớn a lấy thẳng từ [định luật Kepler
+III](/vi/posts/dinh-luat-kepler-iii-va-duong-thang-cua-he-mat-troi): chu kỳ
+và khối lượng sao là đủ. Trái Đất cắt ngang Mặt Trời trong **12,98 giờ**,
+mỗi đầu chỉ **7,1 phút dốc** — quãng đĩa Trái Đất chưa lọt hẳn qua mép.
+Kéo thanh chu kỳ trong demo mà xem: đáy vạch không nhúc nhích một phần
+triệu nào, chỉ bề rộng tính bằng giờ đổi theo.
+
+Kepler đòi tối thiểu ba lần đi ngang mới cho một ứng viên vào danh sách:
+với hành tinh một năm một vòng, đó là **hơn hai năm nhìn không rời mắt** để
+gom 39 giờ tín hiệu — Trái Đất che Mặt Trời đúng **0,148% thời gian**,
+phần còn lại là chờ.
+
+## Trường hợp biên: đổi sao chủ thì cả ngành đổi theo
+
+Giữ nguyên Trái Đất, chỉ thay Mặt Trời bằng một sao lùn đỏ 0,15 bán kính
+Mặt Trời — cỡ [Proxima
+Centauri](/vi/posts/thi-sai-sao-va-goc-nho-nhat-do-duoc), 0,154. Mẫu số co
+lại 6,7 lần, bình phương lên: vạch mờ vọt thành **0,37%, sâu gấp 44 lần**,
+thừa sức cho kính mặt đất. Gần như mọi hành tinh cỡ Trái Đất trong vùng ở
+được mà loài người biết đều quay quanh sao lùn đỏ — không phải vì vũ trụ ưu
+ái chúng, mà vì phép chia có mẫu số nhỏ.
+
+Nhưng còn một cửa ải không mua được bằng độ chính xác: quỹ đạo phải gần như
+đúng cạnh khi nhìn từ đây, xác suất bằng R_sao/a — với cặp Trái Đất–Mặt
+Trời là **0,47%**. Dù quang kế hoàn hảo và quan sát vô hạn lâu, **99,5% số
+hệ giống hệt hệ ta vẫn hoàn toàn vô hình**. Sao lùn đỏ lại thắng: hành tinh
+quay 20 ngày một vòng có xác suất 0,96%, gấp đôi, vạch mờ rộng 1,47 giờ —
+đo xong trong một đêm. Danh sách hàng nghìn hành tinh đang có vì thế là
+danh sách những hệ tình cờ quay đúng mặt về phía ta.

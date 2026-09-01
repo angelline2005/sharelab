@@ -1,0 +1,198 @@
+---
+// Nhảy cao kiểu Fosbury flop — quỹ đạo trọng tâm và mẹo uốn người.
+// Ném xiên không sức cản, g = 9,81 m/s²:
+//   nâng trọng tâm  Δh = v²/(2g)      (v = vận tốc đứng lúc rời đất)
+//   xà vượt được    H  = h0 + v²/(2g) + δ   (δ = phần trọng tâm chui DƯỚI xà)
+// Thân người vẽ như thanh mảnh ĐỀU dài L = 1,90 m uốn thành cung tròn:
+//   nửa góc u, bán kính R = L/(2u); trọng tâm cung nằm dưới đỉnh cung một
+//   đoạn s = R·(1 − sin u/u). Giải ngược u từ δ bằng chia đôi (s tăng đơn
+//   điệu theo u trên (0; 2,6]). Nguồn: cơ học phổ thông + trọng tâm cung tròn.
+// Miền hợp lệ: bỏ qua sức cản không khí — ở 4–6 m/s sai lệch dưới 1 cm;
+//   δ ≤ 20 cm vì quá đó thân phải uốn hơn 160°, ngoài tầm ưỡn của cột sống.
+// Vận tốc ngang cố định 4,0 m/s: chỉ để trải quỹ đạo ra bề ngang, không
+//   ảnh hưởng một milimét nào tới độ cao đạt được.
+---
+
+<figure class="demo" data-demo="nhay-cao-trong-tam-di-duoi-xa-ngang">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Tốc độ rời đất, phương đứng (m/s) <output data-out="v"></output>
+      <input type="range" data-in="v" min="3.5" max="5.5" step="0.05" value="4.6" /></label>
+    <label>Trọng tâm lúc rời đất (m) <output data-out="h"></output>
+      <input type="range" data-in="h" min="1" max="1.6" step="0.01" value="1.3" /></label>
+    <label>Độ uốn — trọng tâm dưới xà (cm) <output data-out="d"></output>
+      <input type="range" data-in="d" min="0" max="20" step="0.1" value="7.2" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Đường xanh là quỹ đạo trọng tâm — một parabol bị đóng đinh ngay khi mũi
+    chân rời đất; không động tác nào trên không sửa được nó. Vạch ngang đậm
+    là xà. Bốn tư thế vẽ thân người như thanh dài 1,9 m uốn thành cung tròn,
+    chấm đỏ là trọng tâm thật của cung ấy. Ở đỉnh, thân ôm qua phía trên xà
+    trong khi chấm đỏ chui phía dưới — kéo thanh trượt thứ ba về 0 để xem
+    cùng cú bật ấy chỉ còn hạ được xà xuống mức nào.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const CURVE = '#2563eb', MARK = '#dc2626', BODY = '#f59e0b';
+  const G = 9.81, L = 1.9, VX = 4.0;
+  // [phần thời gian bay, góc nghiêng thân]: gần thẳng đứng lúc rời đất,
+  // nằm ngang ở đỉnh, hơi chúi khi đã qua xà và đang rơi xuống đệm.
+  const FRAMES: Array<[number, number]> = [[0.06, -1], [0.32, -0.35], [0.5, 0], [0.76, 0.3]];
+
+  const sag = (u: number) => (L / (2 * u)) * (1 - Math.sin(u) / u);
+  const sagToU = (s: number) => {
+    let lo = 1e-4, hi = 2.6;
+    for (let i = 0; i < 60; i++) {
+      const m = (lo + hi) / 2;
+      if (sag(m) < s) lo = m; else hi = m;
+    }
+    return (lo + hi) / 2;
+  };
+  const num = (x: number, k: number) => x.toFixed(k).replace('.', ',');
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (k: string) => root.querySelector(`[data-in="${k}"]`) as HTMLInputElement;
+    const output = (k: string) => root.querySelector(`[data-out="${k}"]`) as HTMLOutputElement;
+
+    function draw() {
+      const v = Number(input('v').value);
+      const h0 = Number(input('h').value);
+      const dcm = Number(input('d').value), d = dcm / 100;
+      output('v').textContent = num(v, 2);
+      output('h').textContent = num(h0, 2);
+      output('d').textContent = num(dcm, 1);
+
+      const rise = (v * v) / (2 * G);
+      const apexY = h0 + rise, H = apexY + d;
+      const T = (2 * v) / G, range = VX * T, apexX = range / 2;
+      const vStr = Math.sqrt(2 * G * (H - h0));
+      const bend = (2 * sagToU(Math.max(d, 1e-5)) * 180) / Math.PI;
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.55);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+
+      const padL = 46, padB = 24, padT = 10, padR = 8;
+      const plotH = cssH - padT - padB, plotW = cssW - padL - padR;
+      const yMax = Math.max(2.7, Math.ceil((H + 0.2) / 0.3) * 0.3), S = plotH / yMax;
+      const xOff = (plotW / S - range) / 2;
+      const X = (x: number) => padL + (x + xOff) * S;
+      const Y = (y: number) => cssH - padB - y * S;
+
+      ctx.font = '10px system-ui,sans-serif';
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.3;
+      ctx.beginPath(); ctx.moveTo(padL, padT); ctx.lineTo(padL, cssH - padB); ctx.lineTo(cssW - padR, cssH - padB); ctx.stroke();
+      ctx.globalAlpha = 0.55; ctx.fillStyle = fg;
+      ctx.textAlign = 'right';
+      for (let yy = 0.5; yy < yMax - 0.14; yy += 0.5) ctx.fillText(`${num(yy, 1)} m`, padL - 4, Y(yy) + 3);
+      ctx.textAlign = 'center';
+      for (const xx of [0, 1, 2, 3, 4, 5]) {
+        if (X(xx) > padL + 2 && X(xx) < cssW - padR) ctx.fillText(`${xx} m`, X(xx), cssH - padB + 14);
+      }
+      ctx.globalAlpha = 1;
+
+      // Xà và hai trụ.
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.35; ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(X(apexX - 2), Y(0)); ctx.lineTo(X(apexX - 2), Y(H));
+      ctx.moveTo(X(apexX + 2), Y(0)); ctx.lineTo(X(apexX + 2), Y(H));
+      ctx.stroke();
+      ctx.globalAlpha = 0.85; ctx.lineWidth = 3;
+      ctx.beginPath(); ctx.moveTo(X(apexX - 2), Y(H)); ctx.lineTo(X(apexX + 2), Y(H)); ctx.stroke();
+      ctx.lineWidth = 1; ctx.globalAlpha = 0.8; ctx.fillStyle = fg; ctx.textAlign = 'left';
+      ctx.fillText(`xà ${num(H, 2)} m`, X(apexX - 2) + 4, Y(H) - 7);
+      ctx.globalAlpha = 1;
+
+      // Mức đỉnh trọng tâm.
+      ctx.setLineDash([4, 4]); ctx.strokeStyle = MARK; ctx.globalAlpha = 0.5;
+      ctx.beginPath(); ctx.moveTo(X(apexX - 2), Y(apexY)); ctx.lineTo(X(apexX + 2), Y(apexY)); ctx.stroke();
+      ctx.setLineDash([]); ctx.globalAlpha = 0.9; ctx.fillStyle = MARK;
+      ctx.fillText(`đỉnh trọng tâm ${num(apexY, 2)} m`, X(apexX - 2) + 4, Y(apexY) + 13);
+      ctx.globalAlpha = 1;
+
+      // Quỹ đạo trọng tâm.
+      ctx.strokeStyle = CURVE; ctx.lineWidth = 2; ctx.beginPath();
+      for (let i = 0; i <= 160; i++) {
+        const t = (T * i) / 160;
+        const cx = X(VX * t), cy = Y(h0 + v * t - 0.5 * G * t * t);
+        i ? ctx.lineTo(cx, cy) : ctx.moveTo(cx, cy);
+      }
+      ctx.stroke(); ctx.lineWidth = 1;
+
+      // Bốn tư thế thân người, trọng tâm nằm đúng trên parabol.
+      ctx.lineCap = 'round';
+      for (const [f, th] of FRAMES) {
+        const t = f * T;
+        const cx = VX * t, cy = h0 + v * t - 0.5 * G * t * t;
+        const u = sagToU(Math.max(d * Math.sin(Math.PI * f) * Math.sin(Math.PI * f), 1e-5));
+        const R = L / (2 * u), c = (R * Math.sin(u)) / u;
+        const cs = Math.cos(th), sn = Math.sin(th);
+        const bx = (phi: number) => cx + R * Math.sin(phi) * cs - (R * Math.cos(phi) - c) * sn;
+        const by = (phi: number) => cy + R * Math.sin(phi) * sn + (R * Math.cos(phi) - c) * cs;
+        const top = f === 0.5;
+
+        ctx.globalAlpha = top ? 1 : 0.28;
+        ctx.strokeStyle = BODY; ctx.lineWidth = top ? 4 : 3;
+        ctx.beginPath();
+        for (let i = 0; i <= 40; i++) {
+          const phi = -u + (2 * u * i) / 40;
+          i ? ctx.lineTo(X(bx(phi)), Y(by(phi))) : ctx.moveTo(X(bx(phi)), Y(by(phi)));
+        }
+        ctx.stroke();
+        ctx.fillStyle = BODY;
+        ctx.beginPath(); ctx.arc(X(bx(u)), Y(by(u)), top ? 6 : 4.5, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = MARK;
+        ctx.beginPath(); ctx.arc(X(cx), Y(cy), top ? 5 : 3.5, 0, Math.PI * 2); ctx.fill();
+        ctx.globalAlpha = 1;
+      }
+      ctx.lineWidth = 1; ctx.lineCap = 'butt';
+
+      // Thước đo khe hở giữa xà và đỉnh trọng tâm.
+      if (d > 0.0005) {
+        const ax = apexX + 1.35;
+        ctx.strokeStyle = MARK; ctx.globalAlpha = 0.9;
+        ctx.beginPath();
+        ctx.moveTo(X(ax), Y(H)); ctx.lineTo(X(ax), Y(apexY));
+        ctx.moveTo(X(ax) - 4, Y(H)); ctx.lineTo(X(ax) + 4, Y(H));
+        ctx.moveTo(X(ax) - 4, Y(apexY)); ctx.lineTo(X(ax) + 4, Y(apexY));
+        ctx.stroke();
+        ctx.fillStyle = MARK; ctx.textAlign = 'left';
+        ctx.fillText(`${num(dcm, 1)} cm`, X(ax) + 7, Y(apexY) + 4);
+        ctx.globalAlpha = 1;
+      }
+
+      const cmp = d < 0.0005
+        ? ' · trọng tâm đi <b>đúng ngang xà</b> — mức tối thiểu kiểu úp bụng cần'
+        : ` · muốn qua xà ấy mà trọng tâm phải đi ngang xà thì cần <b>${num(vStr, 2)} m/s</b>, tức +${num((d / rise) * 100, 1)}% động năng thẳng đứng`;
+      const warn = bend > 120 ? ` · <b>thân phải uốn ${bend.toFixed(0)}° — quá tầm ưỡn của cột sống</b>` : '';
+      readout.innerHTML =
+        `Bật <b>${num(v, 2)} m/s</b> từ trọng tâm ${num(h0, 2)} m → nâng <b>${num(rise, 2)} m</b>, đỉnh trọng tâm ${num(apexY, 2)} m` +
+        ` · uốn ${num(dcm, 1)} cm → qua xà <b>${num(H, 2)} m</b>` + cmp + warn;
+    }
+
+    root.querySelectorAll('input').forEach((el) => el.addEventListener('input', draw));
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="nhay-cao-trong-tam-di-duoi-xa-ngang"]').forEach(setup);
+</script>

@@ -1,0 +1,86 @@
+---
+title: "Chỗ chiếc xe 40 km/h đã đứng im, chiếc chạy 60 vẫn đang lao 55 km/h"
+seoTitle: "Tốc độ còn lại khi phanh: vì sao nhanh hơn 20 km/h là chuyện khác hẳn"
+description: "Đừng so quãng đường dừng — hãy hỏi câu khác: tại đúng cái vạch mà chiếc xe 40 km/h vừa đứng im, chiếc chạy 60 km/h đang chạy bao nhiêu? 54,7 km/h, nhanh hơn cả tốc độ ban đầu của chiếc kia. Và nếu vạch đó là một đứa trẻ, trời mưa μ = 0,40 thì chính chiếc 40 km/h cũng đâm, ở 26,2 km/h."
+pubDate: 2026-09-02
+tags: ["vat-ly", "co-hoc", "javascript"]
+translationId: "duong-phanh-xe-may-va-toc-do-con-lai"
+---
+
+import ResidualSpeed from '../../../components/demos/ResidualSpeed.astro';
+
+Hai xe chạy song song trên một con đường thẳng, một chiếc 40 km/h, một chiếc
+60. Đứa trẻ băng ra cùng lúc, hai người bóp phanh cùng lúc. Chiếc 40 dừng
+cách đứa bé đúng một gang tay. Câu hỏi đáng sợ không phải "chiếc kia dừng xa
+hơn mấy mét", mà: **ngay tại chỗ đó, nó đang chạy bao nhiêu?**
+
+<ResidualSpeed />
+
+## Quãng đường dừng có hai phần, chỉ một phần chơi công bằng
+
+Từ lúc mắt thấy tới lúc bánh đứng im, xe đi qua hai đoạn khác hẳn nhau:
+
+```
+d = v·t_phảnxạ + v² / (2·μ·g)
+```
+
+Đoạn đầu là **quãng đường chết** — tay chưa chạm phanh, tốc độ chưa giảm một
+phần trăm nào — và nó tỉ lệ *thẳng* với v. Đoạn sau tỉ lệ với **v bình
+phương**: tăng tốc độ gấp đôi thì riêng đoạn này dài gấp bốn. Trên nhựa khô
+μ = 0,70 với phản xạ 1,0 s, chiếc 40 km/h trôi 11,1 m rồi phanh thêm 9,0 m,
+tổng **20,1 m**; chiếc 60 km/h trôi 16,7 m rồi phanh thêm 20,2 m: **36,9 m**.
+Hệ số μ ấy không phải hằng số vũ trụ — nó là [con số đo được bằng một cái
+thước đo góc](/vi/posts/mat-phang-nghieng-va-goc-bat-dau-truot), và mặt đường
+quyết định nó chứ không phải chiếc xe.
+
+## "Xa hơn 16,8 mét" là câu trả lời cho câu hỏi sai
+
+36,9 trừ 20,1 bằng 16,8 m. Nghe như một cái sân nhỏ, nghe như còn thương
+lượng được. Nhưng không ai đâm vào một quãng đường; người ta đâm vào vật
+đứng ở mét thứ 20,1. Và tại mét thứ 20,1, chiếc 60 km/h **vẫn đang chạy 54,7
+km/h** — nhanh hơn cả tốc độ xuất phát của chiếc vừa đứng im bên cạnh. Nó đã
+đi trọn cái quãng đường đủ để dập tắt hoàn toàn một chiếc 40 km/h, mà vẫn còn
+**83% động năng ban đầu** trên người: 16,7 trong 20,1 mét ấy trôi qua khi tay
+chưa chạm phanh. Cú va ở 55 km/h và cú dừng kịp cách một gang tay không phải
+hai mức nặng nhẹ của cùng một chuyện — đó là [bài toán xung
+lực](/vi/posts/tui-khi-va-nghe-thuat-keo-dai-mot-phan-muoi-giay) với một con
+số đầu vào khác hẳn.
+
+## Cái sàn 44,7 km/h không ai gỡ được
+
+Ghép hai công thức lại thì quãng đường biến mất, còn lại một biểu thức gọn
+đến khó chịu:
+
+```
+v_còn = √( (v₂² − v₁²) + 2·μ·g·t_phảnxạ·(v₂ − v₁) )
+```
+
+Ngoặc đầu tiên **không chứa μ, không chứa thời gian phản xạ**. Phanh ABS đỉnh
+cao, lốp mới, đường khô ráo, phản xạ bằng không — v_còn vẫn không thể xuống
+dưới √(60² − 40²) = **44,7 km/h**. Số hạng thứ hai mới là phần con người mặc
+cả được, và nó chạy đúng chiều bạn không muốn: phản xạ càng chậm, xe nhanh
+càng được tặng thêm. Tính lại với 1,5 s — [mức nhiều nghiên cứu đo được ở
+tình huống bất ngờ](/vi/posts/dap-ngon-chan-vi-sao-mot-nhip-sau-moi-thay-dau),
+còn demo thì cố định 1,0 s — vạch dừng của chiếc 40 dời ra 25,7 m, còn chiếc
+60 đi ngang vạch ấy ở **59,0 km/h**: gần như chưa hề phanh.
+
+## Trời mưa dời cái vạch, nhưng không dời đứa trẻ
+
+Kéo μ về 0,40, con số trong demo lại *giảm* xuống 50,6 km/h — và đó là cái
+bẫy đọc số. Nó giảm chỉ vì cái vạch đã bò ra xa thêm 6,7 m: chiếc 40 km/h
+giờ cần 26,8 m mới đứng im. Đứa trẻ thì vẫn đứng nguyên ở mét thứ 20,1. Hỏi
+lại cho đúng chỗ ấy: trời mưa, **chính chiếc 40 km/h cũng đâm — ở 26,2 km/h**
+— còn chiếc 60 lao qua ở **57,0 km/h**. Thêm lớp dầu loang trên mặt nhựa ướt,
+μ tụt còn 0,20: từ 60 km/h phải mất **87,5 m** mới dừng — gần trọn chiều dài
+một sân bóng đá.
+
+## Trường hợp biên: xe máy không phanh được bằng cả hai bánh
+
+Cả mô hình đứng trên một giả định: hai lốp đồng thời chạm ngưỡng trượt, gia
+tốc phanh đúng bằng μ·g. Xe máy không làm được điều đó. Phanh gấp là dồn tải
+ra trước — với trọng tâm cao 0,65 m, trục cơ sở 1,25 m và tải chia đều hai
+bánh lúc đứng yên, ở mức 0,6 g bánh sau chỉ còn **19% trọng lượng** đè xuống.
+Bóp riêng phanh sau, phản xạ của rất nhiều người, thì lực hãm tự bóp cổ chính
+nó: trần là **0,26 g**, từ 60 km/h phải mất **71,8 m** — gần gấp đôi con số
+36,9 m ở trên. Riêng phanh trước, cũng μ = 0,70, cho 0,55 g và 42,4 m; và quá
+**0,96 g** thì xe thôi trượt mà lộn qua bánh trước.

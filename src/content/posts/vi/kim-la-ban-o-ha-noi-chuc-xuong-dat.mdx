@@ -1,0 +1,92 @@
+---
+title: "Kim la bàn ở Hà Nội thật ra chúc xuống 32 độ"
+seoTitle: "Từ khuynh là gì: công thức tan I = 2·tan(vĩ độ) và vùng cân kim la bàn"
+description: "Từ trường Trái Đất không nằm ngang. Dưới Hà Nội đường sức cắm xuống đất 31,9°, ở TP.HCM chỉ 9,9°, ở Paris tới 64,4°. Bạn không thấy điều đó vì kim la bàn bị gắn thêm một khối lượng lệch — và chiếc la bàn cân ở châu Âu đem về Việt Nam sẽ vểnh kim, cạ vào mặt kính."
+pubDate: 2026-09-02
+tags: ["vat-ly", "dien-tu", "thien-van", "javascript"]
+translationId: "kim-la-ban-o-ha-noi-chuc-xuong-dat"
+---
+
+import MagneticDip from '../../../components/demos/MagneticDip.astro';
+
+Đặt chiếc la bàn xuống bàn, kim lắc vài nhịp rồi nằm im, phẳng lì. Trông
+như thể từ trường Trái Đất chạy song song mặt đất và kim chỉ việc xoay
+theo. Sai cả hai vế: dưới chân bạn ở Hà Nội, đường sức đang cắm xuống đất
+**31,9°** — còn cái vẻ nằm ngang kia là công của một cục kim loại dán lệch:
+
+<MagneticDip />
+
+## Con số 2 nằm trong tan I = 2·tan(vĩ độ)
+
+Ở mức thô nhất, Trái Đất là một thanh nam châm đặt tại tâm. Trường của
+lưỡng cực có hai thành phần rất không cân xứng: tại vĩ độ φ, thành phần
+thẳng đứng mạnh `2·B_e·sin φ`, còn thành phần dọc mặt đất chỉ `B_e·cos φ`
+— với `B_e` ≈ 31 µT ở xích đạo. Chia vế cho vế, hằng số biến mất:
+
+```
+tan I = 2·tan(vĩ độ)
+```
+
+Số 2 ấy khiến từ khuynh luôn chạy trước vĩ độ, và ngay tại xích đạo nó
+chạy nhanh gấp đôi: tới vĩ độ 26,6° — chỉ hơn Hà Nội 5,6 độ vĩ — kim đã
+chúc đúng 45°. Vĩ độ
+chi phối nhiều thứ theo lối ấy, [lực Coriolis đi theo sin của
+nó](/vi/posts/hieu-ung-coriolis-va-huyen-thoai-bon-cau), nhưng ít cái nào
+vống gấp bằng. Áp vào Hà Nội (vĩ độ 21,0°), công thức đòi **37,5°** trong
+khi từ kế đo được 31,9°. Giữ lấy khoảng chênh mô hình–thực đo 5,6 độ ấy —
+cuối bài sẽ tính sổ.
+
+## Bạn không thấy kim chúc vì nó bị gắn chì
+
+Kim la bàn là thanh nam châm nhỏ ngồi trên mũi trục: nó muốn nằm dọc theo
+trường, nghĩa là ở Hà Nội đầu bắc phải chúi xuống hơn ba mươi độ và cà vào
+đáy hộp. Nhà sản xuất chặn điều đó bằng cách thêm khối lượng vào đúng cái
+đầu đang bị trường nhấc lên — một đoạn dây quấn, một giọt hàn — cho mô-men
+trọng lực kéo ngược lại vừa đủ. **Kim nằm ngang không phải vì trường nằm
+ngang, mà vì hai mô-men triệt tiêu nhau tại một vĩ độ đã chọn trước.**
+
+Đã chọn trước thì đổi chỗ là hỏng, nên Suunto và Silva phải chia thế giới
+thành vùng cân kim: trước bốn đến năm vùng, nay còn hai, bắc và nam. Chiếc
+la bàn cân ở Paris (từ khuynh thật 64,4°, thành phần thẳng đứng 43,7 µT)
+về tới Hà Nội chỉ còn gặp 24,2 µT: mô-men lật kim — đúng thứ mà đối trọng
+được tính để triệt tiêu — **yếu đi 1,81 lần**. Đối trọng thắng thế: đầu bắc
+không chúc xuống mà vểnh lên, cạ vào mặt kính, kim quay sượng như trục bẩn.
+Chênh
+**32,5°** giữa hai nơi là quá một vùng. Lối thoát duy nhất là tách rời hai
+việc — la bàn "global" cho nam châm nghiêng tự do bên dưới, mặt kim bên
+trên vẫn nằm ngang.
+
+## Chỉ thành phần nằm ngang mới làm được việc chỉ hướng
+
+Mô-men xoay kim về bắc chỉ tỉ lệ với thành phần ngang — thành phần thẳng
+đứng không góp một chút nào, nó chỉ kéo kim chúi. Mà thành phần ngang tắt
+theo cos của vĩ độ: ở Hà Nội còn **93,4%** mức xích đạo.
+Số đo thật còn dốc hơn thế — thành phần ngang ở Paris là 20,9 µT, chỉ
+**50,8%** của TP.HCM (41,2 µT), trong khi mô hình lưỡng cực đoán 67%: kim
+la bàn ở Sài Gòn về vị trí dứt khoát hơn kim ở Paris, chịu nhiễu tốt hơn.
+
+Việt Nam còn gần như không có từ thiên — thứ hay bị lẫn với từ
+khuynh: WMM 2025 cho Hà Nội −1,74° và TP.HCM −0,64°, nhỏ hơn một vạch chia
+2° trên mặt số. Paris thì phải cộng +2,07°.
+
+## Trường hợp biên: chia cho không ở cực, và sai ngay tại nhà
+
+Đẩy vĩ độ về 90°: tan(vĩ độ) → ∞, kim chúc thẳng đứng, thành phần ngang
+`B_e·cos φ` → 0. Ngay ở vĩ độ 80° mô-men định hướng đã chỉ còn **17,4%**
+mức xích đạo (5,4 µT) — kim vẫn quay tự do nhưng gần như không còn gì bắt
+nó dừng đúng chỗ. Chuyến bay vượt cực vì thế không đọc la bàn từ mà dựa
+vào [con quay hồi chuyển](/vi/posts/con-quay-hoi-chuyen-vi-sao-khong-chiu-do)
+và vệ tinh; cũng chính những đường sức dựng đứng ấy dẫn [hạt tích điện từ
+Mặt Trời](/vi/posts/hat-tich-dien-trong-tu-truong-chu-ky-khong-can-toc-do)
+cắm thẳng xuống khí quyển, cho cực quang một vành đai chứ không phải một
+mảng.
+
+Nhưng chỗ công thức gãy đau nhất không ở cực — nó ở ngay đây. Mô hình đòi
+37,5° cho Hà Nội, đo được 31,9°; ở TP.HCM là 20,9° so với 9,9° thật,
+**vống 11,0 độ, hơn cả giá trị thật** — trong khi ở Paris nó chỉ trượt 2,0
+độ. Lý do kép: trục lưỡng cực nghiêng 9,2° so với trục quay nên vĩ độ địa
+lý không phải thứ đáng thay vào (thay vĩ độ từ thì lại hụt, ra 22,7°), và
+phần dư còn lại đơn giản vì lõi Trái Đất không phải một thanh nam châm.
+Cái thanh nam châm tưởng tượng ấy còn động đậy: từ khuynh Hà Nội đang tăng
+4,1 phút cung mỗi năm, **0,68° mỗi mười năm** — đủ để mọi bảng tra từ
+trường phải in kèm năm phát hành.

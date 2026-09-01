@@ -1,0 +1,90 @@
+---
+title: "Mái tôn 70 °C giữa trưa — và lớp sơn trắng lấy lại 24 độ"
+seoTitle: "Nhiệt độ mái tôn giữa trưa là bao nhiêu và sơn chống nóng hạ được mấy độ"
+description: "Cân bằng năng lượng bề mặt cho mái tôn sẫm màu dưới nắng 950 W/m², gió nhẹ: 70,1 °C. Hạ hệ số hấp thụ từ 0,80 xuống 0,25 bằng sơn trắng, cùng buổi trưa ấy mái chỉ còn 46,3 °C — chênh 23,7 độ, không tốn một watt điện nào."
+pubDate: 2026-09-02
+tags: ["vat-ly", "nhiet-hoc", "khi-hau", "javascript"]
+translationId: "mai-ton-72-do-va-lop-son-trang"
+---
+
+import CoolRoof from '../../../components/demos/CoolRoof.astro';
+
+Trưa đứng bóng, đặt tay lên mái tôn nhà xe rồi rụt lại ngay — trong khi
+nhiệt kế treo ngoài sân vẫn đọc 35 °C. Tấm tôn ấy chẳng có nguồn nhiệt
+nào của riêng mình. Nó chỉ phải **tự nóng lên tới mức đủ để ném đi hết**
+những gì đã nhận:
+
+<CoolRoof />
+
+## Mái nhà không có nhiệt độ riêng, nó có một phương trình
+
+Trưa trời quang, mỗi mét vuông mái phẳng ở Việt Nam hứng khoảng **950 W**
+— một lò vi sóng mở hết cỡ, rót xuống từng mét vuông. Tôn dày chưa tới nửa
+milimét, gần như không có quán tính nhiệt: vài phút là nó đứng ở đúng
+nhiệt độ mà tại đó thu bằng chi. Chi có hai đường: gió cuốn đi, và mặt
+tôn bức xạ hồng ngoại lên trời theo luỹ thừa bốn:
+
+```
+α·S = h·(T_mặt − T_kk) + ε·σ·(T_mặt⁴ − T_kk⁴)
+```
+
+α là phần nắng bị hấp thụ, ε là khả năng phát hồng ngoại, h là hệ số đối
+lưu do gió, σ = 5,67·10⁻⁸. Luỹ thừa bốn là cái phanh: mái càng nóng càng
+ném khoẻ, nên luôn có đúng một nghiệm. Với tôn sơn màu sẫm đã cũ
+(α = 0,80, ε = 0,85) dưới gió nhẹ, nghiệm ấy là **70,1 °C** —
+trong 950 W đến, 190 W bị hắt ngược, 526 W gió khuân đi, 234 W bay lên
+trời. Cùng phép cân này viết cho cả hành tinh là bài toán [cho ra con số
+−19 °C](/vi/posts/can-bang-nhiet-trai-dat-va-tam-chan-33-do) nổi tiếng.
+
+## Một thùng sơn trắng đáng giá 23,7 độ
+
+Trong phương trình, hai chữ bạn với tới được bằng tay là α và ε, và một
+thùng sơn chạm cả hai. Titan điôxít hạ α từ 0,80 xuống **0,25** mà vẫn
+giữ ε ở 0,85 — mái trả lại bầu trời 712 W thay vì 190 W. Cùng buổi trưa
+ấy, cùng cơn gió ấy, mái chỉ còn
+**46,3 °C**; đường cong trong demo gần như thẳng, nên mỗi 0,1 hạ được
+trên trục α đáng giá hơn **bốn độ**.
+
+Con số đáng nhớ hơn nằm ở hiệu số. Với trần nhà 33 °C, mái sẫm màu áp lên
+nó chênh lệch 37,1 độ, mái sơn trắng chỉ còn 13,3 độ — động lực lùa nhiệt
+vào nhà nhỏ đi **2,8 lần**. Sơn trắng đưa mái tôn giữa trưa về đúng nhiệt
+độ nó có lúc tám giờ sáng, khi nắng mới 300 W/m² (46,4 °C). Phần vẫn lọt
+xuống thì [máy lạnh phải khuân
+ra](/vi/posts/may-lanh-khong-tao-lanh-no-chuyen-nha-cho-nhiet), tính tiền
+điện từng jun một.
+
+## Gió khuân đi hai phần ba — cho tới khi nó ngừng thổi
+
+h không phải hằng số của vật liệu mà của thời tiết: h ≈ 5,7 + 3,8·v với v
+tính bằng m/s. Gió nhẹ 2,4 m/s cho h = 15, gánh 526 trong 760 W mái hấp
+thụ — **69%**; nâng lên 5,1 m/s, mái tụt còn 59,2 °C.
+
+Kéo ngược lại mới thú vị. Trưa oi không một ngọn gió, đối lưu tự nhiên
+trên tấm phẳng nằm ngang chỉ còn h ≈ 6, mái sẫm màu vọt lên **91,7 °C** —
+nóng thêm 21,7 độ so với chính nó lúc gió hiu hiu. Vai trò cũng đảo: hồng
+ngoại gánh 420 trong 760 W, tức **55%**, nhiều hơn cả đối lưu. Ngày lặng
+gió, bầu trời thành lối thoát lớn nhất của mái nhà — và ε mới là nhân
+vật chính.
+
+## Trường hợp biên: tôn mới sáng bóng, cái bẫy 63,7 độ
+
+Tôn kẽm mới sáng như gương phản xạ nắng khá tốt: α ≈ 0,50, hắt trả 475 W
+mỗi mét vuông so với 190 W của mái sẫm màu. Nhưng kim loại sáng có
+ε ≈ 0,20 — gần như câm về hồng ngoại,
+gió nhẹ chỉ bức xạ nổi 43,8 W/m², **9%** phần nắng đã nuốt. Kết quả
+63,7 °C, hơn mái sơn trắng ở trên **17,4 độ**; và lặng gió, dù nuốt ít
+hơn mái sẫm màu 285 W/m², nó vẫn nóng hơn — **96,1 so với 91,7 °C**.
+
+Nghịch lý tan khi nhớ nắng tới ở bước sóng 0,50 µm còn mái 70 °C phát ra ở
+8,4 µm, [hai vùng cách nhau gần 17
+lần](/vi/posts/dinh-luat-wien-mau-cua-nhiet-do): một bề mặt hoàn toàn có
+thể trắng với vùng này, đen với vùng kia. Sơn chống nóng đúng nghĩa vì thế
+là α ≤ 0,25 *và* ε ≥ 0,85, không phải "màu sáng" là xong.
+
+Đẩy cặp số tới cực đoan thì công thức tự lật: α = 0,04 và ε = 0,96, bề mặt
+nuốt vỏn vẹn 38 W nắng — còn bầu trời quang xứ ẩm lạnh hơn không khí chừng
+10 độ, điều mô hình trên lược đi cho gọn. Tính lại, tấm ấy về **33,2 °C,
+thấp hơn không khí gần 2 độ** giữa nắng trưa; dưới trời khô phòng thí
+nghiệm đo được 4–5 độ. Số hạng đầu tiên đổi dấu ngay tại đó: mái mát hơn
+không khí thì gió thôi làm mát, nó quay sang hâm nóng — và bạn sẽ muốn
+chắn gió cho mái nhà mình.

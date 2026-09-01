@@ -1,0 +1,86 @@
+---
+title: "Cúi lưng nhấc thùng 20 kg: đĩa đệm thắt lưng đang chịu 444 kilogram"
+seoTitle: "Lực nén cột sống khi nhấc vật: đòn bẩy 5 centimet của cơ dựng sống"
+description: "Cơ dựng sống chỉ có tay đòn 5 cm để cân với thùng hàng cách khớp 50 cm — tỉ số 1:10. Cúi lưng nhấc 20 kg cho 4 356 N nén lên đĩa L5/S1, vượt ngưỡng NIOSH 3 400 N tới 28%. Ngồi xổm ôm sát người: 2 433 N. Cùng cái thùng, chênh 196 kilogram."
+pubDate: 2026-09-02
+tags: ["vat-ly", "co-hoc", "javascript"]
+translationId: "cui-nhac-thung-hang-dia-dem-chiu-440-kg"
+---
+
+import SpineLoad from '../../../components/demos/SpineLoad.astro';
+
+Thùng hàng 20 kg nằm dưới sàn. Bạn cúi xuống, với tay, nhấc lên — cùng lắm
+là một tiếng "hự". Nhưng cái đĩa đệm giữa đốt L5 và xương cùng vừa nhận
+một con số chẳng liên quan gì tới 20 kg:
+
+<SpineLoad />
+
+## Cơ dựng sống đánh cược ở tỉ số 1:10
+
+Nhóm cơ giữ lưng bạn thẳng chạy sát ngay cạnh cột sống, nên **tay đòn của
+nó chỉ 5 cm** (đo trên ảnh cộng hưởng từ). Cái thùng thì treo cách khớp
+50 cm về phía trước. Cân bằng mô-men quanh L5/S1 không cho thương lượng:
+
+```
+M      = W_thân · 0,30 m · sinθ + W_vật · d
+F_cơ   = M / 0,05 m
+F_nén ≈ F_cơ + W_thân + W_vật
+```
+
+Riêng cái thùng đã đòi cơ kéo 1 962 N — **tương đương treo 200 kg vào một
+sợi dây**, chỉ vì 50 chia cho 5 bằng 10. Nhưng chưa hết: phần thân trên
+đốt L5/S1 (đầu, hai tay, ngực bụng — 32 kg ở người 65 kg) cũng đang chìa
+ra 30 cm, đòi thêm 1 884 N. Cơ phải kéo tổng **3 846 N**, và toàn bộ lực
+đó ép thẳng đốt sống xuống đĩa đệm, cộng thêm trọng lượng đè lên: **4 356
+N — tức 444 kg** dồn lên tiết diện đĩa chừng 18 cm², thành 2,4 MPa — đúng
+cỡ áp suất mà cảm biến cắm thẳng vào đĩa đệm người sống đo được ở tư thế này.
+
+Đòn bẩy không bao giờ cho không: [ai được lợi đường đi thì chịu thiệt
+lực](/vi/posts/don-bay-cho-toi-mot-diem-tua) — cơ chỉ co vài centimet mà
+quét được cả cung thân người, và đĩa đệm trả cái giá đó.
+
+## Vạch 3 400 newton mà NIOSH kẻ
+
+Viện An toàn và Sức khoẻ Nghề nghiệp Mỹ dựng phương trình nâng vật quanh
+một tiêu chí thiết kế: **3 400 N nén tại L5/S1** — trên mức đó, dữ liệu
+dịch tễ cho thấy chấn thương đĩa đệm tăng rõ. Cú nhấc vừa rồi vượt vạch
+**28%**.
+
+Một khi đã cúi gập với vật xa 50 cm, vạch ấy thấp đến bất ngờ: **11 kg đã
+chạm vạch** (3 384 N), két nước ngọt 12 kg cho 3 492 N. Kéo tới 39 kg là chạm
+nốt mốc thứ hai trong demo — 6 400 N, giới hạn tối đa, đặt ở đó vì trên
+mức ấy phần lớn mẫu đốt sống trong phòng thí nghiệm đã nứt sụn tiếp giáp.
+
+## Cùng cái thùng, chênh 196 kilogram
+
+Ngồi xổm, giữ lưng gần thẳng (nghiêng 30°) và ôm thùng cách hông 25 cm:
+**2 433 N**. Cùng cái thùng, cùng cơ thể, cùng công việc — chênh **1 923
+N, tức 196 kg**, gần bằng mười cái thùng nữa chất lên đĩa đệm.
+
+Khoản chênh đến từ hai chỗ. Dựng thân lên làm tay đòn của chính thân trên
+co lại theo sinθ: ở 30° nó còn 15 cm thay vì 30. Kéo vật vào gần thì thẳng
+thừng hơn nữa — **mỗi 10 cm sát người là 392 N, đúng 40 kg**, bỏ khỏi
+lưng; chỉ riêng ôm thùng vào còn 25 cm mà vẫn cúi gập đã hạ xuống 3 375 N,
+vừa lọt dưới vạch.
+
+Và đây mới chỉ là mô hình **tĩnh**: giật thùng lên với gia tốc khiêm tốn
+2 m/s², mọi trọng lượng trong phương trình tăng 20,4% (2 chia cho 9,81)
+và 4 356 N thành **5 244 N** — [rút ngắn thời gian thì phải trả bằng
+lực](/vi/posts/tui-khi-va-nghe-thuat-keo-dai-mot-phan-muoi-giay). Hiếm ai
+hỏng lưng lúc nâng chậm.
+
+## Trường hợp biên: cúi tay không vẫn là 2 197 N
+
+Kéo khối lượng vật về 0 mà vẫn giữ thân ngang: **2 197 N — 224 kg**, bằng
+65% ngưỡng NIOSH khi trong tay bạn không có gì cả. Lý do nằm ngay ở hai
+số hạng: thân trên đòi 1 884 N lực cơ, cái thùng 20 kg đòi 1 962 N — xấp
+xỉ nhau. Cái bạn nhấc trước tiên luôn là chính mình.
+
+Ở chiều ngược lại, cơ thể có một lối lách: hít vào rồi gồng chặt bụng biến
+khoang bụng thành **xi-lanh có áp** nằm trước cột sống, đỡ bớt 10–15%
+mô-men — đúng cơ chế đai lưng thợ bốc vác, và là lý do bạn tự nín thở khi
+bê nặng mà không ai dạy. Nhưng nó nhỏ hơn người ta tưởng: trừ 15%, cú cúi
+nhấc 20 kg vẫn còn **3 779 N**, vẫn trên vạch.
+Còn cái giá thì trả ngay: nín hơi gồng bụng đẩy [cột áp trong hệ tuần
+hoàn](/vi/posts/huyet-ap-va-cot-nuoc-trong-nguoi-ban) vọt trên 300 mmHg
+tâm thu trong vài giây — hoa mắt sau khi bê nặng không phải do bạn yếu.

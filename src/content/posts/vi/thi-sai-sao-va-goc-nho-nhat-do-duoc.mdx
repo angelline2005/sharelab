@@ -1,0 +1,96 @@
+---
+title: "Ngôi sao gần nhất nhích đúng bằng một đồng xu nhìn từ 2,7 km"
+seoTitle: "Thị sai sao và đơn vị parsec: vì sao 1 pc = 3,26 năm ánh sáng"
+description: "Đi hết đường kính quỹ đạo Trái Đất — 299 triệu km — Proxima Centauri chỉ dịch tối đa 1,536 giây cung trên nền trời. Nửa góc ấy, 0,7681″, là thị sai; nó bằng đúng một đồng xu 1 cm nhìn từ 2,69 km. Định nghĩa parsec ra thẳng từ đó."
+pubDate: 2026-09-02
+tags: ["vat-ly", "thien-van", "quang-hoc", "javascript"]
+translationId: "thi-sai-sao-va-goc-nho-nhat-do-duoc"
+---
+
+import StellarParallax from '../../../components/demos/StellarParallax.astro';
+
+Giữa tháng Hai và cuối tháng Tám, bạn đứng ở hai chỗ cách nhau **299 triệu
+km** — hai đầu quỹ đạo Trái Đất, và đúng cặp ngày mà ngôi sao gần nhất lệch
+nhiều nhất. Chụp cùng một mảnh trời ở hai thời điểm ấy, nó dịch được
+**1,536 giây cung**. Cả thang đo khoảng cách vũ trụ bắt đầu từ cái nhích đó:
+
+<StellarParallax />
+
+## Tam giác dài gấp 268 500 lần cạnh đáy 1 AU
+
+Nửa góc dịch mới là con số có tên: **thị sai** p — góc mà bán kính quỹ đạo
+Trái Đất (1 AU = 149,6 triệu km) trông thấy được nếu bạn đứng ở ngôi sao.
+Proxima Centauri: p = **0,7681″** (Gaia DR3). Một giây cung là góc nhìn
+vật rộng 1 cm đặt cách 2,06 km, nên thị sai của ngôi sao gần nhất **bằng
+đúng đồng xu 1 cm nhìn từ 2,69 km**: tam giác của phép đo dài gấp
+**268 500 lần** cạnh đáy 1 AU của nó.
+
+Và là góc *tương đối*: trên trời không có lưới toạ độ khắc sẵn, chỉ có các
+sao nền xa hơn hàng trăm lần nên coi như đứng im. Chuyển động quỹ đạo
+[đã tạo ra bốn mùa](/vi/posts/vi-sao-mua-dong-lanh-du-trai-dat-gan-mat-troi-hon)
+nay làm thước.
+
+## Một giây cung đẻ ra một đơn vị đo
+
+```
+d (parsec) = 1 / p (giây cung)
+góc (giây cung) = 206 265 × kích thước / khoảng cách
+```
+
+Parsec không phải con số ai chọn cho tròn: nó là **khoảng cách khiến thị
+sai đúng bằng 1 giây cung** — *parallax-second* — và ra ngay 206 265 AU,
+tức **3,26 năm ánh sáng**. Đo p, lấy nghịch đảo, xong: Proxima 0,7681″ →
+1,302 pc → **4,25 năm ánh sáng**, Sirius 0,3792″ → 8,60 năm ánh sáng. Có
+một chỗ trống ngay tại mốc định nghĩa: không ngôi sao nào có p ≥ 1″, nên
+**1 parsec là khoảng cách chẳng ngôi sao nào ở gần đến thế**.
+
+## Bessel 1838: đo cái nhỏ hơn cả vết nhoè
+
+Ba trăm năm sau Copernicus, thị sai vẫn là món nợ: Trái Đất mà quay quanh
+Mặt Trời thì các sao phải nhích, mà chẳng ai bắt được. Bessel trả nợ năm
+1838, chọn 61 Cygni vì nó trôi nhanh nhất trong các sao biết khi ấy — dấu
+hiệu của một hàng xóm gần — và ra 0,314″. Hôm nay là 0,2861″: ông **thiếu 8,9% khoảng
+cách**, 10,4 so với 11,40 năm ánh sáng.
+
+Kỳ tích không nằm ở độ chính xác ấy. Khí quyển nhoè mỗi ngôi sao thành đốm
+rộng **cỡ 1 giây cung**, còn cả ellipse của 61 Cygni chỉ rộng 0,572″ — nhỏ
+hơn vết nhoè 1,7 lần. Bessel không *phân giải* cái nhích đó, ông đo **tâm**
+đốm sáng: [nhiễu xạ đặt trần cứng cho việc phân
+giải](/vi/posts/vi-sao-khong-kinh-nao-thay-la-co-tren-mat-trang), còn định
+vị chỉ đòi đủ photon và đủ đêm — sai số của tâm giảm theo căn bậc hai số
+phép đo.
+
+## Cái nhích ấy có hình gì
+
+Suốt một năm, ngôi sao không đi tới đi lui trên một đoạn thẳng: nó chạy
+một **ellipse** — quỹ đạo Trái Đất thu nhỏ rồi chiếu lên trời. Bán trục
+lớn luôn bằng p, bán trục nhỏ bằng p·sin β với β là vĩ độ hoàng đạo của
+sao. Sao nằm ngay trên hoàng đạo (β = 0) chỉ dao động trên một đoạn thẳng;
+sao ở cực hoàng đạo vẽ một vòng tròn hoàn hảo. Proxima ở β = −44,8°: để
+thanh trượt tại 45°, ellipse ra rộng **1,536″** và cao **1,086″**.
+
+Hai lần chụp cách nhau sáu tháng luôn rơi vào hai điểm đối xứng qua tâm
+ellipse, nên chỉ cặp ngày nằm ở hai đầu trục lớn mới cho trọn 2p — với
+Proxima là giữa tháng Hai và cuối tháng Tám, còn tháng Một với tháng Bảy
+chỉ được 1,30″. Mà ngôi sao còn trôi thật **3,86″ mỗi năm**, gấp hai lần
+rưỡi bề rộng ellipse, nên quỹ tích quan sát được là một đường sóng.
+
+## Trường hợp biên: 60 giây cung của mắt thường
+
+Mắt người phân giải khoảng 60 giây cung. Cắm vào d = 1/p: mắt trần chỉ bắt
+được thị sai của ngôi sao gần hơn **1/60 parsec — 3 438 lần khoảng cách
+Trái Đất–Mặt Trời**, mà Proxima xa gấp **78 lần** ngưỡng đó. Nên khi người
+Hy Lạp cổ kết luận "không thấy thị sai, vậy Trái Đất đứng yên", phép đo của
+họ hoàn toàn chuẩn — chỉ mệnh đề ngầm là sai: họ gạt bỏ khả năng các ngôi
+sao xa đến mức phi lý, mà chúng xa đúng như thế.
+
+Đầu kia cũng có tường. Gaia đo tới **20 micro-giây cung** — đồng xu 1 cm
+nhìn từ **103 000 km**, hơn một phần tư quãng đường tới Mặt Trăng — nhưng
+nghịch đảo không tha ai: sai số tương đối của d bằng 20 µas nhân d tính
+theo parsec. Ở 5 kpc sai số đã 10%, ở 10 kpc 20%, tới Đám Mây Magellan Lớn
+(~50 kpc) **bằng đúng giá trị đo được**. Từ đó 1/p thôi làm khoảng cách, nó
+thành một phân bố xác suất, và ta chuyền tay sang Cepheid, siêu tân tinh
+Ia, rồi [đường thẳng của
+Hubble](/vi/posts/dinh-luat-hubble-vu-tru-no-va-tuoi-cua-no) — nấc nào
+cũng hiệu chuẩn bằng nấc dưới, mà nấc dưới cùng vẫn là cái tam giác dài
+gấp 268 500 lần cạnh đáy 1 AU của nó.

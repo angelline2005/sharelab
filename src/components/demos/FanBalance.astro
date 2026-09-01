@@ -1,0 +1,218 @@
+---
+// Rotating unbalance of a ceiling fan: F = U·ω², U = m·r (kg·m), ω = 2π·rpm/60.
+// Correction kit: two adhesive weights of 4,0 g at r = 0,45 m on the two blades
+// flanking the empty 180° slot; their vector sum is 2·m·r·cos60° = m·r.
+// Residual eccentricity e = U/M (M = 5 kg rotor) is compared with ISO 21940-11
+// balance grade G6.3 (fans): U_per = M·G/ω. Rigid rotor, single-plane model —
+// valid for a thin disc rotor well below any blade bending mode, i.e. 50–400 v/p.
+// Radius slider stops at 0,70 m — the blade tip of a 1,4 m fan; past that the
+// dust would not be on a blade at all.
+---
+
+<figure class="demo" data-demo="can-bang-canh-quat-tran-ba-gram-bui">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Khối bụi bám lệch (g) <output data-out="m"></output>
+      <input type="range" data-in="m" min="0" max="10" step="0.1" value="3" /></label>
+    <label>Bán kính khối lệch (m) <output data-out="r"></output>
+      <input type="range" data-in="r" min="0.2" max="0.7" step="0.01" value="0.6" /></label>
+    <label>Tốc độ quay (vòng/phút) <output data-out="n"></output>
+      <input type="range" data-in="n" min="50" max="400" step="5" value="350" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Nhìn quạt trần 1,4 m từ dưới lên. Chấm xanh là khối bụi bám trên một cánh;
+    mũi tên xanh dài theo tích m·r — thứ duy nhất quyết định độ lệch. Hai kẹp
+    vàng 4,0 g cố định ở r = 0,45 m trên hai cánh còn lại cho mũi tên vàng ngược
+    chiều. Mũi tên đỏ là phần chưa khử được, và đường cong đỏ cho biết nó thành
+    bao nhiêu newton khi tăng tốc — lực đi theo bình phương vòng quay.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const CURVE = '#2563eb', MARK = '#dc2626', CLIP = '#f59e0b';
+  const G0 = 9.80665;                 // m/s²
+  const ROTOR = 5;                    // kg — phần quay của quạt trần 1,4 m
+  const CLIP_M = 4.0, CLIP_R = 0.45;  // g mỗi kẹp, m
+  const UMAX = 0.007;                 // kg·m — 10 g tại mép cánh 0,7 m
+  const BLADES = [90, 210, 330];
+  const vn = (x: number, d: number) => x.toFixed(d).replace('.', ',');
+  const w = (rpm: number) => (2 * Math.PI * rpm) / 60;
+  // Hai kẹp ở 120° và 240° so với khối lệch: tổng = 2·m·r·cos60° = m·r.
+  const UC = 2 * (CLIP_M / 1000) * CLIP_R * Math.cos(Math.PI / 3);
+
+  function niceMax(v: number) {
+    const p = Math.pow(10, Math.floor(Math.log10(Math.max(v, 1e-3))));
+    for (const s of [1, 1.5, 2, 2.5, 3, 4, 5, 6, 8, 10]) if (s * p >= v) return s * p;
+    return 10 * p;
+  }
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (k: string) => root.querySelector(`[data-in="${k}"]`) as HTMLInputElement;
+    const output = (k: string) => root.querySelector(`[data-out="${k}"]`) as HTMLOutputElement;
+
+    function arrow(x0: number, y0: number, ang: number, len: number, col: string, lab: string, fg: string) {
+      if (len < 2) return;
+      const dx = Math.cos(ang), dy = -Math.sin(ang);
+      const x1 = x0 + dx * len, y1 = y0 + dy * len;
+      ctx.strokeStyle = col; ctx.fillStyle = col; ctx.lineWidth = 2.5;
+      ctx.beginPath(); ctx.moveTo(x0, y0); ctx.lineTo(x1, y1); ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(x1 + dx * 7, y1 + dy * 7);
+      ctx.lineTo(x1 - dy * 4.5, y1 + dx * 4.5);
+      ctx.lineTo(x1 + dy * 4.5, y1 - dx * 4.5);
+      ctx.closePath(); ctx.fill();
+      ctx.lineWidth = 1;
+      ctx.fillStyle = fg; ctx.globalAlpha = 0.75; ctx.textAlign = 'center';
+      ctx.fillText(lab, x1 + dx * 17, y1 + dy * 17 + 3);
+      ctx.globalAlpha = 1;
+    }
+
+    function draw() {
+      const mg = Number(input('m').value);
+      const rm = Number(input('r').value);
+      const rpm = Number(input('n').value);
+      output('m').textContent = vn(mg, 1);
+      output('r').textContent = vn(rm, 2);
+      output('n').textContent = String(rpm);
+
+      const U = (mg / 1000) * rm;         // kg·m
+      const Ures = U - UC;                // dương = còn dư về phía khối bụi
+      const om = w(rpm), om2 = om * om;
+      const F = U * om2, Fres = Math.abs(Ures) * om2;
+      const Uper = (ROTOR * 0.0063) / om; // ISO 21940-11 cấp G6.3, kg·m
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.5);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+      ctx.font = '10px system-ui,sans-serif';
+
+      // ---- Panel trái: nhìn quạt từ dưới lên ----
+      const PW = Math.min(cssH, cssW * 0.45);
+      const cx = PW / 2, cy = cssH / 2;
+      const panelR = Math.min(PW, cssH) / 2 - 12;
+      const R = (mm: number) => (mm / 0.85) * panelR;
+
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.18;
+      ctx.beginPath(); ctx.arc(cx, cy, R(0.70), 0, Math.PI * 2); ctx.stroke();
+      ctx.globalAlpha = 1;
+
+      for (const deg of BLADES) {
+        const a = (deg * Math.PI) / 180;
+        ctx.save();
+        ctx.translate(cx, cy); ctx.rotate(-a);
+        ctx.beginPath();
+        ctx.moveTo(R(0.10), -R(0.055));
+        ctx.lineTo(R(0.70), -R(0.085));
+        ctx.lineTo(R(0.70), R(0.085));
+        ctx.lineTo(R(0.10), R(0.055));
+        ctx.closePath();
+        ctx.fillStyle = fg; ctx.globalAlpha = 0.12; ctx.fill();
+        ctx.globalAlpha = 0.35; ctx.strokeStyle = fg; ctx.stroke();
+        ctx.globalAlpha = 1;
+        ctx.restore();
+      }
+      ctx.fillStyle = fg; ctx.globalAlpha = 0.35;
+      ctx.beginPath(); ctx.arc(cx, cy, R(0.10), 0, Math.PI * 2); ctx.fill();
+      ctx.globalAlpha = 1;
+
+      ctx.strokeStyle = CURVE; ctx.globalAlpha = 0.5; ctx.setLineDash([3, 3]);
+      ctx.beginPath(); ctx.arc(cx, cy, R(rm), 0, Math.PI * 2); ctx.stroke();
+      ctx.setLineDash([]); ctx.globalAlpha = 1;
+
+      for (const deg of [210, 330]) {
+        const a = (deg * Math.PI) / 180;
+        ctx.fillStyle = CLIP;
+        ctx.beginPath();
+        ctx.arc(cx + R(CLIP_R) * Math.cos(a), cy - R(CLIP_R) * Math.sin(a), 4.5, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      const a1 = Math.PI / 2;
+      ctx.fillStyle = CURVE;
+      ctx.beginPath();
+      ctx.arc(cx + R(rm) * Math.cos(a1), cy - R(rm) * Math.sin(a1), 3 + 1.4 * Math.sqrt(mg), 0, Math.PI * 2);
+      ctx.fill();
+
+      const LEN = (u: number) => (Math.abs(u) / UMAX) * (panelR * 0.9);
+      arrow(cx, cy, a1, LEN(U), CURVE, 'bụi', fg);
+      arrow(cx, cy, -Math.PI / 2, LEN(UC), CLIP, 'kẹp', fg);
+      arrow(cx + 11, cy, Ures >= 0 ? a1 : -Math.PI / 2, LEN(Ures), MARK, 'còn lại', fg);
+
+      ctx.fillStyle = fg; ctx.globalAlpha = 0.6; ctx.textAlign = 'left';
+      ctx.fillText(`r = ${vn(rm, 2)} m`, 4, 12);
+      ctx.globalAlpha = 1;
+
+      // ---- Panel phải: lực theo vòng/phút ----
+      const padL = PW + 46, padR = 8, padT = 16, padB = 24;
+      const yMax = niceMax(Math.max(U, Math.abs(Ures)) * Math.pow(w(400), 2) || 0.5);
+      const X = (n: number) => padL + ((n - 50) / 350) * (cssW - padL - padR);
+      const Y = (f: number) => cssH - padB - (f / yMax) * (cssH - padB - padT);
+
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.3;
+      ctx.beginPath();
+      ctx.moveTo(padL, padT); ctx.lineTo(padL, cssH - padB); ctx.lineTo(cssW - padR, cssH - padB);
+      ctx.stroke();
+      ctx.globalAlpha = 0.55; ctx.fillStyle = fg;
+      ctx.textAlign = 'center';
+      for (const n of [100, 200, 300, 400]) ctx.fillText(String(n), X(n), cssH - padB + 13);
+      ctx.textAlign = 'right';
+      const dec = yMax / 4 < 1 ? 1 : 0;
+      for (let k = 1; k <= 4; k++) ctx.fillText(`${vn((yMax * k) / 4, dec)} N`, padL - 4, Y((yMax * k) / 4) + 3);
+      ctx.textAlign = 'left';
+      ctx.fillText('lực lắc (N) — trục ngang: vòng/phút', padL + 2, padT - 5);
+      ctx.globalAlpha = 1;
+
+      const curve = (u: number, col: string) => {
+        ctx.strokeStyle = col; ctx.lineWidth = 2; ctx.beginPath();
+        for (let i = 0; i <= 140; i++) {
+          const n = 50 + (350 * i) / 140;
+          const y = Y(Math.abs(u) * Math.pow(w(n), 2));
+          i ? ctx.lineTo(X(n), y) : ctx.moveTo(X(n), y);
+        }
+        ctx.stroke(); ctx.lineWidth = 1;
+      };
+      curve(U, CURVE);
+      curve(Ures, MARK);
+
+      ctx.fillStyle = CURVE;
+      ctx.beginPath(); ctx.arc(X(rpm), Y(F), 5, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = MARK;
+      ctx.beginPath(); ctx.arc(X(rpm), Y(Fres), 5, 0, Math.PI * 2); ctx.fill();
+
+      // ---- Readout ----
+      const need = (U * 1000) / (2 * CLIP_R * Math.cos(Math.PI / 3));
+      const note = Math.abs(Ures) <= Uper
+        ? ' · <b>đạt cấp cân bằng ISO G6.3</b>'
+        : ` · vượt ngưỡng ISO G6.3 (${(Uper * 1e6).toFixed(0)} g·mm) <b>${vn(Math.abs(Ures) / Uper, 1)} lần</b>`;
+      readout.innerHTML =
+        `Lệch ${vn(mg, 1)} g tại r = ${vn(rm, 2)} m → m·r = <b>${(U * 1e6).toFixed(0)} g·mm</b>` +
+        ` (trọng tâm rotor 5 kg lệch ${vn((U / ROTOR) * 1000, 2)} mm)` +
+        ` · ${rpm} v/p → lực quay <b>${vn(F, 2)} N</b> (${((F / G0) * 1000).toFixed(0)} gf) ở ${vn(rpm / 60, 2)} Hz` +
+        ` · hai kẹp ${vn(CLIP_M, 1)} g khử 1 800 g·mm → còn <b>${vn(Fres, 2)} N</b>` +
+        ` (khử đúng cần ${vn(need, 1)} g mỗi kẹp)${note}`;
+    }
+
+    root.querySelectorAll('input').forEach((el) => el.addEventListener('input', draw));
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="can-bang-canh-quat-tran-ba-gram-bui"]').forEach(setup);
+</script>

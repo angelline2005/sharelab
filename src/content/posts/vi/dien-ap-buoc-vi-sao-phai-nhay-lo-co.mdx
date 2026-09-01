@@ -1,0 +1,94 @@
+---
+title: "Dây điện đứt xuống ruộng: một bước chân là 1 311 volt"
+seoTitle: "Điện áp bước khi dây điện chạm đất: công thức và cách thoát an toàn"
+description: "Dòng chạm đất toả ra hình phễu và thế đất rơi theo 1/r. Với 200 A vào đất ruộng ẩm, ở cách điểm chạm 1 mét, một bước chân 70 cm đã chênh nhau 1 311 volt; ra tới 10 mét chỉ còn 20,8 V. Đó là lý do quy tắc thoát hiểm là chụm chân lê từng bước, không phải chạy."
+pubDate: 2026-09-02
+tags: ["vat-ly", "dien-hoc", "javascript"]
+translationId: "dien-ap-buoc-vi-sao-phai-nhay-lo-co"
+---
+
+import StepVoltage from '../../../components/demos/StepVoltage.astro';
+
+Tấm biển an toàn điện lực vẽ một người chụm chân nhảy lò cò ra xa cột điện
+đổ. Trông như trò trẻ con giữa một tình huống chết người, nhưng nó là cách
+duy nhất để ép một phép trừ về gần không:
+
+<StepVoltage />
+
+## Mặt đất không phải một cực điện, nó là cái phễu
+
+Sợi dây 22 kV đứt, rơi xuống ruộng. Dòng điện không "biến mất vào đất": nó
+toả từ điểm chạm ra mọi hướng để tìm đường về trạm. Càng xa, tiết diện nó
+chảy qua càng rộng — nửa mặt cầu bán kính r có diện tích 2πr² — nên gần như
+toàn bộ độ sụt thế dồn vào mấy chục centimét đầu tiên:
+
+```
+V(r) = I·ρ / (2π·r)
+```
+
+Mặt đất quanh chỗ dây rơi không còn là "đất" với một thế duy nhất; nó thành
+một cái phễu dựng đứng — đúng nghĩa một [cầu phân
+áp](/vi/posts/cau-phan-ap-num-volume-va-moi-cam-bien) liên tục, mà hai bàn
+chân bạn là hai que đo cắm vào hai điểm khác nhau của nó. Hiệu thế giữa hai
+que đo ấy là **điện áp bước**:
+
+```
+U_bước = (I·ρ / 2π) · (1/r − 1/(r + d))
+```
+
+Với I = 200 A, đất ruộng ẩm ρ = 100 Ω·m, đứng cách điểm chạm r = 1 m và
+bước d = 0,70 m: **1 311 V**. Cùng bước ấy ở 2 m còn 413 V, ở 10 m chỉ còn
+**20,8 V** — nhỏ hơn 63 lần. Khi r lớn hơn hẳn bước chân, công thức suy biến
+thành `I·ρ·d/(2πr²)`: **đi xa gấp đôi thì điện áp bước chia gần bốn**. Ngưỡng
+tiếp xúc an toàn 50 V của IEC nằm ở 6,3 m với ca này; khuyến cáo lùi 8–10 mét
+là số tròn cộng biên, vì dây nằm dài trên đất cho chỗ tiếp xúc rộng hơn, phễu
+cao hơn và mốc 50 V lùi ra quá 10 m.
+
+## Vôn không giết người, dòng qua người mới giết
+
+Da khô cách điện tốt tới mức [20 000 vôn tĩnh điện ở tay nắm
+cửa](/vi/posts/cu-giat-tay-nam-cua-hai-muoi-nghin-von-vo-hai) chỉ làm bạn
+giật mình. Ở 1 311 V thì hết đường: thân người khoảng 1 000 Ω nối tiếp hai
+bàn chân tiếp đất, mỗi bàn cỡ 3ρ — tổng 1 600 Ω, cho **819 mA** qua bạn.
+
+Đường chân–chân đi vòng dưới bụng, gần như không qua tim: hệ số dòng tim của
+nó chỉ 0,04 theo IEC 60479, nên với quả tim, 819 mA ấy chỉ "nặng" ngang 33 mA
+trên đường tay–chân. Nhưng hệ số ấy quy đổi riêng rủi ro rung thất; 819 mA
+thật vẫn chạy qua hai bắp chân, thừa sức khoá cứng cơ — và bạn ngã.
+Khi ngã, hai điểm tiếp xúc không còn cách nhau 70 cm mà là **1,5 m** giữa
+bàn tay chống đất và bàn chân: ở cách điểm chạm 2 m, hiệu ấy là **682 V**
+thay vì 413 V, lần này xuyên thẳng lồng ngực. Điện áp bước hiếm khi giết
+ngay; nó hạ bạn xuống để điện áp tiếp xúc kết liễu.
+
+## Đất ướt không cứu bạn
+
+Kéo thanh ρ mà giữ nguyên I, demo nói bùn ướt hiền hơn cát khô. Thực tế
+không cho bạn giữ nguyên I: dòng chạm bị chặn chủ yếu bởi chính điện trở
+tiếp đất `R = ρ/(2πa)` với a là bán kính chỗ tiếp xúc, nên
+`I = V_nguồn·2πa/ρ` — thay vào, ρ triệt tiêu sạch và chỉ còn
+`V(r) = V_nguồn·a/r`. Cùng sợi dây 22 kV ấy, thế pha 12,7 kV — [cái giá của
+việc tải điện đi xa](/vi/posts/vi-sao-duong-day-tai-dien-phai-cao-the):
+bùn ruộng 20 Ω·m cho ngót 1 000 A, cát khô 500 Ω·m cho 40 A — chênh 25 lần
+dòng, mà điện áp bước ở 1 m vẫn là **1 311 V** cả hai lần. Loại đất không
+quyết định bạn hứng bao nhiêu volt, chỉ quyết định rơ-le mất bao lâu để thấy
+sự cố.
+
+## Trường hợp biên: đẩy d về 0, và con trâu thua trước
+
+Công thức phân kỳ khi r → 0 vì nó coi điểm chạm là một điểm toán học. Trần
+thật không đến từ hình học mà từ nguồn: cái phễu không thể cao hơn thế của
+thứ đang nuôi nó — với lưới 22 kV, trần ấy là **12 700 vôn**.
+
+Đầu kia thì hiền: đẩy d về 0 thì U_bước → 0, và đó là toàn bộ cơ sở vật lý
+của tấm biển nhảy lò cò. Nhưng số 0 ấy là giới hạn toán học chứ không phải
+lời hứa — chụm chân cách nhau 5 cm ở cách điểm chạm 1 m vẫn còn **152 V**,
+tức 95 mA qua hai bắp chân. Đủ để kéo 1 311 V xuống dưới ngưỡng chịu đựng
+262 V mà IEEE Std 80 cho phép khi rơ-le cắt trong 0,5 giây, chưa đủ để đứng
+yên: chụm chân chỉ mua quyền di chuyển, và mét đầu tiên là mét đắt nhất.
+Ngành điện nay còn chuộng lê sát từng bàn chân hơn nhảy thật: nhảy một chân
+mà tiếp đất trượt thì bạn ngã.
+
+Loài bốn chân thì không có lựa chọn nào: hai chân trước với hai chân sau con
+trâu cách nhau cỡ 1,5 m, nên ở cách điểm chạm 2 m nó hứng 682 V thay vì 413 V
+của bạn — gấp 1,65 lần, trên một đường xuyên tim. Nó không chụm chân được, và
+đó là lý do gia súc là nạn nhân quen thuộc của các vụ đứt dây mùa bão.

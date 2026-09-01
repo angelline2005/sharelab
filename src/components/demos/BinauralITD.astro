@@ -1,0 +1,221 @@
+---
+// Interaural time difference, Woodworth ray approximation:
+//   ITD = (a/c)·(θ + sin θ),  θ in radians, a = head radius, c = 343 m/s.
+// Valid |θ| ≤ 90° (front hemisphere); it is the HIGH-frequency (ray + creeping
+// wave) limit. Below ~500 Hz the measured ITD is 1,2–1,5× larger than this
+// (Kuhn 1977, low-frequency limit 3(a/c)·sin θ). The frequency slider does not
+// change the curve — it only draws the ±½-chu-kỳ lines that mark where phase
+// stops being a unique cue. Threshold 10 µs: Klumpp & Eady 1956.
+---
+
+<figure class="demo" data-demo="hai-tai-va-muoi-micro-giay-nghe-ra-huong">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Hướng nguồn âm θ (độ, 0 = trước mặt) <output data-out="th"></output>
+      <input type="range" data-in="th" min="-90" max="90" step="1" value="30" /></label>
+    <label>Bán kính đầu a (cm) <output data-out="a"></output>
+      <input type="range" data-in="a" min="7" max="10" step="0.25" value="8.75" /></label>
+    <label>Tần số âm (Hz) <output data-out="f"></output>
+      <input type="range" data-in="f" min="60" max="4000" step="1" value="1000" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Bên trái: nhìn từ đỉnh đầu xuống. Sóng tới tai gần theo đường thẳng (xanh),
+    tới tai xa thì phải men vòng qua sọ (đỏ) — chính đoạn vòng ấy là độ trễ,
+    vẽ lại thành hai xung trên trục thời gian bên dưới. Bên phải: độ trễ theo
+    hướng nguồn, cùng hai vạch cam đánh dấu nửa chu kỳ của tần số đang chọn —
+    ra ngoài hai vạch đó, độ lệch pha khớp với nhiều hướng cùng lúc.
+    Công thức Woodworth là xấp xỉ tia; dưới ~500 Hz độ trễ thật lớn hơn cỡ
+    1,2–1,5 lần.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const CURVE = '#2563eb', MARK = '#dc2626', WARN = '#f59e0b';
+  const C = 343, D2R = Math.PI / 180;
+  // Woodworth: ITD in microseconds. a in metres, theta in degrees.
+  const itd = (thDeg: number, a: number) =>
+    (a / C) * (thDeg * D2R + Math.sin(thDeg * D2R)) * 1e6;
+  // d(ITD)/dθ in microseconds per degree.
+  const slope = (thDeg: number, a: number) =>
+    (a / C) * (1 + Math.cos(thDeg * D2R)) * D2R * 1e6;
+  const vn = (x: number, d: number) => x.toFixed(d).replace('.', ',');
+  const deg = (d: number) => (d < 0 ? `−${-d}°` : `${d}°`);
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (k: string) => root.querySelector(`[data-in="${k}"]`) as HTMLInputElement;
+    const output = (k: string) => root.querySelector(`[data-out="${k}"]`) as HTMLOutputElement;
+
+    function draw() {
+      const th = Number(input('th').value);
+      const aCm = Number(input('a').value);
+      const f = Number(input('f').value);
+      const a = aCm / 100;
+      output('th').textContent = deg(th);
+      output('a').textContent = vn(aCm, 2);
+      output('f').textContent = `${f.toLocaleString('vi-VN')} Hz`;
+
+      const t = itd(th, a);              // µs, dấu dương = nguồn bên phải
+      const half = 1e6 / (2 * f);        // nửa chu kỳ, µs
+      const perDeg = slope(th, a);       // µs mỗi độ
+      const maa = 10 / perDeg;           // độ, ứng với ngưỡng 10 µs
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.52);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+      ctx.font = '10px system-ui,sans-serif';
+      ctx.lineWidth = 1;
+
+      // ---------- Panel trái: nhìn từ đỉnh đầu xuống ----------
+      const LW = cssW * 0.38;
+      const rH = Math.min(LW * 0.20, cssH * 0.20);
+      const cx = LW / 2, cy = cssH * 0.38, Rs = rH * 2.0;
+      const sx = cx + Rs * Math.sin(th * D2R), sy = cy - Rs * Math.cos(th * D2R);
+      const sgn = th >= 0 ? 1 : -1;
+      const nearX = cx + sgn * rH, farX = cx - sgn * rH;
+
+      // hộp sọ + mũi (hướng trước)
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.45;
+      ctx.beginPath(); ctx.arc(cx, cy, rH, 0, Math.PI * 2); ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(cx - rH * 0.16, cy - rH * 0.99);
+      ctx.lineTo(cx, cy - rH * 1.22);
+      ctx.lineTo(cx + rH * 0.16, cy - rH * 0.99);
+      ctx.stroke();
+      ctx.globalAlpha = 1;
+
+      // đường thẳng tới tai gần
+      ctx.strokeStyle = CURVE; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.moveTo(sx, sy); ctx.lineTo(nearX, cy); ctx.stroke();
+
+      // đường vòng tới tai xa: đoạn thẳng phụ a·sin θ + cung a·θ
+      const phiT = (th - sgn * 90) * D2R;                 // phương vị điểm tiếp tuyến
+      const tx = cx + rH * Math.sin(phiT), ty = cy - rH * Math.cos(phiT);
+      const extra = rH * Math.abs(Math.sin(th * D2R));
+      ctx.strokeStyle = MARK;
+      ctx.setLineDash([4, 3]);
+      ctx.beginPath();
+      ctx.moveTo(tx + extra * Math.sin(th * D2R), ty - extra * Math.cos(th * D2R));
+      ctx.lineTo(tx, ty); ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.beginPath();
+      ctx.arc(cx, cy, rH, phiT - Math.PI / 2, (-sgn * 90) * D2R - Math.PI / 2, sgn > 0);
+      ctx.stroke();
+      ctx.lineWidth = 1;
+
+      // hai tai + nguồn âm
+      ctx.fillStyle = CURVE;
+      ctx.beginPath(); ctx.arc(nearX, cy, 3.5, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = MARK;
+      ctx.beginPath(); ctx.arc(farX, cy, 3.5, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = WARN;
+      ctx.beginPath(); ctx.arc(sx, sy, 5, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = fg; ctx.globalAlpha = 0.7; ctx.textAlign = 'center';
+      ctx.fillText('nguồn âm', Math.min(Math.max(sx, 30), LW - 30), Math.max(sy - 9, 10));
+      ctx.globalAlpha = 1;
+
+      // trục thời gian với hai xung
+      const px0 = 26, px1 = LW - 14, yP = cssH * 0.82;
+      const T = (us: number) => px0 + (us / 800) * (px1 - px0);
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.3;
+      ctx.beginPath(); ctx.moveTo(px0, yP); ctx.lineTo(px1, yP); ctx.stroke();
+      ctx.globalAlpha = 0.55; ctx.fillStyle = fg; ctx.textAlign = 'center';
+      for (const us of [0, 400, 800]) {
+        ctx.beginPath(); ctx.moveTo(T(us), yP); ctx.lineTo(T(us), yP + 4);
+        ctx.strokeStyle = fg; ctx.stroke();
+        ctx.fillText(us === 400 ? '400 µs' : String(us), T(us), yP + 15);
+      }
+      ctx.globalAlpha = 1;
+      ctx.strokeStyle = CURVE; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.moveTo(T(0), yP); ctx.lineTo(T(0), yP - 20); ctx.stroke();
+      ctx.strokeStyle = MARK;
+      ctx.beginPath(); ctx.moveTo(T(Math.abs(t)), yP); ctx.lineTo(T(Math.abs(t)), yP - 20); ctx.stroke();
+      ctx.lineWidth = 1;
+      ctx.fillStyle = fg; ctx.globalAlpha = 0.8; ctx.textAlign = 'left';
+      ctx.fillText(`ITD ${vn(Math.abs(t), 0)} µs`, px0, yP - 26);
+      ctx.globalAlpha = 1;
+
+      // ---------- Panel phải: ITD theo hướng ----------
+      const padL = LW + 54, padR = 10, padT = 16, padB = 26;
+      const X = (d: number) => padL + ((d + 90) / 180) * (cssW - padL - padR);
+      const Y = (us: number) => padT + ((800 - us) / 1600) * (cssH - padT - padB);
+
+      // vùng nhập nhằng pha (ngoài ±nửa chu kỳ)
+      if (half < 800) {
+        ctx.fillStyle = WARN; ctx.globalAlpha = 0.1;
+        ctx.fillRect(padL, Y(800), cssW - padL - padR, Y(half) - Y(800));
+        ctx.fillRect(padL, Y(-half), cssW - padL - padR, Y(-800) - Y(-half));
+        ctx.globalAlpha = 1;
+      }
+
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.3;
+      ctx.beginPath(); ctx.moveTo(padL, padT); ctx.lineTo(padL, cssH - padB); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(padL, Y(0)); ctx.lineTo(cssW - padR, Y(0)); ctx.stroke();
+      ctx.globalAlpha = 0.55; ctx.fillStyle = fg; ctx.textAlign = 'center';
+      for (const d of [-90, -45, 0, 45, 90]) {
+        ctx.fillText(d < 0 ? `−${-d}°` : `${d}°`, X(d), cssH - padB + 14);
+      }
+      ctx.textAlign = 'right';
+      for (const us of [-600, -300, 300, 600]) {
+        ctx.fillText(us < 0 ? `−${-us} µs` : `${us} µs`, padL - 5, Y(us) + 3);
+      }
+      ctx.globalAlpha = 1;
+
+      // vạch nửa chu kỳ
+      if (half < 800) {
+        ctx.strokeStyle = WARN; ctx.setLineDash([5, 4]);
+        ctx.beginPath(); ctx.moveTo(padL, Y(half)); ctx.lineTo(cssW - padR, Y(half)); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(padL, Y(-half)); ctx.lineTo(cssW - padR, Y(-half)); ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.fillStyle = WARN; ctx.textAlign = 'left';
+        ctx.fillText(`nửa chu kỳ ${vn(half, 0)} µs`, padL + 6, Y(half) - 4);
+      }
+
+      ctx.strokeStyle = CURVE; ctx.lineWidth = 2; ctx.beginPath();
+      for (let i = 0; i <= 180; i++) {
+        const d = -90 + i;
+        const y = Y(itd(d, a));
+        i ? ctx.lineTo(X(d), y) : ctx.moveTo(X(d), y);
+      }
+      ctx.stroke(); ctx.lineWidth = 1;
+
+      ctx.fillStyle = MARK;
+      ctx.beginPath(); ctx.arc(X(th), Y(t), 6, 0, Math.PI * 2); ctx.fill();
+
+      // ---------- readout ----------
+      const side = th === 0 ? 'hai tai nghe cùng lúc'
+        : `tai ${th > 0 ? 'phải' : 'trái'} nghe trước`;
+      const cycles = Math.abs(t) * 1e-6 * f;
+      const flag = Math.abs(t) > half
+        ? ' — <b>vượt nửa chu kỳ: pha nhập nhằng, não phải chuyển sang so cường độ</b>'
+        : ' — pha còn đọc ra một hướng duy nhất';
+      readout.innerHTML =
+        `Nguồn ở ${deg(th)} · đầu a = ${vn(aCm, 2)} cm → ITD = <b>${vn(Math.abs(t), 0)} µs</b>, ${side}`
+        + ` · quanh hướng này lệch 1° đổi ${vn(perDeg, 2)} µs, nên ngưỡng 10 µs tách được <b>${vn(maa, 2)}°</b>`
+        + ` · ở ${f.toLocaleString('vi-VN')} Hz độ trễ bằng ${vn(cycles, 2)} chu kỳ${flag}`;
+    }
+
+    root.querySelectorAll('input').forEach((el) => el.addEventListener('input', draw));
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="hai-tai-va-muoi-micro-giay-nghe-ra-huong"]').forEach(setup);
+</script>

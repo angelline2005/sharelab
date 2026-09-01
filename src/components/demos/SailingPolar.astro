@@ -1,0 +1,263 @@
+---
+// Course theorem (Marchaj, "Sail Performance"; Lanchester 1907 velocity triangle):
+//   V_thuyen / V_gio = sin(β − β_bk) / sin(β_bk)
+// β  = góc giữa hướng đi và hướng gió thật thổi tới (0° = đâm thẳng vào gió,
+//      180° = xuôi gió thẳng); β_bk = tổng góc cản khí động + thuỷ động,
+//      tan(ε) = D/L của từng môi trường, β_bk = ε_khí + ε_nước.
+// Gió biểu kiến lấy thẳng từ tam giác vận tốc: A = W − V (véc-tơ), và
+//   cos β_bk = (W·cos β + V) / A — kiểm tra khớp với công thức trên.
+// Hiệu lực: mô hình lý tưởng hoá, coi góc cản không đổi theo tốc độ và góc
+// tấn. Đúng dạng ở khoảng β_bk 3–45°; sai lệch mạnh khi β → 180° (gió biểu
+// kiến tiến về 0) và khi β chỉ nhỉnh hơn β_bk vài độ (thuyền gần đứng yên).
+---
+
+<figure class="demo" data-demo="thuyen-buom-chay-nhanh-hon-gio-day-no">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Hướng đi so với gió thật β (°) <output data-out="b"></output>
+      <input type="range" data-in="b" min="5" max="180" step="0.5" value="120" /></label>
+    <label>Tổng góc cản β_bk (°) <output data-out="ba"></output>
+      <input type="range" data-in="ba" min="3" max="45" step="1" value="7" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Tam giác vận tốc vẽ đúng tỉ lệ — véc-tơ gió thật (vàng), véc-tơ thuyền
+    (xanh) và cạnh thứ ba là gió biểu kiến (đỏ) mà buồm thực sự làm việc với.
+    Đồ thị bên cạnh: tỉ số tốc độ thuyền trên tốc độ gió theo hướng đi, vùng
+    xám là vùng chết đầu gió. Kéo góc cản xuống 7° để có thuyền băng, lên 30°
+    cho thuyền buồm nước thông thường.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const RAD = Math.PI / 180;
+  const BOAT = '#2563eb', APP = '#dc2626', WIND = '#f59e0b';
+  const WREF = 20; // gió thật quy chiếu, km/h, chỉ dùng cho dòng readout
+  const ratio = (b: number, ba: number) =>
+    Math.max(0, Math.sin((b - ba) * RAD) / Math.sin(ba * RAD));
+  const vi = (x: number, n = 2) => x.toFixed(n).replace('.', ',');
+
+  function niceStep(raw: number) {
+    const p = Math.pow(10, Math.floor(Math.log10(raw)));
+    const n = raw / p;
+    return (n <= 1 ? 1 : n <= 2 ? 2 : n <= 5 ? 5 : 10) * p;
+  }
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (k: string) => root.querySelector(`[data-in="${k}"]`) as HTMLInputElement;
+    const output = (k: string) => root.querySelector(`[data-out="${k}"]`) as HTMLOutputElement;
+
+    function arrow(x1: number, y1: number, x2: number, y2: number, col: string) {
+      const dx = x2 - x1, dy = y2 - y1, L = Math.hypot(dx, dy);
+      if (L < 2) return;
+      ctx.strokeStyle = col; ctx.fillStyle = col; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
+      const a = Math.atan2(dy, dx), h = Math.min(9, L * 0.45);
+      ctx.beginPath(); ctx.moveTo(x2, y2);
+      ctx.lineTo(x2 - h * Math.cos(a - 0.4), y2 - h * Math.sin(a - 0.4));
+      ctx.lineTo(x2 - h * Math.cos(a + 0.4), y2 - h * Math.sin(a + 0.4));
+      ctx.closePath(); ctx.fill(); ctx.lineWidth = 1;
+    }
+
+    // Nhãn đặt trên pháp tuyến ngoài của cạnh (hướng ra xa đỉnh thứ ba).
+    function edgeLabel(
+      x1: number, y1: number, x2: number, y2: number,
+      ax: number, ay: number, text: string, col: string, off: number,
+    ) {
+      const mx = (x1 + x2) / 2, my = (y1 + y2) / 2;
+      let nx = -(y2 - y1), ny = x2 - x1;
+      const L = Math.hypot(nx, ny) || 1; nx /= L; ny /= L;
+      if (nx * (mx - ax) + ny * (my - ay) < 0) { nx = -nx; ny = -ny; }
+      ctx.fillStyle = col; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText(text, mx + nx * off, my + ny * off);
+      ctx.textBaseline = 'alphabetic';
+    }
+
+    function arcAt(cx: number, cy: number, r: number, a1: number, a2: number, col: string) {
+      let d = a2 - a1;
+      while (d > Math.PI) d -= 2 * Math.PI;
+      while (d < -Math.PI) d += 2 * Math.PI;
+      ctx.strokeStyle = col; ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.arc(cx, cy, r, a1, a1 + d, d < 0); ctx.stroke();
+      ctx.lineWidth = 1;
+      return a1 + d / 2;
+    }
+
+    function draw() {
+      const b = Number(input('b').value), ba = Number(input('ba').value);
+      output('b').textContent = vi(b, 1);
+      output('ba').textContent = String(ba);
+
+      // Tam giác vận tốc, đơn vị = tốc độ gió thật (W = 1).
+      const V = ratio(b, ba);
+      const Px = -V * Math.cos(b * RAD), Py = V * Math.sin(b * RAD);
+      const Ax = 1 - Px, Ay = -Py;
+      const A = Math.hypot(Ax, Ay);
+      const baEff = A > 1e-9
+        ? Math.acos(Math.min(1, Math.max(-1, (Math.cos(b * RAD) + V) / A))) / RAD : 0;
+      const peak = 1 / Math.sin(ba * RAD), bestB = 90 + ba;
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32;
+      const narrow = cssW < 430;
+      const cssH = Math.round(cssW * (narrow ? 1.06 : 0.5));
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+      ctx.font = '10px system-ui,sans-serif';
+
+      // Hai khung: tam giác vận tốc và đồ thị. Màn hẹp thì xếp chồng.
+      const TP = narrow
+        ? { x: 0, y: 0, w: cssW, h: cssH * 0.47 }
+        : { x: 0, y: 0, w: cssW * 0.42, h: cssH };
+      const CP = narrow
+        ? { x: 0, y: cssH * 0.47, w: cssW, h: cssH * 0.53 }
+        : { x: cssW * 0.42, y: 0, w: cssW * 0.58, h: cssH };
+
+      // ---------- Tam giác vận tốc ----------
+      const m = Math.max(1, V, A);
+      const Dx = -0.30 * m;
+      const xs = [0, Px, 1, Dx], ys = [0, Py, 0, 0];
+      const xMin = Math.min(...xs), xMax = Math.max(...xs);
+      const yMin = Math.min(...ys), yMax = Math.max(...ys);
+      const xr = Math.max(xMax - xMin, 0.5 * m), yr = Math.max(yMax - yMin, 0.5 * m);
+      const pad = 34, padTop = 46;
+      const s = Math.min((TP.w - 2 * pad) / xr, (TP.h - pad - padTop) / yr);
+      const cx0 = TP.x + pad + (TP.w - 2 * pad - xr * s) / 2 - xMin * s;
+      const cy0 = TP.y + padTop + (TP.h - pad - padTop - yr * s) / 2 + yMax * s;
+      const CX = (x: number) => cx0 + x * s;
+      const CY = (y: number) => cy0 - y * s;
+
+      ctx.fillStyle = fg; ctx.globalAlpha = 0.55; ctx.textAlign = 'left';
+      ctx.fillText('Tam giác vận tốc (gió thật = 1)', TP.x + 4, TP.y + 12);
+      ctx.globalAlpha = 1;
+
+      // Tia đứt nét chỉ hướng gió thổi tới.
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.35; ctx.setLineDash([4, 3]);
+      ctx.beginPath(); ctx.moveTo(CX(0), CY(0)); ctx.lineTo(CX(Dx), CY(0)); ctx.stroke();
+      ctx.setLineDash([]); ctx.globalAlpha = 1;
+
+      arrow(CX(0), CY(0), CX(1), CY(0), WIND);
+      if (V > 0.01) arrow(CX(0), CY(0), CX(Px), CY(Py), BOAT);
+      if (A > 0.01) arrow(CX(Px), CY(Py), CX(1), CY(0), APP);
+
+      // Góc β tại gốc, giữa tia gió thổi tới và hướng thuyền.
+      if (V > 0.05) {
+        const aD = Math.atan2(0, CX(Dx) - CX(0));
+        const aP = Math.atan2(CY(Py) - CY(0), CX(Px) - CX(0));
+        const mid = arcAt(CX(0), CY(0), 24, aD, aP, fg);
+        ctx.fillStyle = fg; ctx.globalAlpha = 0.8; ctx.textAlign = 'center';
+        ctx.fillText('β', CX(0) + 34 * Math.cos(mid), CY(0) + 34 * Math.sin(mid) + 3);
+        ctx.globalAlpha = 1;
+      }
+      // Góc β_bk tại mũi thuyền — đỉnh P luôn nằm trên cùng, nêm mở xuống dưới.
+      if (V > 0.05 && A > 0.05) {
+        const a1 = Math.atan2(CY(0) - CY(Py), CX(0) - CX(Px));
+        const a2 = Math.atan2(CY(0) - CY(Py), CX(1) - CX(Px));
+        arcAt(CX(Px), CY(Py), 20, a1, a2, APP);
+        ctx.fillStyle = APP; ctx.textAlign = 'center';
+        ctx.fillText('β_bk', CX(Px), CY(Py) - 24);
+      }
+
+      edgeLabel(CX(0), CY(0), CX(1), CY(0), CX(Px), CY(Py), 'gió thật', WIND, 13);
+      if (V > 0.05) {
+        edgeLabel(CX(0), CY(0), CX(Px), CY(Py), CX(1), CY(0), 'thuyền', BOAT, 24);
+      }
+      if (A > 0.05 && V > 0.05) {
+        edgeLabel(CX(Px), CY(Py), CX(1), CY(0), CX(0), CY(0), 'gió biểu kiến', APP, 32);
+      }
+
+      // ---------- Tỉ số tốc độ theo hướng đi ----------
+      const padL = CP.x + 40, padR = 18, padT = CP.y + 30;
+      const axisY = CP.y + CP.h - 26;
+      const yTop = peak * 1.15;
+      const X = (bb: number) => padL + ((bb - 5) / 175) * (cssW - padL - padR);
+      const Y = (r: number) => axisY - (r / yTop) * (axisY - padT);
+
+      ctx.fillStyle = fg; ctx.globalAlpha = 0.55; ctx.textAlign = 'left';
+      ctx.fillText('Tỉ số tốc độ thuyền / gió', CP.x + 4, CP.y + 12);
+      ctx.globalAlpha = 1;
+
+      // Vùng chết đầu gió: β ≤ β_bk. Trục bắt đầu ở 5°, nên với β_bk < 5°
+      // dải này rỗng — không được để fillRect chạy ngược ra ngoài trục.
+      ctx.fillStyle = fg; ctx.globalAlpha = 0.13;
+      ctx.fillRect(X(5), padT, Math.max(0, X(ba) - X(5)), axisY - padT);
+      if (X(ba) - X(5) > 12) {
+        ctx.globalAlpha = 0.55; ctx.textAlign = 'left';
+        ctx.fillText('vùng chết', X(ba) + 5, padT + 12);
+      }
+      ctx.globalAlpha = 1;
+
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.3;
+      ctx.beginPath(); ctx.moveTo(padL, padT); ctx.lineTo(padL, axisY);
+      ctx.lineTo(cssW - padR, axisY); ctx.stroke();
+      ctx.setLineDash([4, 3]);
+      ctx.beginPath(); ctx.moveTo(padL, Y(1)); ctx.lineTo(cssW - padR, Y(1)); ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.globalAlpha = 0.55; ctx.fillStyle = fg;
+      ctx.textAlign = 'right'; ctx.fillText('= tốc độ gió', cssW - padR, Y(1) + 13);
+      ctx.textAlign = 'center';
+      for (const k of [30, 60, 90, 120, 150, 180]) ctx.fillText(`${k}°`, X(k), axisY + 14);
+      ctx.textAlign = 'right';
+      const step = niceStep(yTop / 5);
+      for (let r = step; r <= yTop; r += step) {
+        ctx.fillText(step < 1 ? `${vi(r, 1)}×` : `${vi(r, 0)}×`, padL - 4, Y(r) + 3);
+      }
+      ctx.globalAlpha = 1;
+
+      ctx.strokeStyle = BOAT; ctx.lineWidth = 2; ctx.beginPath();
+      for (let i = 0; i <= 350; i++) {
+        const bb = 5 + (175 * i) / 350;
+        i ? ctx.lineTo(X(bb), Y(ratio(bb, ba))) : ctx.moveTo(X(bb), Y(ratio(bb, ba)));
+      }
+      ctx.stroke(); ctx.lineWidth = 1;
+
+      ctx.fillStyle = WIND;
+      ctx.beginPath(); ctx.arc(X(bestB), Y(peak), 4, 0, Math.PI * 2); ctx.fill();
+      ctx.globalAlpha = 0.85; ctx.textAlign = 'center';
+      ctx.fillText(`nhanh nhất ${vi(bestB, 0)}°`, X(bestB), Y(peak) - 8);
+      ctx.globalAlpha = 1;
+
+      ctx.fillStyle = APP;
+      ctx.beginPath(); ctx.arc(X(b), Y(V), 6, 0, Math.PI * 2); ctx.fill();
+
+      // ---------- Readout ----------
+      let note = '';
+      if (V <= 0) note = ' · <b>vùng chết: buồm không kéo nổi, phải đi chữ chi</b>';
+      else if (b >= 175) note = ' · <b>sát xuôi gió: gió biểu kiến tắt dần, công thức hết hiệu lực</b>';
+      else if (V > 1) note = ' · <b>nhanh hơn chính cơn gió</b>';
+
+      // Khi A → 0 thì hướng gió biểu kiến không còn xác định — đừng in ra 0,0°.
+      const appTxt = A < 0.005
+        ? 'gió biểu kiến <b>0,00×</b>: tam giác sập thành đoạn thẳng, không còn hướng'
+        : `gió biểu kiến ${vi(A)}× thổi từ ${vi(baEff, 1)}° chếch mũi`;
+
+      readout.innerHTML = V <= 0
+        ? `β = ${vi(b, 1)}° ≤ góc cản ${ba}° → thuyền đứng yên${note}`
+        : `β = ${vi(b, 1)}° · góc cản ${ba}° → thuyền chạy <b>${vi(V)}×</b> tốc độ gió `
+          + `(gió thật ${WREF} km/h → <b>${vi(V * WREF, 1)} km/h</b>) · ${appTxt} `
+          + `· hướng nhanh nhất ${vi(bestB, 0)}° cho ${vi(peak)}×${note}`;
+    }
+
+    root.querySelectorAll('input').forEach((el) => el.addEventListener('input', draw));
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="thuyen-buom-chay-nhanh-hon-gio-day-no"]').forEach(setup);
+</script>

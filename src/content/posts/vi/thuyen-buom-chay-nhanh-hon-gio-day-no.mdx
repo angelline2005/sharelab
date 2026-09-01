@@ -1,0 +1,86 @@
+---
+title: "Thuyền băng chạy nhanh gấp 7,5 lần cơn gió đang đẩy nó"
+seoTitle: "Vì sao thuyền buồm chạy nhanh hơn gió: tam giác vận tốc và góc cản"
+description: "Với tổng góc cản chỉ 7°, thuyền băng chạy chếch 120° so với gió thật đạt 7,55 lần tốc độ gió; thuyền buồm nước (góc cản 30°) trần đúng 2,00 lần. Bí mật không nằm ở cánh buồm mà ở chỗ gió biểu kiến tự mạnh lên khi thuyền tăng tốc."
+pubDate: 2026-09-02
+tags: ["vat-ly", "chat-luu", "co-hoc", "javascript"]
+translationId: "thuyen-buom-chay-nhanh-hon-gio-day-no"
+---
+
+import SailingPolar from '../../../components/demos/SailingPolar.astro';
+
+Mặt hồ đóng băng, gió 20 km/h — thứ gió chỉ đủ lật trang báo. Chiếc thuyền
+băng lướt qua ở 151 km/h, và người ngồi trong đó phải cúi tránh cơn gió táp
+thẳng vào mũi. Cánh buồm đang bỏ chạy khỏi cơn gió đẩy nó, mà vẫn ăn gió
+ngược:
+
+<SailingPolar />
+
+## Cạnh thứ ba của tam giác
+
+Gió mà cánh buồm cảm nhận không phải gió thật. Thuyền đang chạy, nên buồm
+làm việc với một hiệu véc-tơ: **gió biểu kiến = gió thật trừ vận tốc
+thuyền** — cạnh đỏ trong demo. Và một khi thuyền vượt tốc độ gió, cạnh đỏ
+ấy không teo đi nữa, nó *dài ra*. Chạy chếch 120° so với hướng gió thổi
+tới: thuyền đi 2 lần tốc độ gió thì gió biểu kiến bằng 1,73 lần; đi 4 lần
+thì 3,61; đi 7,55 lần thì **7,11 lần**, thổi từ đúng 7° chếch mũi. Với gió
+thật 20 km/h, đó là một cơn gió 142 km/h ngay trước mặt, do chính chiếc
+thuyền tạo ra. Vòng phản hồi ấy chỉ dừng khi lực cản bắt kịp.
+
+## Cả chiếc thuyền rút gọn thành một góc
+
+Buồm là [một cánh máy bay dựng
+đứng](/vi/posts/nguyen-ly-bernoulli-nhanh-hon-la-loang-ap-hon): lực nâng
+vuông góc với gió biểu kiến, lực cản dọc theo nó. Tỉ số hai thứ là một góc,
+ε_khí = arctan(cản/nâng), đúng bằng độ nghiêng của hợp lực khỏi phương vuông
+góc; ke lái dưới nước làm y hệt với ε_nước. Cũng như [góc bắt đầu
+trượt](/vi/posts/mat-phang-nghieng-va-goc-bat-dau-truot) chỉ phụ thuộc μ chứ
+không phụ thuộc vật nặng bao nhiêu, ở đây diện tích buồm, khối lượng thuyền
+và sức gió đều biến mất. Chỉ còn β_bk = ε_khí + ε_nước, và hình học của tam
+giác vận tốc:
+
+```
+V_thuyền / V_gió = sin(β − β_bk) / sin(β_bk)
+```
+
+β là góc giữa hướng đi và hướng gió thổi tới. Vế phải cực đại tại
+β = 90° + β_bk, giá trị `1/sin(β_bk)`. Thuyền buồm nước tử tế có ε_khí ≈ 20°
+và ε_nước ≈ 10°: trần **đúng 2,00 lần** gió, ở hướng 120°. Lưỡi thép trên
+băng gần như không cản ngang, β_bk ≈ 7°: trần **8,21 lần** ở hướng 97°, còn
+7,55 lần ở 120°.
+
+## Vì sao không ai đi thẳng tới nơi cần tới
+
+β nhỏ hơn β_bk cho vế phải âm: đó là **vùng chết** đầu gió, rộng đúng bằng
+góc cản. Ngay ngoài rìa vùng ấy tốc độ vẫn thảm — thuyền buồm nước ở hướng
+45° chỉ chạy 0,52 lần tốc độ gió. Nên thứ đáng tối ưu là hình chiếu
+`V·cos β` lên hướng cần tới, cực đại tại β = 45° + β_bk/2. Thuyền buồm nước
+đi ở 60° chạy đúng 1,00 lần gió nhưng chỉ tiến về phía đầu gió với **0,50
+lần**; nửa kia là học phí của đường chữ chi. Thuyền băng đi ở 48,5°, chạy
+5,44 lần, tiến ngược vào gió với **3,60 lần tốc độ của chính cơn gió đang
+thổi vào mặt nó**.
+
+## Kỷ lục thật thấp hơn trần bao nhiêu
+
+Mô hình coi góc cản không đổi ở mọi tốc độ, nên nó là trần trên chứ không
+phải dự báo. Kỷ lục buồm chính thức — Vestas Sailrocket 2, Walvis Bay 2012 —
+là 65,45 hải lý/giờ (121,2 km/h) trung bình trên 500 m trong gió chừng 25
+hải lý/giờ: tỉ số 2,6, góc cản hiệu dụng 22,5°. Xe buồm Greenbird trên lòng
+hồ khô Ivanpah năm 2009: 203 km/h trong gió chừng 48 km/h, tỉ số 4,2, góc
+cản 13,8°. Bánh xe và lưỡi trượt ăn đứt thân tàu vì chúng cắt gọn ε_nước.
+
+## Trường hợp biên: xuôi gió đúng 180°, công thức quên mất chiếc thuyền
+
+Đặt β = 180°: sin(180° − β_bk) = sin(β_bk), nên tỉ số ra **đúng 1,00 với mọi
+β_bk**. Thuyền băng 7° và cái bè căng tấm ga giường 40° nhận cùng một đáp số
+— dấu hiệu chắc chắn rằng công thức vừa hỏng. Tam giác vận tốc lúc ấy sập
+thành một đoạn thẳng: gió biểu kiến bằng 0. Chạy đúng tốc độ gió nghĩa là
+ngồi trong khối không khí đứng yên, không còn gì thổi vào buồm để đẩy tiếp —
+một [vận tốc tới hạn](/vi/posts/roi-tu-do-va-van-toc-toi-han) kinh điển,
+tiệm cận mãi không chạm; thực tế thuyền xuôi gió thẳng chỉ đạt 0,7–0,85 lần.
+
+Vậy nên dân đua **đi chữ chi cả khi gió ở sau lưng**: thuyền buồm nước bẻ về
+150° chạy 1,73 lần và tiến xuôi gió với 1,50 lần — nhanh gấp rưỡi cơn gió
+cùng chiều, dù đường dài thêm; thuyền băng bẻ về 138,5° tiến xuôi gió với
+4,60 lần. Với một cánh buồm, gió sau lưng là cơn gió tệ nhất có thể nhận: nó
+chỉ đáng giá khi bạn quay đi đủ xa để biến nó thành gió ngược.
