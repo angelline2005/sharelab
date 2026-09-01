@@ -9,8 +9,8 @@ import { rehypeBasePaths } from './src/plugins/rehype-base-paths.mjs';
 // means editing these two lines and nothing else: the redirect below, the
 // robots.txt endpoint and every asset path inside Markdown all derive from
 // them. See src/plugins/rehype-base-paths.mjs for the Markdown half.
-const SITE = 'https://angelline2005.github.io';
-const BASE = '/sharelab';
+const SITE = 'https://sharelab.fyi';
+const BASE = '/';
 
 // BASE without its trailing slash, so it can be concatenated with a path that
 // starts with one. Empty string when the site sits at the domain root, where

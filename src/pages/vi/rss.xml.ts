@@ -8,7 +8,7 @@ export async function GET(context: APIContext) {
   return rss({
     title: 'sharelab',
     description: 'Ghi chép & hướng dẫn từ các dự án cá nhân',
-    site: context.site ?? 'https://angelline2005.github.io',
+    site: context.site ?? 'https://sharelab.fyi',
     trailingSlash: true,
     items: posts.map((post) => ({
       title: post.data.title,
