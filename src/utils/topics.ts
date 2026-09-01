@@ -47,18 +47,48 @@ export const TAG_LABELS: Record<string, Record<string, string>> = {
 // signal for navigation or related-post ranking.
 export const NOISE_TAGS = new Set(['vat-ly', 'javascript']);
 
-// The topic sections shown on the homepage, in display order. Everything else
-// stays reachable through the tag chips on individual posts.
-export const HOME_TOPICS = [
+// Preferred order for the homepage's topic sections: the subjects a reader is
+// most likely to have a question about come first. Any tag not listed here
+// still gets a section once it has enough posts — it just sorts after these.
+const TOPIC_ORDER = [
   'co-hoc',
   'nhiet-hoc',
   'quang-hoc',
   'dien-tu',
   'song',
+  'am-thanh',
   'thien-van',
   'chat-luu',
   'khi-hau',
+  'dao-dong',
+  'dien-hoc',
+  'luong-tu',
+  'hat-nhan',
+  'tuong-doi',
+  'mo-phong',
 ];
+
+// A tag earns a homepage section once it has this many posts. Below it, the
+// section would be a stub that makes the catalog look thinner than it is.
+const SECTION_MIN = 5;
+
+// The homepage sections, derived from what has actually been published rather
+// than from a hand-kept list — so a new subject area appears on the front page
+// as soon as it has the posts to fill a section, and none can be forgotten.
+export const homeTopics = (posts: CollectionEntry<'posts'>[]): string[] => {
+  const counts = new Map<string, number>();
+  for (const post of posts) {
+    for (const tag of meaningfulTags(post)) counts.set(tag, (counts.get(tag) ?? 0) + 1);
+  }
+  const rank = (tag: string) => {
+    const i = TOPIC_ORDER.indexOf(tag);
+    return i === -1 ? TOPIC_ORDER.length : i;
+  };
+  return [...counts.entries()]
+    .filter(([, n]) => n >= SECTION_MIN)
+    .sort((a, b) => rank(a[0]) - rank(b[0]) || b[1] - a[1])
+    .map(([tag]) => tag);
+};
 
 export const tagLabel = (locale: string, tag: string): string =>
   TAG_LABELS[locale]?.[tag] ?? tag;
