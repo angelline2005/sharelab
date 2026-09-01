@@ -1,0 +1,105 @@
+---
+// Jeans-escape rule of thumb: a planet keeps a gas over geologic time when
+// v_esc ≳ 6·v_rms, with v_rms = √(3kT/m). Sliders for escape velocity and
+// exosphere temperature; the chart shows which gases stay. Static redraw.
+---
+
+<figure class="demo" data-demo="atmo-escape">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Tốc độ thoát của thiên thể (km/s) <output data-out="v"></output>
+      <input type="range" data-in="v" min="1" max="60" step="0.1" value="11.2" /></label>
+    <label>Nhiệt độ tầng thoát khí (K) <output data-out="t"></output>
+      <input type="range" data-in="t" min="50" max="1200" step="10" value="1000" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Phân tử khí có đủ kiểu tốc độ (phân bố Maxwell); cái đuôi nhanh nhất
+    vượt tốc độ thoát là rò rỉ vĩnh viễn. Kinh nghiệm: giữ được một chất khí
+    hàng tỉ năm cần v_thoát ≥ 6 lần tốc độ nhiệt của nó. Mặc định: Trái Đất.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const KB = 1.381e-23;
+  const KEEP = '#2563eb', LOSE = '#dc2626', LIMIT = '#f59e0b';
+  const GASES: Array<[string, number]> = [
+    ['H₂', 3.35e-27], ['He', 6.65e-27], ['H₂O', 2.99e-26], ['N₂', 4.65e-26], ['O₂', 5.31e-26], ['CO₂', 7.31e-26],
+  ];
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (k: string) => root.querySelector(`[data-in="${k}"]`) as HTMLInputElement;
+    const output = (k: string) => root.querySelector(`[data-out="${k}"]`) as HTMLOutputElement;
+
+    function draw() {
+      const vesc = Number(input('v').value), T = Number(input('t').value);
+      output('v').textContent = vesc.toFixed(1).replace('.', ',');
+      output('t').textContent = String(T);
+      const limit = vesc / 6; // km/s a gas's v_rms must stay under
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.4);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+
+      const padL = 60, padB = 26, padT = 14, padR = 12;
+      const vMax = 4; // km/s axis for gas thermal speeds
+      const X = (v: number) => padL + (Math.min(v, vMax) / vMax) * (cssW - padL - padR);
+      const barH = Math.min(16, (cssH - padT - padB) / GASES.length - 6);
+      const gap = (cssH - padT - padB - GASES.length * barH) / (GASES.length + 1);
+
+      // Threshold line.
+      ctx.strokeStyle = LIMIT; ctx.globalAlpha = 0.8; ctx.setLineDash([5, 4]); ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.moveTo(X(limit), padT); ctx.lineTo(X(limit), cssH - padB); ctx.stroke();
+      ctx.setLineDash([]); ctx.lineWidth = 1;
+      ctx.fillStyle = fg; ctx.globalAlpha = 0.7; ctx.font = '10px system-ui,sans-serif'; ctx.textAlign = 'center';
+      ctx.fillText(`ngưỡng v_thoát/6 = ${limit.toFixed(2).replace('.', ',')} km/s`, X(limit), padT - 2 + 10);
+      ctx.globalAlpha = 1;
+
+      const kept: string[] = [], lost: string[] = [];
+      GASES.forEach(([name, m], i) => {
+        const vrms = Math.sqrt((3 * KB * T) / m) / 1000; // km/s
+        const y = padT + gap + i * (barH + gap);
+        const keep = vrms < limit;
+        (keep ? kept : lost).push(name);
+        ctx.fillStyle = keep ? KEEP : LOSE; ctx.globalAlpha = 0.85;
+        ctx.fillRect(padL, y, X(vrms) - padL, barH);
+        ctx.globalAlpha = 1; ctx.fillStyle = fg; ctx.textAlign = 'right';
+        ctx.fillText(name, padL - 6, y + barH - 3);
+        ctx.textAlign = 'left'; ctx.globalAlpha = 0.7;
+        ctx.fillText(`${vrms.toFixed(2).replace('.', ',')} km/s`, X(vrms) + 5, y + barH - 3);
+        ctx.globalAlpha = 1;
+      });
+      ctx.globalAlpha = 0.55; ctx.textAlign = 'center'; ctx.fillStyle = fg;
+      ctx.fillText('tốc độ nhiệt v_rms của phân tử →', (padL + cssW) / 2, cssH - padB + 15);
+      ctx.globalAlpha = 1;
+
+      readout.innerHTML =
+        `Giữ được: <b>${kept.length ? kept.join(', ') : 'không gì cả'}</b>` +
+        ` · mất dần: ${lost.length ? lost.join(', ') : 'không gì'}` +
+        ` — mất nghĩa là rò rỉ trong hàng triệu–tỉ năm, không phải xì hơi tức thì`;
+    }
+
+    root.querySelectorAll('input').forEach((el) => el.addEventListener('input', draw));
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="atmo-escape"]').forEach(setup);
+</script>

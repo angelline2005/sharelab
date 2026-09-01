@@ -1,0 +1,66 @@
+---
+title: "Đun một ấm nước hết bao nhiêu tiền? Bài toán Q = mcΔT ra chợ"
+description: "Một lít nước sôi giá chưa tới 300 đồng — và từ phép tính ấy mở ra cả cách đọc hoá đơn điện: thứ đắt trong nhà bạn không phải đèn đóm, mà là mọi thiết bị có nhiệm vụ làm nóng và làm lạnh."
+pubDate: 2026-09-02
+tags: ["vat-ly", "nhiet-hoc", "javascript"]
+translationId: "dun-mot-am-nuoc-het-bao-nhieu-tien"
+---
+
+import KettleCost from '../../../components/demos/KettleCost.astro';
+
+Công thức Q = mcΔT nằm im trong vở như một bài tập chấm điểm. Cắm giá điện
+vào cho nó, nó thành công cụ đọc hoá đơn — và thành trọng tài cho vô số
+tranh cãi gia đình kiểu "đun nước hoài tốn điện lắm":
+
+<KettleCost />
+
+## 262 đồng — và vì sao con số này đáng ngạc nhiên theo cả hai chiều
+
+Một lít nước từ 25 °C lên sôi: Q = 4186 × 75 = **314 kJ** = 0,087 kWh. Giá
+điện ~3 000 đ/kWh: **~260 đồng** — rẻ hơn mọi thứ khác trong ly trà. Ấm
+siêu tốc lại là thiết bị điện *hiệu quả hiếm hoi gần tuyệt đối*: dây mayso
+ngâm thẳng trong nước, điện thành nhiệt 100% ([COP = 1, mức trần của mọi
+điện trở](/vi/posts/may-lanh-khong-tao-lanh-no-chuyen-nha-cho-nhiet)), và
+gần hết nhiệt nằm lại trong nước. Phép tính vở học sinh vì thế sát hoá đơn
+thật đến vài phần trăm — hiếm chỗ nào vật lý phổ thông "ăn khớp thực tế"
+ngọt như cái ấm.
+
+Chiều ngạc nhiên thứ hai: tuy một ấm thì rẻ, **nhiệt vẫn là mục đắt nhất
+của điện gia dụng**. Nhìn bảng so sánh trong demo: chiếc đèn LED thắp cả
+tối tốn bằng một phần mười ấm nước; trong khi bình nóng lạnh, bàn là, bếp
+điện, nồi cơm — họ hàng nhà mayso — và điều hoà, tủ lạnh — [phe bơm
+nhiệt](/vi/posts/may-lanh-khong-tao-lanh-no-chuyen-nha-cho-nhiet) — chiếm
+thường 60–80% hoá đơn. Quy tắc bỏ túi đọc được từ Q = mcΔT: **thiết bị nào
+đổi nhiệt độ của thứ gì đó, thiết bị ấy ăn tiền**; thiết bị chỉ phát sáng,
+phát tiếng, tính toán — tiền lẻ. Muốn tiết kiệm điện, đừng soi công tắc
+đèn; soi những cỗ máy có ΔT trong mô tả công việc.
+
+Con số 4 186 J/kg·K của nước — [nhiệt dung cao bậc nhất các chất lỏng thông
+dụng](/vi/posts/nhiet-an-hai-quang-nhiet-ke-dung-im) — cũng chính là lý do
+nước được chọn làm thứ để... đun: nó ôm được nhiều nhiệt, giữ nóng lâu,
+tải nhiệt tốt. Cùng số tiền ấy đun một lít dầu ăn (c ≈ 2 000) chỉ tốn nửa,
+nhưng chẳng ai khen dầu "giữ ấm bình thuỷ tốt" — đồng xu nào cũng hai mặt.
+
+## Vài phép chia bỏ túi từ cùng công thức
+
+**Tắm nóng**: 50 lít nước từ 25 lên 40 °C = 3,14 MJ = 0,87 kWh ≈ **2 600
+đồng** — bình nóng lạnh là ấm siêu tốc cỡ đại, và đây là món điện lớn nhất
+của nhiều gia đình mùa lạnh. **Nồi cơm**: nấu 1 lít nước trong gạo + giữ
+ấm vài giờ ≈ 0,3–0,5 kWh. **"Để nước nguội rồi đun lại có tốn hơn không?"**
+— Q chỉ phụ thuộc ΔT hiện tại: nước nguội về 30 °C thì đun lại từ 30, không
+ai phạt tiền quá khứ; kéo thanh nhiệt độ ban đầu trong demo là thấy hoá đơn
+tuyến tính theo ΔT, không có phí ẩn.
+
+## Trường hợp biên: chiếc ấm 2 000 W và cầu dao nhà bạn
+
+Để ý dòng thời gian trong demo: ấm 2 000 W đun lít nước mất ~2,5 phút —
+**công suất** lớn, **năng lượng** nhỏ. Hai khái niệm này bị dân gian trộn
+làm một ("ấm to thế chắc tốn điện lắm!") trong khi chúng trả lời hai câu
+khác nhau: watt hỏi *nhanh cỡ nào*, kilowatt-giờ hỏi *bao nhiêu tổng cộng*
+— và hoá đơn chỉ đếm thứ sau. Ấm 2 500 W không đun "tốn hơn" ấm 1 000 W;
+nó đun **cùng số tiền trong nửa thời gian**. Thứ duy nhất phải bận tâm với
+watt to là sợi dây điện: 2 500 W ở 220 V là hơn 11 ampe — sát mức chịu của
+ổ cắm thường, và đó là [I²R nóng
+dây](/vi/posts/vi-sao-duong-day-tai-dien-phai-cao-the) chứ không phải tiền
+điện. Trả tiền theo jun, chọn dây theo ampe — hai cột khác nhau của cùng
+một hoá đơn vật lý.

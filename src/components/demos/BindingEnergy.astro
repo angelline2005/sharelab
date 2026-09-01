@@ -1,0 +1,121 @@
+---
+// Binding energy per nucleon from the semi-empirical mass formula (pairing
+// term dropped for a smooth curve), with the most stable Z chosen for each A.
+// Peaks near A ≈ 58–62 at ~8.8 MeV — the iron/nickel summit that powers both
+// fusion and fission. Static redraw.
+---
+
+<figure class="demo" data-demo="binding">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Số khối A <output data-out="a"></output>
+      <input type="range" data-in="a" min="4" max="250" step="1" value="56" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Năng lượng liên kết trên mỗi nucleon, tính từ công thức khối lượng bán
+    thực nghiệm (vùng A nhỏ chỉ định tính — He-4 thực tế cao vọt lên 7,1 MeV
+    nhờ hiệu ứng lớp vỏ). Đỉnh núi ở sắt–niken: mọi phản ứng hạt nhân sinh
+    năng lượng đều là những bước leo VỀ PHÍA đỉnh này, từ hai sườn ngược nhau.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const aV = 15.75, aS = 17.8, aC = 0.711, aA = 23.7;
+  const CURVE = '#2563eb', MARK = '#dc2626', LM = '#f59e0b';
+
+  function zOpt(A: number): number {
+    return Math.max(1, Math.round(A / 2 / (1 + 0.0075 * Math.pow(A, 2 / 3))));
+  }
+  function BA(A: number): number {
+    const Z = zOpt(A);
+    const B = aV * A - aS * Math.pow(A, 2 / 3) - (aC * Z * Z) / Math.pow(A, 1 / 3) - (aA * (A - 2 * Z) * (A - 2 * Z)) / A;
+    return B / A;
+  }
+  const NAMES: Array<[number, string]> = [[4, 'He'], [12, 'C'], [16, 'O'], [56, 'Fe'], [62, 'Ni'], [238, 'U']];
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const slider = root.querySelector('[data-in="a"]') as HTMLInputElement;
+    const out = root.querySelector('[data-out="a"]') as HTMLOutputElement;
+
+    function draw() {
+      const A = Number(slider.value);
+      out.textContent = String(A);
+      const ba = BA(A), Z = zOpt(A);
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.44);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+
+      const padL = 40, padB = 26, padT = 14, padR = 10;
+      const X = (a: number) => padL + ((a - 2) / 248) * (cssW - padL - padR);
+      const Y = (b: number) => cssH - padB - (b / 9.5) * (cssH - padB - padT);
+
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.3;
+      ctx.beginPath(); ctx.moveTo(padL, padT); ctx.lineTo(padL, cssH - padB); ctx.lineTo(cssW - padR, cssH - padB); ctx.stroke();
+      ctx.globalAlpha = 0.55; ctx.fillStyle = fg; ctx.font = '10px system-ui,sans-serif';
+      ctx.textAlign = 'center';
+      for (const a of [50, 100, 150, 200, 250]) ctx.fillText(`${a}`, X(a), cssH - padB + 14);
+      ctx.textAlign = 'right';
+      for (const b of [4, 6, 8]) ctx.fillText(`${b} MeV`, padL - 4, Y(b) + 3);
+      ctx.globalAlpha = 1;
+
+      // Curve.
+      ctx.strokeStyle = CURVE; ctx.lineWidth = 2; ctx.beginPath();
+      let started = false;
+      for (let a = 4; a <= 250; a++) {
+        const y = Y(Math.max(0, BA(a)));
+        started ? ctx.lineTo(X(a), y) : ctx.moveTo(X(a), y);
+        started = true;
+      }
+      ctx.stroke(); ctx.lineWidth = 1;
+
+      // Fusion/fission arrows toward the peak.
+      ctx.fillStyle = fg; ctx.globalAlpha = 0.6; ctx.textAlign = 'left';
+      ctx.fillText('nhiệt hạch →', X(8), Y(5.4));
+      ctx.textAlign = 'right';
+      ctx.fillText('← phân hạch', X(245), Y(6.6));
+      ctx.globalAlpha = 1;
+
+      NAMES.forEach(([a, name]) => {
+        ctx.fillStyle = LM;
+        ctx.beginPath(); ctx.arc(X(a), Y(BA(a)), 3.5, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = fg; ctx.globalAlpha = 0.7; ctx.textAlign = 'center';
+        ctx.fillText(name, X(a), Y(BA(a)) - 8);
+        ctx.globalAlpha = 1;
+      });
+
+      ctx.fillStyle = MARK;
+      ctx.beginPath(); ctx.arc(X(A), Y(ba), 6, 0, Math.PI * 2); ctx.fill();
+
+      const side = A < 56 ? 'sườn trái — gộp lại (nhiệt hạch) là leo lên, toả năng lượng' :
+                   A > 70 ? 'sườn phải — tách đôi (phân hạch) là leo lên, toả năng lượng' :
+                   'đỉnh núi — tro tàn cuối cùng của mọi phản ứng hạt nhân';
+      readout.innerHTML =
+        `A = ${A} (Z tối ưu ≈ ${Z}): B/A ≈ <b>${ba.toFixed(2).replace('.', ',')} MeV</b> · ${side}`;
+    }
+
+    slider.addEventListener('input', draw);
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="binding"]').forEach(setup);
+</script>

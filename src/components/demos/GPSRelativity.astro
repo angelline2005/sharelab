@@ -1,0 +1,109 @@
+---
+// Net relativistic clock drift for a circular orbit at radius r:
+// Δτ/τ = GM/c²·(1/Re − 3/(2r)) — gravitational blueshift minus velocity time
+// dilation (v² = GM/r). Crosses zero at r = 3Re/2 (altitude ≈ 3 190 km).
+// Slider = altitude; landmarks ISS and GPS. Static redraw.
+---
+
+<figure class="demo" data-demo="gps">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Độ cao quỹ đạo (km) <output data-out="h"></output>
+      <input type="range" data-in="h" min="200" max="36000" step="100" value="20200" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Đồng hồ trên vệ tinh so với đồng hồ mặt đất chịu hai hiệu ứng ngược
+    nhau: bay nhanh làm nó chậm (tương đối hẹp), ở cao — nơi trọng trường
+    nông hơn — làm nó nhanh (tương đối rộng). Đường cong là hiệu của hai
+    khoản, đổi dấu ở độ cao ~3 200 km.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const GM = 3.986e14, RE = 6.371e6, C2 = 8.988e16, CKM = 299792.458;
+  const CURVE = '#2563eb', MARK = '#dc2626', LM = '#f59e0b';
+  // µs per day
+  const drift = (hKm: number) => (GM / C2) * (1 / RE - 3 / (2 * (RE + hKm * 1000))) * 86400 * 1e6;
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const slider = root.querySelector('[data-in="h"]') as HTMLInputElement;
+    const out = root.querySelector('[data-out="h"]') as HTMLOutputElement;
+
+    function draw() {
+      const h = Number(slider.value);
+      out.textContent = h.toLocaleString('vi-VN');
+      const d = drift(h);
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.44);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+
+      const padL = 46, padB = 26, padT = 12, padR = 10;
+      const X = (km: number) => padL + (km / 36000) * (cssW - padL - padR);
+      const Y = (us: number) => cssH - padB - ((us + 30) / 75) * (cssH - padB - padT);
+
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.3;
+      ctx.beginPath(); ctx.moveTo(padL, padT); ctx.lineTo(padL, cssH - padB); ctx.lineTo(cssW - padR, cssH - padB); ctx.stroke();
+      // Zero line.
+      ctx.beginPath(); ctx.moveTo(padL, Y(0)); ctx.lineTo(cssW - padR, Y(0)); ctx.stroke();
+      ctx.globalAlpha = 0.55; ctx.fillStyle = fg; ctx.font = '10px system-ui,sans-serif';
+      ctx.textAlign = 'center';
+      for (const km of [10000, 20000, 30000]) ctx.fillText(`${km / 1000}k km`, X(km), cssH - padB + 14);
+      ctx.textAlign = 'right';
+      for (const us of [-20, 0, 20, 40]) ctx.fillText(`${us > 0 ? '+' : ''}${us} µs`, padL - 4, Y(us) + 3);
+      ctx.globalAlpha = 1;
+
+      // Curve.
+      ctx.strokeStyle = CURVE; ctx.lineWidth = 2; ctx.beginPath();
+      for (let i = 0; i <= 300; i++) {
+        const km = 200 + (35800 * i) / 300;
+        const y = Y(drift(km));
+        i ? ctx.lineTo(X(km), y) : ctx.moveTo(X(km), y);
+      }
+      ctx.stroke(); ctx.lineWidth = 1;
+
+      // Landmarks.
+      const marks: Array<[number, string]> = [[400, 'ISS'], [3190, 'điểm hoà'], [20200, 'GPS'], [35786, 'địa tĩnh']];
+      marks.forEach(([km, lab], k) => {
+        ctx.fillStyle = LM;
+        ctx.beginPath(); ctx.arc(X(km), Y(drift(km)), 4, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = fg; ctx.globalAlpha = 0.7; ctx.textAlign = 'center';
+        ctx.fillText(lab, X(km), Y(drift(km)) - 8 - (k % 2) * 11);
+        ctx.globalAlpha = 1;
+      });
+
+      ctx.fillStyle = MARK;
+      ctx.beginPath(); ctx.arc(X(h), Y(d), 6, 0, Math.PI * 2); ctx.fill();
+
+      const errKm = Math.abs(d) * 1e-6 * CKM;
+      readout.innerHTML =
+        `Độ cao ${h.toLocaleString('vi-VN')} km: đồng hồ vệ tinh ${d >= 0 ? 'chạy <b>nhanh</b> hơn' : 'chạy <b>chậm</b> hơn'} mặt đất ` +
+        `<b>${Math.abs(d).toFixed(1).replace('.', ',')} µs/ngày</b>` +
+        ` · nếu bỏ mặc: sai số định vị cộng dồn ~<b>${errKm.toFixed(1).replace('.', ',')} km mỗi ngày</b>`;
+    }
+
+    slider.addEventListener('input', draw);
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="gps"]').forEach(setup);
+</script>

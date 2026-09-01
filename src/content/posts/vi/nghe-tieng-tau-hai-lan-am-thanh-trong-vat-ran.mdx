@@ -1,0 +1,69 @@
+---
+title: "Vì sao nghe được tiếng tàu hai lần: âm thanh trong vật rắn"
+description: "Áp tai vào đường ray, bạn nghe đoàn tàu đến trước người đứng cạnh gần 3 giây mỗi cây số — v = √(E/ρ): vật liệu càng cứng truyền âm càng nhanh. Cùng công thức giải thích giọng người dưới nước, ống nghe bác sĩ và tiếng động đất đến hai đợt."
+pubDate: 2026-09-02
+tags: ["vat-ly", "song", "javascript"]
+translationId: "nghe-tieng-tau-hai-lan-am-thanh-trong-vat-ran"
+---
+
+import SoundInSolids from '../../../components/demos/SoundInSolids.astro';
+
+Mẹo cổ điển của dân miền cao bồi trong phim: **áp tai xuống đường ray** để
+biết tàu đang tới. Không phải mê tín — là một phép đo vật liệu học, và
+chênh lệch lớn tới mức thành trò chơi tính được:
+
+<SoundInSolids />
+
+## Cứng chia nặng, khai căn
+
+Âm thanh là dao động chuyền tay: phân tử này xô phân tử kia. Tốc độ chuyền
+phụ thuộc hai đức tính của vật liệu — **cứng** (xô một cái, hàng xóm phản
+ứng mạnh cỡ nào: mô-đun đàn hồi E) và **nặng** (hàng xóm ì cỡ nào: khối
+lượng riêng ρ):
+
+```
+v = √(E/ρ)
+```
+
+Không khí mềm oặt: 343 m/s. Nước đặc hơn nghìn lần nhưng cứng (khó nén)
+hơn chục nghìn lần — thắng đậm: 1 483 m/s. Thép: **5 048 m/s**, gấp 15 lần
+không khí. Tiếng bánh tàu nghiến ray cách 2 km đến tai-áp-ray sau 0,4 giây,
+đến tai-đứng-thẳng sau 5,8 giây — người áp tai "nhìn thấy tương lai" hơn 5
+giây so với bạn đồng hành.
+
+Cùng bảng số đó vận hành quanh bạn: **ống nghe bác sĩ** dẫn âm qua ống cao
+su thay vì không khí loãng; gõ nhẹ đầu **bàn gỗ** dài, tai áp mặt bàn nghe
+rõ mồn một trong khi tai kia gần như im — thí nghiệm miễn phí ngay lúc đọc
+bài này. Còn giọng nói nghe **dưới nước** thì lạ lẫm vì đến tai chủ yếu
+qua xương sọ chứ không qua màng nhĩ; cũng chính "nghe qua xương" ấy là lý
+do giọng mình trong băng ghi âm nghe *sai sai* — bạn xưa nay nghe mình
+qua kênh vật rắn, còn cả thế giới nghe bạn qua kênh không khí.
+
+## Động đất: cùng nguyên lý, đổi đơn vị đo thành sinh mạng
+
+Phóng to trò đường ray lên cỡ hành tinh: động đất phát **hai đợt sóng** —
+sóng P (nén, như âm thanh) chạy trong đá ~6–8 km/s, sóng S (xoắn ngang,
+thứ gây đổ nhà) lết sau ~3,5–4,5 km/s. Tâm chấn càng xa, hai đợt cách nhau
+càng lâu — đo khoảng "P đến trước S" là tính ngược ra khoảng cách tâm chấn,
+đúng trò tàu-và-ray. Hệ thống **cảnh báo sớm động đất** của Nhật, Mexico
+ăn chênh lệch này (cộng thêm việc tín hiệu radio chạy bằng tốc độ ánh
+sáng): cảm biến gần tâm chấn bắt sóng P, phát cảnh báo, người ở xa nhận
+được **vài chục giây trước khi sóng S tới** — đủ cho tàu điện phanh, thang
+máy mở cửa, và bạn chui xuống gầm bàn. Vài chục giây mua bằng một phép trừ
+hai vận tốc.
+
+Sóng S còn tặng thêm manh mối quý nhất địa chất học: nó **không truyền qua
+chất lỏng** (chất lỏng không chống lại biến dạng xoắn — E_xoắn = 0, công
+thức trả về v = 0). Trạm đo phía đối diện địa cầu nhận sóng P mà "điếc"
+sóng S — vùng bóng ấy là cách nhân loại biết **lõi ngoài Trái Đất là kim
+loại lỏng**, không cần khoan một mét nào.
+
+## Trường hợp biên: nhôm nhẹ đấu thép nặng — và cú hoà bất ngờ
+
+Nhìn kỹ bảng trong demo có một chuyện khó tin: **nhôm truyền âm ngang thép**
+(5 055 vs 5 048 m/s) dù mềm hơn hẳn. Vì công thức là *tỉ số*: nhôm có E
+bằng một phần ba thép, nhưng ρ cũng chỉ bằng một phần ba — chia nhau vừa
+khít. Kim cương mới là vua tốc độ (~18 000 m/s: cực cứng, khá nhẹ), còn
+chì — nặng mà nhão — lết 1 200 m/s, thua cả nước. Trực giác "chắc nịch thì
+truyền tốt" chỉ đúng nửa tử số; vật lý, như thường lệ, bắt đọc cả mẫu số
+trước khi kết luận.

@@ -1,0 +1,70 @@
+---
+title: "Máy lạnh không tạo lạnh — nó chuyển nhà cho nhiệt, và giá cước rẻ bất ngờ"
+description: "Mỗi jun điện trả cho máy lạnh dời được 3–4 jun nhiệt ra khỏi phòng; chạy chiều ngược, máy bơm nhiệt sưởi ấm rẻ gấp 4 lần dây may-so. COP — con số bị bỏ quên trên nhãn năng lượng — là cả một bài Carnot đảo chiều."
+pubDate: 2026-09-02
+tags: ["vat-ly", "nhiet-hoc", "javascript"]
+translationId: "may-lanh-khong-tao-lanh-no-chuyen-nha-cho-nhiet"
+---
+
+import HeatPumpCOP from '../../../components/demos/HeatPumpCOP.astro';
+
+"Lạnh" không phải chất để sản xuất — chỉ có nhiệt và sự vắng mặt của nó.
+Máy lạnh vì thế làm nghề khác hẳn tên gọi: **khuân nhiệt từ trong phòng đổ
+ra ngoài trời**, ngược chiều dốc tự nhiên. Khuân ngược dốc phải trả công —
+nhưng trả bao nhiêu thì nhiệt động lực học có barem:
+
+<HeatPumpCOP />
+
+## COP: số jun khuân được trên mỗi jun tiền công
+
+[Bài Carnot](/vi/posts/hieu-suat-carnot-loai-thue-khong-ai-tron-duoc) đánh
+thuế máy nhiệt chạy xuôi: nhiệt đổ từ nóng về lạnh, ta gặt công. Máy lạnh
+là **chính chu trình ấy quay ngược phim**: nộp công để đẩy nhiệt từ lạnh
+lên nóng, và tấm trần Carnot lộn ngược thành:
+
+```
+COP_max = T_lạnh / (T_nóng − T_lạnh)   (nhiệt độ tuyệt đối)
+```
+
+Phòng 25 °C, ngoài trời 35 °C: COP trần = 298/10 ≈ **30** — về nguyên tắc,
+một jun điện dời được ba mươi jun nhiệt. Máy thật vướng đủ thứ không thuận
+nghịch nên đạt cỡ một phần ba trần, COP ~3–5: vẫn nghĩa là **điều hoà nhà
+bạn dời nhiệt nhiều gấp mấy lần điện nó ăn**. Con số này in ngay trên nhãn
+máy (EER/CSPF) mà ít ai đọc: máy "1 ngựa" ~800 W điện nhưng hút tận
+~2 500 W nhiệt khỏi phòng.
+
+Nhìn kỹ mẫu số sẽ thấy túi tiền của bạn: COP tỉ lệ nghịch với **độ chênh
+trong–ngoài**. Đặt 20 °C giữa trưa 40 °C là bắt máy khuân dốc gấp đôi so
+với đặt 26–27 °C — mỗi độ hạ thêm đắt hơn độ trước. Lời khuyên "để điều hoà
+26 độ cho tiết kiệm" không phải khẩu hiệu môi trường suông; nó là hình dáng
+của một đường cong hyperbol bạn vừa kéo.
+
+## Chạy ngược chiều: chiếc máy sưởi ăn đứt dây may-so
+
+Đông đến, đảo van cho dàn nóng thổi vào nhà: cùng cỗ máy thành **bơm
+nhiệt** — hút nhiệt từ không khí lạnh ngoài trời (0 °C vẫn thừa nhiệt: nó
+còn cách độ không tuyệt đối 273 độ) đổ vào phòng. So găng với máy sưởi dây
+may-so: dây điện trở biến 1 jun điện thành đúng 1 jun nhiệt — COP = 1, đường
+nét đứt nằm bẹp dưới đáy demo, và **không công nghệ nào cứu nổi nó** vì đó
+đã là 100% rồi. Bơm nhiệt COP 3–4 cấp **gấp ba bốn lần nhiệt cho cùng hoá
+đơn điện** — "vượt 100%" mà không phạm luật nào, vì nó không *biến* điện
+thành nhiệt, nó dùng điện làm *tiền công khuân vác*. Đây là lý do bơm nhiệt
+đang thay lò sưởi ở các nước lạnh, và máy nước nóng bơm nhiệt đang thay
+bình nóng lạnh điện trở — cùng một bài toán, ba lần tiền điện chênh nhau.
+
+Tủ lạnh nhà bạn cũng chính là nó: khuân nhiệt từ ngăn 4 °C ra sau lưng tủ.
+Vì vậy **mở cửa tủ lạnh không làm mát phòng** — nhiệt chỉ chạy vòng từ
+phòng vào tủ rồi phụt ra lưng tủ, cộng thêm tiền công máy nén: phòng *nóng
+lên*. Muốn phòng mát, dàn nóng phải nằm... ngoài phòng — định nghĩa của
+điều hoà chỉ đơn giản vậy.
+
+## Trường hợp biên: hai đầu thang đo
+
+Kéo T_ngoài xuống sát T_trong: mẫu số về 0, COP phóng vô cực — dời nhiệt
+giữa hai nơi cùng nhiệt độ là miễn phí, và bản demo nhắc bạn phương án COP
+∞ có thật: **mở cửa sổ**. Kéo ngược độ chênh lên trăm độ, COP trần tụt dưới
+3, máy thật lết ở mức 1 — đó là địa ngục của tủ đông âm sâu −80 °C trong
+phòng thí nghiệm, nơi mỗi jun giữ lạnh đều đắt xắt miếng, và là lý do các
+kho lạnh chia **nhiều tầng nhiệt độ** thay vì một cú khuân thẳng: hai máy
+bơm nối tiếp, mỗi máy leo nửa con dốc, tổng tiền công rẻ hơn một máy leo cả
+dốc — nhiệt động lực học cũng biết nghỉ chân ở trạm giữa đèo.

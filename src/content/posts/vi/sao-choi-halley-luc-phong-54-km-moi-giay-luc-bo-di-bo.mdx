@@ -1,0 +1,74 @@
+---
+title: "Sao chổi Halley: lúc phóng 54 km/s, lúc bò chậm hơn máy bay"
+description: "Cùng một hòn đá bẩn 11 km, sát Mặt Trời lao 54,6 km/s, ra rìa hệ chỉ còn 0,91 km/s — chậm hơn cả máy bay tiêm kích. Công thức vis-viva đọc vận tốc từ khoảng cách như đọc số dư từ sổ tiết kiệm."
+pubDate: 2026-09-02
+tags: ["vat-ly", "thien-van", "javascript"]
+translationId: "sao-choi-halley-luc-phong-54-km-moi-giay-luc-bo-di-bo"
+---
+
+import VisViva from '../../../components/demos/VisViva.astro';
+
+[Kepler III](/vi/posts/dinh-luat-kepler-iii-va-duong-thang-cua-he-mat-troi)
+trả lời "một vòng hết bao lâu". Nhưng trên quỹ đạo dẹt như của sao chổi
+Halley, câu hỏi nóng hơn là "**đang ở đây thì chạy nhanh cỡ nào**" — và cho
+việc đó, cơ học thiên thể có một công thức đọc-là-ra:
+
+<VisViva />
+
+## Sổ tiết kiệm năng lượng: đọc vận tốc từ khoảng cách
+
+```
+v² = GM(2/r − 1/a)
+```
+
+Gốc gác của nó là bảo toàn năng lượng: cơ năng của vật trên quỹ đạo chỉ phụ
+thuộc **bán trục lớn a** — không phụ thuộc độ dẹt, không phụ thuộc đang ở
+đâu. Tổng tiền trong sổ là cố định; r cho biết bao nhiêu đang nằm ở ngăn
+"thế năng", phần còn lại *bắt buộc* là động năng. Sát Mặt Trời, ngăn thế
+năng cạn — động năng đầy ự: Halley qua cận nhật ở **54,6 km/s**. Ra tới
+viễn nhật 35 AU, gần hết tiền chuyển sang ngăn thế năng: còn **0,91 km/s** —
+chậm hơn máy bay tiêm kích. Tỉ số 60 lần, đúng nghịch đảo tỉ số khoảng cách
+(bảo toàn mô-men động lượng: v·r không đổi ở hai đầu trục — [người quen
+cũ](/vi/posts/bao-toan-momen-dong-luong-cu-xoay-khong-mien-phi) của cú xoay
+vũ công).
+
+Vì thế sao chổi có lịch làm việc kỳ quặc: **76 năm một vòng nhưng chỉ vài
+tháng "đi làm"** — toàn bộ màn trình diễn đuôi lửa gói trong đoạn quanh cận
+nhật nơi nó bay nhanh và bị nung nóng; 70 năm còn lại nó bò trong bóng tối
+ngoài Sao Hải Vương, gần như đứng yên. Kepler II nói điều này bằng ngôn ngữ
+hình học — bán kính quét diện tích đều — còn vis-viva nói bằng tiền mặt.
+
+Trái Đất cũng chơi trò này, chỉ nhẹ nhàng hơn: quỹ đạo gần tròn (e = 0,017)
+làm ta chạy **30,29 km/s** hồi tháng Một (cận nhật) và **29,28 km/s** hồi
+tháng Bảy. Hệ quả ít ai để ý: mùa hè Bắc bán cầu — đoạn Trái Đất bò chậm —
+**dài hơn mùa đông gần 5 ngày**. Lịch của bạn ghi dấu vân tay của Kepler.
+
+## Công thức của mọi chuyến bay liên hành tinh
+
+Vis-viva không chỉ tả — nó **thiết kế**. Muốn đưa tàu từ quỹ đạo Trái Đất
+tới Sao Hoả kiểu tiết kiệm (chuyển Hohmann): chọn elip mới có a lớn hơn,
+công thức cho ngay v cần có tại điểm xuất phát — trừ đi v hiện tại là ra
+**Δv**, con số quyết định cần bao nhiêu nhiên liệu, tức cả chuyến bay khả
+thi hay không. Mọi phòng điều khiển bay từ Apollo tới nay đều xoay quanh
+những phép trừ Δv như thế.
+
+Món ngoạn mục nhất: **lực hấp dẫn hỗ trợ** (gravity assist). Voyager 2 bay
+sát Sao Mộc: đối với Sao Mộc, nó đến rồi đi cùng tốc độ — vis-viva công
+bằng tuyệt đối. Nhưng Sao Mộc đang lao 13 km/s quanh Mặt Trời, và cú "ném
+đá qua vai" cộng một phần vận tốc ấy vào tàu *trong hệ quy chiếu Mặt Trời*:
+tàu nhận thêm ~10 km/s, không tốn một giọt nhiên liệu — trả giá bằng việc
+Sao Mộc chậm đi một lượng nhỏ đến mức vô nghĩa (chia cho 1,9×10²⁷ kg). Bốn
+cú ném như vậy đưa Voyager 2 đủ tiền vượt **mọi** mức 1/a — thoát hẳn sổ
+tiết kiệm của Mặt Trời.
+
+## Trường hợp biên: dấu của 1/a là tấm hộ chiếu
+
+Nhìn kỹ công thức lần cuối: a đứng dưới mẫu **có dấu**. Quỹ đạo kín (elip):
+a > 0, cơ năng âm — "còn nợ ngân hàng", đi đâu rồi cũng phải về. Đẩy a → ∞:
+v² = 2GM/r — chính xác [tốc độ vũ trụ cấp
+hai](/vi/posts/toc-do-vu-tru-va-khau-dai-bac-cua-newton), quỹ đạo parabol,
+tài khoản vừa chạm số 0. Nhanh hơn nữa: a **âm**, quỹ đạo hyperbol, cơ năng
+dương — khách vãng lai không hẹn quay lại. Năm 2017, đài quan sát Hawaii bắt
+được 'Oumuamua với a = −1,3 AU: lần đầu tiên nhân loại đo được một vật thể
+mang **hộ chiếu âm** — sinh ở hệ sao khác, ghé Mặt Trời một lần, và vis-viva
+đọc bản án ấy chỉ từ một cặp số (r, v) duy nhất.

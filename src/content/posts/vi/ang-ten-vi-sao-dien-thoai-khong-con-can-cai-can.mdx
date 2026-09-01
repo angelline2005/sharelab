@@ -1,0 +1,69 @@
+---
+title: "Ăng-ten: vì sao điện thoại không còn cái cần"
+description: "Ăng-ten tốt dài một phần tư bước sóng — và λ = c/f là toàn bộ câu chuyện: đài AM cần cột thép trăm mét, cục gạch 1G đeo cần 8 cm, còn 5G giấu cả dàn ăng-ten sau viền màn hình."
+pubDate: 2026-09-02
+tags: ["vat-ly", "dien-tu", "song", "javascript"]
+translationId: "ang-ten-vi-sao-dien-thoai-khong-con-can-cai-can"
+---
+
+import AntennaWavelength from '../../../components/demos/AntennaWavelength.astro';
+
+Điện thoại "cục gạch" thập niên 90 có cần ăng-ten rút ra dài cả gang tay.
+Điện thoại trong túi bạn chẳng thấy cần nào — nhưng chứa tới **cả chục**
+ăng-ten. Chúng không biến mất; chúng **co lại**, và thước đo cơn co nằm
+trong một phép chia:
+
+<AntennaWavelength />
+
+## Ăng-ten là nhạc cụ, không phải cột thu lôi
+
+Ăng-ten không "hứng" sóng như xô hứng mưa — nó **cộng hưởng** với sóng, hệt
+[cột khí trong ống sáo](/vi/posts/cot-khi-cong-huong-bit-mot-dau-tram-mot-quang-tam):
+electron trong thanh kim loại bị điện trường của sóng lắc qua lại, và thanh
+dài **đúng một phần tư bước sóng** (gắn trên mặt đế) là kích cỡ khiến dao
+động ấy dội về cùng pha — biên độ cộng dồn, tín hiệu yếu hoá đủ nghe. Lệch
+cỡ là hỏng nhạc: gậy quá ngắn hay quá dài đều thành cột thu lôi điếc.
+
+Từ đó, kích cỡ ăng-ten chỉ là bảng cửu chương của λ = c/f:
+
+| Sóng | f | λ | Gậy λ/4 |
+|---|---|---|---|
+| Radio AM | 1 MHz | 300 m | **75 m** — cột thép giữa cánh đồng |
+| FM | 100 MHz | 3 m | 75 cm — cần ăng-ten ô tô |
+| 4G | 1,8 GHz | 16,7 cm | 4,2 cm — lát đồng trong máy |
+| WiFi | 2,4 GHz | 12,5 cm | 3,1 cm |
+| 5G mmWave | 28 GHz | 1,1 cm | **2,7 mm** — cả dàn 8 chiếc sau viền máy |
+
+Cột phát AM cao hàng chục mét không phải vì "phát mạnh" — vì *không thể
+nhỏ hơn*: sóng của nó dài bằng ba sân bóng. Cái cần rút của cục gạch 1G
+(900 MHz) dài ~8 cm là đúng λ/4 của thời nó. Điện thoại hiện đại không
+thắng được vật lý — nó **dời tần số**: f cao gấp chục lần thì gậy co chục
+lần, đủ nhỏ để in thẳng lên bo mạch, mỗi băng tần một chiếc (GPS, WiFi,
+Bluetooth, 4G, 5G, NFC — đếm đủ chục).
+
+## Hoá đơn của tần số cao: sóng ngắn là sóng yểu
+
+Nếu f cao tiện thế, sao đài phát thanh không dọn hết lên GHz? Vì bước sóng
+không chỉ định cỡ ăng-ten — nó định **tính cách lan truyền**. Sóng AM dài
+300 m coi toà nhà, quả đồi như hạt sạn ([nhiễu
+xạ](/vi/posts/vi-sao-khong-kinh-nao-thay-la-co-tren-mat-trang): vật cản nhỏ
+hơn cỡ sóng thì sóng vòng qua), đêm đến còn nảy tầng điện ly đi nghìn cây
+số. Sóng 5G mmWave 1 cm thì **một bàn tay che cũng mất tín hiệu**, mưa to
+là suy hao — nên trạm 5G phải giăng dày đặc từng góc phố. Kỹ thuật vô tuyến
+trăm năm nay là cuộc mặc cả tay ba: **ăng-ten nhỏ** (đòi f cao), **đi xa
+vòng vật cản** (đòi f thấp), **chở nhiều dữ liệu** (đòi dải tần rộng — lại
+f cao). Mỗi dịch vụ đứng một góc khác của tam giác ấy, và băng tần vì thế
+được các quốc gia đem đấu giá như đất mặt tiền.
+
+## Trường hợp biên: khi ăng-ten dài... 4 000 km
+
+Đẩy về cực trái của thanh trượt và đi tiếp: liên lạc **tàu ngầm** cần sóng
+xuyên nước biển — chỉ sóng cực dài ELF cỡ 76 Hz làm nổi, λ ≈ 4 000 km.
+"Gậy λ/4" của nó dài **1 000 km** — không ai dựng nổi. Hải quân Mỹ từng vận
+hành phương án gần nhất: các đường dây tổng cộng ~90 km cắm trên nền đá dẫn
+điện kém ở Wisconsin và Michigan, dùng cả lớp vỏ Trái Đất làm phần thân ăng-ten
+còn thiếu — một ăng-ten tồi đến thảm (hiệu suất dưới một phần nghìn), nuốt
+megawatt để phát vài watt, truyền được... vài bit mỗi giây, đủ gửi lệnh
+"nổi lên nhận tin" cho tàu ngầm. Cùng công thức λ/4 của lát đồng 3 mm trong
+túi bạn — chỉ khác chỗ đứng trên thanh trượt tần số. Vật lý không đổi giá
+theo kích cỡ; nó chỉ in cùng một hoá đơn với số không nhiều hơn.

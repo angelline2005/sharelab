@@ -1,0 +1,99 @@
+---
+// The price of boiling water: Q = mcΔT, converted to kWh and đồng. Sliders
+// for volume, starting temperature, and electricity price; readout adds the
+// time on a 2 kW element. Static redraw of a simple cost bar.
+---
+
+<figure class="demo" data-demo="kettle">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Lượng nước (lít) <output data-out="v"></output>
+      <input type="range" data-in="v" min="0.25" max="3" step="0.25" value="1" /></label>
+    <label>Nhiệt độ nước ban đầu (°C) <output data-out="t0"></output>
+      <input type="range" data-in="t0" min="5" max="90" step="1" value="25" /></label>
+    <label>Giá điện (đ/kWh) <output data-out="p"></output>
+      <input type="range" data-in="p" min="1500" max="5000" step="100" value="3000" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Nhiệt lượng đun tới 100 °C: Q = mcΔT với c = 4 186 J/kg·K. Ấm siêu tốc
+    gần như dồn trọn điện vào nước (mayso ngâm thẳng trong nước) nên phép
+    tính lý thuyết sát hoá đơn thật bất ngờ.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const C = 4186, POWER = 2000;
+  const BAR = '#2563eb', REF = '#f59e0b';
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (k: string) => root.querySelector(`[data-in="${k}"]`) as HTMLInputElement;
+    const output = (k: string) => root.querySelector(`[data-out="${k}"]`) as HTMLOutputElement;
+
+    function draw() {
+      const V = Number(input('v').value), T0 = Number(input('t0').value), price = Number(input('p').value);
+      output('v').textContent = V.toFixed(2).replace('.', ',');
+      output('t0').textContent = String(T0);
+      output('p').textContent = price.toLocaleString('vi-VN');
+      const Q = V * C * (100 - T0);           // J (1 L ≈ 1 kg)
+      const kwh = Q / 3.6e6;
+      const cost = kwh * price;
+      const secs = Q / POWER;
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.3);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+
+      // Cost bars: this boil vs a few daily-life electricity references.
+      const items: Array<[string, number]> = [
+        ['ấm nước này', cost],
+        ['1 giờ điều hoà (~1 kWh)', 1 * price],
+        ['tủ lạnh cả ngày (~1,2 kWh)', 1.2 * price],
+        ['đèn LED 10 W cả tối (5 h)', 0.05 * price],
+      ];
+      const maxV = Math.max(...items.map((i) => i[1]));
+      const barH = 18, gap = (cssH - items.length * barH) / (items.length + 1);
+      ctx.font = '11px system-ui,sans-serif';
+      items.forEach(([name, val], i) => {
+        const y = gap + i * (barH + gap);
+        const w = Math.max(3, (val / maxV) * (cssW * 0.52));
+        ctx.fillStyle = i === 0 ? BAR : REF; ctx.globalAlpha = i === 0 ? 0.9 : 0.55;
+        ctx.fillRect(cssW * 0.34, y, w, barH);
+        ctx.globalAlpha = 1; ctx.fillStyle = fg; ctx.textAlign = 'right';
+        ctx.fillText(name, cssW * 0.33, y + 13);
+        ctx.textAlign = 'left'; ctx.globalAlpha = 0.75;
+        ctx.fillText(`${Math.round(val).toLocaleString('vi-VN')} đ`, cssW * 0.34 + w + 6, y + 13);
+        ctx.globalAlpha = 1;
+      });
+
+      const mins = Math.floor(secs / 60), rem = Math.round(secs % 60);
+      readout.innerHTML =
+        `Q = ${(Q / 1000).toFixed(0)} kJ = <b>${kwh.toFixed(3).replace('.', ',')} kWh</b>` +
+        ` → tốn <b>${Math.round(cost).toLocaleString('vi-VN')} đồng</b>` +
+        ` · ấm 2 000 W đun mất ${mins > 0 ? `${mins} phút ` : ''}${rem} giây`;
+    }
+
+    root.querySelectorAll('input').forEach((el) => el.addEventListener('input', draw));
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="kettle"]').forEach(setup);
+</script>

@@ -1,0 +1,87 @@
+---
+// Speed of sound in a bar: v = √(E/ρ). Bar chart for air/water/wood/steel,
+// plus a race: slider sets distance, readout gives the two arrival times of
+// a train heard through the rail and through the air. Static redraw.
+---
+
+<figure class="demo" data-demo="sound-solids">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Khoảng cách tới đoàn tàu (m) <output data-out="d"></output>
+      <input type="range" data-in="d" min="100" max="5000" step="50" value="1000" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    v = √(E/ρ): vật liệu càng cứng (E lớn) truyền càng nhanh, càng nặng (ρ
+    lớn) càng chậm. Thép vừa cứng vừa không quá nặng — âm thanh trong ray đi
+    nhanh gấp gần 15 lần trong không khí: tiếng tàu đến tai người áp tai vào
+    ray trước gần 3 giây mỗi cây số.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const MATS: Array<[string, number, string]> = [
+    ['không khí', 343, '#94a3b8'],
+    ['nước', 1483, '#2563eb'],
+    ['gỗ (dọc thớ)', 4690, '#f59e0b'],
+    ['thép ray', 5048, '#dc2626'],
+  ];
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const slider = root.querySelector('[data-in="d"]') as HTMLInputElement;
+    const out = root.querySelector('[data-out="d"]') as HTMLOutputElement;
+
+    function draw() {
+      const d = Number(slider.value);
+      out.textContent = d.toLocaleString('vi-VN');
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.34);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+
+      const maxV = 5200, barH = Math.min(20, (cssH - 40) / MATS.length - 8);
+      const gap = (cssH - 16 - MATS.length * barH) / (MATS.length + 1);
+      ctx.font = '11px system-ui,sans-serif';
+      MATS.forEach(([name, v, colour], i) => {
+        const y = 8 + gap + i * (barH + gap);
+        const w = (v / maxV) * (cssW * 0.5);
+        ctx.fillStyle = colour; ctx.globalAlpha = 0.85;
+        ctx.fillRect(cssW * 0.3, y, w, barH);
+        ctx.globalAlpha = 1; ctx.fillStyle = fg; ctx.textAlign = 'right';
+        ctx.fillText(name, cssW * 0.29, y + barH - 5);
+        ctx.textAlign = 'left'; ctx.globalAlpha = 0.75;
+        ctx.fillText(`${v.toLocaleString('vi-VN')} m/s · ${(d / v).toFixed(2).replace('.', ',')} s`, cssW * 0.3 + w + 6, y + barH - 5);
+        ctx.globalAlpha = 1;
+      });
+
+      const tAir = d / 343, tSteel = d / 5048;
+      readout.innerHTML =
+        `Cách ${d.toLocaleString('vi-VN')} m: tiếng tàu qua <b>ray</b> đến sau ` +
+        `<b>${tSteel.toFixed(2).replace('.', ',')} s</b>, qua <b>không khí</b> sau ` +
+        `<b>${tAir.toFixed(2).replace('.', ',')} s</b> — nghe hai lần, cách nhau ${(tAir - tSteel).toFixed(2).replace('.', ',')} s`;
+    }
+
+    slider.addEventListener('input', draw);
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="sound-solids"]').forEach(setup);
+</script>

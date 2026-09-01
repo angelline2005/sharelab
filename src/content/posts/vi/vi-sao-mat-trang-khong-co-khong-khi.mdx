@@ -1,0 +1,74 @@
+---
+title: "Vì sao Mặt Trăng không có không khí — còn Titan bé tí lại có"
+description: "Bầu khí quyển là cuộc rượt đuổi giữa tốc độ thoát của hành tinh và cái đuôi nhanh nhất của phân bố Maxwell. Trái Đất thua hydro, thắng nitơ; Mặt Trăng thua tất; Titan nhỏ hơn Mặt Trăng nhưng lạnh cóng — và cái lạnh cứu cả bầu trời của nó."
+pubDate: 2026-09-02
+tags: ["vat-ly", "thien-van", "nhiet-hoc", "javascript"]
+translationId: "vi-sao-mat-trang-khong-co-khong-khi"
+---
+
+import AtmosphereEscape from '../../../components/demos/AtmosphereEscape.astro';
+
+Trái Đất giữ bầu khí quyển như giữ của. Mặt Trăng — hàng xóm cùng nhận nắng
+ấy — trọc lóc chân không. Nhưng Titan, mặt trăng của Sao Thổ *nhỏ hơn cả
+Mặt Trăng của ta*, lại khoác khí quyển nitơ **dày hơn Trái Đất**. Ai cấp
+phép kỳ cục vậy? Một cuộc rượt đuổi giữa hai vận tốc:
+
+<AtmosphereEscape />
+
+## Cái đuôi của Maxwell đấu với cái giếng của Newton
+
+Nhiệt độ chỉ là **trung bình**: trong [phân bố
+Maxwell](/vi/posts/phan-bo-maxwell-khong-khi-nhanh-hon-am-thanh), luôn có
+một cái đuôi phân tử chạy nhanh gấp nhiều lần mức trung bình. Trên tầng
+thượng khí quyển — nơi va chạm thưa thớt — phân tử nào trong cái đuôi ấy
+vượt [tốc độ thoát](/vi/posts/toc-do-vu-tru-va-khau-dai-bac-cua-newton) và
+đang ngoi lên là **một đi không trở lại**. Rò từng phân tử, nhưng nhân với
+tỉ năm thì thành mất cả đại dương khí.
+
+Cuộc đấu vì thế quy về so hai con số: v_thoát của thiên thể đấu với tốc độ
+nhiệt v_rms = √(3kT/m) của từng loại khí. Cái đuôi Maxwell dài kinh khủng,
+nên luật kinh nghiệm rất khắt khe: **muốn giữ một chất khí hàng tỉ năm,
+v_thoát phải gấp ~6 lần v_rms** của nó.
+
+Điền số cho Trái Đất (v_thoát 11,2 km/s; tầng thoát khí nóng ~1000 K):
+ngưỡng 1,87 km/s. Nitơ, ôxy, CO₂ bò dưới 1 km/s — giữ chặt. Nhưng **hydro
+3,5 km/s và heli 2,5 km/s vượt ngưỡng**: Trái Đất đang rò hai khí nhẹ nhất
+từng giờ — vài kilôgam hydro mỗi *giây* bay khỏi hành tinh. Đó là lý do khí
+quyển ta gần như sạch bóng hai nguyên tố phổ biến nhất vũ trụ, và lý do
+bóng bay heli là hàng "dùng một lần vĩnh viễn": heli xổng ra là rời Trái
+Đất luôn, nguồn duy nhất còn lại là [phân rã alpha dưới lòng
+đất](/vi/posts/chu-ky-ban-ra-khong-hat-nao-biet-tuoi-minh) nhỏ giọt vào các
+túi khí gas.
+
+Mặt Trăng: v_thoát 2,38 km/s, trưa nóng 390 K — ngưỡng 0,4 km/s, **thua cả
+CO₂ nặng nề**. Mọi khí từng phun ra từ núi lửa cổ của nó đều đã bốc hơi vào
+vũ trụ từ tỉ năm trước. Trọng lực yếu không cấm có khí quyển tức thời — nó
+cấm *giữ* khí quyển.
+
+## Titan: cái lạnh là một dạng trọng lực
+
+Giờ đến quán quân nghịch lý. Titan: v_thoát chỉ 2,64 km/s — ngang Mặt Trăng,
+lẽ ra trọc lóc. Nhưng nhìn **nhiệt độ**: −179 °C (94 K). Kéo thanh nhiệt
+trong demo xuống 94 K mà xem: v_rms của nitơ tụt còn 0,29 km/s — chui lọt
+ngưỡng 0,44 của Titan. **Cái lạnh làm thay việc của trọng lực**: phân tử
+chậm đến mức cái giếng nông cũng đủ nhốt. Kết quả là mặt trăng tí hon có
+khí quyển nitơ đặc gấp rưỡi Trái Đất, mưa methane, sông hồ — và là nơi duy
+nhất ngoài Trái Đất tàu vũ trụ từng *thả dù* hạ cánh (Huygens, 2005).
+Ngược thái cực: Sao Mộc v_thoát 59,5 km/s nuốt trọn mọi thứ — giữ được cả
+hydro nguyên thuỷ từ thuở tinh vân, nên nó là quả cầu khí khổng lồ đúng
+"công thức gốc" của hệ Mặt Trời, trong khi các hành tinh đá là phần *cặn*
+đã bay hơi mất khí nhẹ.
+
+## Trường hợp biên: Sao Hoả — bài học về việc thắng trận đơn mà thua cuộc chiến
+
+Sao Hoả (v_thoát 5,0 km/s, lạnh) lẽ ra giữ được CO₂ theo luật 6 lần — và
+từng giữ thật: dấu lòng sông cạn cho thấy nó có khí quyển dày, nước chảy.
+Nhưng luật Jeans chỉ là **một** cửa rò. Sao Hoả mất thứ Trái Đất đang có:
+**từ trường toàn cầu**. Không có tấm khiên ấy, gió Mặt Trời — dòng hạt tích
+điện thổi liên tục — "cạo" thẳng tầng khí quyển trên qua hàng tỉ năm (tàu
+MAVEN đang đo tốc độ cạo ấy tại chỗ). Trái Đất thắng cả hai cửa nhờ lõi
+sắt lỏng còn quay ([nhân vật của bài cảm ứng
+Faraday](/vi/posts/cam-ung-faraday-hai-cu-hich-nguoc-dau)); Sao Hoả nguội
+sớm, tắt máy phát từ, và bầu trời của nó bị gió nắng gặm mỏng dần thành
+lớp vỏ 0,6% còn lại hôm nay. Giữ một bầu khí quyển, hoá ra, cần thắng đồng
+thời hai trận: đấu vật với Maxwell và đấu khiên với Mặt Trời.

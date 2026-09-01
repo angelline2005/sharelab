@@ -1,0 +1,111 @@
+---
+// Carnot COP for cooling: COP = Tc/(Th − Tc) (temperatures in kelvin).
+// Sliders for indoor and outdoor temperature; the curve shows COP vs outdoor
+// temperature at the chosen indoor setting. Real machines reach ~1/3 of
+// Carnot, marked in the readout. Static redraw.
+---
+
+<figure class="demo" data-demo="heatpump">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Nhiệt độ trong phòng T_lạnh (°C) <output data-out="tc"></output>
+      <input type="range" data-in="tc" min="16" max="30" step="0.5" value="25" /></label>
+    <label>Nhiệt độ ngoài trời T_nóng (°C) <output data-out="th"></output>
+      <input type="range" data-in="th" min="28" max="45" step="0.5" value="35" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Máy lạnh không "tạo lạnh" — nó bơm nhiệt từ chỗ mát sang chỗ nóng, ngược
+    dốc tự nhiên. COP là số jun nhiệt dời được trên mỗi jun điện trả; dốc
+    càng thoải (trong–ngoài càng gần nhau) bơm càng hời.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const CURVE = '#2563eb', MARK = '#dc2626', ONE = '#f59e0b';
+  const cop = (tc: number, th: number) => (tc + 273.15) / Math.max(0.5, th - tc);
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (k: string) => root.querySelector(`[data-in="${k}"]`) as HTMLInputElement;
+    const output = (k: string) => root.querySelector(`[data-out="${k}"]`) as HTMLOutputElement;
+
+    function draw() {
+      const tc = Number(input('tc').value), th = Number(input('th').value);
+      output('tc').textContent = tc.toFixed(1).replace('.', ',');
+      output('th').textContent = th.toFixed(1).replace('.', ',');
+      const ideal = cop(tc, th);
+      const real = ideal / 3; // decent inverter units hit roughly a third of Carnot
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.44);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+
+      const padL = 40, padB = 26, padT = 12, padR = 10;
+      const copMax = 60;
+      const X = (t: number) => padL + ((t - 28) / 17) * (cssW - padL - padR);
+      const Y = (v: number) => cssH - padB - (Math.min(v, copMax) / copMax) * (cssH - padB - padT);
+
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.3;
+      ctx.beginPath(); ctx.moveTo(padL, padT); ctx.lineTo(padL, cssH - padB); ctx.lineTo(cssW - padR, cssH - padB); ctx.stroke();
+      ctx.globalAlpha = 0.55; ctx.fillStyle = fg; ctx.font = '10px system-ui,sans-serif';
+      ctx.textAlign = 'center';
+      for (const t of [30, 35, 40, 45]) ctx.fillText(`${t}°C`, X(t), cssH - padB + 14);
+      ctx.textAlign = 'right';
+      for (const v of [10, 30, 50]) ctx.fillText(`${v}`, padL - 4, Y(v) + 3);
+      ctx.save(); ctx.translate(12, (padT + cssH - padB) / 2); ctx.rotate(-Math.PI / 2);
+      ctx.textAlign = 'center'; ctx.fillText('COP trần Carnot', 0, 0); ctx.restore();
+      ctx.globalAlpha = 1;
+
+      // COP=1 line: the resistor heater's league.
+      ctx.strokeStyle = ONE; ctx.globalAlpha = 0.6; ctx.setLineDash([4, 4]);
+      ctx.beginPath(); ctx.moveTo(padL, Y(1)); ctx.lineTo(cssW - padR, Y(1)); ctx.stroke();
+      ctx.setLineDash([]); ctx.fillStyle = fg; ctx.textAlign = 'left';
+      ctx.fillText('COP = 1 (dây may-so)', padL + 6, Y(1) - 5);
+      ctx.globalAlpha = 1;
+
+      // Carnot curve vs outdoor T at current indoor setting.
+      ctx.strokeStyle = CURVE; ctx.lineWidth = 2; ctx.beginPath();
+      let started = false;
+      for (let t = 28; t <= 45; t += 0.1) {
+        if (t - tc < 1) continue;
+        const y = Y(cop(tc, t));
+        started ? ctx.lineTo(X(t), y) : ctx.moveTo(X(t), y);
+        started = true;
+      }
+      ctx.stroke(); ctx.lineWidth = 1;
+
+      if (th - tc >= 1) {
+        ctx.fillStyle = MARK;
+        ctx.beginPath(); ctx.arc(X(th), Y(ideal), 6, 0, Math.PI * 2); ctx.fill();
+      }
+
+      readout.innerHTML = th <= tc
+        ? `Ngoài trời mát hơn trong phòng — mở cửa sổ là COP vô cực, khỏi cắm điện.`
+        : `Chênh ${(th - tc).toFixed(1).replace('.', ',')} °C: COP trần Carnot = <b>${ideal.toFixed(1).replace('.', ',')}</b>` +
+          ` · máy thật đạt cỡ ⅓ trần: <b>~${real.toFixed(1).replace('.', ',')}</b> jun nhiệt dời được mỗi jun điện`;
+    }
+
+    root.querySelectorAll('input').forEach((el) => el.addEventListener('input', draw));
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="heatpump"]').forEach(setup);
+</script>

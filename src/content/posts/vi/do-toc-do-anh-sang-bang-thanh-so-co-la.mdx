@@ -1,0 +1,73 @@
+---
+title: "Đo tốc độ ánh sáng bằng một thanh sô-cô-la và lò vi sóng"
+description: "Tắt đĩa xoay, quay 30 giây: sô-cô-la chảy thành vệt cách đều 6 cm — đó là nửa bước sóng của sóng đứng trong lò. Nhân đôi, nhân tần số trên nhãn: ra 3×10⁸ m/s, sai vài phần trăm, chi phí một thanh kẹo."
+pubDate: 2026-09-02
+tags: ["vat-ly", "song", "javascript"]
+translationId: "do-toc-do-anh-sang-bang-thanh-so-co-la"
+---
+
+import MicrowaveC from '../../../components/demos/MicrowaveC.astro';
+
+Hằng số nổi tiếng nhất của vật lý — c = 299 792 458 m/s — nghe như thứ chỉ
+đo nổi trong phòng thí nghiệm quốc gia. Thực ra bếp nhà bạn có sẵn dụng cụ:
+một lò vi sóng, một thanh sô-cô-la, một cái thước. Demo dưới đây là bản mô
+phỏng của thí nghiệm, để bạn biết mình sắp thấy gì:
+
+<MicrowaveC />
+
+## Vì sao sô-cô-la chảy thành vệt cách đều
+
+Trong khoang lò, sóng vi ba phát ra dội qua dội lại giữa các vách kim loại
+và tự chồng lên mình — thành [sóng
+đứng](/vi/posts/song-dung-tren-day-dan), đúng nhân vật của dây đàn nhưng
+đổi dây thép lấy trường điện từ: có **nút** (điện trường triệt tiêu, không
+nấu gì) và **bụng** (dao động cực đại, nấu hăng nhất) xếp xen kẽ cố định
+trong không gian. Chiếc **đĩa xoay tồn tại chính vì bản đồ nóng–nguội này**
+— nó khuân thức ăn đi qua đủ các bụng nút cho chín đều. Tắt nó đi là bạn
+*hiện hình* tấm bản đồ: chỗ sô-cô-la nằm trúng bụng chảy trước, chỗ trúng
+nút còn nguyên. Các vệt chảy cách nhau đúng **nửa bước sóng** (bụng liền kề
+cách λ/2, như hai bụng liên tiếp trên dây đàn).
+
+Phần còn lại là số học nhãn mác: mọi lò vi sóng gia dụng in **2 450 MHz**
+sau lưng (tần số này được quy hoạch riêng cho thiết bị đốt nóng — không
+phải vì "cộng hưởng với nước" như đồn đại, nước hấp thụ cả dải rộng quanh
+đó). Đo được vệt cách ~6,1 cm:
+
+```
+c = λ·f = (2 × 0,061 m) × 2,45×10⁹ Hz ≈ 2,99×10⁸ m/s
+```
+
+Sai lệch vài phần trăm — chủ yếu vì thước kẻ đo vệt chảy nhoè và khoang lò
+làm hình sóng không phẳng tuyệt đối — nhưng **đúng bậc, đúng hai chữ số
+đầu**, cho một hằng số vũ trụ, đo bằng đồ ăn vặt. (Mẹo thực hành: dùng
+thanh sô-cô-la to hoặc khay phô mai bào, quay 20–40 giây, lấy trung bình
+nhiều cặp vệt cho bớt sai số; nhớ ăn dụng cụ thí nghiệm sau khi ghi số
+liệu.)
+
+## Phép đo này đứng trên vai một lịch sử dài
+
+Galileo từng thử đo c bằng hai người cầm đèn trên hai ngọn đồi — thất bại,
+chỉ kết luận "nhanh lắm". Rømer 1676 lấy được con số đầu tiên từ nhật thực
+vệ tinh Sao Mộc trễ giờ. Fizeau 1849 dùng bánh răng quay; Michelson tinh
+chỉnh gương xoay tới sai số phần vạn. Rồi vật lý đi nước cờ chốt hạ năm
+1983: c được **định nghĩa** là chính xác 299 792 458 m/s — từ đó *mét* được
+suy từ c và giây, chứ không phải ngược lại. Thanh sô-cô-la của bạn, nói
+chặt chẽ, đang kiểm định... định nghĩa của cái thước bạn cầm.
+
+Cùng nguyên lý "đo bước sóng bằng vết đứng yên" ấy chạy khắp kỹ thuật: [khe
+đôi Young đo bước sóng ánh sáng bằng thước
+kẻ](/vi/posts/khe-doi-young-do-buoc-song-bang-thuoc-ke), máy đo khoảng cách
+laser đếm vân giao thoa, và radar cảnh sát so tần dội về. Sóng nào để lại
+vệt, sóng đó đo được bằng thước.
+
+## Trường hợp biên: vì sao khoang lò không được là cái hộp tuỳ tiện
+
+Nếu sóng đứng đẹp đẽ vậy, sao vệt chảy thực tế thường lem nhem hơn demo?
+Vì khoang lò là hộp cộng hưởng **ba chiều**: sóng đứng dựng theo cả dọc,
+ngang, cao cùng lúc, các mode chồng nhau thành bản đồ nóng nguội loang lổ
+chứ không phải sọc thẳng hàng. Kỹ sư thiết kế lò phải *cố tình* làm nhiễu
+bản đồ ấy — kích thước khoang chọn để nhồi nhiều mode chồng nhau, thêm cánh
+khuấy sóng, cộng đĩa xoay — tất cả để chống lại chính hiện tượng bạn vừa
+lợi dụng. Một thí nghiệm hiếm hoi mà "lỗi thiết bị" và "nguyên lý đo" là
+cùng một thứ vật lý: lò càng tốt, thí nghiệm càng khó — nên nếu vệt chảy
+của bạn không thẳng hàng tăm tắp, đừng trách cái thước; hãy khen cái lò.

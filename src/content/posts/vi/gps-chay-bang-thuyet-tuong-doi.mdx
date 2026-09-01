@@ -1,0 +1,71 @@
+---
+title: "GPS chạy bằng thuyết tương đối: 38 micro-giây quyết định bạn đang ở làn nào"
+description: "Đồng hồ vệ tinh GPS mỗi ngày trôi nhanh 38 µs so với mặt đất — Einstein hẹp kéo lùi 7, Einstein rộng đẩy tới 45. Không hiệu chỉnh, bản đồ của bạn lệch 11 km mỗi ngày: thuyết tương đối là tính năng bắt buộc, không phải triết học."
+pubDate: 2026-09-02
+tags: ["vat-ly", "tuong-doi", "javascript"]
+translationId: "gps-chay-bang-thuyet-tuong-doi"
+---
+
+import GPSRelativity from '../../../components/demos/GPSRelativity.astro';
+
+GPS định vị bằng cách **đo thời gian**: mỗi vệ tinh phát "tôi là ai, mấy
+giờ rồi"; máy thu so giờ phát với giờ nhận, nhân tốc độ ánh sáng ra khoảng
+cách. Ánh sáng đi 30 cm mỗi nano-giây — muốn định vị cỡ mét, đồng hồ phải
+đúng cỡ **vài nano-giây**. Và ở độ chính xác đó, một sự thật khó tin trở
+thành kỹ thuật thường ngày: **thời gian trên vệ tinh trôi khác dưới đất**.
+
+<GPSRelativity />
+
+## Hai hiệu ứng ngược chiều, một đường cong
+
+Đồng hồ GPS chịu hai lực kéo của Einstein cùng lúc:
+
+**Thuyết tương đối hẹp** — [người quen từ bài hạt
+muon](/vi/posts/gian-thoi-gian-hat-muon-khong-du-tuoi-de-cham-dat): vệ tinh
+lao 3,9 km/s, đồng hồ bay nhanh chạy chậm — trừ **7 µs mỗi ngày**.
+
+**Thuyết tương đối rộng**: đồng hồ càng ngập sâu trong trọng trường càng
+chạy chậm. Vệ tinh ở độ cao 20 200 km nằm "nông" hơn chúng ta rất nhiều —
+đồng hồ nó chạy nhanh hơn: cộng **45 µs mỗi ngày**.
+
+Hiệu số: **+38 µs/ngày**. Nghe như bụi thời gian — nhưng nhân với tốc độ
+ánh sáng: 38 µs × c ≈ **11 km**. Không hiệu chỉnh, hệ GPS thành vô dụng
+*trong vòng một ngày*, lệch thêm 11 km mỗi ngày sau đó. Nên trước khi phóng,
+đồng hồ nguyên tử trên vệ tinh được **cố tình chỉnh chạy chậm** đúng phần
+chênh — để lên quỹ đạo, hai hiệu ứng của Einstein đẩy nó về khớp giờ mặt
+đất. Chiếc điện thoại chỉ đường trong túi bạn, theo nghĩa đen, là bằng
+chứng thực nghiệm của cả hai thuyết tương đối, được kiểm định lại hàng tỉ
+lần mỗi giây trên toàn cầu.
+
+Đường cong trong demo kể phần thú vị hơn: hai hiệu ứng **đấu nhau tuỳ độ
+cao**. Bay thấp, tốc độ lớn mà trọng trường chưa nông bao nhiêu — phe
+"chậm" thắng: đồng hồ ISS (400 km) *chậm* hơn mặt đất ~25 µs/ngày; phi
+hành gia sống nửa năm trên đó trẻ hơn chúng ta cỡ 5 mili-giây. Bay cao,
+phe "nhanh" thắng. Điểm hoà nằm ở **độ cao ~3 200 km** (r = 3R⊕/2) — một
+quỹ đạo mà tại đó, tình cờ đẹp đẽ, Einstein hẹp và rộng triệt tiêu nhau
+tròn trịa.
+
+## Vì sao "ở nông hơn thì đồng hồ nhanh hơn"?
+
+Phiên bản một dòng: leo ra khỏi giếng trọng trường, ánh sáng mất năng
+lượng — tần số của nó giảm ([họ hàng dịch chuyển đỏ trong bài
+Hubble](/vi/posts/dinh-luat-hubble-vu-tru-no-va-tuoi-cua-no), phiên bản hấp
+dẫn). Mà tần số chính là nhịp đồng hồ: người ở trên cao nhìn xuống thấy mọi
+nhịp dưới đáy giếng thưa đi — đáy giếng sống chậm. Thí nghiệm
+Pound–Rebka đo được điều này qua **22,5 mét** tháp Harvard năm 1960; đồng
+hồ quang học hiện đại phát hiện chênh lệch khi nâng nhau **33 xăng-ti-mét**.
+Đầu bạn đang già nhanh hơn chân bạn — cỡ một phần tỉ giây mỗi đời người,
+được đo đạc tử tế chứ không phải ẩn dụ.
+
+## Trường hợp biên: máy thu dưới đất không cần biết thuyết tương đối... gần hết
+
+Chi tiết kỹ thuật đáng yêu để đóng bài: khoản +38 µs *đều đặn* được xử
+sẵn ở nhà máy, nhưng quỹ đạo GPS hơi elip (e ≈ 0,01–0,02), nên vệ tinh
+[lúc nhanh lúc chậm, lúc nông lúc sâu theo
+vis-viva](/vi/posts/sao-choi-halley-luc-phong-54-km-moi-giay-luc-bo-di-bo)
+— đồng hồ nó *lắc lư* quanh mức trung bình tới ±23 ns mỗi vòng. Khoản lắc
+này không chỉnh sẵn được — chính **chip trong điện thoại bạn** tính nó theo
+công thức tương đối tính in trong chuẩn giao diện GPS (IS-GPS-200), mỗi
+lần bạn mở bản đồ. Một công thức của Einstein, viết cho các vì sao, giờ
+chạy âm thầm vài tỉ lần mỗi phút trong túi quần nhân loại — khoảng cách
+ngắn nhất từng đo được giữa vật lý "viển vông" và việc gọi một cuốc xe.

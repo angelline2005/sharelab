@@ -1,0 +1,71 @@
+---
+title: "Ngọn núi sắt: một đường cong giải thích cả bom H, lò hạt nhân lẫn cái chết của các vì sao"
+description: "Vì sao nhiệt hạch VÀ phân hạch — hai phản ứng ngược chiều nhau — cùng toả năng lượng? Vì cả hai đều leo về một đỉnh núi: sắt-56, nơi mỗi nucleon bị trói chặt nhất. Đường cong năng lượng liên kết là tấm bản đồ số phận của vật chất."
+pubDate: 2026-09-02
+tags: ["vat-ly", "hat-nhan", "thien-van", "javascript"]
+translationId: "duong-cong-nang-luong-lien-ket-ngon-nui-sat"
+---
+
+import BindingEnergy from '../../../components/demos/BindingEnergy.astro';
+
+Câu đố xứng đáng đứng đầu chương hạt nhân: nhiệt hạch **gộp** hạt nhân nhỏ
+thành to — toả năng lượng. Phân hạch **tách** hạt nhân to thành nhỏ — cũng
+toả năng lượng. Hai chiều ngược hẳn nhau cùng sinh lời? Nghe như gian lận
+kế toán — cho tới khi nhìn thấy tấm bản đồ:
+
+<BindingEnergy />
+
+## Bị trói càng chặt, khối lượng càng hụt
+
+Năng lượng liên kết B là số tiền phải trả để **tháo rời** hạt nhân ra từng
+nucleon — hạt nhân bền là hạt nhân bị trói chặt, nằm *thấp* về năng lượng.
+Và theo [E = mc²](/vi/posts/e-bang-mc-binh-phuong-mot-gram-gia-bao-nhieu),
+khoản trói ấy cân được: hạt nhân sắt nhẹ hơn tổng 56 hạt rời của nó gần 1%.
+
+Đường cong B/A do hai thế lực giằng co vẽ nên. **Lực hạt nhân mạnh** trói
+nucleon với hàng xóm sát vách — hạt nhân nhỏ thiệt vì quá nhiều hạt phải
+đứng "ngoài rìa" thiếu hàng xóm (chính là số hạng mặt ngoài ∝ A^⅔). **Lực
+đẩy Coulomb** giữa các proton thì [không cần đứng
+cạnh](/vi/posts/dinh-luat-coulomb-hai-hat-bui-keo-nhau-mot-newton) — mọi
+cặp proton trong hạt nhân đều đẩy nhau, phí này phình theo Z² và bóp nghẹt
+các hạt nhân lớn. Nhỏ quá thiệt vì rìa, to quá thiệt vì điện: đỉnh thoả
+hiệp rơi vào **A ≈ 56–62** — sắt và niken, ở ~8,8 MeV mỗi nucleon.
+
+Từ đó mọi chuyện sáng rõ: **năng lượng hạt nhân không có "chiều toả" cố
+định — chỉ có chiều leo về đỉnh sắt**. Đứng sườn trái (hydro, heli), gộp
+lại là leo lên: nhiệt hạch. Đứng sườn phải (uranium), tách đôi là leo lên:
+phân hạch. U-235 vỡ đôi, mỗi nucleon chỉ leo ~0,9 MeV — nhưng nhân 235
+nucleon thành ~200 MeV mỗi phản ứng, gấp trăm triệu lần một phản ứng hoá
+học vốn chỉ mua bán vài eV lớp electron.
+
+## Đường cong này là tiểu sử của Mặt Trời — và giấy khai tử
+
+Sao là những cỗ máy leo núi. Mặt Trời đang gộp hydro thành heli ở chân sườn
+trái — đoạn dốc hời nhất (H → He leo tận 6–7 MeV mỗi nucleon; đốt 4 triệu
+tấn khối lượng mỗi giây theo đúng tỉ giá E = mc²). Hết hydro, sao lớn đốt
+tiếp heli thành carbon, carbon thành oxy... mỗi tầng lò một bậc thang cao
+hơn, dốc *thoải dần* — nên cháy nhanh dần: tầng hydro cháy chục triệu năm,
+tầng silicon cuối cùng cháy **một ngày**.
+
+Rồi lò tạo ra sắt. Sắt là đỉnh — **gộp sắt không sinh lời, tách sắt cũng
+không**: lõi sao thành đống tro không cháy nổi nữa, phình dần tới giới hạn,
+và sụp đổ trong một giây thành vụ nổ siêu tân tinh. Đường cong bạn vừa kéo
+chính là lý do các vì sao chết — và là lý do lõi Trái Đất, huyết sắc tố
+trong máu bạn đầy sắt: nguyên tố chiếm nhiều khối lượng nhất của hành tinh
+này chính là **tro của đỉnh núi**. Các nguyên tố nặng hơn
+sắt — vàng, uranium — không sinh trong lò nào cả: chúng được *dúi* năng
+lượng vào trong chính vụ nổ và các cú sáp nhập sao neutron, tức là những
+kho **âm lợi nhuận** mà vũ trụ nén sẵn; phân hạch ngày nay chỉ là rút lại
+khoản tiền gửi đó.
+
+## Trường hợp biên: hai mép bản đồ
+
+Mép trái có một ngoại lệ đẹp: **He-4** thực tế vọt lên 7,1 MeV — cao hơn
+hẳn công thức trơn dự đoán — nhờ hiệu ứng lớp vỏ đầy (2 proton + 2 neutron,
+"khí trơ" của thế giới hạt nhân). Đỉnh nhọn cục bộ ấy là lý do phân rã alpha
+phóng ra nguyên cụm He-4 thay vì từng hạt lẻ, và là lý do chuỗi phản ứng
+trong sao nhảy cóc qua các bội số của 4. Mép phải, sau A ≈ 209, đường cong
+tụt đủ sâu để không hạt nhân nào bền tuyệt đối nữa — tất cả đều
+[phóng xạ, chỉ khác chu kỳ bán rã](/vi/posts/chu-ky-ban-ra-khong-hat-nao-biet-tuoi-minh).
+Bảng tuần hoàn không kết thúc vì hoá học hết chữ; nó kết thúc vì phía đông
+ngọn núi sắt, mặt đất không còn đỡ nổi công trình nào lâu dài.

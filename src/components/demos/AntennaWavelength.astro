@@ -1,0 +1,109 @@
+---
+// λ = c/f across the radio spectrum, log slider from 0.5 MHz to 30 GHz.
+// The readout gives λ and the quarter-wave antenna length; the sketch draws
+// a monopole to (log) scale next to familiar objects. Static redraw.
+---
+
+<figure class="demo" data-demo="antenna">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Tần số f = 10^x Hz, chọn x <output data-out="x"></output>
+      <input type="range" data-in="x" min="5.7" max="10.5" step="0.02" value="8" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Ăng-ten "chuẩn" là cây gậy dài một phần tư bước sóng — cộng hưởng với
+    sóng hệt như cột khí bịt một đầu cộng hưởng với âm thanh. Tần số tăng
+    nghìn lần, cây gậy co nghìn lần: từ cột AM cao bằng toà nhà xuống lát
+    đồng vài milimét giấu trong điện thoại.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const C = 2.998e8;
+  const BAR = '#2563eb', MARK = '#dc2626', LM = '#f59e0b';
+  const BANDS: Array<[number, string]> = [
+    [6, 'AM 1 MHz'], [8, 'FM 100 MHz'], [Math.log10(1.8e9), '4G'],
+    [Math.log10(2.4e9), 'WiFi'], [Math.log10(2.8e10), '5G mmWave'],
+  ];
+
+  const fmt = (m: number) =>
+    m >= 1 ? `${m.toFixed(2).replace('.', ',')} m` : m >= 0.01 ? `${(m * 100).toFixed(1).replace('.', ',')} cm` : `${(m * 1000).toFixed(1).replace('.', ',')} mm`;
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const slider = root.querySelector('[data-in="x"]') as HTMLInputElement;
+    const out = root.querySelector('[data-out="x"]') as HTMLOutputElement;
+
+    function draw() {
+      const x = Number(slider.value);
+      const f = Math.pow(10, x);
+      out.textContent = f >= 1e9 ? `${(f / 1e9).toFixed(2).replace('.', ',')} GHz` : `${(f / 1e6).toFixed(1).replace('.', ',')} MHz`;
+      const lam = C / f, quarter = lam / 4;
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.42);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+
+      const padL = 46, padB = 26, padT = 14, padR = 12;
+      const X = (lx: number) => padL + ((lx - 5.7) / 4.8) * (cssW - padL - padR);
+      // λ/4 spans ~130 m → 2.5 mm: log10 in [-2.6, 2.15].
+      const Y = (lm: number) => cssH - padB - ((lm + 2.7) / 5) * (cssH - padB - padT);
+
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.3;
+      ctx.beginPath(); ctx.moveTo(padL, padT); ctx.lineTo(padL, cssH - padB); ctx.lineTo(cssW - padR, cssH - padB); ctx.stroke();
+      ctx.globalAlpha = 0.55; ctx.fillStyle = fg; ctx.font = '10px system-ui,sans-serif';
+      ctx.textAlign = 'center';
+      for (const [lx, lab] of [[6, '1 MHz'], [7, '10'], [8, '100'], [9, '1 GHz'], [10, '10 GHz']] as Array<[number, string]>)
+        ctx.fillText(lab, X(lx), cssH - padB + 14);
+      ctx.textAlign = 'right';
+      for (const [lm, lab] of [[-2, '1 cm'], [0, '1 m'], [2, '100 m']] as Array<[number, string]>)
+        ctx.fillText(lab, padL - 4, Y(lm) + 3);
+      ctx.save(); ctx.translate(12, (padT + cssH - padB) / 2); ctx.rotate(-Math.PI / 2);
+      ctx.textAlign = 'center'; ctx.fillText('gậy λ/4', 0, 0); ctx.restore();
+      ctx.globalAlpha = 1;
+
+      // λ/4 line.
+      const lq = (lx: number) => Math.log10(C / Math.pow(10, lx) / 4);
+      ctx.strokeStyle = BAR; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.moveTo(X(5.7), Y(lq(5.7))); ctx.lineTo(X(10.5), Y(lq(10.5))); ctx.stroke();
+      ctx.lineWidth = 1;
+
+      BANDS.forEach(([lx, lab], k) => {
+        ctx.fillStyle = LM;
+        ctx.beginPath(); ctx.arc(X(lx), Y(lq(lx)), 4, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = fg; ctx.globalAlpha = 0.7; ctx.textAlign = 'center';
+        ctx.fillText(lab, X(lx), Y(lq(lx)) - 8 - (k % 2) * 11);
+        ctx.globalAlpha = 1;
+      });
+
+      ctx.fillStyle = MARK;
+      ctx.beginPath(); ctx.arc(X(x), Y(lq(x)), 6, 0, Math.PI * 2); ctx.fill();
+
+      readout.innerHTML =
+        `f = ${out.textContent} → λ = <b>${fmt(lam)}</b> · ăng-ten λ/4 = <b>${fmt(quarter)}</b>`;
+    }
+
+    slider.addEventListener('input', draw);
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="antenna"]').forEach(setup);
+</script>
