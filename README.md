@@ -40,8 +40,8 @@ All commands are run from the root of the project, from a terminal:
 
 ## 📰 Republishing
 
-Two sources are licensed for republication here. Both importers emit the byline, credit
-link and logo their licences require.
+Three sources are licensed for republication here. Each importer emits the byline, credit
+link and logo its licence requires.
 
 ### The Conversation — CC BY-ND
 
@@ -66,8 +66,20 @@ Plain CC BY permits derivatives, so this is the one source that can be translate
 Vietnamese without asking. See
 [docs/republishing-scidev-net.md](docs/republishing-scidev-net.md).
 
-Read either doc before importing — between them they cover the rules the scripts can't
-enforce: no bulk imports, and images are never automatically cleared for reuse.
+### Mongabay — CC BY-ND
+
+```sh
+node scripts/import-mongabay.mjs --list
+node scripts/import-mongabay.mjs https://news.mongabay.com/2026/08/<slug>/
+```
+
+Environment, forests and biodiversity reporting. English only. Mongabay also carries
+Associated Press wire copy that its licence does not cover — the importer refuses news
+agency bylines, but check yourself too. See
+[docs/republishing-mongabay.md](docs/republishing-mongabay.md).
+
+Read the relevant doc before importing — between them they cover the rules the scripts
+can't enforce: no bulk imports, and images are never automatically cleared for reuse.
 
 ## 👀 Want to learn more?
 
