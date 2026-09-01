@@ -61,3 +61,15 @@ phần đang còn. Đây là lý do các bo mạch có ghi cảnh báo chờ và
 rút điện: tụ nguồn lớn với R rò nhỏ cho τ hàng chục giây, và "5τ để coi như
 hết" hoạt động theo cả hai chiều. Chiếc thang không quan tâm bạn leo lên hay
 leo xuống — nó chỉ biết đếm 63%.
+
+## Trường hợp biên: chiếc thang ngắn nhất và dài nhất
+
+Kéo τ về hai cực để thấy nó cai trị cả hai đầu công nghệ. Cực ngắn: mạch
+số muốn xung vuông cạnh sắc, nhưng mỗi milimét đường mạch có R và C của
+riêng nó — tín hiệu leo thang 63% ở mọi nơi nó đi qua, cạnh xung bị bo
+tròn, và **tốc độ tối đa của chip** một phần bị đóng đinh bởi chính RC
+của những sợi đồng vi mô (kỹ sư gọi thẳng là "RC delay" — lý do dây trong
+chip đổi từ nhôm sang đồng thập niên 1990). Cực dài: cho R rò thật lớn,
+τ kéo ra hàng giờ — siêu tụ giữ đồng hồ máy tính chạy khi thay pin sống
+trong vùng này. Cùng [một chiếc thùng nước nóng của thế giới
+điện](/vi/posts/tu-dien-thung-nuoc-nong-cua-the-gioi-dien), chỉ khác cỡ vòi.
