@@ -1,0 +1,65 @@
+---
+title: "Định luật Hooke: số ½ trong ½kx² từ đâu ra"
+description: "F = kx thì dễ, nhưng vì sao thế năng lại là ½kx² chứ không phải kx²? Câu trả lời là một tam giác — và tam giác đó giải thích luôn vì sao nén lò xo sâu gấp đôi nguy hiểm gấp bốn."
+pubDate: 2026-09-02
+tags: ["vat-ly", "co-hoc", "javascript"]
+translationId: "dinh-luat-hooke-so-mot-phan-hai-tu-dau-ra"
+---
+
+import HookesLaw from '../../../components/demos/HookesLaw.astro';
+
+Cặp công thức về lò xo nằm lòng của mọi học sinh:
+
+```
+F = k·x          (lực đàn hồi)
+E = ½·k·x²       (thế năng đàn hồi)
+```
+
+Công thức thứ nhất hiển nhiên — kéo dài gấp đôi, lực gấp đôi, Hooke đo được
+từ 1678. Công thức thứ hai hay được nuốt chửng không nhai: **số ½ ở đâu ra, và
+vì sao x lại bình phương?**
+
+<HookesLaw />
+
+## Số ½ là một tam giác
+
+Nhìn đồ thị F–x bên phải demo. Công nén lò xo là lực nhân quãng đường — nhưng
+lực **không đứng yên**: nó khởi đầu từ 0 và lớn dần theo kx. Năng lượng tích
+vào là **diện tích dưới đường thẳng** — một tam giác đáy x, cao kx:
+
+```
+E = ½ · x · (kx) = ½kx²
+```
+
+½ là công thức diện tích tam giác, không hơn. Một cách đọc khác: lực trung
+bình trong cả quá trình nén là `(0 + kx)/2` — đi hết quãng x với lực trung
+bình ấy, ra đúng ½kx². Nếu lò xo đẩy **đều** kx từ đầu tới cuối (như trọng lực
+trong công thức mgh), năng lượng mới là kx² không chia đôi. So sánh này đáng
+một dòng ghi nhớ: *mgh không có ½ vì g không đổi theo h; ½kx² có ½ vì F đổi
+theo x.*
+
+## Bình phương là bản tin an toàn
+
+Hệ quả của x²: nén sâu gấp đôi, lực chỉ gấp đôi nhưng năng lượng chờ giải
+phóng **gấp bốn**; gấp ba là **gấp chín**. Cảm giác tay (lực) tăng tuyến tính
+đánh lừa ta về mối nguy (năng lượng) tăng bình phương — lò xo nén sâu, cung
+kéo căng, ván nhún gập hết cỡ đều "hiền" hơn cảm nhận của cơ bắp. Cùng bản
+tin đó phát trên [công thức động năng ½mv²](/vi/posts/va-cham-dan-hoi-va-va-cham-mem/):
+chạy xe nhanh gấp đôi là mang gấp bốn năng lượng cần tiêu khi phanh — và cùng
+một tam giác đứng sau cả hai số ½.
+
+## Vì sao đâu cũng thấy kx
+
+Điều khiến Hooke phổ quát không phải lò xo thép, mà là một sự thật giải tích:
+**mọi hố thế trơn, nhìn đủ gần đáy, đều là parabol.** Khai triển Taylor quanh
+điểm cân bằng giết số hạng bậc nhất (đáy hố — đạo hàm bằng 0), để lại bậc hai
+thống trị — tức lực kéo về tuyến tính, tức Hooke. Liên kết phân tử, dây đàn
+[rung thành sóng dừng](/vi/posts/song-dung-tren-day-dan/), toà nhà lắc trong
+gió, mạng tinh thể truyền nhiệt — tất cả là "lò xo" theo nghĩa này, chừng nào
+biên độ còn nhỏ.
+
+Và ranh giới, như thường lệ trên site này, nằm ở chữ "còn nhỏ": kéo lò xo thật
+quá giới hạn đàn hồi, đường F–x rời khỏi đường thẳng, tam giác thành hình méo
+— và phần diện tích vượt ngưỡng không trả lại khi buông tay: nó ở lại trong
+kim loại thành biến dạng vĩnh viễn. Chiếc lò xo bị kéo giãn "hết đàn hồi"
+chính là đồ thị Hooke gãy mà bạn cầm được trên tay.

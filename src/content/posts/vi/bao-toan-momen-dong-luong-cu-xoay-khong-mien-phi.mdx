@@ -1,0 +1,63 @@
+---
+title: "Bảo toàn momen động lượng: cú xoay nhanh của vận động viên không miễn phí"
+description: "Thu tay vào là xoay nhanh hơn — ai cũng biết. Ít ai để ý: động năng quay tăng theo, và ai đó phải trả. Hoá đơn gửi về cơ bắp, và cùng hoá đơn ấy định hình các thiên hà."
+pubDate: 2026-09-02
+tags: ["vat-ly", "co-hoc", "javascript"]
+translationId: "bao-toan-momen-dong-luong-cu-xoay-khong-mien-phi"
+---
+
+import AngularMomentum from '../../../components/demos/AngularMomentum.astro';
+
+Vận động viên trượt băng vào cú xoay với hai tay dang rộng, rồi thu tay sát
+người — và tốc độ quay vọt lên như có ai vặn núm. Không ai đẩy thêm, không có
+mô-men ngoài nào cả. Bí mật là một đại lượng bị khoá:
+
+```
+L = I·ω = hằng số   (khi không có mô-men ngoài)
+```
+
+Momen quán tính I đo "khối lượng nằm xa trục cỡ nào". Thu tay là kéo khối
+lượng về gần trục — I giảm — và ω **buộc** phải tăng để giữ tích không đổi.
+
+<AngularMomentum />
+
+## Cái giá giấu trong phép chia
+
+Ba cột trong demo kể trọn câu chuyện, và cột thứ ba là phần ít người nhìn:
+động năng quay viết theo L là
+
+```
+K = L²/(2I)
+```
+
+L bị khoá, I giảm — vậy K **tăng**. Thu tay từ dang rộng về sát người (I giảm
+2,5 lần), tốc độ quay tăng 2,5 lần, và động năng cũng tăng 2,5 lần. Năng
+lượng không tự sinh: phần dôi ra là **công cơ bắp** kéo hai cánh tay vào,
+ngược chiều xu hướng văng ra. Ai từng thử co tay khi đang xoay ghế văn phòng
+đều cảm nhận được lực ghì ấy — cảm giác nặng tay đó chính là hoá đơn năng
+lượng đang được thanh toán.
+
+Chiều ngược lại giải thích vì sao dang tay là phanh: I tăng, ω giảm, và phần
+động năng thừa được cơ thể hấp thụ. Vận động viên kết thúc cú xoay không cần
+ai đỡ — họ tự "xoè phanh" bằng hai cánh tay.
+
+## Cùng định luật, phóng to hàng tỷ lần
+
+**Sao neutron.** Một ngôi sao cỡ Mặt Trời quay đủng đỉnh mỗi tháng một vòng.
+Khi lõi nó sập xuống thành quả cầu bán kính ~10 km, I co lại hàng tỷ lần — và
+ω phải phình tương ứng: xác sao quay **hàng trăm vòng mỗi giây**. Các pulsar
+nháy như đèn hải đăng chính là cú "thu tay" vĩ đại nhất vũ trụ.
+
+**Đĩa hành tinh.** Đám mây khí sinh ra hệ Mặt Trời gần như đứng yên, nhưng
+"gần như" không phải là không. Co lại dưới hấp dẫn, chút momen động lượng còm
+cõi ấy bị khuếch đại thành chuyển động quay rõ rệt — và vì quay chống lại co
+theo phương vuông góc trục nhưng không chống co dọc trục, đám mây bẹt thành
+**đĩa**. Các hành tinh nằm gần cùng mặt phẳng, quay gần cùng chiều: dấu vân
+tay của L bị khoá từ 4,6 tỷ năm trước.
+
+**Mèo rơi.** Câu đố kinh điển: mèo thả lưng xuống đất với L = 0, không có gì
+để "bảo toàn ngược" — sao vẫn lật được người? Vì L = 0 là ràng buộc lên *tổng*,
+không cấm các *bộ phận* quay ngược chiều nhau: mèo vặn thân trước một đằng,
+thân sau một nẻo, đổi I từng nửa thân đúng nhịp, và tổng vẫn là 0 suốt cú lật.
+Phi hành gia trên ISS xoay người giữa không trung bằng đúng thuật của mèo — có
+điều họ phải học, còn mèo thì cài sẵn.

@@ -1,0 +1,111 @@
+---
+// Hooke's law and elastic energy: F = kx drawn as the force line, E = ½kx²
+// as the shaded triangle under it — the picture that explains where the ½
+// comes from. Sliders for k and x; a sketched spring compresses with x.
+---
+
+<figure class="demo" data-demo="hooke">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Độ cứng k <output data-out="k"></output>
+      <input type="range" data-in="k" min="50" max="500" step="10" value="200" /></label>
+    <label>Độ nén x <output data-out="x"></output>
+      <input type="range" data-in="x" min="0" max="0.2" step="0.005" value="0.1" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Diện tích tam giác dưới đường F = kx chính là thế năng ½kx² — số ½ không
+    phải quy ước mà là hình học: lực tăng dần từ 0, nên công là trung bình của
+    lực nhân quãng đường.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const LINE = '#2563eb', AREA = '#dc2626';
+  const XMAX = 0.2, KMAX = 500;
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (n: string) => root.querySelector(`[data-in="${n}"]`) as HTMLInputElement;
+    const output = (n: string) => root.querySelector(`[data-out="${n}"]`) as HTMLOutputElement;
+
+    function draw() {
+      const k = Number(input('k').value);
+      const x = Number(input('x').value);
+      output('k').textContent = `${k} N/m`;
+      output('x').textContent = `${(x * 100).toFixed(1)} cm`;
+      const F = k * x, E = 0.5 * k * x * x;
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.46);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+
+      // Left: the spring, coil pitch shrinking with compression.
+      const sx = 20, sy = cssH * 0.5, natural = cssW * 0.24;
+      const len = natural * (1 - x / (XMAX * 1.6));
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.75; ctx.lineWidth = 1.6;
+      ctx.beginPath(); ctx.moveTo(sx, sy - 30); ctx.lineTo(sx, sy + 30); ctx.stroke(); // wall
+      ctx.beginPath(); ctx.moveTo(sx, sy);
+      const coils = 9;
+      for (let i = 0; i <= coils * 2; i++) {
+        const px = sx + (len * i) / (coils * 2);
+        const py = sy + (i % 2 ? -12 : 12) * (i === 0 || i === coils * 2 ? 0 : 1);
+        ctx.lineTo(px, py);
+      }
+      ctx.stroke(); ctx.lineWidth = 1; ctx.globalAlpha = 1;
+      ctx.fillStyle = AREA;
+      ctx.fillRect(sx + len, sy - 16, 20, 32);
+
+      // Right: F–x plot with the energy triangle.
+      const gx = cssW * 0.42, gw = cssW - gx - 14, gy = 14, gh = cssH - 46;
+      const X = (xx: number) => gx + (xx / XMAX) * gw;
+      const Y = (f: number) => gy + gh - (f / (KMAX * XMAX)) * gh;
+
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.3;
+      ctx.beginPath(); ctx.moveTo(gx, gy); ctx.lineTo(gx, gy + gh); ctx.lineTo(gx + gw, gy + gh); ctx.stroke();
+      ctx.globalAlpha = 0.55; ctx.fillStyle = fg;
+      ctx.font = '11px system-ui,sans-serif'; ctx.textAlign = 'center';
+      ctx.fillText('x', gx + gw / 2, cssH - 10);
+      ctx.textAlign = 'left'; ctx.fillText('F', gx + 4, gy + 8);
+      ctx.globalAlpha = 1;
+
+      // Energy triangle under the line, up to current x.
+      ctx.fillStyle = AREA; ctx.globalAlpha = 0.25;
+      ctx.beginPath();
+      ctx.moveTo(X(0), Y(0)); ctx.lineTo(X(x), Y(0)); ctx.lineTo(X(x), Y(F));
+      ctx.closePath(); ctx.fill(); ctx.globalAlpha = 1;
+
+      ctx.strokeStyle = LINE; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.moveTo(X(0), Y(0)); ctx.lineTo(X(XMAX), Y(k * XMAX)); ctx.stroke();
+      ctx.lineWidth = 1;
+      ctx.fillStyle = AREA;
+      ctx.beginPath(); ctx.arc(X(x), Y(F), 5, 0, Math.PI * 2); ctx.fill();
+
+      readout.innerHTML =
+        `F = kx = <b>${F.toFixed(1)} N</b> · thế năng E = ½kx² = <b>${E.toFixed(2)} J</b> · ` +
+        `nén sâu gấp đôi → lực ×2 nhưng năng lượng <b>×4</b>`;
+    }
+
+    root.querySelectorAll('input').forEach((el) => el.addEventListener('input', draw));
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="hooke"]').forEach(setup);
+</script>

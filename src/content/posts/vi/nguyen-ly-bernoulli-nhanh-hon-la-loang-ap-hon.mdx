@@ -1,0 +1,66 @@
+---
+title: "Nguyên lý Bernoulli: chỗ nước chảy nhanh lại là chỗ áp suất thấp"
+description: "Trực giác nói chỗ thắt ống phải 'dồn ép' hơn — áp kế nói ngược lại. Cùng cú lừa đó thổi tung mái tôn trong bão và suýt hút hai con tàu đâm nhau."
+pubDate: 2026-09-02
+tags: ["vat-ly", "chat-luu", "javascript"]
+translationId: "nguyen-ly-bernoulli-nhanh-hon-la-loang-ap-hon"
+---
+
+import Bernoulli from '../../../components/demos/Bernoulli.astro';
+
+Hỏi bất kỳ ai chưa học chất lưu: nước chảy qua chỗ ống thắt hẹp, áp suất ở đó
+cao hơn hay thấp hơn? Hầu hết chọn **cao hơn** — "bị ép vào chỗ hẹp mà". Áp kế
+trả lời ngược lại, và demo dưới đây để bạn tự đối chất với nó.
+
+<Bernoulli />
+
+## Hai định luật xếp hàng
+
+Chuyện xảy ra theo hai bước, mỗi bước một định luật:
+
+**Bước 1 — liên tục:** nước không nén được và không tích lại đâu cả, nên lượng
+chảy qua mọi tiết diện phải bằng nhau: `A·v = const`. Ống hẹp còn nửa tiết
+diện → nước **buộc** phải chảy nhanh gấp đôi. Các chấm đỏ trong demo tăng tốc
+qua chỗ thắt vì lý do kế toán này, chưa cần nói gì tới lực.
+
+**Bước 2 — Bernoulli:** dọc một dòng chảy,
+
+```
+p + ½ρv² = hằng số
+```
+
+Đây là bảo toàn năng lượng mặc áo chất lưu: `½ρv²` là động năng mỗi đơn vị thể
+tích, còn `p` đóng vai ngân khoản thế năng. Muốn nước tăng tốc vào chỗ hẹp,
+**phải có lực đẩy nó từ phía sau** — tức áp suất phía sau phải cao hơn phía
+trước. Vậy chỗ nhanh nhất chính là chỗ áp thấp nhất, không phải nghịch lý mà
+là điều kiện để sự tăng tốc kia xảy ra được. Với số của demo: 2 m/s lên 4 m/s
+đổi giá 6 kPa áp suất.
+
+## Cú lừa này ở kích thước đời thật
+
+**Mái tôn trong bão** không bị gió "đè sập" — nó bị **nhấc lên**. Gió giật
+thổi ngang trên mái là dòng chảy nhanh, áp suất trên mái tụt; không khí đứng
+yên trong nhà vẫn đủ áp và đẩy từ dưới lên. Mái nhà bay theo đúng chiều mà bài
+này dạy, ngược chiều mà trực giác canh chừng.
+
+**Hai con tàu chạy song song** gần nhau: nước bị lùa vào khe hẹp giữa hai
+thân, chảy nhanh, áp tụt — và hai con tàu bị **hút vào nhau**. Sự cố suýt va
+chạm giữa Olympic (tàu chị em của Titanic) và tuần dương hạm Hawke năm 1911
+là án lệ hàng hải của hiệu ứng này; luật tránh va hiện đại buộc tàu lớn giữ
+khoảng cách khi vượt nhau trong luồng hẹp vì đúng nó.
+
+**Quả bóng xoáy** cong đường bay (cú sút "má ngoài", bóng bàn giật xoáy): mặt
+bóng quay kéo không khí một bên đi nhanh hơn bên kia — chênh áp hai bên bẻ quỹ
+đạo. Bernoulli đứng tên chung với hiệu ứng Magnus trong mọi đường chuyền vòng
+cung.
+
+## Và ranh giới của chính nó
+
+Kéo chỗ thắt về mức hẹp nhất trong demo: phép tính trả ra áp suất **âm** —
+công thức đang đòi thứ chất lỏng không có để cho. Trước khi tới đó, thực tế đã
+can thiệp: áp suất tụt xuống dưới áp suất hơi bão hoà và nước **sôi ngay ở
+nhiệt độ thường** — hiện tượng xâm thực (cavitation). Bọt hơi sinh ra rồi sập
+lại nổ lách tách, gặm rỗ chân vịt tàu và cánh bơm — kim loại bị ăn mòn bởi một
+công thức chạm biên. Nghịch lý nhỏ để khép bài: thứ phá huỷ những cánh chân
+vịt bằng đồng thau cứng cáp nhất không phải đá ngầm, mà là chỗ nước chảy
+*quá nhanh*.

@@ -1,0 +1,56 @@
+---
+title: "Thang decibel: vì sao tai người đếm bằng lôgarit"
+description: "Từ ngưỡng nghe đến động cơ phản lực, cường độ âm trải 10.000 tỷ lần — mà tai vẫn xử lý gọn. Bí quyết là nghe theo lôgarit, và thang dB chỉ là bản mã hoá của bí quyết ấy."
+pubDate: 2026-09-02
+tags: ["vat-ly", "song", "am-thanh", "javascript"]
+translationId: "thang-decibel-vi-sao-tai-nguoi-dem-bang-logarit"
+---
+
+import DecibelScale from '../../../components/demos/DecibelScale.astro';
+
+Tai người là thiết bị đo có dải hoạt động phi lý: âm nhỏ nhất nghe được mang
+cường độ 10⁻¹² W/m², động cơ phản lực bên cạnh dội vào 10 W/m² — chênh nhau
+**mười nghìn tỷ lần**, và tai xử lý cả hai đầu mà không đổi "chế độ đo".
+
+Không thang tuyến tính nào ghi nổi dải ấy. Thang decibel giải bằng lôgarit:
+
+```
+L = 10·log₁₀(I/I₀),   I₀ = 10⁻¹² W/m²
+```
+
+<DecibelScale />
+
+Thanh màu xanh dưới cùng là lời giải thích trực quan nhất cho câu "vì sao phải
+lôgarit": nó vẽ cường độ **tuyến tính**, với cả chiều dài thanh là 130 dB. Kéo
+xuống 60 dB — mức trò chuyện — và thanh gần như biến mất: một phần mười triệu
+của bề rộng. Mọi âm thanh của đời sống thường nhật chen chúc trong vài pixel
+đầu; muốn thấy tiếng thì thầm trên thang tuyến tính của tiếng phản lực, màn
+hình phải cao mười cây số.
+
+## Ba quy tắc nhẩm của thang dB
+
+**+10 dB = cường độ ×10.** Đây là định nghĩa. 60 dB mạnh gấp 10 lần 50 dB,
+gấp 100 lần 40 dB.
+
+**+3 dB = cường độ ×2.** Vì 10^0,3 ≈ 2. Hai máy khoan giống hệt chạy cạnh
+nhau không "ồn gấp đôi số đo" — chỉ nhích từ 100 lên 103 dB.
+
+**Cảm giác "to gấp đôi" ≈ +10 dB.** Tai không đếm watt; các khảo sát tâm lý
+âm học cho thấy phải tăng cường độ chừng mười lần để người nghe bảo "to gấp
+đôi". Đó chính là bằng chứng tai nghe theo lôgarit — và là lý do thang dB
+*khớp* với cảm nhận trong khi thang W/m² thì vô dụng.
+
+Quy tắc thứ hai giải một lấn cấn quen thuộc: dàn loa 100 W không "to gấp đôi"
+loa 50 W — chỉ hơn 3 dB, khác biệt vừa đủ nhận ra. Muốn to gấp đôi theo cảm
+giác, cần gấp **mười** lần công suất. Ngành âm thanh bán watt, nhưng tai chỉ
+trả tiền theo lôgarit của watt.
+
+## Con số nghiêm túc nhất trên thước: 85
+
+Trên dải mốc của demo có một vạch không vui: **85 dB** — ngưỡng mà tiếp xúc đủ
+8 giờ mỗi ngày bắt đầu phá huỷ vĩnh viễn tế bào lông trong ốc tai. Tính chất
+lôgarit làm ngưỡng này nguy hiểm kiểu lén lút: 95 dB nghe "hơi to hơn" 85,
+nhưng là gấp mười lần năng lượng đập vào tai — thời gian an toàn co từ 8 giờ
+xuống cỡ **dưới một giờ**. Tai nghe nhét trong ở mức tối đa hoàn toàn với tới
+vùng này. Thang đo nén cảm giác lại mười lần mỗi bậc; tổn thương thì không
+nén — nó nhận đủ từng watt một.

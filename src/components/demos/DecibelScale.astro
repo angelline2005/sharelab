@@ -1,0 +1,102 @@
+---
+// The decibel scale: L = 10·log₁₀(I/I₀). One slider in dB; the readout
+// converts to absolute intensity and to "how many whispers equal this". The
+// bar chart is logarithmic on purpose — a linear intensity bar for 120 dB
+// versus 20 dB would need a screen ten kilometres tall, which is the point.
+---
+
+<figure class="demo" data-demo="decibel">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Mức cường độ âm <output data-out="db"></output>
+      <input type="range" data-in="db" min="0" max="130" step="1" value="60" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Thang decibel nén 13 bậc mười của cường độ vào một cái thước tuyến tính —
+    vì chính tai người cũng cảm nhận theo lôgarit. Các mốc là số đo thực tế
+    quen thuộc.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const I0 = 1e-12; // W/m²
+  const MARK = '#dc2626', BAR = '#2563eb';
+  const LANDMARKS: [number, string][] = [
+    [0, 'ngưỡng nghe'], [20, 'thì thầm'], [40, 'thư viện'], [60, 'trò chuyện'],
+    [85, 'ngưỡng hại tai (8h)'], [100, 'máy khoan'], [120, 'ngưỡng đau'], [130, 'động cơ phản lực'],
+  ];
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const slider = root.querySelector('[data-in="db"]') as HTMLInputElement;
+    const out = root.querySelector('[data-out="db"]') as HTMLOutputElement;
+
+    function draw() {
+      const db = Number(slider.value);
+      out.textContent = `${db} dB`;
+      const I = I0 * Math.pow(10, db / 10);
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.42);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+
+      const pad = 30, railY = cssH * 0.32;
+      const X = (d: number) => pad + (d / 130) * (cssW - pad * 2);
+
+      // dB rail with landmarks.
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.35;
+      ctx.beginPath(); ctx.moveTo(pad, railY); ctx.lineTo(cssW - pad, railY); ctx.stroke();
+      ctx.globalAlpha = 1;
+      ctx.font = '10px system-ui,sans-serif';
+      LANDMARKS.forEach(([d, name], k) => {
+        ctx.strokeStyle = fg; ctx.globalAlpha = 0.4;
+        ctx.beginPath(); ctx.moveTo(X(d), railY - 6); ctx.lineTo(X(d), railY + 6); ctx.stroke();
+        ctx.globalAlpha = 0.7; ctx.fillStyle = fg;
+        ctx.textAlign = 'center';
+        const dy = k % 2 ? 30 : 16;
+        ctx.fillText(`${d}`, X(d), railY - 10);
+        ctx.fillText(name, X(d), railY + dy);
+        ctx.globalAlpha = 1;
+      });
+      ctx.fillStyle = MARK;
+      ctx.beginPath(); ctx.arc(X(db), railY, 6, 0, Math.PI * 2); ctx.fill();
+
+      // Linear-intensity bar, clipped: shows how fast it explodes.
+      const by = cssH * 0.78, bh = 16;
+      const frac = Math.min(I / (I0 * Math.pow(10, 13)), 1);
+      ctx.fillStyle = BAR; ctx.globalAlpha = 0.8;
+      ctx.fillRect(pad, by, Math.max(frac * (cssW - 2 * pad), 1), bh);
+      ctx.globalAlpha = 0.6; ctx.fillStyle = fg; ctx.textAlign = 'left';
+      ctx.fillText('cường độ TUYẾN TÍNH (cả thanh = 130 dB)', pad, by - 5);
+      ctx.globalAlpha = 1;
+
+      const whispers = I / (I0 * Math.pow(10, 2)); // vs 20 dB whisper
+      readout.innerHTML =
+        `I = <b>${I.toExponential(1)} W/m²</b> · bằng <b>${whispers >= 1e6 ? whispers.toExponential(1) : Math.round(whispers).toLocaleString('vi-VN')}</b> tiếng thì thầm cộng lại · ` +
+        `+10 dB = cường độ ×10, tai nghe "to gấp đôi"`;
+    }
+
+    slider.addEventListener('input', draw);
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="decibel"]').forEach(setup);
+</script>

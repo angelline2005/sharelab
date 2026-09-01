@@ -1,0 +1,98 @@
+---
+// Archimedes' principle: a block in water. Density slider decides float or
+// sink; for floaters the submerged fraction equals ρ_vật/ρ_nước exactly, for
+// sinkers the readout gives apparent weight 1 − ρ_nước/ρ_vật. Static redraw.
+---
+
+<figure class="demo" data-demo="archimedes">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Khối lượng riêng của vật <output data-out="rho"></output>
+      <input type="range" data-in="rho" min="100" max="3000" step="20" value="600" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Nước ngọt ρ = 1000 kg/m³. Vật nổi chìm đúng phần trăm bằng tỉ số khối
+    lượng riêng — gỗ 600 chìm 60%, băng 917 chìm 92% (phần nổi của tảng băng
+    chỉ là 8%).
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const RHO_W = 1000;
+  const WATER = '#2563eb', BLOCK = '#dc2626';
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const slider = root.querySelector('[data-in="rho"]') as HTMLInputElement;
+    const out = root.querySelector('[data-out="rho"]') as HTMLOutputElement;
+
+    function draw() {
+      const rho = Number(slider.value);
+      out.textContent = `${rho} kg/m³`;
+      const floats = rho < RHO_W;
+      const frac = floats ? rho / RHO_W : 1;
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.44);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+
+      // Tank.
+      const tx = 20, tw = cssW - 40, waterY = cssH * 0.34, ty = cssH - 16;
+      ctx.fillStyle = WATER; ctx.globalAlpha = 0.15;
+      ctx.fillRect(tx, waterY, tw, ty - waterY);
+      ctx.globalAlpha = 0.5; ctx.strokeStyle = WATER;
+      ctx.beginPath(); ctx.moveTo(tx, waterY); ctx.lineTo(tx + tw, waterY); ctx.stroke();
+      ctx.globalAlpha = 0.4; ctx.strokeStyle = fg;
+      ctx.strokeRect(tx, cssH * 0.1, tw, ty - cssH * 0.1);
+      ctx.globalAlpha = 1;
+
+      // Block: 70px cube; floats with `frac` below the line, or rests on the
+      // bottom when denser than water.
+      const bw = 74, bx = cssW / 2 - bw / 2;
+      let by: number;
+      if (floats) by = waterY - bw * (1 - frac);
+      else by = ty - bw - 4;
+      ctx.fillStyle = BLOCK; ctx.globalAlpha = 0.85;
+      ctx.fillRect(bx, by, bw, bw);
+      ctx.globalAlpha = 1;
+      // Waterline mark across the block.
+      if (floats) {
+        ctx.strokeStyle = '#fff'; ctx.globalAlpha = 0.8; ctx.setLineDash([4, 3]);
+        ctx.beginPath(); ctx.moveTo(bx, waterY); ctx.lineTo(bx + bw, waterY); ctx.stroke();
+        ctx.setLineDash([]); ctx.globalAlpha = 1;
+      }
+
+      const label = rho <= 250 ? ' (xốp)' : Math.abs(rho - 600) <= 60 ? ' (gỗ thông)'
+        : Math.abs(rho - 917) <= 25 ? ' (băng!)' : Math.abs(rho - 1000) <= 20 ? ' (≈ nước)'
+        : Math.abs(rho - 2700) <= 100 ? ' (nhôm/đá)' : '';
+      readout.innerHTML = floats
+        ? `Nổi${label} — chìm <b>${(frac * 100).toFixed(0)}%</b> thể tích: phần nước bị chiếm chỗ nặng đúng bằng vật`
+        : rho === RHO_W
+          ? `Lơ lửng — cân bằng phiếm định ở mọi độ sâu`
+          : `Chìm${label} — nhưng nhẹ đi: trọng lượng biểu kiến còn <b>${((1 - RHO_W / rho) * 100).toFixed(0)}%</b> so với ngoài không khí`;
+    }
+
+    slider.addEventListener('input', draw);
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="archimedes"]').forEach(setup);
+</script>

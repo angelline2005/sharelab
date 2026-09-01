@@ -1,0 +1,134 @@
+---
+// Bernoulli in a pinched pipe: continuity fixes v₂ = v₁·A₁/A₂, then
+// p + ½ρv² = const hands back the pressure drop. Animated tracer dots speed
+// up through the throat; pressure gauges drawn as columns. The counterintuitive
+// part — faster means LOWER pressure — is the whole demo.
+---
+
+<figure class="demo" data-demo="bernoulli">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Chỗ thắt hẹp còn <output data-out="ratio"></output>
+      <input type="range" data-in="ratio" min="0.3" max="1" step="0.01" value="0.5" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Nước chảy 2 m/s trong ống, gặp đoạn thắt. Hai cột áp kế đo áp suất tĩnh —
+    cột thấp hơn nằm ở chỗ nước chảy NHANH hơn, đúng chỗ trực giác đoán ngược.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const V1 = 2, RHO = 1000, P1 = 20000; // inlet speed m/s, water, gauge Pa
+  const PIPE = '#2563eb', DOT = '#dc2626';
+  const N_DOTS = 26;
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const slider = root.querySelector('[data-in="ratio"]') as HTMLInputElement;
+    const out = root.querySelector('[data-out="ratio"]') as HTMLOutputElement;
+
+    const dots = Array.from({ length: N_DOTS }, (_, i) => ({ u: i / N_DOTS, lane: Math.random() * 2 - 1 }));
+    let raf = 0, last = 0;
+
+    // Pipe half-height profile along u∈[0,1]: wide–throat–wide, smooth.
+    function prof(u: number, ratio: number) {
+      const t = Math.exp(-((u - 0.5) ** 2) / 0.018);
+      return 1 - (1 - ratio) * t;
+    }
+
+    function draw(dt = 0) {
+      const ratio = Number(slider.value);
+      out.textContent = `${(ratio * 100).toFixed(0)}% tiết diện`;
+      const v2 = V1 / ratio;
+      const p2 = P1 + 0.5 * RHO * (V1 * V1 - v2 * v2);
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.42);
+      if (canvas.width !== cssW * dpr) { canvas.width = cssW * dpr; canvas.height = cssH * dpr; canvas.style.height = `${cssH}px`; }
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+
+      const midY = cssH * 0.62, H0 = cssH * 0.2;
+      const X = (u: number) => 16 + u * (cssW - 32);
+
+      // Pipe walls.
+      ctx.strokeStyle = PIPE; ctx.lineWidth = 2; ctx.globalAlpha = 0.8;
+      for (const s of [-1, 1]) {
+        ctx.beginPath();
+        for (let i = 0; i <= 120; i++) {
+          const u = i / 120, h = prof(u, ratio) * H0;
+          i ? ctx.lineTo(X(u), midY + s * h) : ctx.moveTo(X(u), midY + s * h);
+        }
+        ctx.stroke();
+      }
+      ctx.globalAlpha = 1; ctx.lineWidth = 1;
+
+      // Tracer dots: du/dt ∝ local speed = V1/prof (continuity).
+      for (const d of dots) {
+        const speed = V1 / prof(d.u, ratio);
+        d.u += (speed / V1) * dt * 0.12;
+        if (d.u > 1) { d.u -= 1; d.lane = Math.random() * 2 - 1; }
+        const h = prof(d.u, ratio) * H0;
+        ctx.fillStyle = DOT;
+        ctx.beginPath();
+        ctx.arc(X(d.u), midY + d.lane * h * 0.75, 2.6, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      // Manometer columns above inlet and throat, height ∝ pressure.
+      const gauge = (u: number, p: number, label: string) => {
+        const x = X(u), base = midY - prof(u, ratio) * H0 - 4;
+        const h = Math.max((p / P1) * (cssH * 0.3), 2);
+        ctx.strokeStyle = fg; ctx.globalAlpha = 0.4;
+        ctx.strokeRect(x - 6, base - cssH * 0.32, 12, cssH * 0.32);
+        ctx.globalAlpha = 0.85; ctx.fillStyle = PIPE;
+        ctx.fillRect(x - 5, base - h, 10, h);
+        ctx.globalAlpha = 0.7; ctx.fillStyle = fg;
+        ctx.font = '10px system-ui,sans-serif'; ctx.textAlign = 'center';
+        ctx.fillText(label, x, base - cssH * 0.32 - 4);
+        ctx.globalAlpha = 1;
+      };
+      gauge(0.16, P1, `${(P1 / 1000).toFixed(0)} kPa`);
+      gauge(0.5, Math.max(p2, 0), `${(Math.max(p2, 0) / 1000).toFixed(1)} kPa`);
+
+      readout.innerHTML = p2 <= 0
+        ? `v thắt = <b>${v2.toFixed(1)} m/s</b> · áp suất tính ra <b>âm</b> — nước sôi lạnh tại chỗ: <b>xâm thực</b>, kẻ ăn mòn chân vịt tàu`
+        : `Tiết diện ×${ratio.toFixed(2)} → vận tốc ×${(1 / ratio).toFixed(2)} = <b>${v2.toFixed(1)} m/s</b> · ` +
+          `áp suất tụt <b>${((P1 - p2) / 1000).toFixed(1)} kPa</b>: nhanh hơn = "loãng" áp hơn`;
+    }
+
+    function frame(now: number) {
+      raf = requestAnimationFrame(frame);
+      if (!last) last = now;
+      const dt = Math.min((now - last) / 1000, 0.05); last = now;
+      draw(dt);
+    }
+
+    slider.addEventListener('input', () => draw(0));
+    addEventListener('resize', () => draw(0));
+    const io = new IntersectionObserver((es) => {
+      for (const e of es) {
+        if (e.isIntersecting) { last = 0; raf = requestAnimationFrame(frame); }
+        else cancelAnimationFrame(raf);
+      }
+    });
+    io.observe(root);
+    draw(0);
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="bernoulli"]').forEach(setup);
+</script>

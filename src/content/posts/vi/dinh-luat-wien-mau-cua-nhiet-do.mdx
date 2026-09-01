@@ -1,0 +1,63 @@
+---
+title: "Định luật Wien: nhiệt độ có màu, và mắt người sinh ra cho đúng một ngôi sao"
+description: "Sao đỏ là sao nguội, sao xanh là sao nóng — ngược với vòi nước. Cùng công thức λmax = b/T giải thích vì sao đèn sợi đốt phí 95% điện và vì sao mắt ta nhìn rõ nhất đúng chỗ Mặt Trời phát mạnh nhất."
+pubDate: 2026-09-02
+tags: ["vat-ly", "nhiet-hoc", "thien-van", "javascript"]
+translationId: "dinh-luat-wien-mau-cua-nhiet-do"
+---
+
+import BlackbodyWien from '../../../components/demos/BlackbodyWien.astro';
+
+Mọi vật có nhiệt độ đều phát bức xạ — bạn đang phát, cái bàn đang phát, và
+màu của bức xạ ấy do một công thức ngắn quyết định:
+
+```
+λ_max = 2,898·10⁻³ / T     (định luật dịch chuyển Wien)
+```
+
+Càng nóng, đỉnh phổ càng trượt về bước sóng ngắn. Kéo nhiệt độ và xem cả phổ
+di cư:
+
+<BlackbodyWien />
+
+## Bảng màu ngược đời của vũ trụ
+
+Trong đời thường, "đỏ" là nóng và "xanh" là lạnh — vòi nước, bản đồ thời
+tiết. Vật lý xếp ngược: **đỏ là nguội, xanh là nóng.**
+
+| Vật phát | T | Đỉnh phổ |
+|---|---|---|
+| Cơ thể người | 310 K | 9.300 nm — hồng ngoại sâu |
+| Betelgeuse (đỏ) | 3.600 K | 805 nm |
+| Mặt Trời | 5.772 K | 502 nm — giữa vùng nhìn thấy |
+| Rigel (xanh) | 12.100 K | 240 nm — tử ngoại |
+
+Nhìn lên Orion đêm quang: góc vai trái chòm sao là Betelgeuse đỏ cam, góc
+chân phải là Rigel xanh trắng. Bạn đang đọc **nhiệt kế cách hàng trăm năm ánh
+sáng bằng mắt thường** — mỗi màu sao là một phép đo T qua công thức Wien, và
+đó đúng là cách thiên văn học đo nhiệt độ bề mặt các vì sao.
+
+Hàng đầu tiên của bảng giải thích luôn camera nhiệt và rắn săn đêm: người
+"phát sáng" rực rỡ ở 9.300 nm — chỉ là mắt ta mù ở kênh đó, còn cảm biến
+hồng ngoại (và hõm cảm nhiệt của rắn đuôi chuông) thì không.
+
+## Bản án dành cho đèn sợi đốt
+
+Kéo thanh trượt về 2.700 K — dây tóc vonfram. Đỉnh phổ nằm ở ~1.070 nm, sâu
+trong hồng ngoại, và readout tuyên án: chỉ cỡ **5–7% năng lượng** rơi vào vùng
+mắt thấy. Đèn sợi đốt về bản chất là **lò sưởi có tác dụng phụ phát sáng** —
+hơn chín phần mười điện năng thành hơi ấm vô hình. Nó không thể sửa được bằng
+kỹ thuật chế tạo: giới hạn nằm trong vật lý Planck, trừ khi nung dây tóc nóng
+gần bằng Mặt Trời — mà vonfram nóng chảy ở 3.695 K. Đèn LED thắng tuyệt đối vì
+nó bỏ hẳn cuộc chơi nhiệt: phát thẳng photon vùng nhìn thấy, không đi qua vật
+đen nào cả.
+
+## Mắt người: sản phẩm đo ni đóng giày
+
+Còn một sự trùng khớp đáng dừng lại: Mặt Trời 5.772 K phát đỉnh ở 502 nm —
+và độ nhạy mắt người đạt cực đại ở ~555 nm (xanh lục). Tiến hoá đã tinh chỉnh
+võng mạc quanh đúng chỗ nguồn sáng duy nhất của hành tinh rót nhiều photon
+nhất. "Vùng nhìn thấy" không phải hằng số vật lý nào — nó là **vết in của một
+ngôi sao cụ thể lên một loài cụ thể**. Sinh vật quanh sao lùn đỏ, nếu có mắt,
+hẳn "nhìn thấy" ở vùng ta gọi là hồng ngoại — và với chúng, bức ảnh chân dung
+bằng camera nhiệt của bạn mới là ảnh màu trung thực.

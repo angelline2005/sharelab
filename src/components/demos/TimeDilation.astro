@@ -1,0 +1,105 @@
+---
+// Special relativity's γ = 1/√(1−β²), drawn as the curve every textbook shows
+// and anchored by the muon: proper lifetime 2.2 µs, lab-frame range γ·v·τ.
+// The slider sweeps β; the readout compares the classical and relativistic
+// ranges against the 10+ km of atmosphere muons demonstrably cross.
+---
+
+<figure class="demo" data-demo="time-dilation">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Tốc độ v/c <output data-out="b"></output>
+      <input type="range" data-in="b" min="0.01" max="0.999" step="0.001" value="0.5" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Hệ số giãn thời gian γ theo tốc độ. Nửa trái của thanh trượt gần như không
+    làm gì — rồi đường cong dựng vách. Chấm đỏ: hạt muon tia vũ trụ ở 0,995c,
+    trường hợp kiểm chứng bằng đo đạc nổi tiếng nhất.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const C = 299792458;
+  const TAU = 2.2e-6; // muon proper lifetime, s
+  const CURVE = '#2563eb', MARK = '#dc2626', MUON = '#f59e0b';
+  const gamma = (b: number) => 1 / Math.sqrt(1 - b * b);
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const slider = root.querySelector('[data-in="b"]') as HTMLInputElement;
+    const out = root.querySelector('[data-out="b"]') as HTMLOutputElement;
+
+    function draw() {
+      const b = Number(slider.value);
+      out.textContent = b.toFixed(3);
+      const g = gamma(b);
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.5);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+
+      const pad = 36, GMAX = 12;
+      const X = (bb: number) => pad + bb * (cssW - pad - 10);
+      const Y = (gg: number) => cssH - pad - ((gg - 1) / (GMAX - 1)) * (cssH - pad - 12);
+
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.3;
+      ctx.beginPath(); ctx.moveTo(pad, 8); ctx.lineTo(pad, cssH - pad); ctx.lineTo(cssW - 8, cssH - pad); ctx.stroke();
+      ctx.setLineDash([3, 4]);
+      ctx.beginPath(); ctx.moveTo(X(1), cssH - pad); ctx.lineTo(X(1), 10); ctx.stroke();
+      ctx.setLineDash([]); ctx.globalAlpha = 0.55;
+      ctx.fillStyle = fg; ctx.font = '11px system-ui,sans-serif'; ctx.textAlign = 'center';
+      ctx.fillText('v = c (bức tường)', X(1) - 40, 16);
+      ctx.fillText('v/c', cssW / 2, cssH - 8);
+      ctx.textAlign = 'left'; ctx.fillText('γ', pad + 4, 16);
+      ctx.globalAlpha = 1;
+
+      ctx.strokeStyle = CURVE; ctx.lineWidth = 2; ctx.beginPath();
+      for (let i = 0; i <= 400; i++) {
+        const bb = (0.9995 * i) / 400;
+        const gg = Math.min(gamma(bb), GMAX);
+        i ? ctx.lineTo(X(bb), Y(gg)) : ctx.moveTo(X(bb), Y(gg));
+      }
+      ctx.stroke(); ctx.lineWidth = 1;
+
+      // Muon anchor at 0.995c.
+      ctx.fillStyle = MUON;
+      ctx.beginPath(); ctx.arc(X(0.995), Y(Math.min(gamma(0.995), GMAX)), 5, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = fg; ctx.globalAlpha = 0.6; ctx.textAlign = 'right';
+      ctx.fillText('muon', X(0.995) - 8, Y(Math.min(gamma(0.995), GMAX)));
+      ctx.globalAlpha = 1;
+
+      ctx.fillStyle = MARK;
+      ctx.beginPath(); ctx.arc(X(b), Y(Math.min(g, GMAX)), 5, 0, Math.PI * 2); ctx.fill();
+
+      const classical = TAU * b * C / 1000;
+      const relativistic = g * TAU * b * C / 1000;
+      readout.innerHTML =
+        `γ = <b>${g.toFixed(3)}</b> · đồng hồ bay chậm ${((1 - 1 / g) * 100).toFixed(1)}% · ` +
+        `muon ở tốc độ này bay được: cổ điển <b>${classical.toFixed(2)} km</b>, ` +
+        `tương đối tính <b>${relativistic.toFixed(2)} km</b>`;
+    }
+
+    slider.addEventListener('input', draw);
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="time-dilation"]').forEach(setup);
+</script>

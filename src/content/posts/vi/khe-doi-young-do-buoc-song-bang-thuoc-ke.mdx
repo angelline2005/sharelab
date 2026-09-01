@@ -1,0 +1,60 @@
+---
+title: "Khe đôi Young: đo thứ nhỏ hơn sợi tóc nghìn lần bằng thước kẻ"
+description: "Ánh sáng có bước sóng nửa phần nghìn milimét — không kính hiển vi nào thấy nổi. Young đo nó năm 1801 bằng hai khe hở và một bức tường, nhờ công thức khuếch đại i = λD/a."
+pubDate: 2026-09-02
+tags: ["vat-ly", "quang-hoc", "song", "javascript"]
+translationId: "khe-doi-young-do-buoc-song-bang-thuoc-ke"
+---
+
+import DoubleSlit from '../../../components/demos/DoubleSlit.astro';
+
+Năm 1801, Thomas Young cho ánh sáng đi qua hai khe hẹp sát nhau và nhìn lên
+màn: thay vì hai vệt sáng, ông thấy **một dãy vân sáng tối xen kẽ**. Với
+Newton, ánh sáng là hạt — mà hạt thì không biết cộng và triệt nhau. Dãy vân
+là chữ ký không thể giả của **sóng**, cùng cơ chế với
+[hai nguồn sóng nước](/vi/posts/giao-thoa-song-va-cai-bay-truong-hop-bien/):
+chỗ hai đường đi lệch nhau nguyên lần λ thì sáng, lệch nửa λ thì tối.
+
+<DoubleSlit />
+
+## Công thức là một cái đòn bẩy
+
+Khoảng cách giữa hai vân sáng liên tiếp:
+
+```
+i = λ·D/a
+```
+
+Nhìn nó như một **bộ khuếch đại**: λ nhỏ không tưởng (650 nm), nhưng nhân với
+D = 1 m và chia cho a = 0,2 mm — hai con số vĩ mô — cho ra i = 3,25 mm, thứ đo
+được bằng thước kẻ học sinh. Đảo công thức: `λ = i·a/D`. Young đo được bước
+sóng ánh sáng — đại lượng nhỏ hơn độ phân giải của mọi dụng cụ thời ông hàng
+nghìn lần — chỉ bằng hình học và một chiếc thước. Đây vẫn là bài thực hành đo
+λ trong phòng thí nghiệm phổ thông ngày nay, hơn hai thế kỷ sau.
+
+Hai thanh trượt của demo là hai phép thử của công thức: đổi sang ánh sáng đỏ
+(λ lớn) — vân giãn ra; thu hẹp khoảng cách hai khe — vân cũng giãn ra. Chiều
+thứ hai phản trực giác: **khe càng sát nhau, hoa văn càng loãng**. Trong thế
+giới sóng, chi tiết của "nguồn" và độ thô của "hoa văn" luôn tỉ lệ nghịch.
+
+## Vì sao ta không thấy giao thoa hằng ngày
+
+Nếu ánh sáng giao thoa, sao hai bóng đèn cạnh nhau không tạo vân trên tường?
+Vì công thức có điều kiện ẩn: hai nguồn phải **kết hợp** — lệch pha ổn định
+theo thời gian. Hai bóng đèn phát pha ngẫu nhiên đổi hàng tỷ lần mỗi giây; vân
+có đó nhưng nhảy chỗ liên tục, mắt chỉ thấy trung bình mờ đều. Young lách bằng
+cách cho *một* nguồn qua *hai* khe — hai bản sao của cùng một sóng thì cãi
+nhau kiểu gì cũng đồng pha. Váng dầu loang màu trên mặt nước mưa là giao thoa
+"tự nhiên" hiếm hoi lọt điều kiện ấy: hai mặt của màng dầu mỏng đóng vai hai
+khe.
+
+## Thí nghiệm không chịu cũ
+
+Khe đôi có sự nghiệp hậu 1801 dài hơn bất kỳ thí nghiệm nào: thế kỷ 20, người
+ta bắn **từng electron một** qua cặp khe — mỗi electron chấm một điểm trên
+màn, và hàng vạn chấm đơn lẻ ấy từ từ xếp thành... đúng dãy vân của Young.
+Từng hạt riêng lẻ giao thoa *với chính nó*. Feynman gọi đây là hiện tượng chứa
+"bí ẩn duy nhất" của cơ học lượng tử. Cùng một cặp khe: năm 1801 nó phong
+vương cho sóng; một trăm năm sau nó lật lại hồ sơ để chia lại vương miện cho
+cả hạt lẫn sóng — và bài toán `i = λD/a` bạn giải trong đề thi vẫn đúng nguyên
+xi cho electron, chỉ cần thay λ bằng bước sóng de Broglie.

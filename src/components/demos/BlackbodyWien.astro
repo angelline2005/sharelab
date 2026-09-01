@@ -1,0 +1,126 @@
+---
+// Planck's blackbody curve with Wien's displacement law λ_max = b/T. The
+// temperature slider runs from a human body to a blue giant; the visible band
+// is shaded so the reader sees exactly how much of each curve a human eye can
+// use — the incandescent bulb's verdict is the readout's job.
+---
+
+<figure class="demo" data-demo="blackbody">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Nhiệt độ vật phát <output data-out="t"></output>
+      <input type="range" data-in="t" min="1000" max="12000" step="1" value="5772" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Phổ bức xạ vật đen theo công thức Planck (chuẩn hoá theo đỉnh). Dải tô là
+    vùng mắt người nhìn thấy, 380–700 nm. Mặc định 5772 K — bề mặt Mặt Trời,
+    và không phải ngẫu nhiên mà đỉnh của nó rơi giữa dải nhìn thấy.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const B_WIEN = 2.898e-3; // m·K
+  const H = 6.626e-34, C = 3e8, KB = 1.381e-23;
+  const CURVE = '#dc2626', VIS = '#2563eb';
+
+  // Planck spectral radiance per wavelength (arbitrary scale).
+  function planck(lamNm: number, T: number) {
+    const l = lamNm * 1e-9;
+    return 1 / (l ** 5 * (Math.exp((H * C) / (l * KB * T)) - 1));
+  }
+
+  function label(T: number) {
+    if (T < 1500) return 'sắt rèn đỏ sẫm';
+    if (T < 3200) return 'dây tóc bóng đèn sợi đốt';
+    if (T < 4500) return 'sao lùn đỏ / Betelgeuse';
+    if (T < 6500) return 'Mặt Trời';
+    if (T < 9000) return 'Sirius (trắng)';
+    return 'Rigel (xanh)';
+  }
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const slider = root.querySelector('[data-in="t"]') as HTMLInputElement;
+    const out = root.querySelector('[data-out="t"]') as HTMLOutputElement;
+
+    function draw() {
+      const T = Number(slider.value);
+      out.textContent = `${T} K — ${label(T)}`;
+      const lamMax = (B_WIEN / T) * 1e9;
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.5);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+
+      const pad = 34, LMIN = 100, LMAX = 3000; // nm
+      const X = (l: number) => pad + ((l - LMIN) / (LMAX - LMIN)) * (cssW - pad - 10);
+      const peakVal = planck(lamMax, T);
+      const Y = (v: number) => cssH - pad - (v / peakVal) * (cssH - pad - 14);
+
+      // Visible band.
+      ctx.fillStyle = VIS; ctx.globalAlpha = 0.12;
+      ctx.fillRect(X(380), 10, X(700) - X(380), cssH - pad - 10);
+      ctx.globalAlpha = 0.5; ctx.fillStyle = fg;
+      ctx.font = '10px system-ui,sans-serif'; ctx.textAlign = 'center';
+      ctx.fillText('vùng nhìn thấy', (X(380) + X(700)) / 2, 20);
+      ctx.globalAlpha = 1;
+
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.3;
+      ctx.beginPath(); ctx.moveTo(pad, 8); ctx.lineTo(pad, cssH - pad); ctx.lineTo(cssW - 8, cssH - pad); ctx.stroke();
+      ctx.globalAlpha = 0.55; ctx.fillStyle = fg;
+      ctx.textAlign = 'center';
+      for (const l of [500, 1000, 2000, 3000]) ctx.fillText(String(l), X(l), cssH - pad + 14);
+      ctx.fillText('bước sóng (nm)', cssW / 2, cssH - 6);
+      ctx.globalAlpha = 1;
+
+      ctx.strokeStyle = CURVE; ctx.lineWidth = 2; ctx.beginPath();
+      let started = false;
+      for (let l = LMIN; l <= LMAX; l += 5) {
+        const v = planck(l, T);
+        started ? ctx.lineTo(X(l), Y(v)) : ctx.moveTo(X(l), Y(v));
+        started = true;
+      }
+      ctx.stroke(); ctx.lineWidth = 1;
+
+      // Wien peak marker.
+      ctx.strokeStyle = CURVE; ctx.globalAlpha = 0.7; ctx.setLineDash([4, 4]);
+      ctx.beginPath(); ctx.moveTo(X(Math.min(lamMax, LMAX)), cssH - pad);
+      ctx.lineTo(X(Math.min(lamMax, LMAX)), Y(peakVal)); ctx.stroke();
+      ctx.setLineDash([]); ctx.globalAlpha = 1;
+
+      // Fraction of power in the visible band (numeric integral).
+      let inVis = 0, total = 0;
+      for (let l = LMIN; l <= 20000; l += 10) {
+        const v = planck(l, T) * 10;
+        total += v;
+        if (l >= 380 && l <= 700) inVis += v;
+      }
+      readout.innerHTML =
+        `Đỉnh Wien: λ_max = 2,898·10⁶/T = <b>${lamMax.toFixed(0)} nm</b> · ` +
+        `phần năng lượng rơi vào vùng nhìn thấy: <b>${((inVis / total) * 100).toFixed(1)}%</b>`;
+    }
+
+    slider.addEventListener('input', draw);
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="blackbody"]').forEach(setup);
+</script>

@@ -1,0 +1,60 @@
+---
+title: "Cảm ứng Faraday: thả nam châm qua cuộn dây và đọc hai cú hích ngược dấu"
+description: "Điện chỉ sinh ra khi từ thông đang THAY ĐỔI — nam châm nằm im trong cuộn dây cho đúng 0 volt. Từ định luật một dấu trừ này mà ra máy phát điện, bếp từ và phanh tàu cao tốc."
+pubDate: 2026-09-02
+tags: ["vat-ly", "dien-tu", "javascript"]
+translationId: "cam-ung-faraday-hai-cu-hich-nguoc-dau"
+---
+
+import FaradayInduction from '../../../components/demos/FaradayInduction.astro';
+
+Năm 1831, Michael Faraday quấn dây quanh một vòng sắt và phát hiện điều cả
+châu Âu đang rình: từ trường sinh ra điện. Nhưng kèm một chữ **nếu** làm nên
+toàn bộ định luật:
+
+```
+EMF = −N·dΦ/dt
+```
+
+Suất điện động không tỉ lệ với từ thông Φ — nó tỉ lệ với **tốc độ thay đổi**
+của từ thông. Nam châm mạnh cỡ nào mà nằm im trong cuộn dây thì đồng hồ vẫn
+chỉ đúng số 0.
+
+<FaradayInduction />
+
+## Đọc đồ thị hai cái gai
+
+Nam châm rơi qua cuộn: từ thông tăng khi nó lao vào, đạt đỉnh lúc ở giữa, giảm
+khi nó thoát ra. Đạo hàm của "lên rồi xuống" là **một gai dương và một gai âm**
+— và khoảnh khắc nam châm nằm chính giữa cuộn, nơi từ thông *lớn nhất*, EMF
+lại bằng **0**, vì lớn nhất nghĩa là đang không đổi. Đề thi rất thích điểm này.
+
+Kéo tốc độ thả và xem cuộc mặc cả: nhanh gấp đôi, gai cao gấp đôi nhưng hẹp
+đi một nửa. **Diện tích mỗi gai không suy suyển** — nó bằng N·ΔΦ, tổng từ
+thông nam châm mang qua, thứ không phụ thuộc bạn vội hay thong thả. Tốc độ chỉ
+quyết định món hàng được giao dồn dập hay rải rác.
+
+## Còn dấu trừ là một định luật riêng
+
+Dấu trừ trong công thức mang tên Lenz: dòng cảm ứng luôn chống lại thay đổi đã
+sinh ra nó. Nam châm lao vào — cuộn dây tạo từ trường đẩy ra; nam châm rút đi —
+cuộn dây níu lại. Không phải phép lịch sự: đó là bảo toàn năng lượng mặc đồng
+phục điện từ. Nếu dấu ngược lại, nam châm rơi qua cuộn sẽ được *hút vào nhanh
+thêm*, sinh điện càng nhiều, rơi càng nhanh — cỗ máy vĩnh cửu miễn phí, và vũ
+trụ không phát hành loại vé đó.
+
+Thí nghiệm đáng tận mắt: thả nam châm neodymium xuống ống **đồng** — vật liệu
+không hề bị nam châm hút. Nó rơi chậm như qua mật ong: mỗi centimet ống là một
+"cuộn dây" đang tuân lệnh Lenz, cản đúng cái chuyển động sinh ra dòng trong
+nó. Phanh điện từ của tàu cao tốc và cân phân tích phòng thí nghiệm hãm dao
+động bằng đúng nguyên lý này — phanh không má phanh, không mòn.
+
+## Từ hai cái gai đến lưới điện
+
+Máy phát điện chỉ là demo này chạy công nghiệp: thay vì thả nam châm một lần,
+người ta **quay** nam châm liên tục cạnh cuộn dây — từ thông lên xuống mãi,
+hai cái gai nối thành hình sin bất tận. Con số 50 Hz trên lưới điện Việt Nam
+là tốc độ quay đó bị đóng đinh: rotor các nhà máy từ thuỷ điện Hoà Bình tới
+tuabin gió ngoài khơi đều xoay khớp nhịp nhau quanh đúng tần số ấy. Mỗi lần
+bật công tắc, bạn đang nhận trực tiếp `−dΦ/dt` từ một nam châm đang quay cách
+đó hàng trăm cây số.

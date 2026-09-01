@@ -1,0 +1,61 @@
+---
+title: "Lực đẩy Archimedes: vì sao tảng băng giấu 92% dưới nước"
+description: "Vật nổi chìm đúng phần trăm bằng tỉ số khối lượng riêng — băng 917/1000 nên chín phần chìm một phần nổi. Cùng phép chia đó cân được vương miện vàng và giữ tàu chở hàng vạn tấn thép trên mặt nước."
+pubDate: 2026-09-02
+tags: ["vat-ly", "chat-luu", "javascript"]
+translationId: "luc-day-archimedes-va-tam-bang-chin-phan-chim"
+---
+
+import Archimedes from '../../../components/demos/Archimedes.astro';
+
+Định luật Archimedes phát biểu bằng một câu: **vật nhúng trong chất lỏng được
+đẩy lên bằng đúng trọng lượng phần chất lỏng bị chiếm chỗ.** Từ một câu ấy suy
+ra được nhiều điều bất ngờ hơn vẻ ngoài của nó — demo dưới đây là bản đồ.
+
+<Archimedes />
+
+## Quy tắc phần trăm
+
+Với vật nổi, cân bằng lực cho một kết quả gọn đến khó tin: phần thể tích chìm
+bằng đúng **tỉ số hai khối lượng riêng**:
+
+```
+phần chìm = ρ_vật / ρ_nước
+```
+
+Gỗ thông 600 kg/m³ chìm 60%. Băng 917 kg/m³ chìm **92%** — cụm từ "phần nổi
+của tảng băng" nổi tiếng là vì phần nhìn thấy chỉ là 8% sự thật, và con số ấy
+không phải phép ẩn dụ mà là phép chia 917/1000. Kéo thanh trượt qua đúng 1000:
+vật **lơ lửng** — trạng thái cân bằng ở mọi độ sâu mà tàu ngầm và cá phải liên
+tục điều chỉnh quanh nó (cá bằng bong bóng khí, tàu ngầm bằng két nước dằn:
+cả hai cùng một nghề — chỉnh ρ trung bình của chính mình).
+
+Qua 1000, vật chìm — nhưng để ý readout: hòn đá 2700 kg/m³ dưới nước chỉ còn
+**63% trọng lượng**. Nước "gánh" hộ hơn một phần ba. Đây là lý do bạn nhấc
+được tảng đá dưới suối mà lên bờ thì không, và là lý do các khối bê tông đê
+chắn sóng được hạ thuỷ dễ hơn nhiều so với vận chuyển trên cạn.
+
+## Bài toán vương miện — cân nói dối, nước thì không
+
+Truyền thuyết kể vua Hiero nghi vương miện vàng bị pha bạc, và Archimedes tìm
+ra cách kiểm không cần nung chảy: cân vương miện **hai lần** — trong không khí
+và nhúng trong nước. Vàng ròng 19.300 kg/m³ mất đúng 1000/19300 ≈ 5,2% trọng
+lượng khi nhúng; pha bạc (10.500) vào thì khối lượng riêng tụt, thể tích chiếm
+chỗ phình ra, và phần "nhẹ đi" lớn hơn 5,2%. Chiếc cân đo được cái mắt không
+thấy: **thể tích của một vật hình dạng tuỳ ý**, chính là đại lượng mà mọi phép
+đo trực tiếp thời đó bó tay. Phép cân thuỷ tĩnh này vẫn là cách đo khối lượng
+riêng chuẩn trong phòng thí nghiệm hôm nay.
+
+## Vì sao thép nổi
+
+Câu hỏi cắc cớ quen thuộc: thép 7850 kg/m³ chìm nghỉm — sao tàu thép vạn tấn
+nổi? Vì định luật không hỏi "vật làm bằng gì", nó hỏi **hình dạng chiếm bao
+nhiêu chỗ**. Con tàu là thép uốn quanh một khối không khí khổng lồ; khối lượng
+riêng *trung bình* của cả hình khối ấy tụt xuống dưới 1000. Đục một lỗ, nước
+thế chỗ không khí, ρ trung bình leo ngược qua 1000 — và "chìm tàu" chỉ là
+thanh trượt của demo này bị kéo qua vạch nước, ngoài đời thật.
+
+Mớn nước sơn trên mạn mọi con tàu chở hàng — vạch Plimsoll — là công thức phần
+chìm viết bằng sơn: chất thêm hàng, ρ trung bình tăng, tàu lún tới đúng vạch
+thì dừng. Người xếp hàng ở cảng đang giải phương trình Archimedes bằng mắt
+thường, mỗi ngày.

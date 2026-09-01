@@ -1,0 +1,113 @@
+---
+// Young's double slit: fringe spacing i = λD/a. Sliders for wavelength and
+// slit separation; the screen pattern is cos²(πax/λD) shaded with the slit
+// envelope left out (ideal narrow slits), plus the wavelength rendered as its
+// actual colour. Static redraw.
+---
+
+<figure class="demo" data-demo="double-slit">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Bước sóng λ <output data-out="lam"></output>
+      <input type="range" data-in="lam" min="400" max="700" step="5" value="650" /></label>
+    <label>Khoảng cách hai khe a <output data-out="a"></output>
+      <input type="range" data-in="a" min="0.1" max="0.5" step="0.01" value="0.2" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Màn cách hai khe D = 1 m. Vân sáng nơi hiệu đường đi bằng nguyên lần λ —
+    cùng cơ chế với giao thoa sóng nước, nhưng đây là ánh sáng tự cộng và tự
+    triệt chính nó.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; border-radius: 6px; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const D = 1; // m, slit-to-screen
+
+  // λ (nm) → approximate RGB for rendering the fringes in their own colour.
+  function lamRGB(nm: number): [number, number, number] {
+    let r = 0, g = 0, b = 0;
+    if (nm < 440) { r = (440 - nm) / 60; b = 1; }
+    else if (nm < 490) { g = (nm - 440) / 50; b = 1; }
+    else if (nm < 510) { g = 1; b = (510 - nm) / 20; }
+    else if (nm < 580) { r = (nm - 510) / 70; g = 1; }
+    else if (nm < 645) { r = 1; g = (645 - nm) / 65; }
+    else { r = 1; }
+    return [r * 255, g * 255, b * 255];
+  }
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (n: string) => root.querySelector(`[data-in="${n}"]`) as HTMLInputElement;
+    const output = (n: string) => root.querySelector(`[data-out="${n}"]`) as HTMLOutputElement;
+
+    function draw() {
+      const lamNm = Number(input('lam').value);
+      const aMm = Number(input('a').value);
+      output('lam').textContent = `${lamNm} nm`;
+      output('a').textContent = `${aMm.toFixed(2)} mm`;
+
+      const lam = lamNm * 1e-9, a = aMm * 1e-3;
+      const spacing = (lam * D) / a; // m on screen
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.34);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+      // Screen spans ±25 mm; intensity cos²(π a x / λ D).
+      const HALF = 25e-3;
+      const [r, g, b] = lamRGB(lamNm);
+      const img = ctx.createImageData(cssW * dpr, 1);
+      for (let px = 0; px < cssW * dpr; px++) {
+        const x = ((px / (cssW * dpr)) * 2 - 1) * HALF;
+        const I = Math.cos((Math.PI * a * x) / (lam * D)) ** 2;
+        const p = px * 4;
+        img.data[p] = r * I; img.data[p + 1] = g * I; img.data[p + 2] = b * I;
+        img.data[p + 3] = 255;
+      }
+      // Paint the single scanline stretched to full height on a dark screen.
+      const off = document.createElement('canvas');
+      off.width = cssW * dpr; off.height = 1;
+      off.getContext('2d')!.putImageData(img, 0, 0);
+      ctx.fillStyle = '#0a0a14';
+      ctx.fillRect(0, 0, cssW, cssH);
+      ctx.imageSmoothingEnabled = false;
+      ctx.drawImage(off, 0, 0, cssW * dpr, 1, 0, 0, cssW, cssH);
+
+      // Ruler: 5 mm ticks.
+      ctx.strokeStyle = 'rgba(255,255,255,0.5)';
+      ctx.fillStyle = 'rgba(255,255,255,0.6)';
+      ctx.font = '10px system-ui,sans-serif'; ctx.textAlign = 'center';
+      for (let mm = -20; mm <= 20; mm += 5) {
+        const px = ((mm * 1e-3) / HALF + 1) / 2 * cssW;
+        ctx.beginPath(); ctx.moveTo(px, cssH - 10); ctx.lineTo(px, cssH); ctx.stroke();
+        if (mm !== 0) ctx.fillText(String(mm), px, cssH - 14);
+      }
+
+      const count = Math.floor(HALF / spacing) * 2 + 1;
+      readout.innerHTML =
+        `Khoảng vân i = λD/a = <b>${(spacing * 1000).toFixed(2)} mm</b> · ` +
+        `${count} vân sáng trong khung ±25 mm · khe hẹp hơn → vân <b>giãn ra</b>`;
+    }
+
+    root.querySelectorAll('input').forEach((el) => el.addEventListener('input', draw));
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="double-slit"]').forEach(setup);
+</script>

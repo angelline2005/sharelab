@@ -1,0 +1,110 @@
+---
+// E = mc², cashed out: a mass slider from a grain of rice to a person, with
+// the energy expressed in units that mean something — kilotons of TNT,
+// national electricity, years of one household. Log scale throughout, because
+// c² spans everything. Static redraw.
+---
+
+<figure class="demo" data-demo="mass-energy">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Khối lượng chuyển hoá hoàn toàn <output data-out="m"></output>
+      <input type="range" data-in="m" min="-4" max="2" step="0.05" value="-3" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Thanh trượt chạy theo thang lôgarit từ 0,1 gram tới 100 kg. Mọi con số đều
+    là chuyển hoá <em>hoàn toàn</em> — điều chỉ xảy ra khi vật chất gặp phản
+    vật chất; bom hạt nhân thực tế chỉ chuyển được chưa tới 0,1% khối lượng.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const C2 = 8.98755e16; // c², J/kg
+  const KT = 4.184e12; // J per kiloton TNT
+  const HOUSE_Y = 3.6e9; // J: ~1000 kWh/year household electricity
+  const VN_YEAR = 9.7e17; // J: ~270 TWh/năm điện Việt Nam
+  const BAR = '#dc2626';
+
+  function fmtMass(kg: number) {
+    if (kg < 1e-3) return `${(kg * 1e6).toFixed(0)} mg`;
+    if (kg < 1) return `${(kg * 1000).toFixed(1)} g`;
+    return `${kg.toFixed(1)} kg`;
+  }
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const slider = root.querySelector('[data-in="m"]') as HTMLInputElement;
+    const out = root.querySelector('[data-out="m"]') as HTMLOutputElement;
+
+    function draw() {
+      const kg = Math.pow(10, Number(slider.value));
+      out.textContent = fmtMass(kg);
+      const E = kg * C2;
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.36);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+
+      // Log energy rail with landmarks.
+      const pad = 28, railY = cssH * 0.45;
+      const EMIN = 1e12, EMAX = 1e19;
+      const X = (e: number) =>
+        pad + ((Math.log10(e) - Math.log10(EMIN)) / (Math.log10(EMAX) - Math.log10(EMIN))) * (cssW - 2 * pad);
+
+      const LM: [number, string][] = [
+        [KT, '1 kt TNT'],
+        [15 * KT, 'Hiroshima'],
+        [HOUSE_Y * 1e5, '100k hộ/năm'],
+        [VN_YEAR, 'điện VN/năm'],
+      ];
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.35;
+      ctx.beginPath(); ctx.moveTo(pad, railY); ctx.lineTo(cssW - pad, railY); ctx.stroke();
+      ctx.globalAlpha = 1;
+      ctx.font = '10px system-ui,sans-serif';
+      LM.forEach(([e, name], k) => {
+        ctx.strokeStyle = fg; ctx.globalAlpha = 0.4;
+        ctx.beginPath(); ctx.moveTo(X(e), railY - 6); ctx.lineTo(X(e), railY + 6); ctx.stroke();
+        ctx.globalAlpha = 0.7; ctx.fillStyle = fg; ctx.textAlign = 'center';
+        ctx.fillText(name, X(e), railY + (k % 2 ? 32 : 18));
+        ctx.globalAlpha = 1;
+      });
+
+      ctx.fillStyle = BAR;
+      const xe = Math.min(Math.max(X(E), pad), cssW - pad);
+      ctx.beginPath(); ctx.arc(xe, railY, 7, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = fg; ctx.globalAlpha = 0.7; ctx.textAlign = 'center';
+      ctx.fillText(fmtMass(kg), xe, railY - 14);
+      ctx.globalAlpha = 1;
+
+      const kt = E / KT;
+      const houses = E / HOUSE_Y;
+      readout.innerHTML =
+        `E = mc² = <b>${E.toExponential(2)} J</b> · ` +
+        `= <b>${kt >= 1000 ? (kt / 1000).toFixed(1) + ' megaton' : kt.toFixed(1) + ' kiloton'} TNT</b> · ` +
+        `= điện cho <b>${houses >= 1e6 ? (houses / 1e6).toFixed(1) + ' triệu' : Math.round(houses).toLocaleString('vi-VN')}</b> hộ trong một năm`;
+    }
+
+    slider.addEventListener('input', draw);
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="mass-energy"]').forEach(setup);
+</script>
