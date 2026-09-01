@@ -1,0 +1,71 @@
+---
+title: "Bán kính Schwarzschild: vật nào cũng mang sẵn một hố đen bên trong"
+description: "Nén Trái Đất còn 9 mm là ánh sáng hết đường ra. Công thức một dòng r_s = 2GM/c² định nghĩa hố đen — và giấu một cú lừa: hố đen càng to càng... loãng, có cái loãng hơn không khí."
+pubDate: 2026-09-02
+tags: ["vat-ly", "thien-van", "javascript"]
+translationId: "ban-kinh-schwarzschild-moi-vat-deu-co-mot-ho-den-ben-trong"
+---
+
+import SchwarzschildRadius from '../../../components/demos/SchwarzschildRadius.astro';
+
+[Bài tốc độ vũ trụ](/vi/posts/toc-do-vu-tru-va-khau-dai-bac-cua-newton) có
+một công thức để hỏi xuôi: phải nhanh bao nhiêu mới thoát khỏi một thiên
+thể? Hôm nay hỏi ngược: thiên thể phải **đặc** bao nhiêu để tốc độ thoát
+chạm trần tuyệt đối của vũ trụ — tốc độ ánh sáng? Đặt v_thoát = c, đảo vế:
+
+<SchwarzschildRadius />
+
+## Một cái ngưỡng, không phải một cái máy hút
+
+```
+r_s = 2GM/c²
+```
+
+Mọi khối lượng M đều có con số này: nén nó gọn hơn r_s của nó là tạo ra chân
+trời sự kiện — ranh giới mà bên trong, "hướng ra ngoài" không còn tồn tại
+như một lối đi. Trái Đất: **8,9 mm** — viên bi ve. Mặt Trời: **2,95 km** —
+một quả đồi. Bạn (70 kg): 10⁻²⁵ m, nhỏ hơn hạt proton mười tỉ lần — vũ trụ
+không có lực nào nén nổi tới đó, và đó là lý do bạn chưa từng gặp hố đen
+70 kg.
+
+Phải nói ngay điều phim ảnh hay vẽ sai: hố đen **không hút mạnh hơn** khối
+lượng của nó cho phép. Thay Mặt Trời bằng hố đen 1 khối lượng Mặt Trời,
+[quỹ đạo các hành tinh không suy suyển một
+li](/vi/posts/dinh-luat-kepler-iii-va-duong-thang-cua-he-mat-troi) — chỉ tối
+và lạnh đi. Hố đen không phải máy hút bụi; nó là **vật thể thường với vạch
+kẻ liều lĩnh vẽ sát hơn**: mọi hiểm nguy nằm ở chỗ bạn *có thể* đến gần cỡ
+r_s, điều mà Mặt Trời béo tròn 700 000 km không bao giờ cho phép.
+
+## Cú lừa mật độ: hố đen to là hố đen loãng
+
+Trực giác bảo hố đen là thứ đặc khủng khiếp. Đúng — với hố đen nhỏ. Nhưng
+r_s tỉ lệ **thuận** M, nên thể tích trong chân trời phình theo M³, và mật độ
+trung bình rơi theo **1/M²**. Kéo thanh trượt sang phải mà xem thông số mật
+độ đổi giọng:
+
+- Hố đen cỡ sao (10 M☉): đặc hơn hạt nhân nguyên tử — đúng trực giác.
+- **Sgr A*** giữa Ngân Hà (4 triệu M☉): ~10⁶ kg/m³ — chỉ cỡ sao lùn trắng.
+- Hố đen ~136 triệu M☉: mật độ trung bình **đúng bằng nước** — nhét vừa một
+  bể bơi vũ trụ.
+- **TON 618** (66 tỉ M☉, r_s ≈ 1 300 AU): ~0,004 kg/m³ — **loãng hơn không
+  khí ba trăm lần**.
+
+Nghĩa là gom đủ không khí loãng cỡ ấy trong vùng đủ rộng — không cần nén gì
+cả — là chân trời sự kiện *tự khép lại quanh nó*. Hố đen, hoá ra, không phải
+câu chuyện về độ đặc; nó là câu chuyện về **tổng số**, vì r_s mua theo M còn
+thể tích chỉ bán theo M³.
+
+## Trường hợp biên: đứng trên ngưỡng nhìn đồng hồ
+
+Chân trời không phải bức tường — phi hành gia rơi qua r_s của hố đen siêu
+lớn thậm chí không cảm thấy gì đặc biệt tại đó (với TON 618, [lực
+triều](/vi/posts/thuy-trieu-mat-trang-thang-kien-mat-troi) ở chân trời chỉ
+cỡ chục lần thuỷ triều Mặt Trăng đặt lên cơ thể bạn — thứ bạn chưa từng cảm
+thấy trong đời; M/d³ với d ngàn tỉ mét là con số hiền lành). Nhưng với người quan sát đứng xa, [thời gian của kẻ rơi giãn
+vô hạn](/vi/posts/gian-thoi-gian-hat-muon-khong-du-tuoi-de-cham-dat): ảnh
+của anh ta chậm dần, đỏ dần — [dịch chuyển đỏ hấp
+dẫn](/vi/posts/dinh-luat-hubble-vu-tru-no-va-tuoi-cua-no) phiên bản cực đoan
+— và đóng băng vĩnh viễn trên ngưỡng cửa. Cùng một sự kiện, hai câu chuyện
+không khớp nhau mà đều đúng: đó không phải lỗi của công thức một dòng phía
+trên, mà là món quà nó để lại — cánh cổng r_s = 2GM/c² là nơi cơ học Newton
+bàn giao vũ trụ cho Einstein.

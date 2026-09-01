@@ -1,0 +1,120 @@
+---
+// Rolling race down a 15° ramp: a = g·sinθ/(1+k) with k = I/mr². Solid
+// sphere (2/5), solid disk (1/2), hoop (1), plus a frictionless slider
+// (k = 0). Time slider scrubs positions s = ½at². Mass and radius cancel —
+// that's the point. Static redraw.
+---
+
+<figure class="demo" data-demo="rolling">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Thời gian t (s) <output data-out="t"></output>
+      <input type="range" data-in="t" min="0" max="2.2" step="0.01" value="1.2" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Dốc 15°, đường đua 3 m. Bốn "vận động viên" cùng xuất phát: khối trượt
+    không ma sát, quả cầu đặc, đĩa đặc, vành tròn rỗng. Khối lượng và bán
+    kính không có tên trong công thức — chỉ hình dáng (cách khối lượng phân
+    bố) quyết định thứ hạng.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const G = 9.81, TH = (15 * Math.PI) / 180, L = 3;
+  const RACERS: Array<[string, number, string]> = [
+    ['trượt (k=0)', 0, '#94a3b8'],
+    ['cầu đặc (k=2/5)', 0.4, '#2563eb'],
+    ['đĩa đặc (k=1/2)', 0.5, '#f59e0b'],
+    ['vành rỗng (k=1)', 1, '#dc2626'],
+  ];
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const slider = root.querySelector('[data-in="t"]') as HTMLInputElement;
+    const out = root.querySelector('[data-out="t"]') as HTMLOutputElement;
+
+    function draw() {
+      const t = Number(slider.value);
+      out.textContent = t.toFixed(2).replace('.', ',');
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.42);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+
+      // Four parallel lanes drawn as one wide ramp, top-left → bottom-right.
+      const x0 = 20, y0 = 24, x1 = cssW - 30;
+      const rampY = (x: number) => y0 + ((x - x0) / (x1 - x0)) * (cssH - 70);
+      const laneOff = 0; // single ramp, racers offset vertically for legibility
+
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.4; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.moveTo(x0, rampY(x0)); ctx.lineTo(x1, rampY(x1)); ctx.stroke();
+      ctx.globalAlpha = 1; ctx.lineWidth = 1;
+      // Finish flag.
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.5;
+      ctx.beginPath(); ctx.moveTo(x1, rampY(x1)); ctx.lineTo(x1, rampY(x1) - 26); ctx.stroke();
+      ctx.fillStyle = fg; ctx.font = '10px system-ui,sans-serif'; ctx.textAlign = 'right';
+      ctx.fillText('đích (3 m)', x1 - 4, rampY(x1) - 18);
+      ctx.globalAlpha = 1;
+
+      const results: string[] = [];
+      RACERS.forEach(([name, k, colour], idx) => {
+        const a = (G * Math.sin(TH)) / (1 + k);
+        const s = Math.min(L, 0.5 * a * t * t);
+        const tf = Math.sqrt((2 * L) / a);
+        const frac = s / L;
+        const px = x0 + frac * (x1 - x0);
+        const py = rampY(px) - 10 - idx * 1.5 + laneOff;
+        ctx.fillStyle = colour;
+        ctx.beginPath(); ctx.arc(px, py, 8, 0, Math.PI * 2); ctx.fill();
+        if (k === 0) { // the slider is a square
+          ctx.clearRect(px - 8, py - 8, 16, 16);
+          ctx.fillRect(px - 7, py - 7, 14, 14);
+        }
+        // Rotation tick to show spin (rolled angle = s/r, draw arbitrary r).
+        if (k > 0) {
+          const ang = (s / 0.1) % (Math.PI * 2);
+          ctx.strokeStyle = '#ffffff'; ctx.globalAlpha = 0.9;
+          ctx.beginPath(); ctx.moveTo(px, py);
+          ctx.lineTo(px + 7 * Math.cos(ang), py + 7 * Math.sin(ang)); ctx.stroke();
+          ctx.globalAlpha = 1;
+        }
+        results.push(`${name}: ${s >= L ? `<b>về đích ${tf.toFixed(2).replace('.', ',')} s</b>` : `${s.toFixed(2).replace('.', ',')} m`}`);
+      });
+
+      // Legend.
+      ctx.font = '10px system-ui,sans-serif'; ctx.textAlign = 'left';
+      RACERS.forEach(([name, , colour], i) => {
+        ctx.fillStyle = colour;
+        ctx.beginPath(); ctx.arc(x0 + 8 + i * ((cssW - 60) / 4), cssH - 12, 4, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = fg; ctx.globalAlpha = 0.7;
+        ctx.fillText(name, x0 + 16 + i * ((cssW - 60) / 4), cssH - 8);
+        ctx.globalAlpha = 1;
+      });
+
+      readout.innerHTML = results.join(' · ');
+    }
+
+    slider.addEventListener('input', draw);
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="rolling"]').forEach(setup);
+</script>

@@ -1,0 +1,115 @@
+---
+// Heisenberg: Δv ≥ ħ/(2mΔx) for an electron, drawn log–log over confinement
+// sizes from a proton to a millimetre. The c-line marks where the bound goes
+// relativistic — the classic argument that nuclei can't store electrons.
+---
+
+<figure class="demo" data-demo="uncertainty">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Nhốt electron trong Δx = 10^x mét, chọn x <output data-out="x"></output>
+      <input type="range" data-in="x" min="-15" max="-3" step="0.1" value="-10" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Càng ép chặt vị trí, vận tốc càng "nhoè" rộng: Δx·Δv ≥ ħ/2m. Đây không
+    phải lỗi máy đo — đó là tính chất sóng của vật chất, và nó là lý do
+    nguyên tử có kích thước thay vì sụp vào hạt nhân.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const HBAR = 1.0546e-34, ME = 9.11e-31, C = 2.998e8;
+  const LINE = '#2563eb', MARK = '#dc2626', CLIM = '#f59e0b';
+  const LM: Array<[number, string]> = [
+    [-15, 'hạt nhân'], [-10, 'nguyên tử'], [-9, 'chấm lượng tử'], [-7, 'virus'], [-4, 'hạt cát'],
+  ];
+
+  const dv = (lx: number) => HBAR / (2 * ME * Math.pow(10, lx));
+  function fmtV(v: number): string {
+    if (v > C) return `${v.toExponential(1).replace('.', ',')} m/s — <b>vượt tốc độ ánh sáng: vô nghĩa</b>`;
+    if (v >= 1000) return `${(v / 1000).toFixed(0)} km/s`;
+    if (v >= 1) return `${v.toFixed(1).replace('.', ',')} m/s`;
+    return `${v.toExponential(1).replace('.', ',')} m/s`;
+  }
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const slider = root.querySelector('[data-in="x"]') as HTMLInputElement;
+    const out = root.querySelector('[data-out="x"]') as HTMLOutputElement;
+
+    function draw() {
+      const x = Number(slider.value);
+      out.textContent = x.toFixed(1).replace('.', ',');
+      const v = dv(x);
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.44);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+
+      const padL = 46, padB = 26, padT = 14, padR = 12;
+      const X = (lx: number) => padL + ((lx + 15) / 12) * (cssW - padL - padR);
+      const Y = (lv: number) => cssH - padB - ((lv + 3) / 15) * (cssH - padB - padT);
+      const lv = (lx: number) => Math.log10(dv(lx));
+
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.3;
+      ctx.beginPath(); ctx.moveTo(padL, padT); ctx.lineTo(padL, cssH - padB); ctx.lineTo(cssW - padR, cssH - padB); ctx.stroke();
+      ctx.globalAlpha = 0.55; ctx.fillStyle = fg; ctx.font = '10px system-ui,sans-serif';
+      ctx.textAlign = 'center';
+      for (const lx of [-15, -12, -9, -6, -3]) ctx.fillText(`10^${lx}`, X(lx), cssH - padB + 14);
+      ctx.textAlign = 'right';
+      for (const [l, lab] of [[0, '1 m/s'], [3, '1 km/s'], [6, '10³ km/s']] as Array<[number, string]>)
+        ctx.fillText(lab, padL - 4, Y(l) + 3);
+      ctx.globalAlpha = 1;
+
+      // Speed-of-light line.
+      ctx.strokeStyle = CLIM; ctx.globalAlpha = 0.7; ctx.setLineDash([5, 4]);
+      ctx.beginPath(); ctx.moveTo(padL, Y(Math.log10(C))); ctx.lineTo(cssW - padR, Y(Math.log10(C))); ctx.stroke();
+      ctx.setLineDash([]); ctx.fillStyle = fg; ctx.textAlign = 'left';
+      ctx.fillText('tốc độ ánh sáng c', padL + 6, Y(Math.log10(C)) - 5);
+      ctx.globalAlpha = 1;
+
+      // Δv(Δx) line (slope −1 in log–log).
+      ctx.strokeStyle = LINE; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.moveTo(X(-15), Y(lv(-15))); ctx.lineTo(X(-3), Y(lv(-3))); ctx.stroke();
+      ctx.lineWidth = 1;
+
+      // Landmarks.
+      LM.forEach(([lx, lab], k) => {
+        ctx.fillStyle = CLIM;
+        ctx.beginPath(); ctx.arc(X(lx), Y(lv(lx)), 4, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = fg; ctx.globalAlpha = 0.7; ctx.textAlign = 'center';
+        ctx.fillText(lab, X(lx), Y(lv(lx)) + 14 + (k % 2) * 11);
+        ctx.globalAlpha = 1;
+      });
+
+      ctx.fillStyle = MARK;
+      ctx.beginPath(); ctx.arc(X(x), Y(Math.log10(v)), 6, 0, Math.PI * 2); ctx.fill();
+
+      readout.innerHTML =
+        `Δx = 10^${x.toFixed(1).replace('.', ',')} m → độ nhoè vận tốc tối thiểu Δv = <b>${fmtV(v)}</b>`;
+    }
+
+    slider.addEventListener('input', draw);
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="uncertainty"]').forEach(setup);
+</script>

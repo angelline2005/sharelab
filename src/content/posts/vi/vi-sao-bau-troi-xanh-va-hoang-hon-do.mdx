@@ -1,0 +1,60 @@
+---
+title: "Vì sao bầu trời xanh và hoàng hôn đỏ: một số mũ 4 quyết định cả hai"
+description: "Phân tử không khí đá ánh sáng lam khỏi đường thẳng mạnh gấp 6 lần ánh sáng đỏ — luật 1/λ⁴ của Rayleigh. Ban ngày bạn nhặt được phần bị đá văng: trời xanh. Hoàng hôn bạn nhận phần sống sót: mặt trời đỏ."
+pubDate: 2026-09-02
+tags: ["vat-ly", "quang-hoc", "khi-hau", "javascript"]
+translationId: "vi-sao-bau-troi-xanh-va-hoang-hon-do"
+---
+
+import RayleighScattering from '../../../components/demos/RayleighScattering.astro';
+
+Không khí trong suốt — bằng chứng là bạn đọc được dòng này qua vài mét của
+nó. Nhưng "trong suốt" chỉ là gần đúng: thỉnh thoảng một photon vấp phải phân
+tử nitơ hay ôxy và bị **đá văng sang hướng khác**. Chuyện hiếm — nhưng nhân
+với 100 km khí quyển thì thành ông chủ của cả màu trời, và xác suất cú đá ấy
+nghiêng cực mạnh về một phía của quang phổ:
+
+<RayleighScattering />
+
+## Số mũ 4: chênh lệch nhỏ, hậu quả khổng lồ
+
+Phân tử không khí nhỏ hơn bước sóng ánh sáng cả nghìn lần. Với vật cản tí
+hon cỡ đó, Rayleigh chỉ ra xác suất tán xạ tỉ lệ **1/λ⁴** — sóng càng ngắn
+càng dễ bị đá. Lam 450 nm so với đỏ 700 nm: bước sóng chỉ ngắn hơn 1,56 lần,
+nhưng lũy thừa bốn nống thành **5,86 lần**. Nhìn lên bầu trời (không nhìn
+Mặt Trời) là nhìn vào những photon *đã bị đá văng* rồi bật vài lần tới mắt
+bạn — và đội bị đá đông áp đảo là đội sóng ngắn: trời xanh lam.
+
+Câu hỏi hay: tím 400 nm còn bị tán xạ mạnh hơn lam 1,6 lần — sao trời không
+tím? Hai lẽ: [Mặt Trời 5772 K phát tím yếu hơn lam
+hẳn](/vi/posts/dinh-luat-wien-mau-cua-nhiet-do), và mắt người gần như mù với
+tím. Màu trời là tích của ba đường cong — Rayleigh, phổ Mặt Trời, độ nhạy
+mắt — và tích ấy đạt đỉnh ở lam. Trời xanh *của loài người*; một con chim
+nhìn thấu tử ngoại sẽ cãi.
+
+## Hoàng hôn là tấm phim âm bản của ban ngày
+
+Trưa: tia nắng xuyên ~10 km khí quyển, mất một phần lam dọc đường — đủ nhuộm
+trời, Mặt Trời vẫn trắng chói. Hoàng hôn: tia nắng phải **cày xiên** qua lớp
+khí dày gấp gần 40 lần. Với đoạn đường ấy, đội lam-lục bị đá văng *gần sạch*
+trước khi tới mắt bạn — sống sót chỉ còn đỏ-cam, đội có xác suất bị đá thấp
+nhất. Mặt Trời lặn đỏ không phải vì nó đổi màu, mà vì bạn đang nhận **phần
+còn lại sau khi cả bầu trời của những người ở phía tây bạn đã lấy đi phần
+xanh**. Hoàng hôn của bạn là trời xanh của múi giờ bên cạnh.
+
+Bụi núi lửa hay khói cháy rừng thêm hạt cỡ lớn vào khí quyển làm hoàng hôn
+đỏ rực bất thường — sau vụ Krakatoa 1883, hoàng hôn đỏ tới mức London từng
+gọi xe cứu hoả. Còn giọt nước trong mây to hơn bước sóng nhiều, tán xạ *mọi
+màu như nhau* — nên mây trắng, và pha sữa vào cốc nước rồi rọi đèn pin là
+bạn tự làm được cả trời xanh (nhìn ngang) lẫn hoàng hôn (nhìn xuyên) trên
+bàn bếp.
+
+## Trường hợp biên: Sao Hoả chơi bộ màu đảo ngược
+
+Kiểm tra đẹp nhất của một định luật là hành tinh khác. Sao Hoả: khí quyển
+mỏng (Rayleigh yếu), nhưng lơ lửng đầy **bụi ôxít sắt cỡ micron** — hạt to,
+tán xạ kiểu khác, thiên vị đỏ. Kết quả camera của các rover gửi về: ban ngày
+trời Hoả **màu bơ caramel**, còn hoàng hôn quanh Mặt Trời lại **xanh lam**
+— phim âm bản đúng nghĩa của Trái Đất. Cùng vật lý, đổi cỡ hạt, đảo cả bảng
+màu: bầu trời hoá ra không có "màu tự nhiên" nào — chỉ có phổ của nguồn
+sáng, cỡ hạt trên đường đi, và đôi mắt đứng cuối đường tổng hợp lại.

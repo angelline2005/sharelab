@@ -1,0 +1,127 @@
+---
+// Capillary rise h = 2γcosθ/(ρgr) for water (γ = 0.0728 N/m, θ ≈ 0), shown
+// log–log over tube radii from 1 µm to 1 mm, with a tube sketch whose column
+// tracks the current value. Static redraw.
+---
+
+<figure class="demo" data-demo="capillary">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Bán kính ống r = 10^x mét, chọn x <output data-out="x"></output>
+      <input type="range" data-in="x" min="-6" max="-3" step="0.05" value="-4.3" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Nước bám thành ống (lực dính ướt) và tự kéo mình lên tới khi trọng lượng
+    cột nước cân với lực bám quanh mép — ống hẹp một nửa, leo cao gấp đôi.
+    Trục kép log: mỗi ô là một bậc mười.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const GAM = 0.0728, RHOG = 1000 * 9.81;
+  const LINE = '#2563eb', MARK = '#dc2626', LM = '#f59e0b';
+  const LANDMARKS: Array<[number, string]> = [
+    [-3, 'ống hút thí nghiệm'],
+    [Math.log10(5e-5), 'mao mạch giấy thấm'],
+    [Math.log10(2e-5), 'mạch gỗ (xylem)'],
+    [-6, 'khe đất sét'],
+  ];
+  const hOf = (lx: number) => (2 * GAM) / (RHOG * Math.pow(10, lx));
+  const fmtLen = (m: number) =>
+    m >= 1 ? `${m.toFixed(1).replace('.', ',')} m` : m >= 0.01 ? `${(m * 100).toFixed(1).replace('.', ',')} cm` : `${(m * 1000).toFixed(1).replace('.', ',')} mm`;
+  const fmtR = (lx: number) => {
+    const r = Math.pow(10, lx);
+    return r >= 1e-4 ? `${(r * 1000).toFixed(2).replace('.', ',')} mm` : `${(r * 1e6).toFixed(0)} µm`;
+  };
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const slider = root.querySelector('[data-in="x"]') as HTMLInputElement;
+    const out = root.querySelector('[data-out="x"]') as HTMLOutputElement;
+
+    function draw() {
+      const x = Number(slider.value);
+      out.textContent = fmtR(x);
+      const h = hOf(x);
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.44);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+
+      const padL = 46, padB = 26, padT = 14;
+      const chartR = cssW * 0.72;
+      // h spans 0.0148 m (1 mm) → 14.8 m (1 µm): log10 in [-1.83, 1.17].
+      const X = (lx: number) => padL + ((lx + 6) / 3) * (chartR - padL);
+      const Y = (lh: number) => cssH - padB - ((lh + 2) / 3.4) * (cssH - padB - padT);
+
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.3;
+      ctx.beginPath(); ctx.moveTo(padL, padT); ctx.lineTo(padL, cssH - padB); ctx.lineTo(chartR, cssH - padB); ctx.stroke();
+      ctx.globalAlpha = 0.55; ctx.fillStyle = fg; ctx.font = '10px system-ui,sans-serif';
+      ctx.textAlign = 'center';
+      for (const [lx, lab] of [[-6, '1 µm'], [-5, '10 µm'], [-4, '0,1 mm'], [-3, '1 mm']] as Array<[number, string]>)
+        ctx.fillText(lab, X(lx), cssH - padB + 14);
+      ctx.textAlign = 'right';
+      for (const [lh, lab] of [[-2, '1 cm'], [-1, '10 cm'], [0, '1 m'], [1, '10 m']] as Array<[number, string]>)
+        ctx.fillText(lab, padL - 4, Y(lh) + 3);
+      ctx.globalAlpha = 1;
+
+      // h(r) line, slope −1.
+      ctx.strokeStyle = LINE; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.moveTo(X(-6), Y(Math.log10(hOf(-6)))); ctx.lineTo(X(-3), Y(Math.log10(hOf(-3)))); ctx.stroke();
+      ctx.lineWidth = 1;
+
+      LANDMARKS.forEach(([lx, lab], k) => {
+        ctx.fillStyle = LM;
+        ctx.beginPath(); ctx.arc(X(lx), Y(Math.log10(hOf(lx))), 4, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = fg; ctx.globalAlpha = 0.7; ctx.textAlign = 'center';
+        ctx.fillText(lab, X(lx), Y(Math.log10(hOf(lx))) - 8 - (k % 2) * 11);
+        ctx.globalAlpha = 1;
+      });
+
+      ctx.fillStyle = MARK;
+      ctx.beginPath(); ctx.arc(X(x), Y(Math.log10(h)), 6, 0, Math.PI * 2); ctx.fill();
+
+      // Tube sketch on the right: column height mapped to the same log scale.
+      const tx = cssW * 0.87, tw = 14;
+      const baseY = cssH - padB;
+      ctx.fillStyle = LINE; ctx.globalAlpha = 0.2;
+      ctx.fillRect(cssW * 0.78, baseY - 10, cssW * 0.2, 10); // basin
+      ctx.globalAlpha = 0.6;
+      const colTop = Y(Math.log10(h));
+      ctx.fillRect(tx - tw / 2, colTop, tw, baseY - colTop);
+      ctx.globalAlpha = 1;
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.5;
+      ctx.strokeRect(tx - tw / 2, padT, tw, baseY - padT);
+      ctx.globalAlpha = 0.65; ctx.fillStyle = fg; ctx.textAlign = 'center';
+      ctx.fillText('ống', tx, padT - 2);
+      ctx.globalAlpha = 1;
+
+      readout.innerHTML =
+        `Ống r = <b>${fmtR(x)}</b> → nước tự leo <b>${fmtLen(h)}</b>` +
+        ` · quy tắc: hẹp một nửa, cao gấp đôi (h ∝ 1/r)`;
+    }
+
+    slider.addEventListener('input', draw);
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="capillary"]').forEach(setup);
+</script>

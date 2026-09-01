@@ -1,0 +1,72 @@
+---
+title: "Cuộc đua vật lăn: hình dáng thắng, khối lượng và kích cỡ bị loại khỏi cuộc chơi"
+description: "Thả quả cầu bi-a đấu với bi ve, đĩa gỗ đấu với vành xe đạp trên cùng con dốc: nặng nhẹ to nhỏ đều vô can — chỉ cách xếp khối lượng quanh trục quyết định ai về trước. Và kẻ thắng tuyệt đối lại là… vật không lăn."
+pubDate: 2026-09-02
+tags: ["vat-ly", "co-hoc", "javascript"]
+translationId: "dua-vat-lan-hinh-dang-thang-khoi-luong"
+---
+
+import RollingRace from '../../../components/demos/RollingRace.astro';
+
+Galileo dạy rằng mọi vật rơi như nhau. Nhưng đặt chúng lên dốc và **cho phép
+lăn**, cuộc đua bỗng có thứ hạng — mà thứ hạng lại chẳng liên quan gì đến
+nặng nhẹ. Kéo thời gian và xem bốn vận động viên tách tốp:
+
+<RollingRace />
+
+## Ngân sách năng lượng phải chia hai quỹ
+
+Vật lăn xuống dốc tiêu thế năng vào **hai** khoản: chạy tới và **xoay
+tròn**. Chia bao nhiêu cho quỹ xoay là do "hình dáng" — chính xác là hệ số
+k = I/mr², đo khối lượng nằm xa trục cỡ nào:
+
+```
+a = g·sinθ/(1 + k)
+```
+
+- **Trượt không ma sát** (k = 0): không đóng một xu cho quỹ xoay — nhanh nhất.
+- **Cầu đặc** (k = 2/5): khối lượng ôm gần trục, chỉ 29% năng lượng vào quỹ xoay.
+- **Đĩa đặc** (k = 1/2): 33%.
+- **Vành rỗng** (k = 1): toàn bộ khối lượng nằm tít mép — nộp **đúng một
+  nửa** năng lượng cho việc xoay, lết về bét với thời gian gấp √2 lần kẻ trượt.
+
+Điều đẹp nhất nằm ở những gì **vắng mặt** trong công thức: m và r đều đã
+triệt tiêu. Quả cầu bi-a nặng đấu bi ve tí hon: **hoà tuyệt đối**. Vành xe
+đạp to đấu nhẫn cưới: hoà. Cuộc đua này phân loại vật thể theo *cấu trúc*
+chứ không theo *kích thước* — một chiếc máy X-quang bằng gỗ dán: muốn biết
+khối lượng của vật tròn nằm gần trục hay xa trục, khỏi cưa đôi, cứ cho nó
+chạy dốc.
+
+Trò thử được ngay trên bàn bếp: **lon súp đặc đấu lon rỗng** (hay lon nước
+ngọt chưa khui đấu lon đã cạn). Lon đầy hành xử gần như trụ đặc, lon rỗng
+là vành — lon đầy về trước, lần nào cũng vậy, bất kể lon nào nặng hơn. Khách
+xem sẽ đoán ngược, vì trực giác "nặng thì nhanh" chết rất dai.
+
+## Ma sát ở đây làm nghề lạ: không ăn mà chỉ chia bài
+
+Nghịch lý bỏ túi: cuộc đua này **cần ma sát** — không có nó thì chẳng ai
+lăn, mọi vật đều trượt và Galileo lấy lại quyền: đồng hạng tất. Nhưng ma
+sát nghỉ ở điểm tiếp xúc **không sinh nhiệt** (điểm chạm không trượt trên
+mặt dốc — nó tức thời đứng yên, như [gờ bám trước ngưỡng
+trượt](/vi/posts/mat-phang-nghieng-va-goc-bat-dau-truot)). Nó chỉ làm nhân
+viên ngân hàng: chuyển một phần thế năng từ quỹ "chạy" sang quỹ "xoay",
+không thu phí. Toàn bộ năng lượng vẫn nguyên vẹn — chỉ bị chia hai túi, và
+túi xoay không giúp gì cho việc về đích.
+
+Chuyện chiếc túi thứ hai ấy không hề nhỏ: xe đạp leo dốc mang vành + lốp
+nặng là mang k to ở đúng chỗ đau nhất, nên dân xe đạp đổ tiền vào **vành
+nhẹ** chứ không phải khung nhẹ trước; còn [mô-men động
+lượng](/vi/posts/bao-toan-momen-dong-luong-cu-xoay-khong-mien-phi) chất
+trong bánh đà quay chính là "quỹ xoay" được nuôi béo *có chủ đích* — cùng
+một khoản tiền, bên này là thuế, bên kia là của để dành.
+
+## Trường hợp biên: dốc băng và bài kiểm tra ngược
+
+Đẩy ma sát về không (dốc phủ băng lý tưởng): mọi vật **trượt** với a = g·sinθ,
+hết phân hạng — đây là phép thử chứng minh thứ hạng nằm ở việc lăn chứ không
+ở hình dáng tự thân. Còn đẩy k về cực đại thì sao? Vành rỗng k = 1 chưa phải
+trần: gắn thêm hai quả tạ ở mép một trục dài (kiểu tạ tay), k vượt 1 thoải
+mái — vật lăn chậm tuỳ ý, bò xuống dốc như phim quay chậm dù chẳng có tí ma
+sát cản nào. Một vật "lười" đến vô hạn mà không hề vi phạm định luật nào:
+nó chỉ đang nộp gần trọn thế năng cho cái quỹ không chạy được — bảo toàn
+năng lượng chưa bao giờ hứa năng lượng phải nằm ở túi hữu ích.

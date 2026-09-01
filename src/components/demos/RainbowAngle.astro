@@ -1,0 +1,128 @@
+---
+// Rainbow from minimum deviation: a ray entering a spherical drop at incidence
+// i leaves (one internal reflection) with deviation D = 2i − 4r + 180°,
+// sin r = sin i / n. D(i) has a minimum ≈138° — rays pile up there, and
+// 180° − D_min ≈ 42° is the rainbow cone. Red and violet curves drawn from
+// their indices; slider scrubs i. Static redraw.
+---
+
+<figure class="demo" data-demo="rainbow">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Góc tới của tia nắng vào giọt nước i (°) <output data-out="i"></output>
+      <input type="range" data-in="i" min="0" max="89.5" step="0.5" value="59.5" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Góc lệch của tia sáng sau một lần phản xạ trong giọt nước, vẽ cho đỏ
+    (n = 1,331) và tím (n = 1,343). Đường cong có đáy — và đáy là nơi tia sáng
+    "dồn toa": gần một nửa số tia đến trong vài độ quanh i ≈ 59° đều bật ra
+    quanh cùng một góc lệch. Cầu vồng là cái đáy ấy nhìn từ xa.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const N_RED = 1.331, N_VIOLET = 1.343;
+  const RED = '#dc2626', VIOLET = '#7c3aed', MARK = '#f59e0b';
+
+  const dev = (iDeg: number, n: number) => {
+    const i = (iDeg * Math.PI) / 180;
+    const r = Math.asin(Math.sin(i) / n);
+    return ((2 * i - 4 * r) * 180) / Math.PI + 180;
+  };
+  function minDev(n: number): [number, number] {
+    let bi = 0, bd = 1e9;
+    for (let i = 0; i <= 90; i += 0.02) {
+      const d = dev(i, n);
+      if (d < bd) { bd = d; bi = i; }
+    }
+    return [bi, bd];
+  }
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const slider = root.querySelector('[data-in="i"]') as HTMLInputElement;
+    const out = root.querySelector('[data-out="i"]') as HTMLOutputElement;
+    const [miR, mdR] = minDev(N_RED);
+    const [, mdV] = minDev(N_VIOLET);
+
+    function draw() {
+      const iNow = Number(slider.value);
+      out.textContent = iNow.toFixed(1).replace('.', ',');
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.46);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+
+      const padL = 42, padB = 26, padT = 12, padR = 10;
+      const Dlo = 135, Dhi = 180;
+      const X = (i: number) => padL + (i / 90) * (cssW - padL - padR);
+      const Y = (d: number) => padT + ((d - Dlo) / (Dhi - Dlo)) * (cssH - padB - padT);
+
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.3;
+      ctx.beginPath(); ctx.moveTo(padL, padT); ctx.lineTo(padL, cssH - padB); ctx.lineTo(cssW - padR, cssH - padB); ctx.stroke();
+      ctx.globalAlpha = 0.55; ctx.fillStyle = fg; ctx.font = '10px system-ui,sans-serif';
+      ctx.textAlign = 'center';
+      for (const d of [0, 30, 60, 90]) ctx.fillText(`${d}°`, X(d), cssH - padB + 14);
+      ctx.textAlign = 'right';
+      for (const d of [140, 160, 180]) ctx.fillText(`${d}°`, padL - 4, Y(d) + 3);
+      ctx.save(); ctx.translate(12, (padT + cssH - padB) / 2); ctx.rotate(-Math.PI / 2);
+      ctx.textAlign = 'center'; ctx.fillText('góc lệch D', 0, 0); ctx.restore();
+      ctx.globalAlpha = 1;
+
+      for (const [n, colour] of [[N_RED, RED], [N_VIOLET, VIOLET]] as Array<[number, string]>) {
+        ctx.strokeStyle = colour; ctx.lineWidth = 2; ctx.beginPath();
+        let started = false;
+        for (let i = 0.5; i <= 89.9; i += 0.4) {
+          const d = dev(i, n);
+          if (d > Dhi) { started = false; continue; }
+          started ? ctx.lineTo(X(i), Y(d)) : ctx.moveTo(X(i), Y(d));
+          started = true;
+        }
+        ctx.stroke(); ctx.lineWidth = 1;
+      }
+      // Minimum line for red.
+      ctx.strokeStyle = MARK; ctx.globalAlpha = 0.6; ctx.setLineDash([4, 4]);
+      ctx.beginPath(); ctx.moveTo(padL, Y(mdR)); ctx.lineTo(cssW - padR, Y(mdR)); ctx.stroke();
+      ctx.setLineDash([]); ctx.globalAlpha = 0.8; ctx.fillStyle = fg; ctx.textAlign = 'left';
+      ctx.fillText(`đáy: D = ${mdR.toFixed(1).replace('.', ',')}° → cầu vồng ${(180 - mdR).toFixed(1).replace('.', ',')}°`, padL + 6, Y(mdR) - 6);
+      ctx.globalAlpha = 1;
+
+      // Markers at current i.
+      for (const [n, colour] of [[N_RED, RED], [N_VIOLET, VIOLET]] as Array<[number, string]>) {
+        const d = dev(iNow, n);
+        if (d <= Dhi) {
+          ctx.fillStyle = colour;
+          ctx.beginPath(); ctx.arc(X(iNow), Y(d), 5, 0, Math.PI * 2); ctx.fill();
+        }
+      }
+
+      const dR = dev(iNow, N_RED), dV = dev(iNow, N_VIOLET);
+      readout.innerHTML =
+        `Tại i = ${iNow.toFixed(1).replace('.', ',')}°: D_đỏ = <b>${dR.toFixed(1).replace('.', ',')}°</b>, D_tím = ${dV.toFixed(1).replace('.', ',')}°` +
+        ` · góc cầu vồng: đỏ <b>${(180 - mdR).toFixed(1).replace('.', ',')}°</b>, tím ${(180 - mdV).toFixed(1).replace('.', ',')}° — đỏ nằm vành ngoài`;
+    }
+
+    slider.addEventListener('input', draw);
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="rainbow"]').forEach(setup);
+</script>

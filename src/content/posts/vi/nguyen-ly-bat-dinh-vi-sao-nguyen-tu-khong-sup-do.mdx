@@ -1,0 +1,67 @@
+---
+title: "Nguyên lý bất định: lý do thật khiến nguyên tử không sụp đổ"
+description: "Ép electron vào góc càng chặt, vận tốc nó càng nhoè rộng — Δx·Δv ≥ ħ/2m. Không phải máy đo vụng: chính khoản 'tiền phạt nhốt' này chống lưng cho kích thước nguyên tử, và đuổi electron ra khỏi hạt nhân."
+pubDate: 2026-09-02
+tags: ["vat-ly", "luong-tu", "javascript"]
+translationId: "nguyen-ly-bat-dinh-vi-sao-nguyen-tu-khong-sup-do"
+---
+
+import Uncertainty from '../../../components/demos/Uncertainty.astro';
+
+Nguyên lý bất định của Heisenberg hay bị kể như chuyện đo đạc vụng về: "nhìn
+hạt là làm nó nhúc nhích". Sai căn bản. Electron **là sóng** — [khe đôi
+Young đã bắt quả tang](/vi/posts/khe-doi-young-do-buoc-song-bang-thuoc-ke) —
+và sóng thì không thể vừa gói gọn một chỗ vừa có bước sóng xác định. Vị trí
+và vận tốc của nó là hai đầu một tấm chăn hẹp:
+
+<Uncertainty />
+
+## Tiền phạt nhốt: nhỏ gấp đôi, trả gấp đôi
+
+```
+Δx · Δv ≥ ħ/(2m)
+```
+
+Nhốt electron trong nguyên tử (Δx ≈ 0,1 nm): vận tốc nhoè tối thiểu **579
+km/s** — không phải electron "chạy" nhanh cỡ đó, mà là nó *không thể* đứng
+yên hơn mức đó. Khoản nhoè này mang động năng thật, và chính nó trả lời câu
+hỏi từng làm vật lý cổ điển phá sản: **vì sao electron không rơi tọt vào hạt
+nhân** mà nó bị hút về? Cứ thử rơi: càng sà vào gần, Δx càng bóp nhỏ, Δv
+càng bùng lên, động năng tăng vọt — đến một cỡ nào đó, năng lượng "bị phạt"
+tăng nhanh hơn năng lượng hút giành được. Điểm hoà vốn nằm ở đúng cỡ...
+**một phần mười nanômét**: kích thước nguyên tử không phải hằng số tuỳ tiện
+của tự nhiên — nó là *lời giải của một bài toán cực trị* giữa lực hút Coulomb
+và nguyên lý bất định. Vật chất cứng, ghế đỡ được bạn, tường không cho tay
+xuyên qua — tất cả là tiền phạt nhốt của hàng tỉ tỉ electron đang từ chối
+bị ép thêm.
+
+## Bằng chứng phản chứng: hạt nhân không chứa nổi electron
+
+Thập niên 1920, phân rã beta gây bối rối: hạt nhân **phóng ra electron** —
+vậy chắc electron sống sẵn trong đó? Nguyên lý bất định phủ quyết thẳng: kéo
+thanh trượt về cỡ hạt nhân 10⁻¹⁵ m — công thức đòi Δv ≈ 6×10¹⁰ m/s, **gấp
+200 lần tốc độ ánh sáng**. Vô nghĩa (tính tương đối tính tử tế thì năng
+lượng đòi hỏi vẫn lớn gấp trăm lần mức hạt nhân có thể giữ). Kết luận đanh
+thép: electron của phân rã beta **không hề nằm sẵn** trong hạt nhân — nó
+được *sinh ra ngay khoảnh khắc phân rã*, như [photon không nằm sẵn trong
+nguyên tử phát sáng](/vi/posts/hieu-ung-quang-dien-anh-sang-tra-tien-le).
+Một nguyên lý trông như triết học đã tiên đoán trước cả lý thuyết tương tác
+yếu.
+
+Chiều ngược lại của thanh trượt cũng ăn tiền: chấm lượng tử — tinh thể nano
+vài nanômét — nhốt electron lỏng hơn nguyên tử nhưng chặt hơn khối vật liệu,
+và mức năng lượng của nó **chỉnh được bằng kích cỡ**: chấm nhỏ phạt nặng,
+phát ánh sáng xanh; chấm to phạt nhẹ, phát đỏ. Màn hình QLED bạn xem là
+bảng giá tiền phạt nhốt in thành điểm ảnh.
+
+## Trường hợp biên: vì sao cái ghế không nhoè
+
+Nếu bất định là luật vũ trụ, sao bạn để cốc cà phê xuống bàn mà nó không
+"nhoè vận tốc"? Nhìn mẫu số: **m**. Hạt bụi một phần tỉ ký nhốt trong một
+micromét chịu Δv ≈ 5×10⁻²⁰ m/s — với tốc độ nhoè ấy, nó cần **cả tuổi vũ
+trụ để trôi được hai xăng-ti-mét**. Nguyên lý không hề tắt với vật to; nó
+chỉ bị khối lượng chia cho tới mức không còn gì để xem. Ranh giới lượng
+tử–cổ điển không phải bức tường mà là một con dốc 1/m — và loài người, nặng
+nề như chúng ta, sống ở tít chân dốc, nơi thế giới trông có vẻ đứng yên
+được, vị trí và vận tốc trông có vẻ tách rời được. "Có vẻ" — demo phía trên
+là cái giá niêm yết thật.

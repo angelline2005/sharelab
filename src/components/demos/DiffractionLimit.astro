@@ -1,0 +1,122 @@
+---
+// Rayleigh criterion θ = 1.22λ/D at λ = 550 nm, shown as the smallest detail
+// resolvable on the Moon (384 400 km away) versus aperture size, log–log.
+// Landmarks from the eye to a hypothetical 172 m mirror that could see the
+// Apollo flag. Static redraw.
+---
+
+<figure class="demo" data-demo="diffraction-limit">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Đường kính ống kính D = 10^x mét, chọn x <output data-out="x"></output>
+      <input type="range" data-in="x" min="-3" max="2.5" step="0.05" value="0.38" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Chi tiết nhỏ nhất phân giải nổi trên Mặt Trăng theo cỡ ống kính. Ánh sáng
+    là sóng: chui qua lỗ D nó loe ra góc ~1,22λ/D — không thấu kính hoàn hảo
+    nào mua chuộc được khoản loe đó, chỉ có lỗ to hơn.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const LAM = 550e-9, DMOON = 3.844e8;
+  const LINE = '#2563eb', MARK = '#dc2626', FLAG = '#f59e0b';
+  const LM: Array<[number, string]> = [
+    [Math.log10(0.003), 'mắt (3 mm)'],
+    [Math.log10(0.05), 'ống nhòm'],
+    [Math.log10(0.2), 'kính sân nhà'],
+    [Math.log10(2.4), 'Hubble'],
+    [Math.log10(172), 'gương 172 m'],
+  ];
+
+  const resAt = (lx: number) => ((1.22 * LAM) / Math.pow(10, lx)) * DMOON; // metres on the Moon
+  function fmtLen(m: number): string {
+    if (m >= 1000) return `${(m / 1000).toFixed(m >= 10000 ? 0 : 1).replace('.', ',')} km`;
+    return `${m.toFixed(m < 10 ? 1 : 0).replace('.', ',')} m`;
+  }
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const slider = root.querySelector('[data-in="x"]') as HTMLInputElement;
+    const out = root.querySelector('[data-out="x"]') as HTMLOutputElement;
+
+    function draw() {
+      const x = Number(slider.value);
+      const D = Math.pow(10, x);
+      out.textContent = D >= 1 ? `${D.toFixed(D >= 10 ? 0 : 1).replace('.', ',')} m` : `${(D * 1000).toFixed(0)} mm`;
+      const res = resAt(x);
+      const arcsec = ((1.22 * LAM) / D) * 206265;
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.44);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+
+      const padL = 46, padB = 26, padT = 14, padR = 12;
+      const X = (lx: number) => padL + ((lx + 3) / 5.5) * (cssW - padL - padR);
+      const lres = (lx: number) => Math.log10(resAt(lx)); // spans ~[0.2, 5.4]
+      const Y = (l: number) => cssH - padB - ((l - 0) / 5.6) * (cssH - padB - padT);
+
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.3;
+      ctx.beginPath(); ctx.moveTo(padL, padT); ctx.lineTo(padL, cssH - padB); ctx.lineTo(cssW - padR, cssH - padB); ctx.stroke();
+      ctx.globalAlpha = 0.55; ctx.fillStyle = fg; ctx.font = '10px system-ui,sans-serif';
+      ctx.textAlign = 'center';
+      for (const [lx, lab] of [[-3, '1 mm'], [-2, '1 cm'], [-1, '10 cm'], [0, '1 m'], [1, '10 m'], [2, '100 m']] as Array<[number, string]>)
+        ctx.fillText(lab, X(lx), cssH - padB + 14);
+      ctx.textAlign = 'right';
+      for (const [l, lab] of [[0, '1 m'], [3, '1 km'], [5, '100 km']] as Array<[number, string]>)
+        ctx.fillText(lab, padL - 4, Y(l) + 3);
+      ctx.globalAlpha = 1;
+
+      // Flag-size line (1.5 m on the Moon).
+      ctx.strokeStyle = FLAG; ctx.globalAlpha = 0.7; ctx.setLineDash([5, 4]);
+      ctx.beginPath(); ctx.moveTo(padL, Y(Math.log10(1.5))); ctx.lineTo(cssW - padR, Y(Math.log10(1.5))); ctx.stroke();
+      ctx.setLineDash([]); ctx.fillStyle = fg; ctx.textAlign = 'left';
+      ctx.fillText('cỡ lá cờ Apollo (1,5 m)', padL + 6, Y(Math.log10(1.5)) - 5);
+      ctx.globalAlpha = 1;
+
+      // Resolution line.
+      ctx.strokeStyle = LINE; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.moveTo(X(-3), Y(lres(-3))); ctx.lineTo(X(2.5), Y(lres(2.5))); ctx.stroke();
+      ctx.lineWidth = 1;
+
+      LM.forEach(([lx, lab], k) => {
+        ctx.fillStyle = FLAG;
+        ctx.beginPath(); ctx.arc(X(lx), Y(lres(lx)), 4, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = fg; ctx.globalAlpha = 0.7; ctx.textAlign = 'center';
+        ctx.fillText(lab, X(lx), Y(lres(lx)) - 8 - (k % 2) * 11);
+        ctx.globalAlpha = 1;
+      });
+
+      ctx.fillStyle = MARK;
+      ctx.beginPath(); ctx.arc(X(x), Y(lres(x)), 6, 0, Math.PI * 2); ctx.fill();
+
+      readout.innerHTML =
+        `D = ${out.textContent}: góc phân giải ${arcsec >= 1 ? arcsec.toFixed(1).replace('.', ',') + '″' : arcsec >= 0.01 ? arcsec.toFixed(2).replace('.', ',') + '″' : (arcsec * 1000).toFixed(1).replace('.', ',') + ' mili-giây-cung'}` +
+        ` → thấy được chi tiết <b>${fmtLen(res)}</b> trên Mặt Trăng` +
+        (res <= 1.5 ? ' — <b>đủ thấy lá cờ!</b>' : '');
+    }
+
+    slider.addEventListener('input', draw);
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="diffraction-limit"]').forEach(setup);
+</script>

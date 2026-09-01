@@ -1,0 +1,123 @@
+---
+// Apparent depth: looking (near-)vertically into water, a fish at depth d
+// appears at d/n. Rays from the fish refract at the surface; their dashed
+// back-extensions meet at the shallower virtual image. Static redraw.
+---
+
+<figure class="demo" data-demo="apparent-depth">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Độ sâu thật của cá d (m) <output data-out="d"></output>
+      <input type="range" data-in="d" min="0.5" max="4" step="0.1" value="2" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Tia sáng từ cá gãy khúc tại mặt nước (rời môi trường đặc nên gãy xa pháp
+    tuyến). Mắt kéo dài ngược các tia đã gãy — nét đứt — và "đặt" con cá ở
+    chỗ chúng gặp nhau: nông hơn thật đúng một hệ số n = 1,333.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const N = 1.333;
+  const WATER = '#2563eb', RAY = '#f59e0b', VIRT = '#dc2626';
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const slider = root.querySelector('[data-in="d"]') as HTMLInputElement;
+    const out = root.querySelector('[data-out="d"]') as HTMLOutputElement;
+
+    function draw() {
+      const d = Number(slider.value);
+      out.textContent = d.toFixed(1).replace('.', ',');
+      const dApp = d / N;
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.46);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+
+      const surfY = cssH * 0.3;
+      const scale = (cssH * 0.62) / 4; // 4 m of depth fits below the surface
+      const fx = cssW * 0.4;
+      const fishY = surfY + d * scale;
+      const virtY = surfY + dApp * scale;
+
+      // Water.
+      ctx.fillStyle = WATER; ctx.globalAlpha = 0.15;
+      ctx.fillRect(0, surfY, cssW, cssH - surfY);
+      ctx.globalAlpha = 0.5; ctx.strokeStyle = WATER;
+      ctx.beginPath(); ctx.moveTo(0, surfY); ctx.lineTo(cssW, surfY); ctx.stroke();
+      ctx.globalAlpha = 1;
+
+      // Depth ticks.
+      ctx.fillStyle = fg; ctx.globalAlpha = 0.5; ctx.font = '10px system-ui,sans-serif';
+      ctx.textAlign = 'left';
+      for (let m = 1; m <= 4; m++) ctx.fillText(`${m} m`, 8, surfY + m * scale + 3);
+      ctx.globalAlpha = 1;
+
+      // Real fish (simple triangle-tailed oval).
+      const fish = (x: number, y: number, colour: string, alpha: number) => {
+        ctx.fillStyle = colour; ctx.globalAlpha = alpha;
+        ctx.beginPath(); ctx.ellipse(x, y, 14, 7, 0, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.moveTo(x + 12, y); ctx.lineTo(x + 22, y - 6); ctx.lineTo(x + 22, y + 6); ctx.closePath(); ctx.fill();
+        ctx.globalAlpha = 1;
+      };
+      fish(fx, fishY, fg, 0.85);
+
+      // Two rays from the fish to nearby surface points, refracted upward.
+      for (const dx of [26, 54]) {
+        const sx = fx + dx;
+        const thW = Math.atan(dx / (d * scale));           // angle in water vs normal
+        const thA = Math.asin(Math.min(0.999, N * Math.sin(thW))); // in air
+        // Underwater segment.
+        ctx.strokeStyle = RAY; ctx.lineWidth = 1.5;
+        ctx.beginPath(); ctx.moveTo(fx, fishY); ctx.lineTo(sx, surfY); ctx.stroke();
+        // Refracted segment.
+        const up = surfY - cssH * 0.26;
+        ctx.beginPath(); ctx.moveTo(sx, surfY);
+        ctx.lineTo(sx + Math.tan(thA) * (surfY - up), up); ctx.stroke();
+        ctx.lineWidth = 1;
+        // Back-extension to the virtual fish.
+        ctx.strokeStyle = VIRT; ctx.globalAlpha = 0.55; ctx.setLineDash([4, 4]);
+        ctx.beginPath(); ctx.moveTo(sx, surfY);
+        const bx = sx - Math.tan(thA) * (virtY - surfY);
+        ctx.lineTo(bx, virtY); ctx.stroke();
+        ctx.setLineDash([]); ctx.globalAlpha = 1;
+      }
+
+      // Virtual fish.
+      fish(fx + 8, virtY, VIRT, 0.5);
+      ctx.fillStyle = fg; ctx.globalAlpha = 0.65; ctx.textAlign = 'left';
+      ctx.fillText('ảnh ảo (mắt thấy)', fx + 34, virtY + 3);
+      ctx.fillText('cá thật', fx + 34, fishY + 3);
+      ctx.globalAlpha = 1;
+
+      readout.innerHTML =
+        `Sâu thật <b>${d.toFixed(1).replace('.', ',')} m</b> → mắt thấy ở ` +
+        `<b>${dApp.toFixed(2).replace('.', ',')} m</b> — cạn hơn 25%` +
+        ` · muốn đâm trúng cá: nhắm <b>thấp hơn</b> chỗ nhìn thấy`;
+    }
+
+    slider.addEventListener('input', draw);
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="apparent-depth"]').forEach(setup);
+</script>

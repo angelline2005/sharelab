@@ -1,0 +1,65 @@
+---
+title: "Độ sâu biểu kiến: mọi hồ nước đều nói dối bạn đúng 25%"
+description: "Nhìn thẳng xuống, đáy hồ 2 mét hiện ra ở 1,5 mét — chia đều cho chiết suất. Người đâm cá học được luật này bằng bụng đói; người nhảy hồ lạ nên học nó trước khi nhảy."
+pubDate: 2026-09-02
+tags: ["vat-ly", "quang-hoc", "javascript"]
+translationId: "do-sau-bieu-kien-ho-boi-noi-doi-25-phan-tram"
+---
+
+import ApparentDepth from '../../../components/demos/ApparentDepth.astro';
+
+Đứng trên cầu gỗ nhìn xuống hồ nước trong veo, bạn thấy đáy "ngay kia thôi".
+Nhảy xuống mới biết hồ **sâu hơn một phần ba** so với mắt hứa. Không phải
+ảo giác tâm lý — là quang hình học, đo được, chia được:
+
+<ApparentDepth />
+
+## Mắt là thợ vẽ đường thẳng trong thế giới có khúc gãy
+
+Tia sáng từ con cá ngoi lên mặt nước là đi từ môi trường đặc sang loãng —
+[khúc xạ](/vi/posts/khuc-xa-va-phan-xa-toan-phan) bẻ nó **xa pháp tuyến**,
+gãy về phương ngang. Nhưng mắt và não không biết gì về cú gãy: bộ xử lý ảnh
+của bạn tiến hoá với tiên đề "ánh sáng đi thẳng", nên nó kéo dài ngược các
+tia *đã gãy* — và các đường kéo dài ấy gặp nhau ở điểm **nông hơn vị trí
+thật**. Với góc nhìn gần thẳng đứng, phép tính gọn bất ngờ:
+
+```
+d_thấy = d_thật / n = d_thật / 1,333
+```
+
+Đáy hồ 2 m hiện ở 1,5 m. Con cá ở 1 m hiện ở 75 cm. Chiếc đũa cắm trong cốc
+nước trông như gãy tại mặt nước — nửa dưới của nó bị "nâng" lên bằng đúng
+phép chia này. Và đây là ảnh **ảo** chính hiệu, họ hàng với [ảnh ảo sau thấu
+kính](/vi/posts/thau-kinh-hoi-tu-anh-that-anh-ao): không tia sáng nào thật
+sự xuất phát từ đó, nhưng mọi tia đều *khai* như thế.
+
+Bài học thực dụng nhất thuộc về nghề đâm cá: nhắm thẳng con cá bạn *thấy*
+là phóng lao qua **đầu** nó — phải nhắm thấp hơn, và dân đâm cá ở mọi nền
+văn hoá ven nước đều học luật Snell bằng bụng đói trước khi ai viết nó ra.
+(Chim bói cá và cá cung thủ — con cá phun nước bắn côn trùng *trên* mặt
+nước, bài toán ngược — đều đã "giải" nó bằng tiến hoá.) Bài học nghiêm túc
+hơn dành cho người bơi: hồ lạ trông 1,5 m thực chất là 2 m; **mọi hồ nước
+đều nông hơn vẻ ngoài của nó đúng 25%** — theo chiều nguy hiểm cho người
+nhảy cắm đầu, kẻ tin rằng "thấy đáy nghĩa là nông".
+
+## Thế giới nhìn từ dưới nước: cửa sổ Snell
+
+Đảo vai trò — làm con cá nhìn lên — và phép chia đảo thành phép nhân: mọi
+thứ trên bờ hiện **cao hơn** thật. Nhưng phần ngoạn mục hơn: tia từ mọi
+hướng của bầu trời, khi chui vào nước, đều bị gãy dồn vào hình nón mở góc
+~97,5° (hai lần góc tới hạn 48,8° của [bài phản xạ toàn
+phần](/vi/posts/khuc-xa-va-phan-xa-toan-phan)). Con cá — hay thợ lặn — ngước
+lên thấy **cả vòm trời 180° nén gọn trong một "cửa sổ" tròn** ngay trên
+đỉnh đầu; ngoài mép cửa sổ, mặt nước là tấm gương tối phản chiếu đáy hồ.
+Ảnh chụp "Snell's window" của dân lặn chính là định luật khúc xạ tự vẽ chân
+dung.
+
+## Trường hợp biên: liếc xiên thì hồ còn nông hơn nữa
+
+Con số 25% là hàng "paraxial" — chỉ đúng khi nhìn gần thẳng đứng. Liếc đáy
+hồ từ xa, góc khúc xạ phình nhanh hơn góc tới, ảnh đáy bị nâng mạnh hơn:
+nhìn thật xiên, hồ bơi trông chỉ còn **phân nửa hay nông hơn nữa** so với
+thật. Vì thế bể bơi nhìn từ mép xa luôn có vẻ "toàn chỗ trẻ con đứng được" —
+ảo ảnh nguy hiểm đúng ở chỗ nó mạnh nhất khi bạn đứng xa nhất, tức lúc đang
+quyết định có nhảy hay không. Vật lý của bài này rẻ: một phép chia. Cái giá
+của việc không biết nó, ở bể bơi lạ, thì không rẻ.

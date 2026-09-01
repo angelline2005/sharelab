@@ -1,0 +1,75 @@
+---
+title: "Vì sao không kính thiên văn nào trên Trái Đất thấy được lá cờ trên Mặt Trăng"
+description: "Không phải vì cờ nhỏ hay kính yếu — vì ánh sáng là sóng, và sóng chui qua lỗ thì loe. Muốn phân giải 1,5 mét ở khoảng cách 384 000 km cần gương 172 mét: giới hạn nhiễu xạ không nhận hối lộ."
+pubDate: 2026-09-02
+tags: ["vat-ly", "quang-hoc", "thien-van", "javascript"]
+translationId: "vi-sao-khong-kinh-nao-thay-la-co-tren-mat-trang"
+---
+
+import DiffractionLimit from '../../../components/demos/DiffractionLimit.astro';
+
+Câu đố kinh điển của dân hoài nghi: "Nếu Apollo có thật, chĩa Hubble vào mà
+chụp lá cờ!" Nghe hợp lý — Hubble chụp được thiên hà cách 13 tỉ năm ánh
+sáng cơ mà. Nhưng kéo thanh trượt cỡ ống kính dưới đây, bạn sẽ thấy vấn đề
+không nằm ở "mạnh hay yếu":
+
+<DiffractionLimit />
+
+## Sóng chui qua lỗ thì loe — chấm hết
+
+Ống kính nào cũng là một cái lỗ, và [ánh sáng là
+sóng](/vi/posts/khe-doi-young-do-buoc-song-bang-thuoc-ke): sóng phẳng chui
+qua lỗ đường kính D loe ra thành hình nhiễu xạ góc mở ~λ/D. Hai điểm trên
+bầu trời gần nhau hơn góc ấy sẽ nhoè thành một đốm — **tiêu chuẩn
+Rayleigh**:
+
+```
+θ_min = 1,22 λ/D
+```
+
+Không có thấu kính "xịn hơn", lớp phủ đắt hơn hay phần mềm nào mua chuộc
+được con số này — nó là vật lý của sóng, không phải khuyết tật chế tạo.
+Phóng đại thêm chỉ phóng to *vết nhoè*. Muốn θ nhỏ, chỉ một đường: **D to**.
+
+Điền số cho Mặt Trăng (384 400 km): mắt người (đồng tử 3 mm) phân giải 46
+giây cung — tương đương vật **86 km** trên đó; mắt bạn nhìn trăng rằm thực
+ra chỉ "render" được các mảng cỡ tỉnh thành. Ống nhòm 50 mm: 5 km. Hubble
+gương 2,4 m: **107 mét** — cả bãi đáp Apollo lẫn tầng đáy tàu đổ bộ chỉ là
+chưa đầy một điểm ảnh. Muốn thấy lá cờ 1,5 m? Giải ngược công thức: gương
+**172 mét** — gấp bốn lần kính lớn nhất đang xây trên Trái Đất. Hubble không
+"yếu"; nó chỉ bị sóng ánh sáng áp trần đúng như mọi cái lỗ 2,4 mét khác
+trong vũ trụ.
+
+(Bằng chứng Apollo, trớ trêu thay, lại có thật và rẻ hơn nhiều: tàu LRO bay
+**cách Mặt Trăng 50 km** — gần hơn Hubble 7 700 lần — đã chụp rõ vết chân
+xe và bóng lá cờ; và các trạm laser vẫn bắn trúng gương phản xạ mà phi hành
+gia đặt lại, đo khoảng cách Trái Đất – Mặt Trăng chính xác tới xăng-ti-mét.)
+
+## Vì sao kính thiên văn cứ to dần: không phải để "zoom"
+
+Hiểu giới hạn nhiễu xạ là hiểu lại cả ngành thiên văn. Người ta xây gương 8
+m, 39 m không phải để "phóng to hơn" — mà để mua hai thứ chỉ D bán: **hứng
+nhiều photon hơn** (diện tích ∝ D²) và **θ_min nhỏ hơn** (∝ 1/D). Con mắt
+46″ của bạn so với 0,058″ của Hubble: cùng một bầu trời, độ nét gấp tám
+trăm lần chỉ nhờ cái lỗ to hơn tám trăm lần.
+
+Và khi không xây nổi gương to hơn, loài người chơi nước cờ đẹp nhất của
+quang học: **ghép nhiều kính xa nhau** thành một "lỗ ảo" khổng lồ — giao
+thoa kế. Kính Event Horizon Telescope nối các chảo thu từ Hawaii tới Nam
+Cực thành khẩu độ hiệu dụng **bằng cả Trái Đất** (D ≈ 12 700 km, bước sóng
+1,3 mm): phân giải 20 micro-giây-cung — đủ chụp cái bóng của [chân trời sự
+kiện](/vi/posts/ban-kinh-schwarzschild-moi-vat-deu-co-mot-ho-den-ben-trong)
+quanh hố đen M87*, bức ảnh năm 2019 cả thế giới đã xem. Cùng công thức
+1,22λ/D từ đầu bài — chỉ thay lỗ 3 mm của đồng tử bằng lỗ 12 700 km của một
+hành tinh biết hợp tác.
+
+## Trường hợp biên: λ cũng là một con dao hai lưỡi
+
+Tử số λ nhắc một điều hay quên: giới hạn nhiễu xạ trói cả **kính hiển vi** —
+không kính quang học nào phân giải nổi chi tiết nhỏ hơn ~nửa bước sóng ánh
+sáng (~250 nm). Virus, protein, nguyên tử? Đổi "ánh sáng" lấy sóng ngắn
+hơn: kính hiển vi electron dùng bước sóng de Broglie của electron — ngắn
+hơn ánh sáng hàng trăm nghìn lần — và chụp được tới từng nguyên tử. Cùng
+một công thức cai trị từ lá cờ trên Mặt Trăng tới con virus trong giọt
+nước: muốn thấy nhỏ hơn, hoặc **lỗ to hơn**, hoặc **sóng ngắn hơn** — vũ
+trụ không phát vé số ba.

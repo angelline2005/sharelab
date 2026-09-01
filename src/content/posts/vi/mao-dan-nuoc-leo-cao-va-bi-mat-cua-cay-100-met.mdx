@@ -1,0 +1,71 @@
+---
+title: "Mao dẫn: nước tự leo cao bao nhiêu — và vì sao cây 100 mét cần mưu khác"
+description: "Ống hẹp một nửa, nước leo cao gấp đôi: h = 2γ/ρgr đưa nước lên 30 cm trong khe giấy thấm. Nhưng cây chò cao trăm mét thì mao dẫn chào thua — nhựa cây được KÉO từ trên xuống, bằng nước ở trạng thái căng như dây đàn."
+pubDate: 2026-09-02
+tags: ["vat-ly", "chat-luu", "javascript"]
+translationId: "mao-dan-nuoc-leo-cao-va-bi-mat-cua-cay-100-met"
+---
+
+import CapillaryRise from '../../../components/demos/CapillaryRise.astro';
+
+Chấm mép khăn giấy vào vũng nước: nước **bò ngược trọng lực** lên khăn,
+không cần ai bơm. Bấc đèn dầu, viên phấn hút mực, bức tường ẩm chân — cùng
+một thế lực đang làm việc, và nó có bảng giá chính xác:
+
+<CapillaryRise />
+
+## Lực bám mép ống đấu với trọng lượng cột nước
+
+Nước *ướt* thuỷ tinh — phân tử nước bám bề mặt mạnh hơn bám nhau — nên mặt
+nước trong ống cong lõm và **bám thành ống kéo lên**. Lực kéo ấy tác dụng
+dọc chu vi mép (∝ r), còn trọng lượng cột nước phải nuôi tỉ lệ với tiết
+diện (∝ r²). Cân hai bên:
+
+```
+h = 2γcosθ/(ρgr)
+```
+
+Tử số thắng ở chu vi, mẫu số thắng ở tiết diện — nên **ống càng hẹp leo
+càng cao**: ống 1 mm được 1,5 cm khiêm tốn; khe 50 µm của giấy thấm: 30 cm;
+khe sét 1 µm: gần **15 mét**. Đất thịt giữ ẩm tốt hơn cát chính vì khe hẹp
+hơn — và cũng vì thế mà tường nhà không chống thấm chân bị nước ngầm "leo"
+ẩm cả mét: bê tông là bó ống mao dẫn ai đó quên nút.
+
+Chú ý chữ cosθ: nó là hệ số "có ưa nhau không". Thuỷ ngân *không* ướt thuỷ
+tinh (θ ≈ 140°, cos âm) — công thức trả về **h âm**: trong ống hẹp, thuỷ
+ngân bị **đè xuống thấp hơn** mực ngoài, mặt cong lồi. Cùng một công thức
+điều hành cả hai chiều; nó không nói "nước leo", nó nói "chất lỏng đi về
+phía hợp đồng bề mặt có lợi".
+
+## Cây cao trăm mét: mao dẫn chào thua, và mưu kế thay thế mới ghê
+
+Đến khoản này mọi sách phổ thông đều nợ một lời thú nhận. Mạch gỗ (xylem)
+của cây có bán kính cỡ 20 µm — thay vào công thức: nước leo được **74 cm**.
+Cây chò, cù tùng cao **100 mét**. Mao dẫn thiếu cả trăm lần; mà [máy bơm
+kiểu hút cũng bị trần 10 mét](/vi/posts/ap-suat-khi-quyen-va-tran-10-met-cua-moi-may-bom)
+— khí quyển chỉ đẩy nổi chừng ấy. Vậy ngọn cây uống kiểu gì?
+
+Câu trả lời nằm ngoài trực giác: nước trong mạch gỗ **không được đẩy — nó
+được KÉO từ ngọn**, và nó chịu kéo được vì cột nước liên tục hành xử như
+**sợi dây**, không phải đàn ống nước. Lá thoát hơi qua khí khổng; mặt cong
+trong các khe nano của vách lá (r cỡ chục nanômét — thế lực mao dẫn thật sự
+của cây nằm ở *đây*, không phải trong ống) kéo phân tử kế tiếp, phân tử kéo
+phân tử, liên kết hydro nối thành sợi xích từ lá tới rễ. Cột nước 100 m đòi
+chênh áp ~10 atm: nước trên ngọn ở **áp suất âm** — bị căng như dây đàn,
+trạng thái mà nước tinh khiết trong ống kín chịu được tới hàng chục atm
+trước khi "đứt" (sủi bọt). Cây là cái [khí áp
+kế](/vi/posts/ap-suat-khi-quyen-va-tran-10-met-cua-moi-may-bom) vượt trần
+hợp pháp: trần 10 m chỉ cấm *đẩy bằng khí quyển*, không cấm *kéo bằng lực
+liên kết* — và mỗi lần cột nước đứt thật (nghe được bằng cảm biến siêu âm
+trong thân cây mùa hạn!), một mạch gỗ chết, cây rút lui về các mạch còn
+lành.
+
+## Trường hợp biên: không có trọng lực thì mao dẫn làm vua
+
+Tắt g trong công thức — h nổ ra vô cực. Nghĩa là trên trạm vũ trụ, mao dẫn
+không bị ai cản: chất lỏng **bò khắp nơi** dọc mọi khe, mọi góc ướt được.
+Đó vừa là ác mộng (nước tràn không rơi xuống, cứ ôm lấy vách và thiết bị)
+vừa là công cụ: bình nhiên liệu vệ tinh dùng lưới mao dẫn gom chất lỏng về
+họng bơm thay cho trọng lực, và tách cà phê phi hành gia có rãnh góc nhọn
+để cà phê tự bò lên môi người uống. Cùng cái lực đưa nước lên khăn giấy
+trong bếp của bạn — chỉ cần cất trọng lực đi là thấy nó chưa bao giờ nhỏ.

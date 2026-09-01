@@ -1,0 +1,63 @@
+---
+title: "Cầu vồng nằm ở 42° — và đó là một cú dồn toa của ánh sáng"
+description: "Giọt nước bắn tia nắng ra đủ mọi góc, vậy sao cầu vồng lại sắc nét ở đúng một vòng cung? Vì đường cong góc lệch có đáy — và tại đáy, hàng triệu tia chồng lên nhau. Cầu vồng là một cực trị giải tích treo trên trời."
+pubDate: 2026-09-02
+tags: ["vat-ly", "quang-hoc", "javascript"]
+translationId: "cau-vong-42-do-va-cu-don-toa-cua-anh-sang"
+---
+
+import RainbowAngle from '../../../components/demos/RainbowAngle.astro';
+
+Chuyện khó của cầu vồng không phải "vì sao có màu" — [lăng
+kính](/vi/posts/lang-kinh-tan-sac-hai-phan-tram-lam-nen-cau-vong) đã kể phần
+đó. Chuyện khó là: giọt nước tròn xoe hắt tia nắng ra **đủ mọi góc**, vậy tại
+sao ta không thấy cả bầu trời sáng nhoè, mà thấy một **vòng cung sắc nét** ở
+đúng 42°? Kéo góc tới dọc đường cong này — câu trả lời nằm ở cái đáy:
+
+<RainbowAngle />
+
+## Đáy của đường cong là chỗ ánh sáng tắc đường
+
+Tia nắng vào giọt nước: khúc xạ, chạy tới mặt sau, phản xạ một lần, khúc xạ
+ra. Tổng góc lệch phụ thuộc chỗ tia "gõ cửa":
+
+```
+D = 2i − 4r + 180°,  với sin r = sin i / n
+```
+
+Tia gõ chính giữa (i = 0) bật thẳng lại: D = 180°. Tia gõ sát mép lệch kiểu
+khác. Nhưng nhìn đường cong trong demo: D không chạy tuột — nó **chạm đáy**
+ở i ≈ 59°, D_min ≈ 138°, rồi quay đầu. Và đáy nào cũng có tính chất vàng:
+**phẳng**. Quanh i = 59°, thay đổi cả vài độ góc tới chỉ xê dịch D vài phần
+mười độ — mọi tia trong dải ấy bị "dồn toa" bật ra gần cùng một hướng. Các
+góc lệch khác mỗi góc chỉ nhận vài tia; riêng góc 138° nhận **cả một đoàn**.
+Hướng nhìn 180° − 138° = **42°** tính từ điểm đối diện Mặt Trời vì thế sáng
+vượt trội — cầu vồng không phải "ánh sáng bị bẻ tới 42°", mà là "chỗ duy
+nhất ánh sáng chen chúc đủ đông để bạn thấy".
+
+Vì thế cầu vồng là **đường tròn** quanh điểm đối nhật — máy bay nhìn xuống
+thấy nguyên vòng; đứng dưới đất, chân trời cắt mất nửa. Và mỗi người thấy
+**một cầu vồng riêng** vẽ quanh cái bóng đầu của chính mình — cầu vồng của
+bạn và của người đứng cạnh là hai vòng khác nhau, không ai chạm được vào nó
+vì nó không nằm *ở đâu* cả: nó là một hướng, không phải một vật.
+
+## Màu sắc: hai chiết suất, hai cái đáy
+
+Nước tán sắc nhẹ — đỏ n = 1,331, tím n = 1,343 — nên mỗi màu có đáy riêng:
+đỏ ở **42,4°**, tím ở **40,7°**. Chênh 1,7° đủ tách dải màu, và cho ngay quy
+tắc nhớ: **đỏ vành ngoài, tím vành trong**. So với [lăng kính tách góc chưa
+đầy 2°](/vi/posts/lang-kinh-tan-sac-hai-phan-tram-lam-nen-cau-vong), cùng
+một cỡ tán sắc nhưng cầu vồng "dàn hàng" trên cả bầu trời — vì mỗi màu mang
+theo nguyên một cú dồn toa của nó.
+
+## Trường hợp biên: cầu vồng đôi và dải tối Alexander
+
+Tia nào chịu **hai** lần phản xạ trong giọt trước khi thoát sẽ có đường cong
+lệch riêng, đáy riêng: quanh **51°** — cầu vồng phụ, mờ hơn (mỗi lần phản xạ
+đều rơi rụng ánh sáng), và trật tự màu **đảo ngược** (tím 53,5° ngoài, đỏ
+50,4° trong — thêm một lần phản xạ là thêm một lần lật). Để ý lần tới: giữa
+hai vòng cung, 42° đến 51°, trời **tối hơn hẳn** — dải tối Alexander. Không
+phải ảo giác: toán học vừa xem nói rằng cả cú dồn toa một-phản-xạ lẫn cú
+hai-phản-xạ đều *không có tia nào* bật vào khoảng giữa ấy. Một khoảng trời
+bị định lý cấm sáng — và bạn kiểm chứng được nó bằng mắt thường, miễn phí,
+sau mỗi cơn mưa.
