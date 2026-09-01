@@ -6,7 +6,7 @@ import { sameSlugLangHrefs } from '../../utils/url';
 const t = useTranslations('en');
 ---
 
-<BaseLayout locale="en" title={t('nav.terms')} description="Terms of use for sharelab" langHrefs={sameSlugLangHrefs('/terms/')}>
+<BaseLayout locale="en" title={t('nav.terms')} description="Terms of use for sharelab" langHrefs={sameSlugLangHrefs('/terms/')} alternates={sameSlugLangHrefs('/terms/')}>
   <h1>Terms of Use</h1>
   <p><em>Last updated: <!-- TODO --> [date]</em></p>
   <p>

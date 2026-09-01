@@ -6,7 +6,7 @@ import { sameSlugLangHrefs } from '../../utils/url';
 const t = useTranslations('en');
 ---
 
-<BaseLayout locale="en" title={t('nav.about')} description={t('site.tagline')} langHrefs={sameSlugLangHrefs('/about/')}>
+<BaseLayout locale="en" title={t('nav.about')} description={t('site.tagline')} langHrefs={sameSlugLangHrefs('/about/')} alternates={sameSlugLangHrefs('/about/')}>
   <h1>{t('nav.about')}</h1>
   <p>
     <!-- TODO: write a real bio/about here -->

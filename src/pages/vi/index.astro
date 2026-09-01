@@ -11,7 +11,7 @@ const posts = (await getCollection('posts', ({ id, data }) => id.startsWith('vi/
 );
 ---
 
-<BaseLayout locale="vi" title={t('site.title')} description={t('site.tagline')} langHrefs={sameSlugLangHrefs('/')}>
+<BaseLayout locale="vi" title={t('site.title')} description={t('site.tagline')} langHrefs={sameSlugLangHrefs('/')} alternates={sameSlugLangHrefs('/')}>
   <p class="tagline">{t('site.tagline')}</p>
   <h1 class="section-title">{t('home.latest')}</h1>
   {posts.map((post) => <PostCard post={post} locale="vi" />)}

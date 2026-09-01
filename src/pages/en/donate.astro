@@ -7,7 +7,7 @@ import { sameSlugLangHrefs } from '../../utils/url';
 const t = useTranslations('en');
 ---
 
-<BaseLayout locale="en" title={t('nav.donate')} description={t('donate.title')} langHrefs={sameSlugLangHrefs('/donate/')}>
+<BaseLayout locale="en" title={t('nav.donate')} description={t('donate.title')} langHrefs={sameSlugLangHrefs('/donate/')} alternates={sameSlugLangHrefs('/donate/')}>
   <h1>{t('donate.title')}</h1>
   <p>{t('donate.body')}</p>
   <DonateButton />

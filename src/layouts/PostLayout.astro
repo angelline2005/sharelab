@@ -26,9 +26,28 @@ const langHrefs = {
     ? withBase(`/${otherLocale}/posts/${otherLocaleSlug}/`)
     : withBase(`/${otherLocale}/`),
 } as Record<Locale, string>;
+
+// hreflang gets only the versions that actually exist. When there is no
+// translation the switcher still points at the other homepage, but claiming
+// that homepage as this article's translation would be a lie to search engines.
+const alternates: Partial<Record<Locale, string>> = {
+  [locale]: withBase(`/${locale}/posts/${slug}/`),
+  ...(otherLocaleSlug
+    ? { [otherLocale]: withBase(`/${otherLocale}/posts/${otherLocaleSlug}/`) }
+    : {}),
+};
 ---
 
-<BaseLayout locale={locale} title={title} description={description} langHrefs={langHrefs}>
+<BaseLayout
+  locale={locale}
+  title={title}
+  description={description}
+  langHrefs={langHrefs}
+  alternates={alternates}
+  ogType="article"
+  publishedTime={pubDate}
+  modifiedTime={updatedDate}
+>
   <article>
     <header class="post-header">
       <h1>{title}</h1>

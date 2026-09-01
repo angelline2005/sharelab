@@ -6,7 +6,7 @@ import { sameSlugLangHrefs } from '../../utils/url';
 const t = useTranslations('vi');
 ---
 
-<BaseLayout locale="vi" title={t('nav.about')} description={t('site.tagline')} langHrefs={sameSlugLangHrefs('/about/')}>
+<BaseLayout locale="vi" title={t('nav.about')} description={t('site.tagline')} langHrefs={sameSlugLangHrefs('/about/')} alternates={sameSlugLangHrefs('/about/')}>
   <h1>{t('nav.about')}</h1>
   <p>
     <!-- TODO: viết giới thiệu thật về bạn/blog ở đây -->
