@@ -1,0 +1,87 @@
+---
+title: "Tốc độ vũ trụ: khẩu đại bác của Newton và con số √2"
+description: "Bắn ngang một viên đạn đủ nhanh và nó rơi mãi mà không chạm đất — đó là quỹ đạo. Demo chạy bằng hằng số hấp dẫn thật, tái tạo đúng chu kỳ 90 phút của trạm ISS."
+pubDate: 2026-09-02
+tags: ["vat-ly", "thien-van", "javascript"]
+translationId: "toc-do-vu-tru-va-khau-dai-bac-cua-newton"
+---
+
+import OrbitalVelocities from '../../../components/demos/OrbitalVelocities.astro';
+
+Năm 1687, trong *Principia*, Newton vẽ một ngọn núi cao có khẩu đại bác trên
+đỉnh. Bắn yếu, viên đạn rơi gần chân núi. Bắn mạnh hơn, nó rơi xa hơn. Và
+Newton hỏi: nếu bắn **đủ mạnh** thì sao?
+
+Câu trả lời làm nên cơ học thiên thể: viên đạn vẫn rơi — nhưng mặt đất cong đi
+nhanh đúng bằng tốc độ nó rơi, nên nó rơi mãi mà không bao giờ chạm đất. **Quỹ
+đạo không phải là hết rơi. Quỹ đạo là rơi trượt mục tiêu vĩnh viễn.**
+
+Demo dưới đây là chính thí nghiệm đó, chạy bằng hằng số hấp dẫn thật của Trái
+Đất, phóng ngang từ độ cao 300 km. Một thanh trượt duy nhất — tốc độ — đi qua
+mọi số phận của viên đạn.
+
+<OrbitalVelocities />
+
+Bốn vùng của thanh trượt:
+
+| Tốc độ phóng | Số phận |
+|---|---|
+| dưới 7,73 km/s | Rơi trở lại mặt đất |
+| **7,73 km/s** | Quỹ đạo tròn — **tốc độ vũ trụ cấp 1** (ở độ cao này) |
+| 7,73 – 10,93 km/s | Elip ngày càng dài |
+| **từ 10,93 km/s** | Thoát hẳn — **tốc độ vũ trụ cấp 2** |
+
+Con số kiểm chứng được ngay: đặt đúng 7,73 km/s, chu kỳ hiện ra **90,4 phút** —
+trạm ISS bay ở 400 km hết khoảng 92,9 phút mỗi vòng. Demo không "mô phỏng cho
+giống"; nó tích phân đúng định luật hấp dẫn, và ISS rơi ra từ phép tính.
+
+## √2 — con số nối hai tốc độ vũ trụ
+
+Hai công thức trong sách:
+
+```
+v₁ = √(GM/r)         (tròn)
+v₂ = √(2GM/r)        (thoát)
+```
+
+Chia cho nhau, mọi thứ triệt tiêu trừ một thứ: **v₂ = √2 · v₁**, đúng với mọi
+độ cao và **mọi hành tinh**. Ở Trái Đất: 7,91 và 11,19 km/s tại mặt đất. Ở Mặt
+Trăng, sao Hỏa, một sao neutron — cặp số khác nhau, tỉ lệ vẫn là 1,414.
+
+Nói cách khác: đã đủ nhanh để bay tròn, thì chỉ cần **nhanh thêm 41,4%** là đủ
+để đi hẳn. Khoảng cách giữa "vệ tinh" và "tàu liên hành tinh" hẹp hơn trực giác
+rất nhiều.
+
+## Nghịch lý: quỹ đạo càng cao, bay càng chậm
+
+Từ `v = √(GM/r)`, bán kính lớn hơn cho tốc độ **nhỏ hơn**:
+
+| Độ cao quỹ đạo tròn | Tốc độ |
+|---|---|
+| 300 km | 7,73 km/s |
+| 1.000 km | 7,35 km/s |
+| 35.786 km (vệ tinh địa tĩnh) | 3,07 km/s |
+
+Điều này tạo ra một nghịch lý điều khiển thật sự của ngành bay vũ trụ: muốn lên
+quỹ đạo cao hơn, tàu phải **tăng tốc** — rồi kết thúc ở trạng thái bay **chậm
+hơn** lúc đầu. Năng lượng thêm vào không thành tốc độ mà thành độ cao, và còn
+trả bớt cả tốc độ cũ ra. Đốt máy đẩy để rồi chậm đi là chuyện hằng ngày của
+người điều khiển vệ tinh, và là chỗ trực giác lái xe trên mặt đất đầu hàng.
+
+## Trường hợp biên, như thường lệ
+
+Đường ranh `v₂` là chỗ đáng nhìn kỹ. Ngay dưới nó, viên đạn vẽ một elip khổng
+lồ — ở 10,5 km/s, điểm xa nhất đã hơn **73.000 km**, gấp hơn chục lần bán kính
+Trái Đất — nhưng vẫn là elip, vẫn quay về. Đúng tại `v₂`, cơ năng
+`E = v²/2 − GM/r` chạm **số 0**: quỹ đạo thành parabol, viên đạn đi mãi và
+"đến vô cực với vận tốc bằng không". Trên nó một chút, hyperbol — đến vô cực mà
+vẫn còn thừa tốc độ.
+
+Toàn bộ số phận của viên đạn gói trong **dấu của một con số duy nhất**: E âm
+thì bị trói, E bằng không thì vừa vặn thoát, E dương thì tự do. Không cần nhìn
+quỹ đạo — dấu của cơ năng đã quyết định xong từ khoảnh khắc rời nòng.
+
+Và một điều demo cho thấy mà công thức không nói: những cú phóng *dưới* tốc độ
+tròn cũng vẽ elip — chỉ là elip bị Trái Đất đứng chắn ngang. Đường đạn của một
+tên lửa đạn đạo và quỹ đạo của trạm ISS là **cùng một họ đường cong**, khác
+nhau đúng một chỗ: elip của ISS không cắt vào hành tinh.

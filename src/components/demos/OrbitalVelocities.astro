@@ -1,0 +1,321 @@
+---
+// Newton's cannonball, done with real numbers.
+//
+// A projectile is launched horizontally from 300 km up and integrated under
+// Newtonian gravity (RK4, dt = 2 s — energy drift over one orbit measures at
+// ~1e-14). One slider, the launch speed, walks the outcome through every
+// regime: falls back → circular at 7.73 km/s → ever-larger ellipses → escape
+// at 10.93 km/s.
+//
+// Classification is closed-form, not read off the simulation: launching
+// perpendicular to the radius puts the launch point at an apsis, so with
+// E = v²/2 − GM/r₀ and a = −GM/2E the opposite apsis is 2a − r₀; if that
+// dips below Earth's radius the "orbit" is an ellipse interrupted by the
+// planet. E ≥ 0 is escape. The drawn trajectory then confirms what the
+// algebra already decided.
+---
+
+<figure class="demo" data-demo="orbits">
+  <canvas></canvas>
+
+  <div class="controls">
+    <label>
+      Tốc độ phóng ngang <output data-out="v"></output>
+      <input type="range" data-in="v" min="2" max="12" step="0.01" value="7.73" />
+    </label>
+  </div>
+
+  <p class="readout" data-readout></p>
+
+  <figcaption>
+    Viên đạn phóng ngang từ độ cao 300 km — thí nghiệm tưởng tượng của Newton
+    trong <i>Principia</i> (1687), chạy bằng hằng số hấp dẫn thật. Vệt đỏ là quỹ
+    đạo tích phân số; vòng nét đứt đánh dấu độ cao phóng.
+  </figcaption>
+</figure>
+
+<style>
+  .demo {
+    margin: 2rem 0;
+    padding: 1rem;
+    border: 1px solid rgba(128, 128, 128, 0.3);
+    border-radius: 10px;
+  }
+  .demo canvas {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+  .controls {
+    margin-top: 1rem;
+  }
+  .controls label {
+    display: flex;
+    flex-direction: column;
+    font-size: 0.85rem;
+    gap: 0.3rem;
+  }
+  .controls output {
+    font-variant-numeric: tabular-nums;
+    opacity: 0.7;
+  }
+  .controls input {
+    width: 100%;
+  }
+  .readout {
+    margin: 0.9rem 0 0;
+    font-size: 0.9rem;
+    font-variant-numeric: tabular-nums;
+    line-height: 1.6;
+  }
+  figcaption {
+    margin-top: 0.75rem;
+    font-size: 0.8rem;
+    opacity: 0.7;
+    line-height: 1.5;
+  }
+</style>
+
+<script>
+  const GM = 3.986004418e14; // m³/s², Earth
+  const R = 6.371e6; // m
+  const H = 300e3; // launch altitude
+  const R0 = R + H;
+  const V_CIRC = Math.sqrt(GM / R0); // 7.73 km/s
+  const V_ESC = Math.sqrt((2 * GM) / R0); // 10.93 km/s
+  const EARTH = '#2563eb';
+  const PATH = '#dc2626';
+
+  type State = [number, number, number, number]; // x, y, vx, vy
+
+  function deriv([x, y, vx, vy]: State): State {
+    const r = Math.hypot(x, y);
+    const f = -GM / (r * r * r);
+    return [vx, vy, f * x, f * y];
+  }
+
+  function rk4(s: State, dt: number): State {
+    const add = (a: State, b: State, f: number): State =>
+      [a[0] + b[0] * f, a[1] + b[1] * f, a[2] + b[2] * f, a[3] + b[3] * f];
+    const k1 = deriv(s);
+    const k2 = deriv(add(s, k1, dt / 2));
+    const k3 = deriv(add(s, k2, dt / 2));
+    const k4 = deriv(add(s, k3, dt));
+    return [
+      s[0] + ((k1[0] + 2 * k2[0] + 2 * k3[0] + k4[0]) * dt) / 6,
+      s[1] + ((k1[1] + 2 * k2[1] + 2 * k3[1] + k4[1]) * dt) / 6,
+      s[2] + ((k1[2] + 2 * k2[2] + 2 * k3[2] + k4[2]) * dt) / 6,
+      s[3] + ((k1[3] + 2 * k2[3] + 2 * k3[3] + k4[3]) * dt) / 6,
+    ];
+  }
+
+  type Orbit = {
+    kind: 'impact' | 'circle' | 'ellipse' | 'escape';
+    points: [number, number][];
+    period: number; // s, 0 when open or interrupted
+    apoAlt: number; // m, apogee altitude for closed orbits
+    maxR: number;
+  };
+
+  function computeOrbit(vKms: number): Orbit {
+    const v = vKms * 1000;
+    const E = (v * v) / 2 - GM / R0;
+
+    let kind: Orbit['kind'];
+    let period = 0;
+    let apoAlt = 0;
+    if (E >= 0) {
+      kind = 'escape';
+    } else {
+      const a = -GM / (2 * E);
+      const rOther = 2 * a - R0; // opposite apsis: launch point is one apsis
+      if (Math.abs(v - V_CIRC) < 25) {
+        kind = 'circle';
+        // Within the "circular" tolerance band, show the period OF the
+        // circular orbit at this altitude, not of the near-circle the slider
+        // happens to sit on — that is the number the label is claiming.
+        period = 2 * Math.PI * Math.sqrt(R0 ** 3 / GM);
+        apoAlt = H;
+      } else if (rOther < R) {
+        kind = 'impact';
+      } else {
+        kind = 'ellipse';
+        period = 2 * Math.PI * Math.sqrt(a ** 3 / GM);
+        apoAlt = rOther - R;
+      }
+    }
+
+    // Integrate the actual path: 1.02 orbits for closed, out to 12 R for
+    // escape, or until the ground gets in the way.
+    const dt = 2;
+    const tMax = period > 0 ? period * 1.02 : 40000;
+    let s: State = [0, R0, v, 0];
+    const points: [number, number][] = [[0, R0]];
+    let maxR = R0;
+    for (let t = 0; t < tMax; t += dt) {
+      s = rk4(s, dt);
+      const r = Math.hypot(s[0], s[1]);
+      maxR = Math.max(maxR, r);
+      if (t % 10 < dt) points.push([s[0], s[1]]);
+      if (r <= R) break; // hit the ground
+      if (r > 12 * R) break; // gone
+    }
+    return { kind, points, period, apoAlt, maxR };
+  }
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const slider = root.querySelector('[data-in="v"]') as HTMLInputElement;
+    const out = root.querySelector('[data-out="v"]') as HTMLOutputElement;
+
+    let orbit = computeOrbit(Number(slider.value));
+    let satIdx = 0;
+    let raf = 0;
+    let last = 0;
+
+    function describe(vKms: number, o: Orbit): string {
+      const head = `v tròn ở đây: <b>${(V_CIRC / 1000).toFixed(2)}</b> · v thoát: <b>${(V_ESC / 1000).toFixed(2)} km/s</b><br/>`;
+      switch (o.kind) {
+        case 'impact':
+          return head + `<b>Rơi trở lại mặt đất</b> — quỹ đạo vẫn là một elip, chỉ là Trái Đất đứng chắn ngang nó.`;
+        case 'circle':
+          return (
+            head +
+            `<b>Quỹ đạo tròn</b> — tốc độ vũ trụ cấp 1 tại độ cao này. Chu kỳ <b>${(o.period / 60).toFixed(1).replace('.', ',')} phút</b>.`
+          );
+        case 'ellipse': {
+          // Just under escape speed the ellipse balloons to millions of km and
+          // a period of years; keep the units readable across that whole range.
+          const apoKm = o.apoAlt / 1000;
+          const apo =
+            apoKm >= 1e6
+              ? `${(apoKm / 1e6).toFixed(1).replace('.', ',')} triệu km`
+              : `${Math.round(apoKm).toLocaleString('vi-VN')} km`;
+          const per =
+            o.period >= 2 * 86400
+              ? `${Math.round(o.period / 86400).toLocaleString('vi-VN')} ngày`
+              : o.period >= 6000
+                ? `${(o.period / 3600).toFixed(1).replace('.', ',')} giờ`
+                : `${(o.period / 60).toFixed(1).replace('.', ',')} phút`;
+          return head + `<b>Elip</b> — điểm cao nhất ${apo}, chu kỳ <b>${per}</b>.`;
+        }
+        case 'escape':
+          return (
+            head +
+            `<b>Thoát khỏi Trái Đất</b> — tốc độ vũ trụ cấp 2. Năng lượng cơ học không còn âm, viên đạn không bao giờ quay lại.`
+          );
+      }
+    }
+
+    function recompute() {
+      const vKms = Number(slider.value);
+      out.textContent = `${vKms.toFixed(2)} km/s`;
+      orbit = computeOrbit(vKms);
+      satIdx = 0;
+      readout.innerHTML = describe(vKms, orbit);
+      draw();
+    }
+
+    function draw() {
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32;
+      const cssH = Math.round(cssW * 0.62);
+      if (canvas.width !== cssW * dpr) {
+        canvas.width = cssW * dpr;
+        canvas.height = cssH * dpr;
+        canvas.style.height = `${cssH}px`;
+      }
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+
+      // Fit the whole trajectory, but never zoom in past ~2.6 R.
+      const viewR = Math.max(orbit.maxR * 1.12, 2.6 * R);
+      const scale = Math.min(cssW, cssH) / (2 * viewR);
+      const cx = cssW / 2;
+      const cy = cssH / 2;
+      const px = (x: number, y: number) => [cx + x * scale, cy - y * scale] as const;
+
+      // Earth.
+      ctx.fillStyle = EARTH;
+      ctx.globalAlpha = 0.22;
+      ctx.beginPath();
+      ctx.arc(cx, cy, R * scale, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.globalAlpha = 0.9;
+      ctx.strokeStyle = EARTH;
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+      ctx.globalAlpha = 1;
+
+      // Launch-altitude ring.
+      ctx.strokeStyle = fg;
+      ctx.globalAlpha = 0.2;
+      ctx.setLineDash([4, 5]);
+      ctx.beginPath();
+      ctx.arc(cx, cy, R0 * scale, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.globalAlpha = 1;
+
+      // Trajectory.
+      ctx.strokeStyle = PATH;
+      ctx.lineWidth = 1.8;
+      ctx.beginPath();
+      orbit.points.forEach(([x, y], i) => {
+        const [sx, sy] = px(x, y);
+        i ? ctx.lineTo(sx, sy) : ctx.moveTo(sx, sy);
+      });
+      ctx.stroke();
+
+      // Satellite at the animated index.
+      const p = orbit.points[Math.min(satIdx, orbit.points.length - 1)];
+      const [sx, sy] = px(p[0], p[1]);
+      ctx.fillStyle = PATH;
+      ctx.beginPath();
+      ctx.arc(sx, sy, 5, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Launch marker.
+      const [lx, ly] = px(0, R0);
+      ctx.fillStyle = fg;
+      ctx.globalAlpha = 0.7;
+      ctx.beginPath();
+      ctx.arc(lx, ly, 3, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.globalAlpha = 1;
+    }
+
+    function frame(now: number) {
+      raf = requestAnimationFrame(frame);
+      if (!last) last = now;
+      const dt = Math.min((now - last) / 1000, 0.05);
+      last = now;
+      // Points are stored every 10 sim-seconds; advance at 600× real time.
+      satIdx += (dt * 600) / 10;
+      if (satIdx >= orbit.points.length) satIdx = 0;
+      draw();
+    }
+
+    slider.addEventListener('input', recompute);
+    window.addEventListener('resize', draw);
+
+    const observer = new IntersectionObserver((entries) => {
+      for (const entry of entries) {
+        if (entry.isIntersecting) {
+          last = 0;
+          raf = requestAnimationFrame(frame);
+        } else {
+          cancelAnimationFrame(raf);
+        }
+      }
+    });
+    observer.observe(root);
+
+    recompute();
+  }
+
+  document.querySelectorAll<HTMLElement>('[data-demo="orbits"]').forEach(setup);
+</script>
