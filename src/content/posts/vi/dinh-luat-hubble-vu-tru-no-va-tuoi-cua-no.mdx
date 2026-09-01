@@ -1,0 +1,70 @@
+---
+title: "Định luật Hubble: một đường thẳng đo được tuổi vũ trụ"
+description: "Càng xa chạy càng nhanh, đều tăm tắp theo v = H₀d — và nghịch đảo của hệ số góc ấy ra thẳng 14 tỉ năm. Đường thẳng khiêm tốn nhất của thiên văn học là giấy khai sinh của vũ trụ."
+pubDate: 2026-09-02
+tags: ["vat-ly", "thien-van", "javascript"]
+translationId: "dinh-luat-hubble-vu-tru-no-va-tuoi-cua-no"
+---
+
+import HubbleLaw from '../../../components/demos/HubbleLaw.astro';
+
+Năm 1929, Edwin Hubble đặt hai cột số cạnh nhau — khoảng cách của các thiên
+hà và tốc độ chúng rời xa ta — và thấy chúng xếp thành **đường thẳng**: xa
+gấp đôi, chạy nhanh gấp đôi. Kéo thanh khoảng cách và xem vạch phổ hydro
+"dạt" dần về phía đỏ:
+
+<HubbleLaw />
+
+## Đo tốc độ một thiên hà bằng vạch vân tay
+
+Không radar nào với tới thiên hà — nhưng có thứ tốt hơn: nguyên tử hydro ở
+đâu cũng phát đúng bộ vạch phổ ấy, trong đó Hα ở **656,3 nm**, chính xác như
+vân tay. Thiên hà đang lùi xa thì sóng của nó bị kéo giãn — người quen cũ từ
+[hiệu ứng Doppler của tiếng còi xe](/vi/posts/hieu-ung-doppler-nghe-duoc),
+đổi âm thanh thành ánh sáng: toàn bộ bộ vạch trượt về phía đỏ một tỉ lệ
+z = Δλ/λ. Đo z là có tốc độ; Hubble thêm nửa còn lại — đo khoảng cách bằng
+những ngọn nến chuẩn — và hai cột số gặp nhau ở một dòng:
+
+```
+v = H₀·d,  H₀ ≈ 70 km/s trên mỗi Mpc
+```
+
+Thiên hà cách 100 Mpc lùi xa 7 000 km/s (z ≈ 0,023, vạch Hα dạt tới ~672
+nm). Cách 1 000 Mpc: 70 000 km/s. Đều tăm tắp, mọi hướng như nhau.
+
+## Không ai là tâm — và ai cũng tưởng mình là tâm
+
+"Mọi thiên hà chạy khỏi *chúng ta*" nghe như Trái Đất là rốn vũ trụ. Hình
+dung ổ bánh mì nho đang nở trong lò: mỗi hạt nho thấy **mọi hạt khác** lùi
+xa mình, hạt xa lùi nhanh hơn hạt gần — đúng định luật Hubble — và hạt nào
+cũng có quyền tưởng mình đứng yên. Không hạt nho nào *bay xuyên* bột; **bột
+nở** và khoảng cách tự lớn lên. Vũ trụ cũng vậy: các thiên hà gần như đứng
+yên trong không gian, còn không gian giữa chúng đang giãn. Ánh sáng bay qua
+đó bị giãn theo — nên gọi chính xác phải là *dịch chuyển đỏ do vũ trụ giãn
+nở*, họ hàng chứ không phải bản sao của Doppler.
+
+Đường thẳng ấy còn giấu một món quà: chạy ngược cuốn phim. Nếu mọi cặp thiên
+hà đang rời nhau với tốc độ tỉ lệ khoảng cách, thì trước đây chúng ở sát
+nhau — và thời gian lùi về điểm gặp là *d/v = 1/H₀*, **không phụ thuộc chọn
+cặp nào**. Với H₀ = 70: khoảng **14 tỉ năm**. Phép chia một dòng ra đúng cỡ
+tuổi vũ trụ mà các phương pháp độc lập khác — sao già nhất, bức xạ nền — đều
+gật đầu. Ít đường thẳng nào trong khoa học phải gánh nhiều ý nghĩa đến thế.
+
+## Trường hợp biên: nơi "tốc độ" vượt ánh sáng mà không phạm luật
+
+Kéo thanh trượt tới cùng: d = c/H₀ ≈ 4 283 Mpc, công thức trả về v = c. Xa
+hơn nữa — và vũ trụ quan sát được *có* những vùng xa hơn nữa — khoảng cách
+tới các thiên hà tăng **nhanh hơn ánh sáng**. Vi phạm Einstein? Không:
+[thuyết tương đối](/vi/posts/gian-thoi-gian-hat-muon-khong-du-tuoi-de-cham-dat)
+cấm vật thể *bay xuyên không gian* nhanh hơn c, còn ở đây không ai bay cả —
+**không gian tự giãn**, và độ giãn cộng dồn theo khoảng cách thì không có
+trần. Ánh sáng từ các vùng ấy vẫn có thể đến ta (bơi ngược dòng sông đang
+chảy xiết nhưng dòng chảy chậm dần ở thượng nguồn), chỉ z không còn xấp xỉ
+v/c nữa — thiên hà xa nhất từng chụp có z ≈ 13: sóng của nó bị giãn **14
+lần**, vạch Hα đỏ của hydro trôi tít vào hồng ngoại xa, và kính phải là
+James Webb mới đón nổi.
+
+Còn hệ số H₀ khiêm tốn — 70 km/s trên mỗi Mpc — dịch ra thước đo người
+thường: trên cả quãng Trái Đất – Mặt Trăng, độ giãn chỉ cỡ **một nanômét
+mỗi giây**. Lực điện từ giữ cơ thể, lực hấp dẫn giữ Thái Dương Hệ thắng đứt
+khoản đó — vũ trụ nở, nhưng nhà bạn thì không.

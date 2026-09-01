@@ -1,0 +1,59 @@
+---
+title: "Tụ điện: kho chứa nhỏ nhất mà xả nhanh nhất của thế giới điện"
+description: "Đèn flash 45 jun — bằng nhiệt lượng một hớp trà nguội đi — nhưng nhả trọn trong một phần nghìn giây thành cú xả 45 kilôoát. Tụ điện thắng pin không phải ở chứa bao nhiêu, mà ở chịu chi bao nhanh."
+pubDate: 2026-09-02
+tags: ["vat-ly", "dien-tu", "javascript"]
+translationId: "tu-dien-thung-nuoc-nong-cua-the-gioi-dien"
+---
+
+import CapacitorEnergy from '../../../components/demos/CapacitorEnergy.astro';
+
+Đèn flash máy ảnh cần sáng hơn cả nghìn bóng đèn — trong một phần nghìn giây.
+Pin thì giỏi *chứa* nhưng lười *chi*: hoá học bên trong chỉ nhả điện nhỏ giọt.
+Thiết bị nào cần một cú đấm điện đúng nghĩa đều thuê chung một võ sĩ: **tụ
+điện**, và sức đấm của nó tính bằng đúng một công thức:
+
+<CapacitorEnergy />
+
+## Vì sao có số ½ — nhìn tam giác là hiểu
+
+E = ½CV² hay bị nhớ như câu thần chú, nhưng số ½ có lý do vật lý sạch sẽ.
+Nạp tụ là **chất điện tích lên chính điện áp mà đống điện tích cũ đã dựng**:
+coulomb đầu tiên vào lúc tụ còn 0 vôn — miễn phí; coulomb cuối cùng phải đẩy
+ngược đủ V vôn — giá chát nhất. Giá trung bình là V/2, nên tổng chi là
+Q·V/2 = ½CV². Trên đồ thị V–Q của demo, đó chính là **diện tích tam giác**
+dưới đường nạp — một nửa hình chữ nhật Q·V.
+
+Hệ quả nằm ở chữ *bình phương*: nạp tụ lên gấp đôi điện áp là trữ **gấp bốn**
+năng lượng. Kéo thanh V trong demo từ 300 lên 600 mà xem — đó là lý do dân
+điện tử sợ tụ cao áp đến thế: tụ đèn flash 300 V hay tụ trong tivi cũ giữ
+nguyên cú đấm của nó *nhiều phút sau khi rút phích*, chờ ngón tay nào tò mò.
+
+## Chứa như thùng trà, chi như búa máy
+
+Con số của đèn flash: 1000 µF nạp 300 V → **45 J**. Nghe khiêm tốn — chỉ bằng
+nhiệt một hớp trà nguội đi vài độ, và thua xa cục pin AA trữ ~13 500 J. Nhưng
+pin AA chỉ nhả được vài oát; tụ flash dốc trọn 45 J trong ~1 ms — công suất
+tức thời **45 000 W**, ngang toàn bộ hệ thống điện một căn nhà gộp lại. Máy
+khử rung tim chơi cùng bài với cỡ lớn hơn: nạp tới 2000 V, trữ vài trăm jun,
+xả qua lồng ngực trong vài mili-giây.
+
+Tụ và pin vì thế không cạnh tranh mà **chia việc**: pin là kho lương, tụ là
+lính xung kích. Trong mạch, cặp này gặp nhau ở [chiếc thang 63% của mạch
+RC](/vi/posts/mach-rc-va-chiec-thang-63-phan-tram) — pin bơm từ từ qua điện
+trở, tụ tích rồi bung — và ở [mạch LC](/vi/posts/mach-lc-va-num-van-do-dai-radio),
+nơi tụ chuyền năng lượng qua lại với cuộn cảm nhanh đến mức thành sóng radio.
+
+## Trường hợp biên: khoản thuế 50% không phụ thuộc thuế suất
+
+Đây là nghịch lý xứng đáng một phút sững người. Nạp tụ từ pin V qua một điện
+trở R bất kỳ: tụ nhận ½CV², nhưng pin *chi* Q·V = CV². Thiếu một nửa — nửa ấy
+nướng trên điện trở. Giờ thay R to bằng R nhỏ để "đỡ hao": tính lại, vẫn mất
+**đúng một nửa**. R nhỏ thì dòng lớn thời gian ngắn, R to thì dòng nhỏ thời
+gian dài — tích phân I²R ra y nguyên. Nạp tụ kiểu ép thẳng điện áp là nộp
+thuế 50%, và thuế suất này **không có cửa mặc cả bằng linh kiện**.
+
+Lối thoát duy nhất là đổi luật chơi: nạp bằng điện áp *tăng dần* theo tụ (như
+sạc chuyển mạch trong mọi bộ nguồn hiện đại), hay hoán năng lượng qua cuộn
+cảm. Kỹ thuật điện tử công suất, nhìn từ độ cao này, phần lớn là các mưu kế
+để lách một cái tam giác.

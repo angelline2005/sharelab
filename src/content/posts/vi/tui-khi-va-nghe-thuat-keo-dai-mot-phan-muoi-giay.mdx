@@ -1,0 +1,69 @@
+---
+title: "Túi khí và nghệ thuật kéo dài một phần mười giây"
+description: "Động lượng phải mất thì kiểu gì cũng mất — thứ duy nhất mặc cả được là mất trong bao lâu. Từ 5 ms lên 150 ms, lực đập vào ngực giảm 30 lần: toàn bộ ngành an toàn xe hơi nằm trong một phép chia."
+pubDate: 2026-09-02
+tags: ["vat-ly", "co-hoc", "javascript"]
+translationId: "tui-khi-va-nghe-thuat-keo-dai-mot-phan-muoi-giay"
+---
+
+import Impulse from '../../../components/demos/Impulse.astro';
+
+Người 75 kg ngồi trên xe chạy 50 km/h mang theo động lượng p = mv ≈ **1042
+kg·m/s**. Xe đâm vào tường, con số ấy phải về 0 — không thương lượng, không
+ngoại lệ, [bảo toàn động lượng](/vi/posts/va-cham-dan-hoi-va-va-cham-mem)
+không nhận đơn xin miễn. Điều *duy nhất* còn mặc cả được: **mất nó trong bao
+lâu**. Kéo thanh trượt và nhìn cái giá của từng mili-giây:
+
+<Impulse />
+
+## Một phép chia đáng giá ngành công nghiệp
+
+Định luật II Newton viết theo kiểu ít gặp hơn ở trường: F·Δt = Δp — cùng một
+lượng động lượng, lực tỉ lệ **nghịch** với thời gian:
+
+```
+F = Δp/Δt
+```
+
+| Cái gì dừng bạn | Δt | Lực trung bình | Tương đương |
+|---|---|---|---|
+| Táp-lô cứng | 5 ms | 208 kN | 283g — không sống nổi |
+| Dây an toàn | 50 ms | 20,8 kN | 28g — chấn thương, sống |
+| Dây + túi khí | 150 ms | 6,9 kN | 9g — bầm tím |
+
+Túi khí không "đỡ" bạn theo nghĩa hứng lấy — nó **câu giờ**. Nổ ra trong 30
+ms rồi *xẹp có kiểm soát* qua các lỗ thoát ở mặt sau: chính pha xẹp mới là pha
+làm việc, kéo cú dừng của đầu và ngực dài ra gấp ba mươi lần so với đập thẳng.
+Cùng lúc, mũi xe nhăn nhúm — vùng biến dạng (crumple zone) là bộ phận được
+*thiết kế để hỏng*: xe càng "nát đẹp" phía trước, Δt của khoang người càng dài.
+Chiếc xe cổ nồi đồng cối đá trông cứng cáp hơn lại nguy hiểm hơn chính vì nó
+từ chối nhăn.
+
+## Bạn đã biết định luật này từ trước khi học nó
+
+Cơ thể tự thực hiện phép kéo dài Δt mà không cần ai dạy: nhảy từ bậc cao
+xuống, bạn **khuỵu gối** — biến cú dừng 5 ms của đôi chân thẳng đơ thành cú
+hạ 100 ms êm ru. Thủ môn bắt bóng **thu tay theo bóng**; võ sĩ **ngả đầu theo
+cú đấm**; người ta chuyền quả trứng bằng cách **lùi tay lúc bắt**. Tất cả cùng
+một mưu: không giảm được Δp thì nống Δt lên.
+
+Chiều ngược lại cũng là công nghệ: búa đóng đinh **cố tình** dừng thật gấp —
+đầu búa thép cứng, không đàn hồi, dồn cả động lượng vào một mili-giây để lực
+đủ lớn xuyên gỗ. Búa bọc cao su đóng đinh dở tệ vì lý do y hệt khiến túi khí
+cứu người.
+
+## Trường hợp biên: rơi tự do mà vẫn toàn mạng
+
+Đẩy Δt tới cực đoan, chuyện khó tin thành chuyện tính được. Vận động viên
+nhảy từ độ cao lớn xuống **lưới cứu hộ** hay đệm khí: chạm đất ở cùng tốc độ
+với người rơi xuống bê tông, nhưng lưới võng xuống cả mét — Δt dài gấp trăm
+lần, lực chia trăm lần. Năm 2012, một diễn viên đóng thế nhảy không dù từ 730
+m xuống núi hộp các-tông và đứng dậy bước ra: khoa học của màn đó không có gì
+ngoài công thức bạn vừa kéo, với Δt được mua bằng vài nghìn chiếc hộp chịu
+bẹp thay ngực anh ta.
+
+Quãng dừng trong demo kể cùng câu chuyện bằng thước đo khác: dừng trong 5 ms
+là dừng trong **3,5 cm** — độ lún của da và xương ức; dừng trong 150 ms là
+**hơn một mét** — đúng cỡ chiều dài mũi xe hy sinh cộng túi khí. Muốn biết một
+cú va an toàn đến đâu, đừng hỏi "đâm mạnh cỡ nào", hãy hỏi "**cái gì bẹp thay
+bạn, và bẹp được bao nhiêu xăng-ti-mét**".

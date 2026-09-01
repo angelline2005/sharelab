@@ -1,0 +1,113 @@
+---
+// Impulse: stopping a 75 kg body from 50 km/h. Momentum change is fixed at
+// p = mv ≈ 1042 kg·m/s — the only negotiable term is Δt. The demo plots the
+// average force F = mv/Δt against stopping time and marks the three classic
+// scenarios: bare dashboard, seatbelt, belt + airbag. Static redraw.
+---
+
+<figure class="demo" data-demo="impulse">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Thời gian dừng Δt (ms) <output data-out="dt"></output>
+      <input type="range" data-in="dt" min="5" max="200" step="1" value="50" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Người 75 kg đang đi 50 km/h phải về 0. Động lượng mất đi là cố định —
+    đường cong cho thấy cái giá của việc mất nó <em>nhanh</em>: lực tỉ lệ
+    nghịch với thời gian dừng. Ba chấm: táp-lô cứng, dây an toàn, dây + túi khí.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const M = 75, V = 50 / 3.6, G = 9.81; // 75 kg, 50 km/h
+  const CURVE = '#2563eb', MARK = '#dc2626', REF = '#f59e0b';
+  const SCEN: Array<[number, string]> = [[5, 'táp-lô'], [50, 'dây an toàn'], [150, 'dây + túi khí']];
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const slider = root.querySelector('[data-in="dt"]') as HTMLInputElement;
+    const out = root.querySelector('[data-out="dt"]') as HTMLOutputElement;
+
+    function draw() {
+      const dtMs = Number(slider.value);
+      out.textContent = String(dtMs);
+      const F = (M * V) / (dtMs / 1000);           // average force, N
+      const dCm = (V * (dtMs / 1000)) / 2 * 100;   // stopping distance, cm
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.46);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+
+      const padL = 46, padB = 26, padT = 12, padR = 10;
+      const Fmax = (M * V) / 0.005; // force at the 5 ms end caps the axis
+      const X = (ms: number) => padL + ((ms - 5) / 195) * (cssW - padL - padR);
+      const Y = (f: number) => cssH - padB - (f / Fmax) * (cssH - padB - padT);
+
+      // Axes.
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.3;
+      ctx.beginPath(); ctx.moveTo(padL, padT); ctx.lineTo(padL, cssH - padB); ctx.lineTo(cssW - padR, cssH - padB); ctx.stroke();
+      ctx.globalAlpha = 0.55; ctx.fillStyle = fg; ctx.font = '10px system-ui,sans-serif';
+      ctx.textAlign = 'right';
+      for (const kn of [50, 100, 150, 200]) { ctx.fillText(`${kn} kN`, padL - 4, Y(kn * 1000) + 3); }
+      ctx.textAlign = 'center';
+      for (const ms of [50, 100, 150, 200]) { ctx.fillText(`${ms} ms`, X(ms), cssH - padB + 14); }
+      ctx.globalAlpha = 1;
+
+      // F(Δt) hyperbola.
+      ctx.strokeStyle = CURVE; ctx.lineWidth = 2; ctx.beginPath();
+      for (let i = 0; i <= 300; i++) {
+        const ms = 5 + (195 * i) / 300;
+        const y = Y((M * V) / (ms / 1000));
+        i ? ctx.lineTo(X(ms), y) : ctx.moveTo(X(ms), y);
+      }
+      ctx.stroke(); ctx.lineWidth = 1;
+
+      // Scenario dots.
+      ctx.font = '10px system-ui,sans-serif';
+      for (const [ms, label] of SCEN) {
+        const x = X(ms), y = Y((M * V) / (ms / 1000));
+        ctx.fillStyle = REF;
+        ctx.beginPath(); ctx.arc(x, y, 4, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = fg; ctx.globalAlpha = 0.7; ctx.textAlign = 'left';
+        ctx.fillText(label, x + 7, y - 4);
+        ctx.globalAlpha = 1;
+      }
+
+      // Current marker.
+      const mx = X(dtMs), my = Y(F);
+      ctx.strokeStyle = MARK; ctx.globalAlpha = 0.5; ctx.setLineDash([3, 3]);
+      ctx.beginPath(); ctx.moveTo(mx, cssH - padB); ctx.lineTo(mx, my); ctx.lineTo(padL, my); ctx.stroke();
+      ctx.setLineDash([]); ctx.globalAlpha = 1;
+      ctx.fillStyle = MARK;
+      ctx.beginPath(); ctx.arc(mx, my, 5, 0, Math.PI * 2); ctx.fill();
+
+      const gForce = F / (M * G);
+      readout.innerHTML =
+        `Dừng trong <b>${dtMs} ms</b>: lực trung bình <b>${(F / 1000).toFixed(1).replace('.', ',')} kN</b>` +
+        ` ≈ <b>${gForce.toFixed(0)}g</b> · quãng dừng ${dCm.toFixed(dCm < 10 ? 1 : 0).replace('.', ',')} cm`;
+    }
+
+    slider.addEventListener('input', draw);
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="impulse"]').forEach(setup);
+</script>

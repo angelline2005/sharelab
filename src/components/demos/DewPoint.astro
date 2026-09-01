@@ -1,0 +1,118 @@
+---
+// Dew point from the Magnus formula: es(T) = 6.112·exp(17.62T/(243.12+T)) hPa.
+// The chart draws the saturation curve; the state point sits at (T, RH·es/100),
+// and sliding left at constant vapour pressure until it hits the curve gives
+// the dew point. Static redraw.
+---
+
+<figure class="demo" data-demo="dew-point">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Nhiệt độ không khí T (°C) <output data-out="t"></output>
+      <input type="range" data-in="t" min="10" max="40" step="0.5" value="30" /></label>
+    <label>Độ ẩm tương đối RH (%) <output data-out="rh"></output>
+      <input type="range" data-in="rh" min="10" max="100" step="1" value="80" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Đường cong là "trần chứa hơi" của không khí — tăng vọt theo nhiệt độ. Chấm
+    đỏ là không khí của bạn; trượt sang trái (làm lạnh, giữ nguyên lượng hơi)
+    đến khi đụng trần: đó là điểm sương, nơi sương phải rơi ra.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const CURVE = '#2563eb', PT = '#dc2626', PATH = '#f59e0b';
+  const es = (T: number) => 6.112 * Math.exp((17.62 * T) / (243.12 + T));
+  const dewPt = (T: number, RH: number) => {
+    const g = Math.log(RH / 100) + (17.62 * T) / (243.12 + T);
+    return (243.12 * g) / (17.62 - g);
+  };
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (n: string) => root.querySelector(`[data-in="${n}"]`) as HTMLInputElement;
+    const output = (n: string) => root.querySelector(`[data-out="${n}"]`) as HTMLOutputElement;
+
+    function draw() {
+      const T = Number(input('t').value), RH = Number(input('rh').value);
+      output('t').textContent = T.toFixed(1).replace('.', ',');
+      output('rh').textContent = String(RH);
+      const e = (RH / 100) * es(T);
+      const Td = dewPt(T, RH);
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.46);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+
+      const padL = 40, padB = 26, padT = 12, padR = 10;
+      const Tmin = 0, Tmax = 42, Emax = es(42);
+      const X = (c: number) => padL + ((c - Tmin) / (Tmax - Tmin)) * (cssW - padL - padR);
+      const Y = (p: number) => cssH - padB - (p / Emax) * (cssH - padB - padT);
+
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.3;
+      ctx.beginPath(); ctx.moveTo(padL, padT); ctx.lineTo(padL, cssH - padB); ctx.lineTo(cssW - padR, cssH - padB); ctx.stroke();
+      ctx.globalAlpha = 0.55; ctx.fillStyle = fg; ctx.font = '10px system-ui,sans-serif';
+      ctx.textAlign = 'center';
+      for (const c of [0, 10, 20, 30, 40]) ctx.fillText(`${c}°`, X(c), cssH - padB + 14);
+      ctx.textAlign = 'right';
+      for (const p of [20, 40, 60]) ctx.fillText(`${p} hPa`, padL - 4, Y(p) + 3);
+      ctx.globalAlpha = 1;
+
+      // Saturation curve.
+      ctx.strokeStyle = CURVE; ctx.lineWidth = 2; ctx.beginPath();
+      for (let i = 0; i <= 200; i++) {
+        const c = Tmin + ((Tmax - Tmin) * i) / 200;
+        i ? ctx.lineTo(X(c), Y(es(c))) : ctx.moveTo(X(c), Y(es(c)));
+      }
+      ctx.stroke(); ctx.lineWidth = 1;
+      ctx.fillStyle = CURVE; ctx.globalAlpha = 0.7; ctx.textAlign = 'left';
+      ctx.fillText('trần bão hoà 100%', X(15) + 6, Y(es(15)) - 8);
+      ctx.globalAlpha = 1;
+
+      // Cooling path at constant vapour pressure.
+      ctx.strokeStyle = PATH; ctx.globalAlpha = 0.8; ctx.setLineDash([4, 4]);
+      ctx.beginPath(); ctx.moveTo(X(T), Y(e)); ctx.lineTo(X(Td), Y(e)); ctx.stroke();
+      ctx.setLineDash([]); ctx.globalAlpha = 1;
+      // Dew point on the curve.
+      ctx.fillStyle = PATH;
+      ctx.beginPath(); ctx.arc(X(Td), Y(e), 4, 0, Math.PI * 2); ctx.fill();
+      ctx.globalAlpha = 0.75; ctx.fillStyle = fg; ctx.textAlign = 'center';
+      ctx.fillText('điểm sương', X(Td), Y(e) - 10);
+      ctx.globalAlpha = 1;
+      // State point.
+      ctx.fillStyle = PT;
+      ctx.beginPath(); ctx.arc(X(T), Y(e), 5, 0, Math.PI * 2); ctx.fill();
+
+      const verdict =
+        Td >= 26 ? 'oi khủng khiếp — mồ hôi gần như bất lực' :
+        Td >= 21 ? 'oi bức, ai cũng cảm thấy' :
+        Td >= 16 ? 'hơi ẩm nhưng dễ chịu' : 'khô ráo, thoáng';
+      readout.innerHTML =
+        `Điểm sương T_d = <b>${Td.toFixed(1).replace('.', ',')} °C</b> — ${verdict}` +
+        ` · mặt nào lạnh dưới ${Td.toFixed(1).replace('.', ',')} °C là đọng nước (cốc bia ~5 °C: ${Td > 5 ? '<b>đổ mồ hôi</b>' : 'khô ráo'})`;
+    }
+
+    root.querySelectorAll('input').forEach((el) => el.addEventListener('input', draw));
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="dew-point"]').forEach(setup);
+</script>

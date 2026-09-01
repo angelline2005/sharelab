@@ -1,0 +1,114 @@
+---
+// Lever law: F1·d1 = F2·d2. Fixed 100 kg load; sliders set both arms. The
+// sketch draws the beam, fulcrum, load and the hand force to scale in arm
+// length (forces annotated). Static redraw.
+---
+
+<figure class="demo" data-demo="lever">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Cánh tay đòn phía tay d₁ (cm) <output data-out="d1"></output>
+      <input type="range" data-in="d1" min="10" max="200" step="1" value="60" /></label>
+    <label>Cánh tay đòn phía vật d₂ (cm) <output data-out="d2"></output>
+      <input type="range" data-in="d2" min="2" max="50" step="1" value="3" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Vật nặng 100 kg. Đòn bẩy không mặc cả với mô-men: F₁d₁ = F₂d₂, nên tay đòn
+    dài gấp bao nhiêu lần thì lực cần bấy nhiêu lần nhỏ đi — và quãng tay phải
+    đẩy dài ra đúng bấy nhiêu lần.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const LOAD_KG = 100, G = 9.81;
+  const BEAM = '#2563eb', FORCE = '#dc2626', LOAD = '#f59e0b';
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (k: string) => root.querySelector(`[data-in="${k}"]`) as HTMLInputElement;
+    const output = (k: string) => root.querySelector(`[data-out="${k}"]`) as HTMLOutputElement;
+
+    function draw() {
+      const d1 = Number(input('d1').value), d2 = Number(input('d2').value);
+      output('d1').textContent = String(d1);
+      output('d2').textContent = String(d2);
+      const gain = d1 / d2;
+      const F = (LOAD_KG * G) / gain; // newtons at the hand
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.4);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+
+      const groundY = cssH * 0.82;
+      const scale = (cssW - 60) / (d1 + d2); // px per cm
+      const pivotX = 30 + d2 * scale;
+      const tilt = -0.1; // slight beam angle for readability
+
+      // Fulcrum triangle.
+      ctx.fillStyle = fg; ctx.globalAlpha = 0.5;
+      ctx.beginPath();
+      ctx.moveTo(pivotX, groundY - 18);
+      ctx.lineTo(pivotX - 14, groundY); ctx.lineTo(pivotX + 14, groundY);
+      ctx.closePath(); ctx.fill();
+      ctx.globalAlpha = 1;
+
+      // Beam through the pivot.
+      const bx = (cm: number) => pivotX + cm * scale * Math.cos(tilt);
+      const by = (cm: number) => groundY - 18 + cm * scale * Math.sin(tilt);
+      ctx.strokeStyle = BEAM; ctx.lineWidth = 5;
+      ctx.beginPath(); ctx.moveTo(bx(-d2), by(-d2)); ctx.lineTo(bx(d1), by(d1)); ctx.stroke();
+      ctx.lineWidth = 1;
+
+      // Load box on the short arm.
+      const lx = bx(-d2), ly = by(-d2);
+      ctx.fillStyle = LOAD; ctx.globalAlpha = 0.85;
+      ctx.fillRect(lx - 16, ly - 34, 32, 30);
+      ctx.globalAlpha = 1; ctx.fillStyle = '#00000090';
+      ctx.font = 'bold 10px system-ui,sans-serif'; ctx.textAlign = 'center';
+      ctx.fillText('100 kg', lx, ly - 16);
+
+      // Hand force arrow on the long arm.
+      const hx = bx(d1), hy = by(d1);
+      const arrowLen = Math.min(60, 12 + F / 30);
+      ctx.strokeStyle = FORCE; ctx.fillStyle = FORCE; ctx.lineWidth = 3;
+      ctx.beginPath(); ctx.moveTo(hx, hy - arrowLen - 8); ctx.lineTo(hx, hy - 8); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(hx, hy - 2);
+      ctx.lineTo(hx - 6, hy - 12); ctx.lineTo(hx + 6, hy - 12); ctx.fill();
+      ctx.lineWidth = 1;
+
+      ctx.fillStyle = fg; ctx.globalAlpha = 0.65; ctx.font = '10px system-ui,sans-serif';
+      ctx.fillText(`d₂ = ${d2} cm`, (pivotX + lx) / 2, groundY + 14);
+      ctx.fillText(`d₁ = ${d1} cm`, (pivotX + hx) / 2, groundY + 14);
+      ctx.globalAlpha = 1;
+
+      const kgf = F / G;
+      readout.innerHTML =
+        `Lợi thế cơ học <b>${gain.toFixed(1).replace('.', ',')}×</b> — ấn xuống với lực ` +
+        `<b>${F.toFixed(0)} N</b> (≈ treo ${kgf.toFixed(1).replace('.', ',')} kg vào tay)` +
+        ` · đổi lại: tay đi ${gain.toFixed(1).replace('.', ',')} cm, vật mới nhích 1 cm`;
+    }
+
+    root.querySelectorAll('input').forEach((el) => el.addEventListener('input', draw));
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="lever"]').forEach(setup);
+</script>

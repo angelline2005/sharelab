@@ -1,0 +1,65 @@
+---
+title: "Điểm sương: vì sao cốc bia đổ mồ hôi còn dự báo thời tiết đọc số này thay vì độ ẩm"
+description: "Cốc bia lạnh không rò rỉ — nó là trạm ngưng tụ mini. Mọi mặt phẳng lạnh hơn điểm sương đều buộc không khí trả nước, và con số ấy đo cái oi trung thực hơn hẳn phần trăm độ ẩm."
+pubDate: 2026-09-02
+tags: ["vat-ly", "nhiet-hoc", "khi-hau", "javascript"]
+translationId: "diem-suong-vi-sao-coc-bia-do-mo-hoi"
+---
+
+import DewPoint from '../../../components/demos/DewPoint.astro';
+
+Cốc bia lạnh vừa đặt xuống bàn đã "đổ mồ hôi" ướt đẫm. Nước không chui từ
+trong ra — thuỷ tinh không rò; nước **rơi từ không khí xuống**, và tấm bản đồ
+dưới đây cho biết chính xác khi nào chuyện đó buộc phải xảy ra:
+
+<DewPoint />
+
+## Không khí có trần chứa hơi — và trần ấy sập theo cái lạnh
+
+Ở mỗi nhiệt độ, không khí chỉ chứa nổi một lượng hơi nước tối đa — đường cong
+xanh trong demo, và điều đáng nhớ nhất là nó **cong lên dữ dội**: không khí
+30 °C chứa được gần gấp đôi 20 °C, gấp bảy lần 0 °C. Độ ẩm tương đối (RH) chỉ
+nói bạn đang ở bao nhiêu phần trăm của trần *hiện tại*.
+
+Giờ làm lạnh một khối không khí mà không thêm bớt hơi nước: lượng hơi giữ
+nguyên, nhưng trần hạ dần theo đường cong. Đến nhiệt độ nào đó, trần **chạm
+đầu** — RH kịch 100% — và từ đó mỗi độ lạnh thêm là không khí bị tịch thu
+nước: ngưng thành giọt. Nhiệt độ chạm trần ấy là **điểm sương** T_d — đường
+nét đứt vàng trong demo trượt ngang tới đường cong.
+
+Cốc bia chỉ việc đứng yên làm mặt lạnh: lớp không khí chạm vỏ cốc ~5 °C, thấp
+hơn điểm sương của một chiều Sài Gòn (30 °C, RH 80% → T_d = 26,2 °C) tận hai
+chục độ — nước *phải* rơi ra. Cùng cơ chế: kính mờ khi từ phòng điều hoà bước
+ra phố, gương phòng tắm sau vòi sen nóng, sương đọng trên cỏ lúc rạng sáng —
+mặt đất phơi nhiệt cả đêm, tự làm mình lạnh dưới T_d của chính không khí trên
+nó.
+
+## Vì sao dân khí tượng mê T_d hơn RH
+
+RH là con số dễ đánh lừa: sáng sớm 20 °C RH 90% nghe "ẩm khủng khiếp", trưa
+nắng lên 30 °C RH tụt còn 50% nghe "khô hẳn" — nhưng lượng hơi nước trong
+không khí *chưa đổi một gam*; chỉ có cái trần được nâng lên. Điểm sương thì
+trung thực: nó chỉ nhích khi hơi nước thật sự thêm bớt. Và nó đo thẳng cảm
+giác oi: T_d dưới 16 °C — thoáng; 21 °C — oi rõ; **26 °C trở lên — ngột ngạt
+hiếm gặp**, mức mà các bản tin nhiệt đới phải nhắc riêng.
+
+Vì sao oi? Vì máy điều hoà của cơ thể chạy bằng **bay hơi mồ hôi** — chính
+chiếc điều hoà trong [bài nhiệt ẩn](/vi/posts/nhiet-an-hai-quang-nhiet-ke-dung-im).
+Điểm sương càng sát nhiệt độ da, không khí càng gần bão hoà, mồ hôi càng khó
+bay — máy lạnh của bạn yếu dần đúng lúc cần nhất. Đẩy cả hai thanh trượt lên
+35 °C / 80% mà xem: T_d = 31 °C, vùng mà các nhà sinh lý học gọi thẳng là
+giới hạn sống còn nếu kéo dài — không phải vì nóng kỷ lục, mà vì **hết đường
+đổ nhiệt**.
+
+## Trường hợp biên: phun nước để chống... đóng băng
+
+Nghe ngược đời, nhưng nông dân trồng cam ở Florida làm thật: đêm sương giá,
+họ **phun nước lên cây**. Mưu nằm ở [nhiệt ẩn](/vi/posts/nhiet-an-hai-quang-nhiet-ke-dung-im)
+chạy chiều ngược: nước ngưng tụ và đóng băng **nhả** 334 J mỗi gam vào đúng
+chỗ nó bám — chừng nào còn nước đang đóng băng, bề mặt lá còn được sưởi và
+ghim ở quanh 0 °C thay vì tụt xuống −5 °C chết cây. Lớp áo băng trông tàn
+nhẫn ấy là chiếc chăn toả nhiệt.
+
+Còn chiếc demo trên, đọc theo chiều nghịch, chính là máy dự báo sương mù: đài
+báo đêm nay nhiệt độ chạm điểm sương — nghĩa là cả khối không khí, chứ không
+riêng cốc bia nào, sắp sửa đổ mồ hôi.

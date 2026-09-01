@@ -1,0 +1,66 @@
+---
+title: "Trọng lực nhân tạo: quay là có — nhưng hoá đơn tính bằng chóng mặt"
+description: "Một vành trạm quay đủ nhanh thì sàn đẩy bạn y như mặt đất đẩy bạn: a = ω²r. Vấn đề không phải tạo ra 1g — máy giặt nhà bạn tạo được 400g — mà là tạo 1g sao cho con người không nôn."
+pubDate: 2026-09-02
+tags: ["vat-ly", "co-hoc", "thien-van", "javascript"]
+translationId: "trong-luc-nhan-tao-va-cai-gia-cua-vong-quay"
+---
+
+import Centrifuge from '../../../components/demos/Centrifuge.astro';
+
+Phi hành gia lơ lửng trong trạm ISS **không phải vì hết trọng lực** — ở độ
+cao 400 km, lực hút Trái Đất vẫn còn 89%. Họ lơ lửng vì cả trạm lẫn người
+đang **rơi tự do** quanh Trái Đất, như [viên đạn đại bác của
+Newton](/vi/posts/toc-do-vu-tru-va-khau-dai-bac-cua-newton) không bao giờ
+chạm đất. Muốn có lại cảm giác "đứng trên sàn", chỉ có một cách không cần
+phép màu: **quay**.
+
+<Centrifuge />
+
+## Sàn đẩy bạn — và thế là đủ
+
+Cảm giác về trọng lượng của bạn xưa nay chưa từng là lực hút — nó là **cái
+sàn đẩy lên**. Trong vành trạm quay, sàn cong liên tục ép bạn đổi hướng
+chuyển động, tức đẩy bạn vào tâm với gia tốc ω²r; hệ quy chiếu của bạn ghi
+nhận cú đẩy ấy hệt như mặt đất đẩy chân. Đặt r = 100 m, quay **3 vòng/phút**:
+đúng 1g, cà phê rót thẳng vào cốc, xương khớp tin thật.
+
+Tạo *nhiều* g mới dễ làm sao: máy giặt vắt 1200 vòng/phút với lồng bán kính
+25 cm đạt **402g** — quần áo bị "nặng" gấp bốn trăm lần, nước bị vắt xuyên
+lỗ lồng. Máy ly tâm xét nghiệm quay 13 000 vòng/phút ở bán kính 8 cm: **15
+000g**, tách hồng cầu khỏi huyết tương trong vài phút thay vì để lắng cả
+ngày. Công thức chấp mọi cỡ máy — khó khăn duy nhất nằm ở hành khách.
+
+## Cái giá của vòng quay nhỏ
+
+Vậy sao không làm trạm nhỏ gọn r = 10 m quay 9,5 vòng/phút — vẫn 1g? Demo trả
+lời bằng con số chênh **đầu–chân**: đầu bạn gần tâm hơn chân 1,7 m, mà a tỉ
+lệ thuận r, nên ở r = 10 m trọng lực nơi đầu **nhẹ hơn nơi chân 17%** — đứng
+dậy là máu dồn kiểu lạ, cúi xuống nhặt đồ là vật "đổi cân nặng" giữa chừng.
+Ở r = 100 m, chênh chỉ còn 1,7% — cơ thể bỏ qua.
+
+Thủ phạm thứ hai độc hơn: **hiệu ứng Coriolis**. Trong khung quay, mọi cú
+quay đầu, với tay, bước chân đều bị bẻ ngang một lực phụ tỉ lệ với ω. Tai
+trong người chịu được cỡ **2 vòng/phút** trở xuống; 9,5 vòng/phút là say tức
+thì. Mà giữ 1g với ω nhỏ thì r phải phình: ω = 2 vòng/phút đòi bán kính
+**224 m** — đường kính gần nửa cây số. Đó là lý do mọi thiết kế trạm quay
+nghiêm túc đều là những chiếc vành khổng lồ, và là lý do sau sáu thập kỷ bay
+vào vũ trụ, nhân loại vẫn **chưa từng xây cái nào**: không phải thiếu công
+thức — thiếu ngân sách cho một cấu trúc nửa cây số phải quay đều tăm tắp.
+
+## Trường hợp biên: trạm của bạn có "trọng lực" — miễn là đừng đứng im
+
+Đẩy về cực đoan để lộ bản chất: cho r thật to và ω thật bé thì mãi vẫn 1g,
+nhưng cho **ω = 0** thì trọng lực nhân tạo tắt ngúm tức thì — không có vòng
+quay, không có gì hết. "Trọng lực" này không phải trường lực; nó là **thoả
+thuận giữa bạn và cái sàn đang cong đường đi của bạn**. Nhả thoả thuận là
+mất tất: phi hành gia nhảy khỏi sàn trong trạm quay sẽ bay theo đường thẳng
+(trong khung quán tính) và thấy sàn "trồi" lên đón mình lệch một quãng —
+chính cú lệch Coriolis ấy.
+
+Chuyển động tròn, hoá ra, là người quen cũ mặc đồng phục mới: [hạt tích điện
+trong từ trường](/vi/posts/hat-tich-dien-trong-tu-truong-chu-ky-khong-can-toc-do)
+bị lực Lorentz bẻ cong y như bạn bị sàn bẻ cong, và [khúc cua
+nghiêng](/vi/posts/duong-cong-nghieng-khuc-cua-khong-can-ma-sat) là một mẩu
+vành trạm đặt nằm trên mặt đất. Ba bài toán, một gia tốc hướng tâm — chỉ khác
+ai đứng ra ký hợp đồng đẩy.

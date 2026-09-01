@@ -1,0 +1,69 @@
+---
+title: "Máy biến áp: đổi áp lấy dòng, và vì sao lưới điện phải là điện xoay chiều"
+description: "Hai cuộn dây quấn chung một lõi sắt, không chạm nhau — thế mà 220 V thành 5 V hay 500 kV tuỳ ý, chỉ bằng cách đếm vòng. Cỗ máy không có bộ phận chuyển động này là lý do cả thế giới thắp sáng bằng AC."
+pubDate: 2026-09-02
+tags: ["vat-ly", "dien-tu", "javascript"]
+translationId: "may-bien-ap-doi-ap-lay-dong-va-nguoc-lai"
+---
+
+import Transformer from '../../../components/demos/Transformer.astro';
+
+[Bài đường dây cao thế](/vi/posts/vi-sao-duong-day-tai-dien-phai-cao-the) kết
+thúc bằng một món nợ: muốn tải điện đi xa phải nâng áp lên hàng trăm kilôvôn,
+nhưng ổ cắm nhà bạn lại cần 220 V hiền lành — **ai đứng ra đổi tiền**? Câu trả
+lời là cỗ máy tĩnh lặng nằm trong mọi trạm biến áp đầu ngõ, và nguyên lý của
+nó gói trong một phép đếm:
+
+<Transformer />
+
+## Hai cuộn dây không chạm nhau mà vẫn nói chuyện
+
+Cuộn sơ cấp và thứ cấp **cách điện hoàn toàn** với nhau — không một electron
+nào đi xuyên từ bên này sang bên kia. Cầu nối là **từ thông trong lõi sắt**:
+dòng xoay chiều bên sơ cấp tạo từ trường đổi chiều liên tục, lõi sắt dẫn trọn
+từ trường ấy qua cuộn thứ cấp, và [cảm ứng
+Faraday](/vi/posts/cam-ung-faraday-hai-cu-hich-nguoc-dau) làm nốt phần còn
+lại: từ thông biến thiên xuyên qua mỗi vòng dây sinh cùng một suất điện động.
+
+Từ đó, toàn bộ "phép thuật" chỉ là đếm vòng — mỗi vòng hưởng một suất như
+nhau, nhiều vòng thì cộng dồn:
+
+```
+V₂/V₁ = N₂/N₁
+```
+
+Sạc điện thoại hạ 220 V xuống 5 V: tỉ số 44:1. Trạm đầu ngõ hạ 10 kV xuống
+220 V: tỉ số 45,5:1. Máy tăng áp của nhà máy điện chỉ là chính nó lắp quay
+đầu — không có "máy tăng" và "máy hạ", chỉ có bên nào nhiều vòng hơn.
+
+## Không được in thêm công suất
+
+Máy biến áp không phải bữa trưa miễn phí: nâng áp 100 lần thì dòng **tụt 100
+lần**, vì công suất ra không thể vượt công suất vào:
+
+```
+V₁I₁ = V₂I₂  →  I₂ = I₁·N₁/N₂
+```
+
+Chỉnh demo về phía tăng áp mà xem dòng thứ cấp teo lại — và chính cái teo ấy
+là mục đích: hao phí trên đường dây là I²R, dòng nhỏ đi trăm lần thì hao phí
+chia **mười nghìn** lần. Đổi áp lấy dòng là món hời nhất ngành điện từng ký.
+(Máy thật đạt hiệu suất 97–99% — vẫn phải trả vài phần trăm cho lõi sắt nóng
+lên, đó là tiếng ù trầm bạn nghe khi đứng cạnh trạm biến áp.)
+
+## Trường hợp biên: cắm điện một chiều vào là hỏng chuyện
+
+Toàn bộ cơ chế đứng trên một chữ: **biến thiên**. Cắm nguồn DC vào cuộn sơ
+cấp, từ thông có đó nhưng đứng im — Faraday không nhúc nhích, thứ cấp câm
+lặng, còn sơ cấp mất luôn "sức cản cảm ứng" vốn ghìm dòng lại và trở thành
+cuộn dây điện trở gần bằng không: dòng vọt lên, máy bốc khói. Máy biến áp
+không những không chạy với DC — nó *chết* vì DC.
+
+Đây chính là lá bài kết liễu trong "cuộc chiến dòng điện" thế kỷ 19: Edison
+giữ DC, Tesla và Westinghouse cầm AC. DC thời đó không có cách nào đổi áp
+hiệu quả, nghĩa là không nâng áp được, nghĩa là [thua trắng bài toán
+I²R](/vi/posts/vi-sao-duong-day-tai-dien-phai-cao-the) — nhà máy DC phải nằm
+cách khách hàng vài kilômét. AC mang theo máy biến áp, tải điện xuyên quốc
+gia, và ổ cắm của cả hành tinh từ đó ngân nga 50–60 lần mỗi giây. Cỗ máy
+không động cơ, không bánh răng, ra đời từ thập niên 1880 và gần như chưa cần
+đổi thiết kế — chỉ vì nó đứng đúng chỗ một định luật đứng.

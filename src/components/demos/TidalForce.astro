@@ -1,0 +1,110 @@
+---
+// Tidal forces scale as M/d³. Moon's tide relative to today: (384.4/d)³;
+// Sun's fixed at 0.459 of today's lunar tide. The two quadrupole patterns
+// add with relative angle 2θ: A = √(M² + S² + 2MS·cos2θ) — spring vs neap.
+// The bulge drawing is exaggerated for visibility. Static redraw.
+---
+
+<figure class="demo" data-demo="tides">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Khoảng cách Mặt Trăng (nghìn km) <output data-out="d"></output>
+      <input type="range" data-in="d" min="300" max="500" step="1" value="384" /></label>
+    <label>Góc Mặt Trời – Mặt Trăng θ (°) <output data-out="th"></output>
+      <input type="range" data-in="th" min="0" max="90" step="1" value="0" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Hai búi nước (vẽ phóng đại) do Mặt Trăng và Mặt Trời cùng nhào nặn. θ = 0
+    hoặc 180° là trăng non/trăng tròn — hai lực xếp hàng, triều cường; θ = 90°
+    là trăng bán nguyệt — chúng giẫm chân nhau, triều kém.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const SUN_REL = 0.459; // Sun's tide vs Moon's at 384.4k km
+  const WATER = '#2563eb', MOON = '#f59e0b', SUNC = '#dc2626';
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (k: string) => root.querySelector(`[data-in="${k}"]`) as HTMLInputElement;
+    const output = (k: string) => root.querySelector(`[data-out="${k}"]`) as HTMLOutputElement;
+
+    function draw() {
+      const d = Number(input('d').value), thDeg = Number(input('th').value);
+      output('d').textContent = d.toLocaleString('vi-VN');
+      output('th').textContent = String(thDeg);
+      const M = Math.pow(384.4 / d, 3);
+      const th = (thDeg * Math.PI) / 180;
+      const A = Math.sqrt(M * M + SUN_REL * SUN_REL + 2 * M * SUN_REL * Math.cos(2 * th));
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.46);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+
+      const cx = cssW / 2, cy = cssH / 2, R = cssH * 0.24, ex = R * 0.35;
+
+      // Combined water envelope: r(φ) = R + ex·(M·cos2φ + S·cos2(φ−θ)) (exaggerated).
+      ctx.fillStyle = WATER; ctx.globalAlpha = 0.35; ctx.beginPath();
+      for (let i = 0; i <= 240; i++) {
+        const p = (2 * Math.PI * i) / 240;
+        const r = R + ex * (M * Math.cos(2 * p) + SUN_REL * Math.cos(2 * (p - th))) + ex * 0.4;
+        const x = cx + r * Math.cos(p), y = cy + r * Math.sin(p);
+        i ? ctx.lineTo(x, y) : ctx.moveTo(x, y);
+      }
+      ctx.closePath(); ctx.fill(); ctx.globalAlpha = 1;
+
+      // Solid Earth.
+      ctx.fillStyle = fg; ctx.globalAlpha = 0.25;
+      ctx.beginPath(); ctx.arc(cx, cy, R * 0.82, 0, Math.PI * 2); ctx.fill();
+      ctx.globalAlpha = 1;
+
+      // Moon on the +x axis, at a radius hinting its slider distance.
+      const moonR = cssW * 0.32 + ((d - 300) / 200) * cssW * 0.1;
+      const mx = Math.min(cx + moonR, cssW - 16);
+      ctx.fillStyle = MOON;
+      ctx.beginPath(); ctx.arc(mx, cy, 8, 0, Math.PI * 2); ctx.fill();
+      // Sun direction arrow at angle θ.
+      const sx = cx + Math.cos(th) * (cssW * 0.42), sy = cy - Math.sin(th) * (cssH * 0.42);
+      const sxc = Math.max(16, Math.min(cssW - 16, sx)), syc = Math.max(16, Math.min(cssH - 16, sy));
+      ctx.strokeStyle = SUNC; ctx.globalAlpha = 0.7; ctx.setLineDash([5, 4]);
+      ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(sxc, syc); ctx.stroke();
+      ctx.setLineDash([]); ctx.globalAlpha = 1;
+      ctx.fillStyle = SUNC;
+      ctx.beginPath(); ctx.arc(sxc, syc, 10, 0, Math.PI * 2); ctx.fill();
+
+      ctx.fillStyle = fg; ctx.globalAlpha = 0.65; ctx.font = '10px system-ui,sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('Mặt Trăng', mx, cy + 22);
+      ctx.fillText('phía Mặt Trời', sxc, syc + 22);
+      ctx.globalAlpha = 1;
+
+      const kind = thDeg <= 20 ? 'triều cường (trăng non/tròn)' : thDeg >= 70 ? 'triều kém (bán nguyệt)' : 'trung gian';
+      readout.innerHTML =
+        `Triều Mặt Trăng: <b>${M.toFixed(2).replace('.', ',')}×</b> hôm nay · Mặt Trời góp cố định 0,46×` +
+        ` · tổng hợp: <b>${A.toFixed(2).replace('.', ',')}×</b> — ${kind}`;
+    }
+
+    root.querySelectorAll('input').forEach((el) => el.addEventListener('input', draw));
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="tides"]').forEach(setup);
+</script>

@@ -1,0 +1,62 @@
+---
+title: "Nhiệt ẩn: hai quãng nhiệt kế chết đứng dù bếp vẫn cháy hết công suất"
+description: "Đun 1 kg nước đá từ −20 °C tới cạn nồi: nhiệt kế chỉ chạy 460 giây, còn 2 594 giây nó đứng im trong khi bếp vẫn rót đủ nghìn oát. Năng lượng biến đi đâu — và vì sao mồ hôi, bão, và hơi nước bỏng đều là cùng một câu trả lời."
+pubDate: 2026-09-02
+tags: ["vat-ly", "nhiet-hoc", "javascript"]
+translationId: "nhiet-an-hai-quang-nhiet-ke-dung-im"
+---
+
+import LatentHeat from '../../../components/demos/LatentHeat.astro';
+
+Cắm nhiệt kế vào nồi nước đá rồi bật bếp, bạn chờ một đường đi lên đều đặn.
+Thứ nhận được lại là đường bậc thang kỳ quặc: leo, **đứng sững**, leo tiếp,
+rồi **đứng sững lâu gấp năm lần**. Kéo thanh thời gian mà xem — chỗ phẳng mới
+là nhân vật chính:
+
+<LatentHeat />
+
+## Năng lượng rót vào đâu khi nhiệt độ đứng im?
+
+Nhiệt độ chỉ đo phần năng lượng nằm ở **chuyển động** của phân tử. Nhưng nước
+đá là mạng tinh thể — muốn thành lỏng phải **bẻ liên kết**, và tiền bẻ khoá
+không làm phân tử chạy nhanh thêm tí nào. Suốt 334 giây tan, cả nghìn jun mỗi
+giây chui hết vào việc phá mạng: nhiệt kế mù với khoản chi đó, nên gọi là
+nhiệt **ẩn**. Sôi còn chát hơn: tách hẳn từng phân tử khỏi bầy đòi 2260 kJ/kg
+— **gấp 5,4 lần** toàn bộ chi phí đun từ 0 lên 100 °C. Ấm nước reo là lúc
+việc rẻ đã xong, việc đắt mới bắt đầu; vì thế đun sôi thì nhanh mà đun *cạn*
+thì lâu ơi là lâu.
+
+Con số 334 kJ/kg của băng cũng đáng nể không kém khi đổi góc nhìn: làm tan
+1 kg đá tốn bằng đun 1 kg nước từ 0 lên **80 °C**. Viên đá trong cốc trà đá
+không mát vì nó lạnh — phần "lạnh" của nó chỉ đáng vài phần trăm; nó mát vì
+nó *tan*, và mỗi gam tan là một khoản 334 J rút thẳng từ cốc trà.
+
+## Chiếc điều hoà chạy bằng mồ hôi
+
+Bay hơi không cần đợi 100 °C — ở nhiệt độ da, những phân tử **nhanh nhất
+trong [phân bố Maxwell](/vi/posts/phan-bo-maxwell-khong-khi-nhanh-hon-am-thanh)**
+tự đủ tiền chuộc để thoát. Chúng đi, mang theo phần năng lượng trên trung
+bình, đám ở lại nghèo đi — tức là **nguội đi**. Mỗi gam mồ hôi bay hơi rút
+của cơ thể ~2400 J (còn hơn cả nước sôi, vì da mát hơn): người vận động nặng
+đổ một lít mồ hôi mỗi giờ đang tự giải nhiệt với công suất ngót **700 W** —
+một bàn là nguyên chiếc, chạy bằng nước muối.
+
+Cùng cơ chế ấy phóng to thành thời tiết: nước biển nhiệt đới bay hơi gom nhiệt
+ẩn, bốc lên cao gặp lạnh **ngưng tụ trả lại** — khoản hoàn tiền ấy chính là
+động cơ của bão. Một cơn bão trung bình luân chuyển nhiệt ẩn ở quy mô hàng
+trăm quả bom hạt nhân mỗi ngày; nó là chiếc [máy nhiệt
+Carnot](/vi/posts/hieu-suat-carnot-loai-thue-khong-ai-tron-duoc) khổng lồ mà
+"chất đốt" là hơi nước.
+
+## Trường hợp biên: vì sao bỏng hơi nước nặng hơn bỏng nước sôi
+
+Nước sôi 100 °C dây vào da: bạn nhận nhiệt của việc nó nguội từ 100 xuống
+~37 °C — khoảng 264 J mỗi gam. Hơi nước *cũng 100 °C* chạm da: trước khi kịp
+nguội, nó **ngưng tụ** — trả lại trọn khoản nhiệt ẩn 2260 J/g rồi *mới* bắt
+đầu nguội như giọt nước kia. Cùng nhiệt độ, gần **chín lần** năng lượng: đó là
+lý do hơi phụt từ vòi ấm nguy hiểm hơn hẳn giọt nước bắn, và là lý do nồi hấp
+làm chín bánh nhanh dù "chỉ" 100 °C.
+
+Hai đoạn phẳng của đường bậc thang, hoá ra, là chỗ thiên nhiên giấu két tiền:
+mồ hôi, trà đá, bão, và cả cái nồi cạn khét — tất cả rút từ cùng một tài
+khoản mang tên nhiệt ẩn.

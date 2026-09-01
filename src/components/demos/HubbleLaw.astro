@@ -1,0 +1,118 @@
+---
+// Hubble's law v = H0·d with H0 = 70 km/s/Mpc. Slider for distance; the panel
+// shows the recession speed, z ≈ v/c, and where the Hα line (656.3 nm) lands
+// in the spectrum strip. Low-z approximation, flagged near c/H0. Static.
+---
+
+<figure class="demo" data-demo="hubble">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Khoảng cách thiên hà d (Mpc) <output data-out="d"></output>
+      <input type="range" data-in="d" min="10" max="4280" step="10" value="100" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    H₀ = 70 km/s/Mpc. Vạch phát xạ Hα của hydro rời nhà máy ở 656,3 nm (vạch
+    đứt) — đo nó "dạt" về phía đỏ bao nhiêu là đo được thiên hà chạy nhanh
+    bao nhiêu, và từ đó, nó ở xa bao nhiêu. (1 Mpc ≈ 3,26 triệu năm ánh sáng.)
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const H0 = 70, C = 299792.458, REST = 656.3;
+  const LINE = '#dc2626', RESTC = '#f59e0b', GAL = '#2563eb';
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const slider = root.querySelector('[data-in="d"]') as HTMLInputElement;
+    const out = root.querySelector('[data-out="d"]') as HTMLOutputElement;
+
+    function draw() {
+      const d = Number(slider.value);
+      out.textContent = d.toLocaleString('vi-VN');
+      const v = H0 * d;
+      const z = v / C;
+      const lam = REST * (1 + z);
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.42);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+
+      // Top half: galaxies receding, arrow length ∝ distance (Hubble flow).
+      const rowY = cssH * 0.2;
+      ctx.font = '10px system-ui,sans-serif';
+      for (const [frac, dd] of [[0.18, 500], [0.42, 1500], [0.66, 2800], [0.88, 4200]] as Array<[number, number]>) {
+        const x = frac * cssW;
+        ctx.fillStyle = GAL; ctx.globalAlpha = d >= dd - 500 ? 1 : 0.35;
+        ctx.beginPath(); ctx.arc(x, rowY, 6, 0, Math.PI * 2); ctx.fill();
+        const len = 6 + (dd / 4200) * 40;
+        ctx.strokeStyle = GAL; ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.moveTo(x + 9, rowY); ctx.lineTo(x + 9 + len, rowY); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(x + 9 + len + 5, rowY);
+        ctx.lineTo(x + 9 + len - 3, rowY - 4); ctx.lineTo(x + 9 + len - 3, rowY + 4); ctx.fill();
+        ctx.lineWidth = 1; ctx.globalAlpha = 0.6; ctx.fillStyle = fg; ctx.textAlign = 'center';
+        ctx.fillText(`${dd} Mpc`, x, rowY + 20);
+        ctx.globalAlpha = 1;
+      }
+      ctx.fillStyle = fg; ctx.globalAlpha = 0.6; ctx.textAlign = 'left';
+      ctx.fillText('càng xa chạy càng nhanh — cùng một hệ số H₀', 8, rowY - 16);
+      ctx.globalAlpha = 1;
+
+      // Bottom half: spectrum strip 600–760 nm.
+      const sy = cssH * 0.56, sh = cssH * 0.3;
+      const L0 = 600, L1 = 760;
+      const X = (nm: number) => 8 + ((nm - L0) / (L1 - L0)) * (cssW - 16);
+      const grad = ctx.createLinearGradient(X(L0), 0, X(L1), 0);
+      grad.addColorStop(0, '#ff8c00'); grad.addColorStop(0.35, '#ff2d00');
+      grad.addColorStop(0.65, '#a00000'); grad.addColorStop(0.85, '#3a0000');
+      grad.addColorStop(1, '#000000');
+      ctx.fillStyle = grad; ctx.fillRect(X(L0), sy, X(L1) - X(L0), sh);
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.3; ctx.strokeRect(X(L0), sy, X(L1) - X(L0), sh);
+      ctx.globalAlpha = 0.55; ctx.fillStyle = fg; ctx.textAlign = 'center';
+      for (const nm of [600, 656, 700, 760]) ctx.fillText(`${nm}`, X(nm), sy + sh + 14);
+      ctx.fillText('bước sóng (nm) — hết vùng mắt thấy ~750, xa hơn là hồng ngoại', cssW / 2, sy + sh + 28);
+      ctx.globalAlpha = 1;
+
+      // Rest line (dashed amber) and observed line (solid red).
+      ctx.strokeStyle = RESTC; ctx.setLineDash([4, 4]); ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.moveTo(X(REST), sy - 6); ctx.lineTo(X(REST), sy + sh); ctx.stroke();
+      ctx.setLineDash([]);
+      if (lam <= L1) {
+        ctx.strokeStyle = LINE;
+        ctx.beginPath(); ctx.moveTo(X(lam), sy - 6); ctx.lineTo(X(lam), sy + sh); ctx.stroke();
+      }
+      ctx.lineWidth = 1;
+      ctx.fillStyle = RESTC; ctx.textAlign = 'center';
+      ctx.fillText('Hα nghỉ', X(REST), sy - 12);
+      if (lam <= L1) { ctx.fillStyle = LINE; ctx.fillText('quan sát', X(lam), sy - 12); }
+
+      const offEdge = lam > L1 ? ' — vạch đã trôi khỏi vùng nhìn thấy, sang hồng ngoại' : '';
+      readout.innerHTML =
+        `v = H₀·d = <b>${v.toLocaleString('vi-VN')} km/s</b> · z = ${z.toFixed(4).replace('.', ',')}` +
+        ` · Hα: 656,3 → <b>${lam.toFixed(1).replace('.', ',')} nm</b>${offEdge}` +
+        (d >= 4200 ? ' · <b>đã chạm d ≈ c/H₀</b>: công thức gần đúng hết hạn, xem bài viết' : '');
+    }
+
+    slider.addEventListener('input', draw);
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="hubble"]').forEach(setup);
+</script>

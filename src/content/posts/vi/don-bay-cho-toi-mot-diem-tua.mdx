@@ -1,0 +1,66 @@
+---
+title: "Đòn bẩy: \"cho tôi một điểm tựa\" — và hoá đơn mà Archimedes quên đọc"
+description: "Tay đòn dài gấp 20 lần thì lực nhỏ đi 20 lần — nhưng quãng đẩy dài ra đúng 20 lần. Từ xà beng, xe rùa đến bắp tay đang cầm cốc nước: cùng một phép nhân chéo, và không ai được ăn không của vật lý."
+pubDate: 2026-09-02
+tags: ["vat-ly", "co-hoc", "javascript"]
+translationId: "don-bay-cho-toi-mot-diem-tua"
+---
+
+import Lever from '../../../components/demos/Lever.astro';
+
+Xà beng dài 60 cm, mũi ngắn 3 cm cạy được tảng đá mà mười ngón tay chào thua.
+Không có phép màu nào ở đây — chỉ có một phép nhân chéo cổ xưa nhất của cơ
+học, và bạn chỉnh được cả hai vế của nó:
+
+<Lever />
+
+## Mô-men: lực nhân đường vòng
+
+Quanh một điểm tựa, thứ làm vật xoay không phải lực trần trụi mà là **mô-men**
+— lực nhân cánh tay đòn. Cân bằng đòi hai bên bằng nhau:
+
+```
+F₁·d₁ = F₂·d₂  →  F₁ = F₂·(d₂/d₁)
+```
+
+Tay đòn 60 cm đấu mũi 3 cm: lợi thế **20×** — ấn 5 kg lực, đầu kia đội lên
+100 kg. Chiếc xe rùa chở 100 kg cát là đòn bẩy gập lại: bánh xe làm điểm tựa,
+tải nằm cách bánh 30 cm, tay cầm cách 130 cm — người đẩy chỉ gánh **23 kg**.
+Kìm cộng lực, mở nắp chai bằng muỗng, cạy nắp lon sơn bằng tuốc-nơ-vít: đâu
+cũng một phép chia d₂/d₁ ấy, chỉ xê dịch chỗ đặt điểm tựa.
+
+Nhưng nhìn dòng cuối của demo: tay đi 20 cm, vật mới nhích 1 cm. Công hai đầu
+bằng chằn chặn — F nhỏ đi bao nhiêu lần thì quãng đường dài ra bấy nhiêu.
+Đòn bẩy không tạo ra công; nó là **máy đổi tiền**: đổi tờ mệnh giá lớn khó
+tiêu (lực to, đường ngắn) lấy xấp tiền lẻ (lực nhỏ, đường dài). Họ hàng ruột
+với [lời nguyền của mô-men động
+lượng](/vi/posts/bao-toan-momen-dong-luong-cu-xoay-khong-mien-phi): xoay
+nhanh hơn thì phải thu người lại — không ai ăn không của các định luật bảo
+toàn.
+
+## Cơ thể bạn chọn chơi *thua* thiệt
+
+Bất ngờ ở chỗ này: phần lớn khớp xương người là đòn bẩy **thua lực**. Cầm cốc
+nước 1 kg, khuỷu tay làm điểm tựa: bàn tay cách khuỷu ~35 cm, nhưng gân bắp
+tay bám vào xương chỉ cách khuỷu ~4 cm — tỉ số ngược 1:8,75, nghĩa là bắp tay
+phải kéo gần **9 kg lực** để giữ 1 kg đứng yên. Nghe như thiết kế tồi, cho
+tới khi đọc lại hoá đơn theo chiều kia: bắp co 1 cm, bàn tay **vung 9 cm** —
+cơ thể cố tình mua *tốc độ và tầm với* bằng giá lực. Cần lực thì đã có mưu
+khác: hàm răng đặt cơ cắn sát khớp nên nghiến vỡ được hạt điều, còn đôi đũa
+bạn cầm mỗi bữa là đòn bẩy hạng ba thua lực gấp ba — và chẳng ai phàn nàn, vì
+việc của đũa là *nhanh và khéo*, không phải khoẻ.
+
+## Trường hợp biên: nâng Trái Đất, mất một dải ngân hà
+
+"Cho tôi điểm tựa, tôi sẽ nâng cả Trái Đất" — Archimedes nói đúng về nguyên
+lý và im lặng về hoá đơn. Người 60 kg đòi cân 5,97×10²⁴ kg: cần tỉ số tay đòn
+**10²³ : 1**. Cứ cho mượn chiếc đòn cứng tuyệt đối và điểm tựa thần thánh ấy.
+Giờ nâng Trái Đất lên đúng **1 xăng-ti-mét**: đầu bên kia, Archimedes phải ấn
+tay mình đi 10²³ cm = 10²¹ m — khoảng **105 000 năm ánh sáng, hơn cả đường
+kính dải Ngân Hà**. Đi bộ không nghỉ với tốc độ người thường, ông cần hơn
+hai chục tỉ năm — lâu hơn tuổi vũ trụ, và Trái Đất vẫn chưa nhích nổi đốt
+ngón tay.
+
+Đòn bẩy giữ đúng mọi lời hứa về *lực*, và đòi đủ từng xu về *đường đi*. Câu
+nói của Archimedes vì thế không sai — nó chỉ là nửa đầu của một hợp đồng mà
+nửa sau, như mọi hợp đồng của vật lý, in bằng chữ rất nhỏ.

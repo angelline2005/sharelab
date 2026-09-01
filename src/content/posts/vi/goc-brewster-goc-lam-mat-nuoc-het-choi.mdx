@@ -1,0 +1,70 @@
+---
+title: "Góc Brewster: cái góc khiến mặt nước hết chói — nếu bạn đeo đúng kính"
+description: "Có một góc nhìn mà tại đó mặt kính, mặt nước ngừng phản xạ hẳn một phương phân cực: tanθ_B = n. Kính râm phân cực, filter của dân chụp ảnh và cửa sổ ống laser đều sống nhờ điểm không này."
+pubDate: 2026-09-02
+tags: ["vat-ly", "quang-hoc", "javascript"]
+translationId: "goc-brewster-goc-lam-mat-nuoc-het-choi"
+---
+
+import BrewsterAngle from '../../../components/demos/BrewsterAngle.astro';
+
+Ánh sáng gõ vào mặt kính thì một phần bị hắt lại — chuyện thường. Chuyện
+không thường: mức hắt lại **phụ thuộc vào phương rung** của sóng ánh sáng, và
+với một phương, tồn tại đúng một góc tới khiến phản xạ **tắt hẳn về không**.
+Kéo góc tới qua điểm đáy của đường xanh:
+
+<BrewsterAngle />
+
+## Ăng-ten không phát dọc thân mình
+
+Ánh sáng tới làm electron trong kính rung theo phương điện trường, và đám
+electron rung ấy chính là nguồn phát ra tia phản xạ — mỗi electron là một
+ăng-ten tí hon. Mà ăng-ten có điểm mù bẩm sinh: **không phát dọc theo trục
+rung của chính nó**.
+
+Giờ xếp hình: với ánh sáng phân cực trong mặt phẳng tới (đường xanh), phương
+rung của electron nằm vuông góc tia khúc xạ. Khi góc tới đạt đúng mức mà **tia
+phản xạ vuông góc tia khúc xạ**, hướng cần phát của tia phản xạ trùng khớp
+với trục rung — rơi đúng điểm mù. Không ai phát, không có tia: R∥ = 0. Điều
+kiện vuông góc ấy, qua [định luật Snell](/vi/posts/khuc-xa-va-phan-xa-toan-phan),
+rút gọn thành một dòng đẹp:
+
+```
+tanθ_B = n   →   kính (n=1,5): 56,3° · nước (n=1,33): 53,1°
+```
+
+Phương rung còn lại (đường đỏ) không bao giờ rơi vào điểm mù — nó phản xạ
+khoẻ dần đều tới 100% ở góc là. Vậy nên ánh sáng hắt từ mặt nước quanh góc
+Brewster là ánh sáng **đã được lọc sẵn**: gần như thuần một phương phân cực
+ngang.
+
+## Kính râm phân cực là bài Malus giải sẵn
+
+Chói loá trên mặt hồ, mặt đường nhựa ướt, nắp ca-pô — phần lớn là phản xạ
+quanh vùng Brewster, rung **ngang**. Kính râm phân cực chỉ việc đặt trục
+truyền **dọc**: [định luật Malus](/vi/posts/dinh-luat-malus-xoay-duoc) với
+cos90° làm phần chói tắt ngóm, trong khi ánh sáng tán xạ tứ phương từ cảnh
+vật chỉ mất nửa. Người câu cá đeo kính này nhìn **xuyên** mặt nước thấy cá —
+không phải kính "nhìn xuyên" gì cả, nó chỉ tắt lớp gương loá đè trên mặt
+nước. Nghiệm ngay được: nghiêng đầu 90° khi đeo kính phân cực nhìn mặt hồ —
+chói loá **bật lại** vì trục kính đã xoay vào phương của nó.
+
+Dân chụp ảnh vặn filter phân cực trên ống kính cùng lý do: xoá phản xạ trên
+mặt nước, lá cây, cửa kính — và bầu trời sẫm lại (ánh sáng tán xạ từ trời
+cũng phân cực một phần, họ hàng với [nghịch lý chồng kính
+phân cực](/vi/posts/nghich-ly-chong-kinh-phan-cuc)).
+
+## Trường hợp biên: cửa sổ tàng hình cho laser
+
+[Bài phản xạ toàn phần](/vi/posts/khuc-xa-va-phan-xa-toan-phan) kể về biên
+100% — ánh sáng bị nhốt tuyệt đối. Góc Brewster là biên đối xứng phía bên
+kia: **0%** — cánh cửa mở tuyệt đối, nhưng chỉ cho một phương rung.
+
+Ống laser khí đời đầu gặp bài toán oái oăm: ánh sáng chạy đi về giữa hai
+gương cả trăm lượt, mỗi lượt xuyên hai cửa sổ thuỷ tinh của ống. Cửa vuông
+góc bình thường hắt 4% mỗi mặt — qua trăm lượt thì laser tắt trước khi kịp
+khuếch đại. Giải pháp: **nghiêng cửa sổ đúng 56,3°**. Phương phân cực song
+song đi xuyên không mất một phần nghìn nào, lượt nào cũng vậy; phương kia bị
+hắt bớt mỗi lượt và bị loại khỏi cuộc chơi. Kết quả phụ thành đặc sản: chùm
+laser ra đời đã phân cực thẳng tắp — không phải vì ai lọc nó, mà vì cánh cửa
+chỉ miễn phí với một phương rung.

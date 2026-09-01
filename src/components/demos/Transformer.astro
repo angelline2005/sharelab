@@ -1,0 +1,104 @@
+---
+// Ideal transformer: V2 = V1·N2/N1, and with power conserved I2 = I1·N1/N2.
+// Primary fixed at 220 V; sliders set the two windings. The drawing shows the
+// shared iron core with turn counts sketched proportionally. Static redraw.
+---
+
+<figure class="demo" data-demo="transformer">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Cuộn sơ cấp N₁ (vòng) <output data-out="n1"></output>
+      <input type="range" data-in="n1" min="5" max="1000" step="5" value="440" /></label>
+    <label>Cuộn thứ cấp N₂ (vòng) <output data-out="n2"></output>
+      <input type="range" data-in="n2" min="5" max="1000" step="5" value="10" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Nguồn 220 V xoay chiều vào cuộn sơ cấp; tải tiêu thụ 100 W. Điện áp ra chỉ
+    phụ thuộc <em>tỉ số vòng dây</em> — và dòng điện chạy ngược tỉ số ấy, vì
+    máy không được phép in thêm công suất.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const V1 = 220, P = 100;
+  const PRI = '#2563eb', SEC = '#dc2626';
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (n: string) => root.querySelector(`[data-in="${n}"]`) as HTMLInputElement;
+    const output = (n: string) => root.querySelector(`[data-out="${n}"]`) as HTMLOutputElement;
+
+    function draw() {
+      const n1 = Number(input('n1').value), n2 = Number(input('n2').value);
+      output('n1').textContent = String(n1);
+      output('n2').textContent = String(n2);
+      const V2 = (V1 * n2) / n1;
+      const I1 = P / V1, I2 = P / V2;
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.42);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+
+      // Iron core: rectangular ring.
+      const cx = cssW / 2, coreW = cssW * 0.34, coreH = cssH * 0.62, t = 14;
+      const x0 = cx - coreW / 2, y0 = cssH * 0.16;
+      ctx.strokeStyle = fg; ctx.lineWidth = t; ctx.globalAlpha = 0.25;
+      ctx.strokeRect(x0, y0, coreW, coreH);
+      ctx.globalAlpha = 1; ctx.lineWidth = 1;
+
+      // Windings: loop count sketched on each leg (capped for legibility).
+      const wind = (xLeg: number, n: number, colour: string) => {
+        const loops = Math.max(2, Math.min(18, Math.round(n / 40) + 2));
+        const h = coreH * 0.7, yTop = y0 + coreH * 0.15;
+        ctx.strokeStyle = colour; ctx.lineWidth = 2;
+        for (let i = 0; i < loops; i++) {
+          const y = yTop + (h * i) / (loops - 1);
+          ctx.beginPath();
+          ctx.ellipse(xLeg, y, t * 1.4, h / loops / 2.4, 0, 0, Math.PI * 2);
+          ctx.stroke();
+        }
+        ctx.lineWidth = 1;
+      };
+      wind(x0, n1, PRI);
+      wind(x0 + coreW, n2, SEC);
+
+      ctx.fillStyle = fg; ctx.globalAlpha = 0.65;
+      ctx.font = '11px system-ui,sans-serif'; ctx.textAlign = 'center';
+      ctx.fillText(`N₁ = ${n1}`, x0, y0 + coreH + 22);
+      ctx.fillText(`220 V`, x0, y0 - 10);
+      ctx.fillText(`N₂ = ${n2}`, x0 + coreW, y0 + coreH + 22);
+      ctx.fillText(`${V2 >= 1000 ? (V2 / 1000).toFixed(2).replace('.', ',') + ' kV' : V2.toFixed(1).replace('.', ',') + ' V'}`, x0 + coreW, y0 - 10);
+      ctx.fillText('lõi sắt', cx, y0 + coreH / 2 + 4);
+      ctx.globalAlpha = 1;
+
+      const fmtV = V2 >= 1000 ? `${(V2 / 1000).toFixed(2).replace('.', ',')} kV` : `${V2.toFixed(1).replace('.', ',')} V`;
+      const fmtI = (x: number) => x >= 1 ? `${x.toFixed(2).replace('.', ',')} A` : `${(x * 1000).toFixed(0)} mA`;
+      readout.innerHTML =
+        `Tỉ số ${n2}:${n1} → ra <b>${fmtV}</b> · dòng: sơ cấp ${fmtI(I1)}, thứ cấp <b>${fmtI(I2)}</b>` +
+        ` · công suất hai bên đều ${P} W`;
+    }
+
+    root.querySelectorAll('input').forEach((el) => el.addEventListener('input', draw));
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="transformer"]').forEach(setup);
+</script>

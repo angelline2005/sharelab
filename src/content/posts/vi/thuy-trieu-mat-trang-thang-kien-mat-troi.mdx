@@ -1,0 +1,68 @@
+---
+title: "Thuỷ triều: Mặt Trời kéo mạnh gấp 179 lần, sao Mặt Trăng vẫn thắng kiện?"
+description: "Thuỷ triều không quan tâm ai kéo mạnh — nó chỉ đo ai kéo LỆCH giữa hai bờ Trái Đất. Lực triều rơi theo 1/d³, và ở thước đo đó Mặt Trăng gần thắng Mặt Trời xa với tỉ số 2,2:1."
+pubDate: 2026-09-02
+tags: ["vat-ly", "thien-van", "javascript"]
+translationId: "thuy-trieu-mat-trang-thang-kien-mat-troi"
+---
+
+import TidalForce from '../../../components/demos/TidalForce.astro';
+
+Bảng lực hấp dẫn ghi rõ ràng: Mặt Trời kéo Trái Đất mạnh gấp **179 lần** Mặt
+Trăng. Vậy mà lịch thuỷ triều ở mọi cảng biển lại chép theo Mặt Trăng, Mặt
+Trời chỉ được ghi chú bên lề. Vụ "án ngược đời" này xử bằng một demo:
+
+<TidalForce />
+
+## Thuỷ triều không đo lực — nó đo độ *lệch* của lực
+
+Nhầm lẫn phổ biến nhất: "Mặt Trăng hút nước dâng lên". Nếu chỉ có thế, nước
+chỉ dồn về **một** phía — nhưng mỗi ngày có **hai** con nước, và búi nước thứ
+hai nằm ở phía *quay lưng* với Mặt Trăng. Chìa khoá: cả Trái Đất đang rơi tự
+do về phía Mặt Trăng. Bờ gần bị kéo mạnh hơn tâm — nước bên đó *vượt lên
+trước*; bờ xa bị kéo yếu hơn tâm — nước bên đó *rớt lại sau*. Nhìn từ Trái
+Đất, hai bên cùng phình ra: thuỷ triều là **hiệu số** lực kéo giữa các bờ,
+không phải bản thân lực kéo.
+
+Mà hiệu số thì có luật giảm riêng: lực hấp dẫn rơi theo 1/d², nên *độ chênh*
+của nó giữa hai điểm cách nhau cỡ đường kính Trái Đất rơi theo **1/d³** — thêm
+một bậc lũy thừa. Chính bậc thừa đó lật kèo:
+
+```
+F_triều ∝ M/d³:  Mặt Trăng/Mặt Trời = 2,18
+```
+
+Mặt Trời to hơn 27 triệu lần nhưng xa hơn 390 lần, và 390³ nuốt chửng lợi thế
+khối lượng. Ở toà án 1/d², Mặt Trời thắng 179–1; sang toà 1/d³, Mặt Trăng
+thắng 2,2–1 — thuỷ triều xử ở toà thứ hai.
+
+## Khi hai nguyên đơn xếp hàng: triều cường, triều kém
+
+Mặt Trời thua nhưng không trắng tay — 0,46 phần của nó cộng/trừ vào phần Mặt
+Trăng tuỳ góc xếp hàng. Trăng non hay trăng tròn (θ = 0/180°): hai búi nước
+chồng khít, biên độ 1 + 0,46 = **1,46×** — triều cường. Trăng bán nguyệt
+(θ = 90°): búi của Mặt Trời đè lên chỗ *trũng* của Mặt Trăng, còn 0,54× —
+triều kém. Tỉ lệ cường/kém ~**2,7 lần**, đúng nhịp âm lịch mà dân đi biển
+thuộc lòng từ nghìn năm trước khi có công thức.
+
+Thêm thanh trượt khoảng cách: quỹ đạo Mặt Trăng là elip
+([Kepler không cho ai đi đường tròn](/vi/posts/dinh-luat-kepler-iii-va-duong-thang-cua-he-mat-troi)),
+từ cận điểm 357 000 km tới viễn điểm 406 000 km — nhờ mũ ba, lực triều chênh
+tới **47%**. Trăng tròn rơi đúng cận điểm ("siêu trăng") cộng triều cường:
+những đợt ngập ven biển mạnh nhất năm thường mang chữ ký kép ấy.
+
+## Trường hợp biên: khi lực triều đủ mạnh để nhào cả đá
+
+Kéo Mặt Trăng lại gần trong demo và tưởng tượng đi xa hơn nữa: 1/d³ tăng
+không phanh. Ở khoảng cách đủ gần — **giới hạn Roche**, cỡ 2,5 bán kính hành
+tinh — lực triều thắng cả lực hấp dẫn tự thân của vệ tinh: nó bị xé thành
+mảnh. Vành đai Sao Thổ nhiều khả năng là một vệ tinh đã trả giá đúng như thế,
+và Mặt Trăng của ta thời mới sinh từng ở gần gấp mười — thuỷ triều thời đó
+cao gấp nghìn lần, nhào đại dương magma như nhồi bột.
+
+Chuyện chưa hết: lực triều của Trái Đất cũng nhào Mặt Trăng, và đã **hãm nó
+tới khoá cứng** — nó xoay đúng một vòng mỗi vòng quỹ đạo, vĩnh viễn chìa một
+mặt về ta. Trái Đất đang chịu cùng bản án với tốc độ chậm hơn: ma sát triều
+kéo dài ngày thêm ~2 mili-giây mỗi thế kỷ, và đẩy Mặt Trăng lùi xa 3,8 cm
+mỗi năm. Hai búi nước bạn kéo trong demo, hoá ra, là chiếc phanh tay đang
+tịnh tiến cả hệ Trái Đất – Mặt Trăng về trạng thái dừng của nó.

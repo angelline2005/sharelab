@@ -1,0 +1,118 @@
+---
+// Artificial gravity in a spinning ring: a = ω²r. Sliders for ring radius and
+// spin rate; the readout converts to g, gives the head-to-feet gradient for a
+// 1.7 m body, and a comfort verdict based on spin rate. Static redraw.
+---
+
+<figure class="demo" data-demo="centrifuge">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Bán kính vành trạm r (m) <output data-out="r"></output>
+      <input type="range" data-in="r" min="2" max="250" step="1" value="100" /></label>
+    <label>Tốc độ quay (vòng/phút) <output data-out="rpm"></output>
+      <input type="range" data-in="rpm" min="0.5" max="15" step="0.1" value="3" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Đứng áp lưng vào vành trong của trạm quay, sàn đẩy bạn vào tâm — và cảm
+    giác y hệt trọng lực hướng ra ngoài. "Trọng lực" ấy là a = ω²r: chỉnh hai
+    thanh để chạm đúng 1g, rồi thử thu nhỏ trạm xem cái giá phải trả.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const G = 9.81, BODY = 1.7;
+  const RING = '#2563eb', ARROW = '#dc2626', SPIN = '#f59e0b';
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (k: string) => root.querySelector(`[data-in="${k}"]`) as HTMLInputElement;
+    const output = (k: string) => root.querySelector(`[data-out="${k}"]`) as HTMLOutputElement;
+
+    function draw() {
+      const r = Number(input('r').value), rpm = Number(input('rpm').value);
+      output('r').textContent = String(r);
+      output('rpm').textContent = rpm.toFixed(1).replace('.', ',');
+      const w = (rpm * 2 * Math.PI) / 60;
+      const a = w * w * r;
+      const gLoad = a / G;
+      const gradPct = Math.min(100, (BODY / r) * 100);
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.44);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+
+      const cx = cssW / 2, cy = cssH / 2;
+      const R = Math.min(cssW, cssH) * 0.42 * (0.5 + (r / 250) * 0.5);
+
+      // Ring with hub and two spokes.
+      ctx.strokeStyle = RING; ctx.lineWidth = 8; ctx.globalAlpha = 0.7;
+      ctx.beginPath(); ctx.arc(cx, cy, R, 0, Math.PI * 2); ctx.stroke();
+      ctx.lineWidth = 2; ctx.globalAlpha = 0.4;
+      ctx.beginPath(); ctx.moveTo(cx - R, cy); ctx.lineTo(cx + R, cy); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(cx, cy - R); ctx.lineTo(cx, cy + R); ctx.stroke();
+      ctx.globalAlpha = 1; ctx.lineWidth = 1;
+
+      // Spin arrow, length hinting at rpm.
+      const span = 0.5 + (rpm / 15) * 1.2;
+      ctx.strokeStyle = SPIN; ctx.lineWidth = 3;
+      ctx.beginPath(); ctx.arc(cx, cy, R + 16, -Math.PI / 2, -Math.PI / 2 + span); ctx.stroke();
+      const tip = -Math.PI / 2 + span;
+      const tx = cx + (R + 16) * Math.cos(tip), ty = cy + (R + 16) * Math.sin(tip);
+      ctx.fillStyle = SPIN;
+      ctx.beginPath();
+      ctx.moveTo(tx + 10 * Math.cos(tip + Math.PI / 2), ty + 10 * Math.sin(tip + Math.PI / 2));
+      ctx.lineTo(tx + 5 * Math.cos(tip), ty + 5 * Math.sin(tip));
+      ctx.lineTo(tx - 5 * Math.cos(tip), ty - 5 * Math.sin(tip));
+      ctx.fill(); ctx.lineWidth = 1;
+
+      // Stick figure standing on the inner rim at the bottom, head to center.
+      const fy = cy + R - 6;
+      const hFig = Math.max(10, Math.min(30, R * (BODY / r) * 3 + 10));
+      ctx.strokeStyle = fg; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.moveTo(cx, fy); ctx.lineTo(cx, fy - hFig); ctx.stroke();
+      ctx.beginPath(); ctx.arc(cx, fy - hFig - 4, 4, 0, Math.PI * 2); ctx.stroke();
+      ctx.lineWidth = 1;
+      // "Gravity" arrow at the figure: outward.
+      ctx.strokeStyle = ARROW; ctx.fillStyle = ARROW; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.moveTo(cx + 14, fy - hFig); ctx.lineTo(cx + 14, fy); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(cx + 14, fy + 5); ctx.lineTo(cx + 9, fy - 3); ctx.lineTo(cx + 19, fy - 3); ctx.fill();
+      ctx.lineWidth = 1;
+      ctx.fillStyle = fg; ctx.globalAlpha = 0.65; ctx.font = '10px system-ui,sans-serif';
+      ctx.textAlign = 'left';
+      ctx.fillText('"trọng lực"', cx + 24, fy - hFig / 2);
+      ctx.globalAlpha = 1;
+
+      const comfort =
+        rpm <= 2 ? 'êm — tai trong hầu như không nhận ra vòng quay' :
+        rpm <= 6 ? 'quay đầu là chao đảo — cần huấn luyện' :
+        'say tức thì với người chưa quen';
+      readout.innerHTML =
+        `a = ω²r = <b>${gLoad.toFixed(2).replace('.', ',')}g</b>` +
+        ` · chênh đầu–chân (người 1,7 m): <b>${gradPct.toFixed(1).replace('.', ',')}%</b>` +
+        ` · ${rpm.toFixed(1).replace('.', ',')} vòng/phút: ${comfort}`;
+    }
+
+    root.querySelectorAll('input').forEach((el) => el.addEventListener('input', draw));
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="centrifuge"]').forEach(setup);
+</script>
