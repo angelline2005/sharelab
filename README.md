@@ -102,6 +102,23 @@ not cover — the importer refuses those. See
 Read the relevant doc before importing — between them they cover the rules the scripts
 can't enforce: no bulk imports, and images are never automatically cleared for reuse.
 
+## 📊 Analytics events
+
+Set `PUBLIC_GTM_ID` (see `.env.example`) to a GTM container — GA4 itself is configured as
+a tag inside that container, not as a separate env var here. Four custom events get pushed
+to `window.dataLayer`, all from `src/scripts/demo-state.ts` and
+`src/components/CookieConsent.astro`:
+
+| Event | Params | Fires |
+|---|---|---|
+| `demo_first_interact` | `demo_id`, `control` | Once per demo per pageview, on the first slider touch. |
+| `demo_share` | `demo_id` | Clicking a demo's "Sao chép liên kết" button. |
+| `internal_link_click` | `link_type` (`related` \| `pager`) | Clicking a related-post or prev/next link on a post. |
+| `consent_banner_shown` / `consent_choice` | — / `consent_choice` (`accepted` \| `declined`) | The cookie banner rendering, and a visitor answering it. |
+
+The one number worth tracking: `demo_first_interact ÷ page_view` — what fraction of readers
+touch a demo at all. See [docs/trust-and-instrumentation.md](docs/trust-and-instrumentation.md).
+
 ## 👀 Want to learn more?
 
 Feel free to check [our documentation](https://docs.astro.build) or jump into our [Discord server](https://astro.build/chat).

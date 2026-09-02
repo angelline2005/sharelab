@@ -30,15 +30,22 @@ const {
   const accept = document.getElementById('cookie-accept');
   const decline = document.getElementById('cookie-decline');
 
+  function pushEvent(event: string, params: Record<string, unknown> = {}) {
+    window.dataLayer = window.dataLayer || [];
+    window.dataLayer.push({ event, ...params });
+  }
+
   function setChoice(value: 'accepted' | 'declined') {
     localStorage.setItem(KEY, value);
     banner?.setAttribute('hidden', '');
     document.dispatchEvent(new CustomEvent('cookie-consent-changed', { detail: value }));
+    pushEvent('consent_choice', { consent_choice: value });
   }
 
   const existing = localStorage.getItem(KEY);
   if (!existing && banner) {
     banner.hidden = false;
+    pushEvent('consent_banner_shown');
   }
 
   accept?.addEventListener('click', () => setChoice('accepted'));

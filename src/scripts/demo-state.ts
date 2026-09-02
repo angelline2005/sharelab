@@ -3,11 +3,33 @@
 // see docs/site-improvements.md Task 3 for why this is a single-file change
 // rather than editing every demo component.
 //
+// Also carries the site's only client-side analytics instrumentation (see
+// docs/trust-and-instrumentation.md Task 3): demo_first_interact, demo_share
+// and internal_link_click. It was already the one script loaded on every
+// post, so a second shared script for four dataLayer.push() calls would have
+// been a second thing to remember to include.
+//
 // Trap: demo scripts are module scripts and run their own setup() (which
 // reads initial input values and draws once) at parse time, before `load`.
 // Restoring earlier than `load` would set values the demo then overwrites
 // with its own defaults, so restore runs on `load` and re-fires 'input' to
 // make the demo recompute on top of the restored values.
+
+// declare global requires this file to already be a module (have some
+// top-level import/export) — it otherwise has neither, since everything
+// here runs for its side effects.
+export {};
+
+declare global {
+  interface Window {
+    dataLayer?: Record<string, unknown>[];
+  }
+}
+
+function pushEvent(event: string, params: Record<string, unknown> = {}) {
+  window.dataLayer = window.dataLayer || [];
+  window.dataLayer.push({ event, ...params });
+}
 
 const DEBOUNCE_MS = 250;
 
@@ -47,7 +69,7 @@ function record(figures: HTMLElement[]) {
   history.replaceState(null, '', hash ? `#${hash}` : location.pathname + location.search);
 }
 
-async function copyLink(button: HTMLButtonElement) {
+async function copyLink(figure: HTMLElement, button: HTMLButtonElement) {
   const url = location.href;
   try {
     await navigator.clipboard.writeText(url);
@@ -61,6 +83,7 @@ async function copyLink(button: HTMLButtonElement) {
     document.execCommand('copy');
     ta.remove();
   }
+  pushEvent('demo_share', { demo_id: figure.dataset.demo });
   const original = button.textContent;
   button.textContent = 'Đã chép';
   button.disabled = true;
@@ -75,22 +98,52 @@ function addShareButton(figure: HTMLElement) {
   button.type = 'button';
   button.className = 'demo-share';
   button.textContent = 'Sao chép liên kết';
-  button.addEventListener('click', () => copyLink(button));
+  button.addEventListener('click', () => copyLink(figure, button));
   figure.appendChild(button);
 }
 
+// Related posts and the pager are the only two internal-link surfaces
+// PostLayout adds beyond the article body itself; this is the one thing that
+// tells us whether either does anything at all.
+function initInternalLinkTracking() {
+  document.addEventListener('click', (e) => {
+    const target = e.target as HTMLElement;
+    const link = target.closest('a');
+    if (!link) return;
+    const linkType = link.closest('.related') ? 'related' : link.closest('.post-pager') ? 'pager' : null;
+    if (!linkType) return;
+    pushEvent('internal_link_click', { link_type: linkType });
+  });
+}
+
 function init() {
+  // Runs on every post regardless of whether it has a demo — the pager and
+  // related-posts links are article chrome, not part of the demo itself.
+  initInternalLinkTracking();
+
   const figures = demoFigures();
   if (figures.length === 0) return;
 
   restore(figures);
   figures.forEach(addShareButton);
 
+  // Once per demo per pageview: the slider fires 'input' continuously while
+  // dragging, so this is tracked separately from the debounced hash record.
+  const interacted = new Set<string>();
+
   let timer: ReturnType<typeof setTimeout> | undefined;
   document.addEventListener('input', (e) => {
     const target = e.target as HTMLElement;
     if (!(target instanceof HTMLInputElement) || !target.dataset.in) return;
-    if (!target.closest('[data-demo]')) return;
+    const figure = target.closest<HTMLElement>('[data-demo]');
+    if (!figure) return;
+
+    const demoId = figure.dataset.demo!;
+    if (!interacted.has(demoId)) {
+      interacted.add(demoId);
+      pushEvent('demo_first_interact', { demo_id: demoId, control: target.dataset.in });
+    }
+
     clearTimeout(timer);
     timer = setTimeout(() => record(figures), DEBOUNCE_MS);
   });
