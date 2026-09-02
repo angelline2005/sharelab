@@ -4,24 +4,55 @@
 // so the layout can be reviewed before AdSense approval comes through.
 const client = import.meta.env.PUBLIC_ADSENSE_CLIENT as string | undefined;
 const slot = import.meta.env.PUBLIC_ADSENSE_SLOT as string | undefined;
+const enabled = Boolean(client && slot);
 ---
 
 {
-  client && slot ? (
-    <ins
-      class="adsbygoogle"
-      style="display:block"
-      data-ad-client={client}
-      data-ad-slot={slot}
-      data-ad-format="auto"
-      data-full-width-responsive="true"
-    />
+  enabled ? (
+    // Reserved height only applies when an ad will actually render — an
+    // empty min-height hole on a page with no slot configured would just
+    // look like a broken box. The <ins> itself resolves to whatever size
+    // the ad ends up being, so the wrapper is what holds the space open
+    // long enough to avoid a layout shift when it does.
+    <div class="ad-reserve">
+      <ins
+        class="adsbygoogle"
+        style="display:block"
+        data-ad-client={client}
+        data-ad-slot={slot}
+        data-ad-format="auto"
+        data-full-width-responsive="true"
+      />
+      {
+        // Required per manual ad unit — without this, AdSense never fills
+        // the <ins> even with valid credentials, so there's nothing to
+        // reserve space against in the first place. is:inline because it
+        // has to run in place, immediately after this exact <ins>.
+      }
+      <script is:inline>
+        (adsbygoogle = window.adsbygoogle || []).push({});
+      </script>
+    </div>
   ) : import.meta.env.DEV ? (
     <div class="ad-placeholder">Ad slot (set PUBLIC_ADSENSE_CLIENT / PUBLIC_ADSENSE_SLOT to enable)</div>
   ) : null
 }
 
 <style>
+  .ad-reserve {
+    display: block;
+    /* Mobile default: "auto" format responsive units tend to land closer
+       to a medium-rectangle shape at narrow widths. */
+    min-height: 280px;
+    margin: 1.5rem 0;
+  }
+  @media (min-width: 420px) {
+    .ad-reserve {
+      /* Enough width for a shorter, more leaderboard-shaped unit — same
+         420px narrow/wide line the demo components use for canvas padding. */
+      min-height: 100px;
+    }
+  }
   .ad-placeholder {
     border: 1px dashed #999;
     border-radius: 8px;
