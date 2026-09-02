@@ -16,6 +16,9 @@ interface Props {
   ogType?: 'website' | 'article';
   publishedTime?: Date;
   modifiedTime?: Date;
+  // Pages with nothing for Google to index yet (the Pagefind shell before its
+  // JS runs) set this instead of being left to the sitemap/robots defaults.
+  noindex?: boolean;
 }
 
 const {
@@ -27,6 +30,7 @@ const {
   ogType = 'website',
   publishedTime,
   modifiedTime,
+  noindex = false,
 } = Astro.props;
 const t = useTranslations(locale);
 const canonicalURL = new URL(Astro.url.pathname, Astro.site);
@@ -73,6 +77,7 @@ const ogImage = absolute(withBase(ogImagePath ?? '/og-default.png'));
     )}
     <link rel="icon" type="image/svg+xml" href={withBase('/favicon.svg')} />
     <link rel="canonical" href={canonicalURL} />
+    {noindex && <meta name="robots" content="noindex, follow" />}
     <link
       rel="alternate"
       type="application/rss+xml"
@@ -111,7 +116,6 @@ const ogImage = absolute(withBase(ogImagePath ?? '/og-default.png'));
         <a href={withBase(`/${locale}/bai-viet/`)}>{t('nav.all')}</a>
         <a href={withBase(`/${locale}/tim-kiem/`)}>{t('nav.search')}</a>
         <a href={withBase(`/${locale}/about/`)}>{t('nav.about')}</a>
-        <a href={withBase(`/${locale}/donate/`)}>{t('nav.donate')}</a>
       </nav>
     </header>
 

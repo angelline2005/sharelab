@@ -31,7 +31,12 @@ export default defineConfig({
       prefixDefaultLocale: true,
     },
   },
-  integrations: [sitemap(), mdx()],
+  integrations: [
+    // /tim-kiem/ is noindex (empty until Pagefind's JS runs) — filtered here
+    // too, or Search Console reports "Submitted URL marked noindex".
+    sitemap({ filter: (page) => !page.includes('/tim-kiem') }),
+    mdx(),
+  ],
   markdown: {
     // Astro 7's default Markdown processor ignores `markdown.rehypePlugins`;
     // plugins only run when the processor is built explicitly like this. MDX

@@ -21,6 +21,10 @@ export const TAG_LABELS: Record<string, Record<string, string>> = {
     'mo-phong': 'Mô phỏng',
     'vat-ly': 'Vật lý',
     javascript: 'JavaScript',
+    // Fallback bucket on /vi/bai-viet/ for a post whose only tags are noise
+    // tags (meaningfulTags(post)[0] || 'other') — without this it renders the
+    // raw English string "other" as a section heading.
+    other: 'Khác',
   },
 };
 
