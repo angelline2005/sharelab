@@ -71,6 +71,13 @@
 
       const dpr = Math.min(devicePixelRatio || 1, 2);
       const cssW = root.clientWidth - 32;
+      // Defensive, and honest about why: a console error once showed arc() given
+      // radius -2.857, which is exactly (0 - 2*40)/28 — a draw that ran while
+      // clientWidth was 32. A clean load at 375 px does not reproduce it, so this
+      // is not a fix for a known-live bug. But every radius below derives from
+      // cssW, so a zero width turns one bad frame into a dead canvas; retrying
+      // next frame costs nothing and removes the failure mode entirely.
+      if (cssW < 120) { requestAnimationFrame(draw); return; }
       const cssH = Math.round(cssW * 0.55);
       canvas.width = cssW * dpr;
       canvas.height = cssH * dpr;

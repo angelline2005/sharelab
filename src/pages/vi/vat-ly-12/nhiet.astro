@@ -1,0 +1,164 @@
+---
+// Hub cho loạt bài nhiệt học và khí lí tưởng lớp 12.
+//
+// Nó lấy dữ liệu từ chính frontmatter của các bài (`series` + `lesson`), nên
+// thêm một bài học là trang này tự dài ra — không có danh sách nào phải sửa tay.
+//
+// Hai điều dễ làm sai, cả hai đều đã xử ở đây:
+//  - `data-pagefind-body` phải bọc thân trang. Thuộc tính đó chỉ xuất hiện đúng
+//    một lần nữa trong repo (PostLayout), và Pagefind chỉ index trang nào mang
+//    nó. Thiếu nó thì bảng công thức nằm ngoài tìm kiếm nội bộ hoàn toàn.
+//  - `noindex` cho tới khi có ít nhất sáu bài. Một trang gần rỗng nằm trong
+//    sitemap, giữa lúc hồ sơ AdSense đang xét, là mẫu trang mỏng kinh điển.
+//    Gỡ prop này VÀ mục '/vat-ly-12/nhiet/' trong NOINDEXED ở astro.config.mjs
+//    cùng lúc — bỏ một nửa sẽ khiến Search Console báo lỗi.
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import { withBase } from '../../../utils/url';
+
+const locale = 'vi';
+const SERIES = 'vat-ly-12-nhiet';
+
+const lessons = (
+  await getCollection('posts', ({ id, data }) =>
+    id.startsWith(`${locale}/`) && !data.draft && data.series === SERIES,
+  )
+).sort((a, b) => (a.data.lesson ?? 0) - (b.data.lesson ?? 0));
+
+const href = (p: (typeof lessons)[number]) =>
+  withBase(`/${locale}/posts/${p.id.split('/').slice(1).join('/')}/`);
+
+// Bảng công thức. Mỗi dòng nêu đúng MỘT bài sở hữu — quy tắc "mỗi công thức một
+// chủ sở hữu" trong phiếu giao việc. `lesson` khớp với số bài trong frontmatter;
+// dòng nào chưa có bài tương ứng thì hiện chữ mà chưa có link.
+const FORMULAS: { formula: string; meaning: string; lesson: number }[] = [
+  { formula: 'p₁/T₁ = p₂/T₂', meaning: 'quá trình đẳng tích, thể tích không đổi', lesson: 2 },
+  { formula: 'V₁/T₁ = V₂/T₂', meaning: 'định luật Charles, quá trình đẳng áp', lesson: 3 },
+  { formula: 'p₁V₁ = p₂V₂', meaning: 'định luật Boyle, quá trình đẳng nhiệt', lesson: 4 },
+  { formula: 'p₁V₁/T₁ = p₂V₂/T₂', meaning: 'phương trình trạng thái, hai trạng thái', lesson: 5 },
+  { formula: 'Q = mcΔt', meaning: 'nhiệt lượng và nhiệt dung riêng', lesson: 6 },
+  { formula: 'ΔU = A + Q', meaning: 'định luật I nhiệt động lực học', lesson: 8 },
+  { formula: 'pV = nRT', meaning: 'phương trình Clapeyron, thang Kelvin và R', lesson: 9 },
+  { formula: 'Q = λm và Q = Lm', meaning: 'nhiệt nóng chảy riêng và nhiệt hoá hơi riêng', lesson: 10 },
+  { formula: 'Ē = (3/2)kT', meaning: 'động năng phân tử theo mô hình động học', lesson: 11 },
+];
+
+const byLesson = new Map(lessons.map((p) => [p.data.lesson, p]));
+
+const title = 'Vật lý nhiệt và khí lý tưởng lớp 12';
+const description =
+  'Toàn bộ công thức chương nhiệt và khí lý tưởng lớp 12 — mỗi bài một đồ thị tương tác kéo được, và một chỗ nói rõ mô hình thôi đúng ở đâu.';
+---
+
+<BaseLayout locale={locale} title={title} description={description} noindex>
+  <article data-pagefind-body>
+    <h1>{title}</h1>
+
+    <p class="lede">
+      Chương nhiệt và chương khí lí tưởng là hai chương học đầu năm, và cũng là
+      phần chiếm tỉ trọng lớn nhất trong đề thi tốt nghiệp. Mỗi bài ở đây có một
+      đồ thị kéo được: đổi một con số, xem đường cong đổi theo, rồi mới đọc công
+      thức.
+    </p>
+
+    {lessons.length > 0 ? (
+      <ol class="lesson-list">
+        {lessons.map((p) => (
+          <li>
+            <a href={href(p)}>{p.data.title}</a>
+            <p>{p.data.description.split('—')[0].trim()}</p>
+          </li>
+        ))}
+      </ol>
+    ) : (
+      <p>Loạt bài đang được viết.</p>
+    )}
+
+    <h2>Bảng công thức</h2>
+    <p>
+      Mỗi công thức thuộc về đúng một bài — bài đó giải thích ký hiệu, đơn vị và
+      chỗ công thức thôi đúng. Những dòng chưa có liên kết là bài chưa lên.
+    </p>
+
+    <div class="table-scroll">
+      <table class="formula-table">
+        <thead>
+          <tr>
+            <th scope="col">Công thức</th>
+            <th scope="col">Dùng khi</th>
+            <th scope="col">Bài</th>
+          </tr>
+        </thead>
+        <tbody>
+          {FORMULAS.map((row) => {
+            const post = byLesson.get(row.lesson);
+            return (
+              <tr>
+                <td class="formula">{row.formula}</td>
+                <td>{row.meaning}</td>
+                <td>{post ? <a href={href(post)}>bài {row.lesson}</a> : <span class="pending">bài {row.lesson}</span>}</td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    </div>
+  </article>
+</BaseLayout>
+
+<style>
+  .lede {
+    font-size: 1.05rem;
+    line-height: 1.7;
+    max-width: 40em;
+  }
+  .lesson-list {
+    padding-left: 1.4rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin: 1.5rem 0 2.5rem;
+  }
+  .lesson-list a {
+    font-weight: 600;
+  }
+  .lesson-list p {
+    margin: 0.15rem 0 0;
+    font-size: 0.9rem;
+    opacity: 0.75;
+    line-height: 1.5;
+  }
+  /* Bảng phải tự cuộn trong khung của nó, không được đẩy cả trang trượt ngang. */
+  .table-scroll {
+    overflow-x: auto;
+    margin: 1.25rem 0;
+  }
+  .formula-table {
+    border-collapse: collapse;
+    width: 100%;
+    min-width: 30rem;
+    font-size: 0.92rem;
+  }
+  .formula-table th,
+  .formula-table td {
+    text-align: left;
+    padding: 0.55rem 0.7rem;
+    border-bottom: 1px solid rgba(128, 128, 128, 0.25);
+    vertical-align: top;
+  }
+  .formula-table thead th {
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    opacity: 0.6;
+    font-weight: 600;
+  }
+  .formula-table td.formula {
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+    font-weight: 600;
+  }
+  .pending {
+    opacity: 0.45;
+  }
+</style>

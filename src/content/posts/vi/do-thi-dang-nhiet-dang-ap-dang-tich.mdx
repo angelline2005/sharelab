@@ -1,0 +1,113 @@
+---
+title: "Đồ thị đẳng nhiệt, đẳng áp, đẳng tích lớp 12: một quá trình, ba hình khác hẳn nhau"
+seoTitle: "Đồ thị đẳng nhiệt, đẳng áp, đẳng tích lớp 12"
+description: "Cùng một khối khí 300 K: hyperbol trên p–V hoá đoạn nằm ngang trên p–T rồi thành đoạn dọc trên V–T — đọc đồ thị ba đẳng quá trình lớp 12 mà không học vẹt."
+pubDate: 2026-09-02
+translationId: "do-thi-dang-nhiet-dang-ap-dang-tich"
+grade: 12
+chapter: "nhiet"
+lesson: 1
+series: "vat-ly-12-nhiet"
+tags: ["vat-ly", "nhiet-hoc", "javascript"]
+---
+
+import IsoprocessAxes from '../../../components/demos/IsoprocessAxes.astro';
+
+Một mol khí ở 300 K chiếm 24,6 L và đẩy vào thành bình 101,4 kPa. Cho nó giãn
+ra ở nhiệt độ không đổi rồi vẽ lên trục p–V: một hyperbol đẹp như trong sách.
+Vẽ **đúng quá trình đó** lên trục p–T, hyperbol biến mất — còn lại một đoạn
+thẳng dựng đứng. Không con số nào đổi; chỉ hai cái trục đổi.
+
+<IsoprocessAxes />
+
+## Một điểm trạng thái, ba tấm ảnh
+
+Trạng thái của một khối khí cần ba con số: p, V và T. Nhưng chúng không độc
+lập — phương trình khí lý tưởng buộc chúng vào nhau, nên biết hai là suy ra cái
+thứ ba. Vì thế tờ giấy hai chiều đã đủ kể chuyện: mọi đồ thị chất khí đều là
+một **hình chiếu**, theo một trong ba hướng quen mặt p–V, p–T và V–T, còn biến
+thứ ba chỉ lặn xuống dưới chờ bạn tính lại. Điểm xuất phát dùng suốt bài này là
+mốc dễ nhớ nhất của chương: **1 mol, 300 K, 24,6 L, 101,4 kPa**.
+
+## Đẳng nhiệt: hyperbol chỉ là hyperbol trên p–V
+
+Giữ T = 300 K rồi thay đổi thể tích. Tích pV đứng yên ở **2 494 kPa·L**: nén
+còn 12,3 L thì áp suất lên 202,8 kPa, giãn tới 49,2 L thì áp suất tụt về
+50,7 kPa. Nhân thử cả ba cặp số đó, cả ba đều ra 2 494.
+
+Trên p–V, quan hệ p = 2 494/V vẽ ra hyperbol — hình mọi học sinh đều thuộc.
+Nhưng trên p–T thì T không nhúc nhích, nên mọi trạng thái xếp chồng lên **một
+đường dựng đứng tại 300 K** và điểm đánh dấu chỉ trượt lên trượt xuống trên đó.
+Trên V–T vẫn đường dựng đứng ấy, chỉ khác là bây giờ V trượt.
+
+Đây là chỗ trí nhớ phản chủ. Thuộc lòng "đẳng nhiệt là hyperbol" rồi gặp một đề
+vẽ trên p–T, người ta đi tìm một đường cong **không hề tồn tại**, trong khi đáp
+án là đoạn thẳng nhàm chán nhất trong ba hình.
+
+## Hai đường thẳng đổi chỗ cho nhau
+
+Đẳng áp ghim áp suất: giữ p = 101,4 kPa và nung từ 300 K lên 400 K thì thể tích
+nở từ 24,6 L lên **32,8 L**, tỉ số V/T đứng yên ở 0,0820 L/K. Trên V–T đó là
+đoạn thẳng có phần kéo dài chĩa về gốc toạ độ; trên p–V và p–T nó lại **nằm
+ngang**, vì đại lượng bị ghim đúng là cái đang nằm trên trục tung.
+
+Đẳng tích hoán vị mọi thứ. Giữ V = 24,6 L và nung cùng khoảng ấy, áp suất leo
+từ 101,4 kPa lên **135,2 kPa**, tỉ số p/T đứng yên ở 0,3380 kPa/K. Giờ đường
+chĩa về gốc nằm trên p–T, p–V nhận một đoạn **dựng đứng**, V–T nhận một đoạn
+nằm ngang.
+
+Tức là hai quá trình vẽ ra cùng một bộ ba hình — thẳng qua gốc, nằm ngang, dựng
+đứng — chỉ khác chỗ hình nào rơi vào trục nào. Phần vật lý riêng của từng cái
+nằm ở
+[quá trình đẳng tích, p/T = hằng số](/vi/posts/qua-trinh-dang-tich-ap-suat-lop-xe/)
+và [định luật Charles cho quá trình đẳng áp](/vi/posts/dinh-luat-charles-dang-ap-va-do-khong-tuyet-doi/);
+cả hai bắt nguồn từ [pV = nRT](/vi/posts/phuong-trinh-khi-ly-tuong-va-cai-bay-do-c),
+và cả loạt bài nằm ở [trang nhiệt học lớp 12](/vi/vat-ly-12/nhiet/).
+
+## Ba câu hỏi đọc được mọi đồ thị chất khí
+
+**Trục nào vắng mặt?** Đại lượng không có trên hai trục là đại lượng bạn phải
+tự truy ra — và nếu nó bị ghim, quá trình mang tên nó.
+
+**Đường có chĩa về gốc toạ độ không?** Thẳng qua gốc nghĩa là hai đại lượng tỉ
+lệ thuận, tức có một tỉ số được bảo toàn. Bẫy đơn vị nằm ngay đây: chỉ đúng khi
+trục nhiệt độ là **kelvin**. Vẽ lại trên thang độ C, đúng đường ấy cắt trục
+hoành ở −273,15 °C và chẳng qua gốc nào cả.
+
+**Hai đầu mút cho những cặp số nào?** Có hai trạng thái là có
+p₁V₁/T₁ = p₂V₂/T₂, giải được đại lượng còn thiếu mà không cần số mol.
+
+## Ba đồ thị, ba câu tự kiểm
+
+**Một.** Trên p–T có một đoạn nằm ngang chạy từ 300 K tới 400 K. Đó là quá
+trình gì, và nếu thể tích ban đầu là 24,6 L thì thể tích cuối bằng bao nhiêu?
+*Đẳng áp — p nằm trên trục tung và nó không đổi. V₂ = 24,6 × 400/300 = 32,8 L.*
+
+**Hai.** Trên V–T có một đoạn dựng đứng tại T = 300 K, chạy từ 24,6 L tới
+49,2 L. Vẽ lại trên p–V thì được hình gì, và áp suất cuối là bao nhiêu?
+*Nhiệt độ đứng yên nên đây là đẳng nhiệt, và trên p–V nó là hyperbol.
+p₂ = 2 494/49,2 = 50,7 kPa.*
+
+**Ba.** Trên p–V có một đoạn dựng đứng tại V = 24,6 L, áp suất đi từ 101,4 kPa
+lên 135,2 kPa. Nhiệt độ cuối là bao nhiêu?
+*Đẳng tích, nên p/T được bảo toàn: T₂ = 300 × 135,2/101,4 = 400 K.*
+
+## Trường hợp biên: hyperbol gãy thành một đoạn nằm ngang
+
+Cả ba tấm ảnh đều vẽ từ pV = nRT, phương trình coi phân tử là chất điểm không
+kích thước, không hút nhau. Nén tiếp đường đẳng nhiệt 300 K mà xem nó hứa gì:
+xuống 1,23 L đòi 2 028 kPa, xuống 0,246 L đòi 10 139 kPa — khoảng 100 atm.
+Hyperbol trên giấy vọt lên vô hạn, không bao giờ chạm trục.
+
+Chất khí thật không chơi tới đó. Ép đủ chặt, thể tích riêng của phân tử và lực
+hút giữa chúng bắt đầu có tiếng nói, đường thực tế tách dần khỏi hyperbol — rồi
+tại ngưỡng ngưng tụ nó **gãy**: thể tích tiếp tục co mà áp suất **đứng im**, vì
+phần khí thừa hoá lỏng thay vì đẩy mạnh hơn. Hyperbol mọc ra một đoạn nằm ngang
+mà pV = nRT không có chỗ nào sinh ra, và suốt đoạn phẳng ấy pV lẫn V/T đều tụt
+— dù T đứng yên và p cũng đứng yên.
+
+Hai đường "chĩa về gốc toạ độ" cũng là lời hứa trên giấy: không khối khí nào đi
+hết đoạn kéo dài đó tới 0 K, vì dọc đường nó hoá lỏng rồi hoá rắn — và khi đã
+rắn thì [một độ lạnh thêm đẻ ra hàng trăm
+atm](/vi/posts/nuoc-dong-bang-day-670-atm-vo-ong-thep). Giao điểm ở gốc là tính
+chất của mô hình, không phải chuyến đi có thật.

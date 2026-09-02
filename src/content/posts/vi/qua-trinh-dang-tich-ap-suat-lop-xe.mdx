@@ -1,0 +1,118 @@
+---
+title: "Chạy xa lộ, lốp xe tự tăng 29,5 kPa: quá trình đẳng tích lớp 12"
+seoTitle: "Quá trình đẳng tích lớp 12: công thức p/T"
+description: "Lốp bơm 220 kPa lúc nguội 25 °C, nóng lên 65 °C thì áp suất thành 249,5 kPa mà không ai bơm thêm — quá trình đẳng tích lớp 12 và công thức p/T = hằng số."
+pubDate: 2026-09-02
+translationId: "qua-trinh-dang-tich-ap-suat-lop-xe"
+grade: 12
+chapter: "nhiet"
+lesson: 2
+series: "vat-ly-12-nhiet"
+tags: ["vat-ly", "nhiet-hoc", "javascript"]
+---
+
+import IsochoricTyre from '../../../components/demos/IsochoricTyre.astro';
+
+Bơm lốp lúc sáng sớm, đồng hồ dừng đúng con số bạn muốn. Chạy một tiếng trên
+xa lộ, khối khí bên trong nóng lên bốn chục độ — áp suất đã khác, dù không ai
+bơm thêm một hơi nào và lốp vẫn nguyên hình dạng cũ. Thể tích đứng yên, chỉ
+nhiệt độ chạy: đó đúng là định nghĩa của **quá trình đẳng tích**. Kéo thanh
+nhiệt độ, nhìn kim đồng hồ đi theo.
+
+<IsochoricTyre />
+
+## Công thức p/T = hằng số, và vì sao nó không mang tên ai
+
+Đây là chỗ làm học sinh lớp 12 lúng túng khi tra mạng: trong chương trình
+hiện hành, quá trình đẳng tích **không được đặt tên định luật nào**. Nó là hệ
+quả rút ra trong ba dòng từ phương trình trạng thái, viết cho hai trạng thái
+của cùng một khối khí:
+
+p₁V₁/T₁ = p₂V₂/T₂
+
+Đẳng tích nghĩa là V₁ = V₂. Cùng một số ở cả hai vế thì nó rút gọn, và thứ
+còn lại là toàn bộ bài học:
+
+**p₁/T₁ = p₂/T₂**, hay **p/T = hằng số**
+
+Bằng lời: với một khối khí kín có thể tích không đổi, áp suất **tỉ lệ thuận
+với nhiệt độ tuyệt đối** — nên trên hệ trục p–T nó là một đường thẳng, hình
+duy nhất cần nhớ. Cùng quá trình ấy trên p–V lại là đoạn thẳng đứng, trên
+V–T là đoạn nằm ngang; ba hình của một chuyện nằm cạnh nhau trong bài [đồ thị
+ba đẳng quá trình](/vi/posts/do-thi-dang-nhiet-dang-ap-dang-tich/), và cả
+loạt bài ở trang [Vật lý nhiệt và khí lý tưởng lớp 12](/vi/vat-ly-12/nhiet/).
+
+## 220 kPa lúc nguội thành 249,5 kPa
+
+Đổi sang kelvin trước, không có ngoại lệ: T₁ = 25 + 273,15 = 298,15 K và
+T₂ = 65 + 273,15 = 338,15 K.
+
+p₂ = p₁ · T₂/T₁ = 220 · 338,15/298,15 = **249,5 kPa**
+
+Lốp tự tăng 29,5 kPa, tức 13,4%, chỉ nhờ mặt đường tháng sáu và ma sát của
+chính nó. Độ dốc đường thẳng là p₁/T₁ = 0,738 kPa/K, nên có một quy tắc nhẩm
+đáng nhớ: mỗi 10 K nóng thêm là khoảng 7,4 kPa. Đó cũng là lý do mọi hướng
+dẫn đều bảo kiểm tra áp suất **lúc xe nguội** — đo ngay sau chuyến đi sẽ thấy
+dư, xì bớt cho "đúng", rồi sáng hôm sau lốp non thật.
+
+## Cái bẫy quen thuộc: chia bằng độ C ra 572 kPa
+
+Nhân chia thẳng bằng số đo độ C thì phép tính thành 220 · 65/25 = 572,0 kPa:
+lệch 322,5 kPa, cao hơn gấp đôi đáp số đúng.
+
+Lý do không phải mẹo tính mà là ý nghĩa của số 0. Thang Celsius đặt gốc ở
+điểm đóng băng của nước, một mốc tiện tay chứ không phải mốc vật lý, nên
+50 °C không hề "nóng gấp đôi" 25 °C. Tỉ số chỉ có nghĩa trên thang mà số 0 là
+số 0 thật — kelvin. Vạch 0 K ấy có ý nghĩa vật lý gì thuộc về bài [định luật
+Charles cho quá trình đẳng áp và độ không tuyệt
+đối](/vi/posts/dinh-luat-charles-dang-ap-va-do-khong-tuyet-doi/) — Charles là
+tên của đẳng áp, không phải của đẳng tích; cái bẫy này
+ở dạng tổng quát nhất nằm trong bài [pV = nRT và cái bẫy độ
+C](/vi/posts/phuong-trinh-khi-ly-tuong-va-cai-bay-do-c).
+
+## Thanh trượt thể tích có mặt để không làm gì cả
+
+Thanh thứ ba của demo chỉnh thể tích lốp từ 5 L lên 50 L, và đáp số không đổi
+lấy một chữ số. Nó không hỏng — nó đang chứng minh chỗ V rút gọn ở trên, vì
+đề bài rất hay cho sẵn thể tích bình để xem người giải có nhận ra dữ kiện
+thừa không. Thứ **phải** kiểm thay vào đó là khối khí có thật sự **kín** —
+vẫn từng ấy phân tử — và thể tích có thật sự đứng yên. Khi thể tích cũng đổi,
+mà đổi nhanh tới mức nhiệt chưa kịp thoát, câu chuyện khác hẳn: đó là [nén
+đoạn nhiệt trong ống bơm](/vi/posts/nen-doan-nhiet-bom-xe-va-dong-co-diesel).
+
+## Đồng hồ đo lốp không đọc ra con số trong công thức
+
+Đồng hồ đo áp suất lốp là đồng hồ đo **áp suất dư**: nó so bên trong với [khí
+quyển bên ngoài](/vi/posts/ap-suat-khi-quyen-va-tran-10-met-cua-moi-may-bom),
+nên số nó chỉ thấp hơn áp suất tuyệt đối khoảng 101,3 kPa — mà p/T = hằng số
+chỉ đúng với áp suất **tuyệt đối**.
+
+Nếu 220 kPa là số đọc trên đồng hồ, phải cộng khí quyển vào trước: 321,3 kPa
+lúc nguội, lên 364,4 kPa ở 65 °C, và đồng hồ khi đó chỉ 263,1 kPa — tăng
+43,1 kPa. Cùng một quá trình, hai cách đọc, hai con số.
+
+## Ba câu tự kiểm
+
+1. Một bình kín ở 27 °C có áp suất 150 kPa, đem cất vào ngăn đông −3 °C. Áp
+   suất còn bao nhiêu? *(T₁ = 300,15 K, T₂ = 270,15 K → p₂ = 135,0 kPa.)*
+2. Vẫn lốp 220 kPa ở 25 °C. Muốn áp suất chạm 260 kPa thì lốp phải nóng tới
+   bao nhiêu? *(T₂ = 298,15 · 260/220 = 352,36 K = 79,2 °C.)*
+3. Đề cho thêm "thể tích lốp 25 L". Dùng vào đâu? *(Không dùng vào đâu cả —
+   đó là dữ kiện thừa, và nhận ra điều đó nhanh hơn là giải.)*
+
+## Trường hợp biên: lốp phình ra, và hơi nước trong lốp biến mất
+
+Đường thẳng trong demo đẹp nhờ hai giả thiết, và cả hai đều mòn dần ở đời
+thật.
+
+Thứ nhất, **lốp không phải bình cứng**: cao su nóng thì mềm hơn và phình ra
+một chút, nên áp suất đo được thấp hơn con số đường thẳng dự đoán. Đẳng tích
+là một mô hình — chính xác với bình thép, chỉ gần đúng với lốp.
+
+Thứ hai, và đây mới là chỗ mô hình thôi đúng về nguyên tắc: **khí lý tưởng
+giả thiết phân tử không chiếm chỗ và không hút nhau**, để mỗi phân tử luôn ở
+lại pha khí bất kể áp suất. Nhưng không khí trong lốp có mang hơi nước: trong
+đêm lạnh, ở áp suất cao, một phần hơi nước ấy **ngưng tụ thành giọt** — số
+phân tử ở pha khí giảm xuống, và p/T thôi là hằng số vì "khối khí kín" đã âm
+thầm ít đi. Càng gần ngưỡng ngưng tụ thì càng ít có thứ gọi là khí lý tưởng:
+đường thẳng cong xuống, và tỉ số p/T bắt đầu trôi.

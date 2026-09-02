@@ -1,0 +1,196 @@
+---
+// Isochoric process (volume held fixed) -> p/T = const.
+// Derived from the state equation p1V1/T1 = p2V2/T2 with V1 = V2:
+//   p2 = p1 * T2 / T1, with T in kelvin, T(K) = t(degC) + 273.15
+// Reference state: p1 measured with the tyre cold at 25 degC (298.15 K).
+// Volume never appears in the expression -- the V slider exists to show that.
+// Worked line (scripts/verify-vatly12.mjs, section 2):
+//   220 kPa at 25 degC, heated to 65 degC -> 220*338.15/298.15 = 249.5 kPa
+---
+
+<figure class="demo" data-demo="qua-trinh-dang-tich-ap-suat-lop-xe">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Nhiệt độ lốp (°C) <output data-out="t"></output>
+      <input type="range" data-in="t" min="-10" max="90" step="1" value="65" /></label>
+    <label>Áp suất tuyệt đối lúc lốp nguội 25 °C (kPa) <output data-out="p"></output>
+      <input type="range" data-in="p" min="150" max="320" step="5" value="220" /></label>
+    <label>Thể tích lốp, giữ nguyên suốt quá trình (L) <output data-out="v"></output>
+      <input type="range" data-in="v" min="5" max="50" step="1" value="25" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Lốp là một bình kín gần như không giãn: thể tích đứng yên, chỉ nhiệt độ
+    chạy. Đường thẳng p–T là toàn bộ quá trình; trục ngang ghi cả °C lẫn K để
+    thấy chỉ thang kelvin mới cho tỉ số có nghĩa. Kim cam trên mặt đồng hồ là
+    áp suất lúc nguội, kim đỏ là áp suất ở nhiệt độ đang chọn. Kéo thanh thể
+    tích: mặt đồng hồ không nhúc nhích — V triệt tiêu khỏi phép tính.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const CURVE = '#2563eb', MARK = '#dc2626', COLD = '#f59e0b';
+  const T0 = 273.15;   // 0 degC in kelvin
+  const TCOLD = 25;    // reference state: tyre cold, degC
+
+  const f = (x: number, d: number) => x.toFixed(d).replace('.', ',');
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (k: string) => root.querySelector(`[data-in="${k}"]`) as HTMLInputElement;
+    const output = (k: string) => root.querySelector(`[data-out="${k}"]`) as HTMLOutputElement;
+
+    function draw() {
+      const t = Number(input('t').value);
+      const p1 = Number(input('p').value);
+      const vol = Number(input('v').value);
+      const T1 = TCOLD + T0, T2 = t + T0;
+      const p2 = p1 * T2 / T1;
+
+      output('t').textContent = `${t} = ${f(T2, 2)} K`;
+      output('p').textContent = `${p1} kPa`;
+      output('v').textContent = `${vol} L`;
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.52);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+      ctx.font = '10px system-ui,sans-serif';
+      ctx.lineWidth = 1;
+
+      const gaugeW = Math.min(150, cssW * 0.30);
+      const plotR = cssW - gaugeW;
+      const padL = 46, padR = 22, padT = 14, padB = 36;
+      const xLo = -20, xHi = 100;
+      const yHi = Math.ceil((p1 * (xHi + T0) / T1) * 1.08 / 50) * 50;
+      const plotW = plotR - padL - padR;
+      const X = (c: number) => padL + ((c - xLo) / (xHi - xLo)) * plotW;
+      const Y = (p: number) => padT + ((yHi - p) / yHi) * (cssH - padT - padB);
+      const pAt = (c: number) => p1 * (c + T0) / T1;
+
+      // Axes.
+      ctx.strokeStyle = fg; ctx.fillStyle = fg;
+      ctx.globalAlpha = 0.32;
+      ctx.beginPath();
+      ctx.moveTo(padL, padT); ctx.lineTo(padL, cssH - padB); ctx.lineTo(plotR - padR, cssH - padB);
+      ctx.stroke();
+
+      // Both axes numbered: kPa on y, degC and K on x.
+      ctx.globalAlpha = 0.6;
+      ctx.textAlign = 'right';
+      for (let i = 0; i <= 4; i++) {
+        const p = (yHi * i) / 4;
+        ctx.fillText(String(Math.round(p)), padL - 5, Y(p) + 3);
+      }
+      const rowC = cssH - padB + 14, rowK = cssH - padB + 26;
+      ctx.fillText('°C', padL - 6, rowC);
+      ctx.fillText('K', padL - 6, rowK);
+      ctx.textAlign = 'center';
+      const ticks = plotW < 200 ? [-20, 20, 60, 100] : [-20, 0, 20, 40, 60, 80, 100];
+      for (const c of ticks) {
+        ctx.fillText(String(c), X(c), rowC);
+        ctx.fillText(String(Math.round(c + T0)), X(c), rowK);
+      }
+      ctx.textAlign = 'left';
+      ctx.fillText('p (kPa)', padL + 5, padT + 9);
+      ctx.globalAlpha = 1;
+
+      // The process itself: p proportional to T, so a straight line on p-T.
+      ctx.strokeStyle = CURVE; ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(X(xLo), Y(pAt(xLo)));
+      ctx.lineTo(X(xHi), Y(pAt(xHi)));
+      ctx.stroke();
+      ctx.lineWidth = 1;
+
+      // Cold reference state.
+      ctx.fillStyle = COLD;
+      ctx.beginPath(); ctx.arc(X(TCOLD), Y(p1), 4, 0, Math.PI * 2); ctx.fill();
+      ctx.globalAlpha = 0.75; ctx.textAlign = 'center';
+      ctx.fillText('lúc nguội 25 °C', X(TCOLD), Y(p1) + 16);
+      ctx.globalAlpha = 1;
+
+      // Guides down to both axes, then the working point.
+      ctx.strokeStyle = MARK; ctx.globalAlpha = 0.45;
+      ctx.setLineDash([3, 3]);
+      ctx.beginPath();
+      ctx.moveTo(padL, Y(p2)); ctx.lineTo(X(t), Y(p2)); ctx.lineTo(X(t), cssH - padB);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.globalAlpha = 1;
+      ctx.fillStyle = MARK;
+      ctx.beginPath(); ctx.arc(X(t), Y(p2), 5.5, 0, Math.PI * 2); ctx.fill();
+      if (X(t) < padL + 78) { ctx.textAlign = 'left'; ctx.fillText(`${f(p2, 1)} kPa`, X(t) + 9, Y(p2) + 3); }
+      else { ctx.textAlign = 'right'; ctx.fillText(`${f(p2, 1)} kPa`, X(t) - 9, Y(p2) + 3); }
+
+      // Pressure gauge dial, 270 degrees from bottom-left to bottom-right.
+      const gr = Math.min(gaugeW / 2 - 6, cssH * 0.30);
+      const gx = plotR + gaugeW / 2, gy = padT + gr + 6;
+      const ang = (p: number) => 0.75 * Math.PI + 1.5 * Math.PI * Math.max(0, Math.min(1, p / yHi));
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.35; ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.arc(gx, gy, gr, ang(0), ang(yHi)); ctx.stroke();
+      for (let i = 0; i <= 6; i++) {
+        const a = ang((yHi * i) / 6);
+        ctx.beginPath();
+        ctx.moveTo(gx + Math.cos(a) * (gr - 6), gy + Math.sin(a) * (gr - 6));
+        ctx.lineTo(gx + Math.cos(a) * gr, gy + Math.sin(a) * gr);
+        ctx.stroke();
+      }
+      ctx.lineWidth = 1;
+      ctx.globalAlpha = 0.6; ctx.fillStyle = fg; ctx.textAlign = 'center';
+      ctx.fillText('0', gx + Math.cos(ang(0)) * (gr - 13), gy + Math.sin(ang(0)) * (gr - 13) + 3);
+      ctx.fillText(String(yHi), gx + Math.cos(ang(yHi)) * (gr - 13), gy + Math.sin(ang(yHi)) * (gr - 13) + 3);
+      ctx.globalAlpha = 1;
+
+      const aCold = ang(p1), aNow = ang(p2);
+      ctx.strokeStyle = COLD; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.moveTo(gx, gy);
+      ctx.lineTo(gx + Math.cos(aCold) * gr * 0.62, gy + Math.sin(aCold) * gr * 0.62); ctx.stroke();
+      ctx.strokeStyle = MARK; ctx.lineWidth = 2.5;
+      ctx.beginPath(); ctx.moveTo(gx, gy);
+      ctx.lineTo(gx + Math.cos(aNow) * gr * 0.84, gy + Math.sin(aNow) * gr * 0.84); ctx.stroke();
+      ctx.lineWidth = 1;
+      ctx.fillStyle = fg;
+      ctx.beginPath(); ctx.arc(gx, gy, 3, 0, Math.PI * 2); ctx.fill();
+
+      ctx.fillStyle = MARK; ctx.font = 'bold 12px system-ui,sans-serif';
+      ctx.fillText(`${f(p2, 1)} kPa`, gx, gy + gr + 16);
+      ctx.font = '10px system-ui,sans-serif';
+      ctx.fillStyle = fg; ctx.globalAlpha = 0.6;
+      ctx.fillText('áp suất trong lốp', gx, gy + gr + 30);
+      ctx.globalAlpha = 1;
+
+      const dp = p2 - p1;
+      const dir = dp >= 0 ? 'tăng' : 'giảm';
+      readout.innerHTML =
+        `Lốp ${p1} kPa lúc nguội 25 °C, nóng tới ${t} °C → <b>${f(p2, 1)} kPa</b> ` +
+        `(${dir} ${f(Math.abs(dp), 1)} kPa, ${f(Math.abs(dp) / p1 * 100, 1)}%). ` +
+        `Thể tích ${vol} L giữ nguyên suốt quá trình và <b>không xuất hiện trong phép tính</b> — ` +
+        `kéo thanh thể tích hết biên độ, đáp số không đổi một chữ số nào.`;
+    }
+
+    root.querySelectorAll('input').forEach((el) => {
+      el.addEventListener('input', draw);
+      el.addEventListener('change', draw);
+    });
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="qua-trinh-dang-tich-ap-suat-lop-xe"]').forEach(setup);
+</script>

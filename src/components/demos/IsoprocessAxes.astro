@@ -1,0 +1,228 @@
+---
+// Ba dang qua trinh cua 1 mol khi ly tuong, ve tren ba he truc p-V, p-T, V-T.
+// p (kPa) = n*R*T / V   voi V tinh bang L, n = 1 mol, R = 8,314 J/(mol*K)
+//   => p(kPa) = 8,314 * T(K) / V(L)
+// Diem goc (muc 1 cua scripts/verify-vatly12.mjs):
+//   T0 = 300 K, V0 = 24,6 L -> p0 = 101,4 kPa,  pV = 2494,2 kPa*L
+// dang nhiet: T = 300 K,        V = 12,3 * 4^s  (12,3 -> 24,6 -> 49,2 L), p = 202,8 -> 50,7 kPa
+// dang ap   : p = 101,4 kPa,    T = 200 + 200s, V = 24,6*T/300 (16,4 -> 32,8 L)
+// dang tich : V = 24,6 L,       T = 200 + 200s, p = 8,314*T/24,6 (67,6 -> 135,2 kPa)
+// Panel lon = he truc dang chon; hai o nho ben duoi = cung qua trinh do tren
+// hai he truc con lai, ve mo mau xam.
+---
+
+<figure class="demo" data-demo="do-thi-dang-nhiet-dang-ap-dang-tich">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Quá trình <output data-out="qt"></output>
+      <select data-in="qt">
+        <option value="0" selected>Đẳng nhiệt (T không đổi)</option>
+        <option value="1">Đẳng áp (p không đổi)</option>
+        <option value="2">Đẳng tích (V không đổi)</option>
+      </select>
+    </label>
+    <label>Hệ trục <output data-out="tr"></output>
+      <select data-in="tr">
+        <option value="0" selected>p–V</option>
+        <option value="1">p–T</option>
+        <option value="2">V–T</option>
+      </select>
+    </label>
+    <label>Điểm trạng thái <output data-out="s"></output>
+      <input type="range" data-in="s" min="0" max="100" step="1" value="50" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Một mol khí lý tưởng, xuất phát từ 300 K, 24,6 L, 101,4 kPa. Đổi ô "Hệ
+    trục" mà không đụng gì khác: cùng một quá trình, cùng những con số, nhưng
+    hình vẽ đổi hẳn. Hai ô xám bên dưới luôn là hai cách vẽ còn lại của đúng
+    quá trình đang chọn.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input, .controls select { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const CURVE = '#2563eb', MARK = '#dc2626';
+  const R = 8.314, T0 = 300, V0 = 24.6;
+
+  // p in kPa when V is in L and n = 1 mol.
+  const pOf = (T: number, V: number) => (R * T) / V;
+
+  type State = { p: number; V: number; T: number };
+
+  // s runs 0..1 along the process; s = 0.5 is always the reference state.
+  function stateAt(proc: number, s: number): State {
+    if (proc === 0) {
+      const V = (V0 / 2) * Math.pow(4, s); // 12,3 -> 24,6 -> 49,2 L
+      return { T: T0, V, p: pOf(T0, V) };
+    }
+    const T = 200 + 200 * s; // 200 -> 300 -> 400 K
+    if (proc === 1) {
+      const V = V0 * (T / T0); // p stays at 101,4 kPa
+      return { T, V, p: pOf(T, V) };
+    }
+    return { T, V: V0, p: pOf(T, V0) };
+  }
+
+  const PROC = ['Đẳng nhiệt', 'Đẳng áp', 'Đẳng tích'];
+  const AXES = [
+    { name: 'p–V', x: 'V', y: 'p' },
+    { name: 'p–T', x: 'T', y: 'p' },
+    { name: 'V–T', x: 'T', y: 'V' },
+  ] as const;
+  const SPAN: Record<string, number> = { p: 220, V: 55, T: 450 };
+  const TICKS: Record<string, number[]> = {
+    p: [0, 50, 100, 150, 200],
+    V: [0, 10, 20, 30, 40, 50],
+    T: [0, 100, 200, 300, 400],
+  };
+  const UNIT: Record<string, string> = { p: 'kPa', V: 'L', T: 'K' };
+  // shape[process][axes]
+  const SHAPE = [
+    ['hyperbol', 'đoạn dọc', 'đoạn dọc'],
+    ['đoạn nằm ngang', 'đoạn nằm ngang', 'đường thẳng chĩa về 0 K'],
+    ['đoạn dọc', 'đường thẳng chĩa về 0 K', 'đoạn nằm ngang'],
+  ];
+
+  const vn = (x: number, d: number) => {
+    const [i, f] = x.toFixed(d).split('.');
+    const g = i.replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+    return f ? g + ',' + f : g;
+  };
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (k: string) =>
+      root.querySelector(`[data-in="${k}"]`) as HTMLInputElement | HTMLSelectElement;
+    const output = (k: string) => root.querySelector(`[data-out="${k}"]`) as HTMLOutputElement;
+
+    function draw() {
+      const proc = Number(input('qt').value);
+      const axIdx = Number(input('tr').value);
+      const s = Number(input('s').value) / 100;
+      const here = stateAt(proc, s);
+
+      output('qt').textContent = ['pV = hằng số', 'V/T = hằng số', 'p/T = hằng số'][proc];
+      output('tr').textContent = SHAPE[proc][axIdx];
+      output('s').textContent =
+        proc === 0 ? `V = ${vn(here.V, 1)} L` : `T = ${vn(here.T, 0)} K`;
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32;
+      const mainH = Math.round(cssW * 0.52);
+      const thumbH = Math.round(cssW * 0.24);
+      const cssH = mainH + 20 + thumbH + 4;
+      canvas.width = cssW * dpr;
+      canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+
+      // ---- main panel: the chosen axes ----
+      const ax = AXES[axIdx];
+      // padT leaves a clear band above the plot for the axis caption: on the
+      // p-V isotherm the curve tops out at p = 202,8 kPa, one pixel under a
+      // caption drawn inside the plot box.
+      const padL = 46, padT = 26, padB = 26, padR = cssW < 420 ? 26 : 12;
+      const plotW = cssW - padL - padR, plotH = mainH - padT - padB;
+      const X = (v: number) => padL + (v / SPAN[ax.x]) * plotW;
+      const Y = (v: number) => padT + (1 - v / SPAN[ax.y]) * plotH;
+      const val = (st: State, k: string) => (k === 'p' ? st.p : k === 'V' ? st.V : st.T);
+
+      ctx.strokeStyle = fg; ctx.lineWidth = 1; ctx.globalAlpha = 0.3;
+      ctx.beginPath();
+      ctx.moveTo(padL, padT); ctx.lineTo(padL, mainH - padB); ctx.lineTo(cssW - padR, mainH - padB);
+      ctx.stroke();
+
+      ctx.globalAlpha = 0.55; ctx.fillStyle = fg; ctx.font = '10px system-ui,sans-serif';
+      ctx.textAlign = 'center';
+      for (const t of TICKS[ax.x]) ctx.fillText(String(t), X(t), mainH - padB + 14);
+      ctx.textAlign = 'right';
+      for (const t of TICKS[ax.y]) ctx.fillText(String(t), padL - 5, Y(t) + 3);
+      ctx.textAlign = 'left';
+      ctx.fillText(`${ax.y} (${UNIT[ax.y]})  theo  ${ax.x} (${UNIT[ax.x]})`, padL + 6, padT - 14);
+      ctx.globalAlpha = 1;
+
+      // the process itself
+      ctx.strokeStyle = CURVE; ctx.lineWidth = 2; ctx.beginPath();
+      for (let i = 0; i <= 160; i++) {
+        const st = stateAt(proc, i / 160);
+        const px = X(val(st, ax.x)), py = Y(val(st, ax.y));
+        i ? ctx.lineTo(px, py) : ctx.moveTo(px, py);
+      }
+      ctx.stroke(); ctx.lineWidth = 1;
+
+      ctx.fillStyle = MARK;
+      ctx.beginPath();
+      ctx.arc(X(val(here, ax.x)), Y(val(here, ax.y)), 6, 0, Math.PI * 2);
+      ctx.fill();
+
+      // ---- two ghost panels: the same process on the other two axis systems ----
+      const others = [0, 1, 2].filter((i) => i !== axIdx);
+      const tw = (cssW - 10) / 2;
+      others.forEach((oi, slot) => {
+        const oax = AXES[oi];
+        const bx = slot * (tw + 10), by = mainH + 20;
+        ctx.globalAlpha = 0.55; ctx.fillStyle = fg;
+        ctx.font = '10px system-ui,sans-serif'; ctx.textAlign = 'left';
+        ctx.fillText(`${oax.name} · ${SHAPE[proc][oi]}`, bx + 2, by - 6);
+
+        const tL = bx + 12, tR = bx + tw - 6, tT = by + 5, tB = by + thumbH - 8;
+        ctx.globalAlpha = 0.25; ctx.strokeStyle = fg;
+        ctx.beginPath();
+        ctx.moveTo(tL, tT); ctx.lineTo(tL, tB); ctx.lineTo(tR, tB);
+        ctx.stroke();
+
+        const gx = (v: number) => tL + (v / SPAN[oax.x]) * (tR - tL);
+        const gy = (v: number) => tT + (1 - v / SPAN[oax.y]) * (tB - tT);
+        ctx.globalAlpha = 0.45; ctx.strokeStyle = fg; ctx.lineWidth = 1.6;
+        ctx.beginPath();
+        for (let i = 0; i <= 120; i++) {
+          const st = stateAt(proc, i / 120);
+          const px = gx(val(st, oax.x)), py = gy(val(st, oax.y));
+          i ? ctx.lineTo(px, py) : ctx.moveTo(px, py);
+        }
+        ctx.stroke(); ctx.lineWidth = 1;
+
+        ctx.globalAlpha = 0.6; ctx.fillStyle = MARK;
+        ctx.beginPath();
+        ctx.arc(gx(val(here, oax.x)), gy(val(here, oax.y)), 3.5, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.globalAlpha = 1;
+      });
+
+      const inv =
+        proc === 0
+          ? `pV = <b>${vn(here.p * here.V, 0)} kPa·L</b> không đổi`
+          : proc === 1
+            ? `V/T = <b>${vn(here.V / here.T, 4)} L/K</b> không đổi`
+            : `p/T = <b>${vn(here.p / here.T, 4)} kPa/K</b> không đổi`;
+      readout.innerHTML =
+        `${PROC[proc]} · p = <b>${vn(here.p, 1)} kPa</b> · V = <b>${vn(here.V, 1)} L</b> · ` +
+        `T = <b>${vn(here.T, 0)} K</b><br />trên ${ax.name} vẽ ra <b>${SHAPE[proc][axIdx]}</b> — ${inv}`;
+    }
+
+    root.querySelectorAll('input, select').forEach((el) => {
+      el.addEventListener('input', draw);
+      el.addEventListener('change', draw);
+    });
+    addEventListener('resize', draw);
+    draw();
+  }
+  document
+    .querySelectorAll<HTMLElement>('[data-demo="do-thi-dang-nhiet-dang-ap-dang-tich"]')
+    .forEach(setup);
+</script>

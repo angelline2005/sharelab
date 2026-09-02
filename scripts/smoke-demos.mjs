@@ -36,6 +36,13 @@ const DEFAULT_H = 150;
 // an axis and one curve clears this comfortably.
 const MIN_INK = 0.002;
 
+// Checked at both widths: 375 is where this site's readers actually are, and
+// geometry bugs that derive from canvas width only surface at the narrow one.
+const VIEWPORTS = [
+  { name: 'desktop', width: 900, height: 800 },
+  { name: 'mobile', width: 375, height: 812 },
+];
+
 const args = Object.fromEntries(
   process.argv.slice(2).map((a) => {
     const [k, v] = a.replace(/^--/, '').split('=');
@@ -158,20 +165,47 @@ async function checkPost(context, base, slug) {
     );
     await page.waitForTimeout(150);
 
-    const reports = await page.evaluate(inspectDemos, { defaultW: DEFAULT_W, defaultH: DEFAULT_H });
-
-    if (reports.length === 0) problems.push('no [data-demo] on the page');
-    for (const r of reports) {
-      if (r.error) {
-        problems.push(r.demo + ': ' + r.error);
-      } else if (r.textOnly) {
-        // Text-based demo: rendering was already asserted in the page.
-      } else if (r.ink < MIN_INK) {
-        problems.push(
-          r.demo + ': canvas is blank — ' + (r.ink * 100).toFixed(3) +
-            '% of pixels differ from the background (need ' + (MIN_INK * 100).toFixed(1) +
-            '%), ' + r.colours + ' colour(s)',
+    // Both viewports, because they fail differently. A demo whose geometry
+    // derives from the canvas width can draw perfectly at 900 px and throw at
+    // 375 — AuroraFieldLines did exactly that, computing a negative radius from
+    // a not-yet-laid-out figure, and a desktop-only pass called it healthy.
+    // Most of this site's readers are on a phone, so mobile is not the optional
+    // half. Re-checking after a resize costs no extra navigation.
+    for (const view of VIEWPORTS) {
+      if (view.name !== 'desktop') {
+        // RELOAD, do not merely resize. The failure this pass exists to catch
+        // happens during a FRESH load at narrow width, when the figure has no
+        // laid-out width yet; resizing an already-drawn page hands the demo a
+        // perfectly good width and the bug hides. Verified: resize-only reported
+        // AuroraFieldLines healthy while a real 375 px load threw on every draw.
+        await page.setViewportSize({ width: view.width, height: view.height });
+        await page.reload({ waitUntil: 'load', timeout: 30000 });
+        await page.evaluate(() => {
+          const fig = document.querySelector('[data-demo]');
+          if (fig) fig.scrollIntoView({ block: 'center' });
+        });
+        await page.evaluate(
+          () => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))),
         );
+        await page.waitForTimeout(150);
+      }
+
+      const reports = await page.evaluate(inspectDemos, { defaultW: DEFAULT_W, defaultH: DEFAULT_H });
+      const at = view.name === 'desktop' ? '' : ' @' + view.name;
+
+      if (reports.length === 0) problems.push('no [data-demo] on the page' + at);
+      for (const r of reports) {
+        if (r.error) {
+          problems.push(r.demo + at + ': ' + r.error);
+        } else if (r.textOnly) {
+          // Text-based demo: rendering was already asserted in the page.
+        } else if (r.ink < MIN_INK) {
+          problems.push(
+            r.demo + at + ': canvas is blank — ' + (r.ink * 100).toFixed(3) +
+              '% of pixels differ from the background (need ' + (MIN_INK * 100).toFixed(1) +
+              '%), ' + r.colours + ' colour(s)',
+          );
+        }
       }
     }
   } catch (e) {
@@ -210,7 +244,7 @@ let done = 0;
 const queue = list.slice();
 await Promise.all(
   Array.from({ length: Math.min(CONCURRENCY, queue.length) }, async () => {
-    const context = await browser.newContext({ viewport: { width: 900, height: 800 } });
+    const context = await browser.newContext({ viewport: { width: VIEWPORTS[0].width, height: VIEWPORTS[0].height } });
     for (let slug = queue.shift(); slug; slug = queue.shift()) {
       const problems = await checkPost(context, base, slug);
       done++;

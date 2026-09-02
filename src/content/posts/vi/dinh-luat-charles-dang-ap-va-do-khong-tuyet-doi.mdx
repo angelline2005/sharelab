@@ -1,0 +1,137 @@
+---
+title: "Định luật Charles lớp 12: đường thẳng V–T và chỗ nó chỉ về, −273,15 °C"
+seoTitle: "Định luật Charles lớp 12: đẳng áp, V/T = hằng số"
+description: "Nung 2,0 L khí từ 27 °C lên 127 °C mà giữ nguyên áp suất thì được 2,666 L — định luật Charles lớp 12 là một đường thẳng, và nó chỉ về −273,15 °C."
+pubDate: 2026-09-02
+translationId: "dinh-luat-charles-dang-ap-va-do-khong-tuyet-doi"
+grade: 12
+chapter: "nhiet"
+lesson: 3
+series: "vat-ly-12-nhiet"
+tags: ["vat-ly", "nhiet-hoc", "javascript"]
+---
+
+import CharlesLaw from '../../../components/demos/CharlesLaw.astro';
+
+Một ống tiêm bịt đầu với pít-tông trượt tự do là cả bộ thí nghiệm: khí quyển bên
+ngoài ghim áp suất trong ống đứng yên, nên chỉ thể tích được phép đổi. Nước càng
+nóng, pít-tông càng bò ra — và những cặp nhiệt độ – thể tích chấm lên giấy kẻ ô
+thì thẳng hàng. Kéo dài đường thẳng ấy về phía lạnh, nó cắt trục nhiệt độ tại
+−273,15 °C: cả một thang nhiệt độ tuyệt đối rơi ra từ một cái ống tiêm.
+
+<CharlesLaw />
+
+## Charles là định luật của quá trình đẳng áp
+
+Giữ áp suất không đổi, thể tích của một lượng khí xác định tỉ lệ thuận với nhiệt
+độ tuyệt đối. Viết gọn: **V/T = hằng số**, hay dạng hai trạng thái quen dùng khi
+giải bài:
+
+**V₁/T₁ = V₂/T₂**
+
+Chữ *đẳng áp* mới là điều kiện, không phải chữ *đẳng tích*. Và **T bắt buộc là
+Kelvin**.
+
+Lấy 2,0 L khí ở 27 °C, đun tới 127 °C mà không đụng gì tới áp suất. Đổi sang
+Kelvin trước: 300,15 K và 400,15 K. Khi đó
+
+V₂ = V₁ · T₂/T₁ = 2,0 · 400,15/300,15 = **2,666 L**
+
+tức nở thêm 33,3 %. Tỉ số V/T của khối khí này là 6,6633×10⁻³ L/K và nó giữ
+nguyên con số đó ở mọi điểm trên đường thẳng.
+
+Thử làm sai kiểu phổ biến nhất: cắm thẳng độ C vào. 2,0 · 127/27 cho ra 9,407 L,
+lệch 253 % so với đáp số đúng — không phải sai số, mà là một phép chia hai con số
+không có ý nghĩa vật lý. Thang Kelvin thuộc về bài
+[phương trình khí lý tưởng](/vi/posts/phuong-trinh-khi-ly-tuong-va-cai-bay-do-c);
+ở đây chỉ cần nhớ: đổi đơn vị trước, thay số sau.
+
+## Áp suất chỉ làm đường thẳng xoay, không dời giao điểm
+
+Độ dốc do cái gì quyết định? Viết thể tích theo nhiệt độ ở áp suất cố định:
+V = (nR/p)·T. Cả n, R và p đều đứng yên trong quá trình, nên cụm nR/p là một
+hằng số — đúng định nghĩa một đường thẳng đi qua gốc, độ dốc **nR/p**. Hằng số
+khí R = 8,314 J/(mol·K) là của bài phương trình khí lý tưởng nói trên; ở đây nó
+chỉ đóng vai một thừa số.
+
+Kéo thanh áp suất trong demo với n = 1 mol, đầu đọc lần lượt cho:
+
+| p (kPa) | độ dốc nR/p (L/K) |
+|---|---|
+| 50 | 1,663×10⁻¹ |
+| 100 | 8,314×10⁻² |
+| 200 | 4,157×10⁻² |
+
+Ép khí gấp đôi thì đường thẳng thoải đi đúng một nửa. Nhưng — và đây mới là chỗ
+đáng nhìn — **cả ba đường vẫn cắt trục nhiệt độ tại cùng một điểm**. Áp suất
+xoay đường thẳng quanh cái chốt đó chứ không đẩy nó sang ngang. Vẽ ra ba giao
+điểm khác nhau là phép vẽ sai, không phải vật lý đổi ý.
+
+## Cho V bằng 0 thì T bằng bao nhiêu
+
+Cái chốt ấy nằm ở đâu? Đặt V = 0 vào V = (nR/p)·T. Với nR/p khác 0, nghiệm duy
+nhất là **T = 0 K, tức −273,15 °C**.
+
+Trật tự lập luận mới là giá trị của bài này. Ta không định nghĩa độ không tuyệt
+đối trước rồi đi tìm đường thẳng. Ta đo vài cặp nhiệt độ – thể tích ở vùng hoàn
+toàn tầm thường, quanh nhiệt độ phòng, với một cái ống tiêm, rồi kéo dài đường
+thẳng đi qua chúng — và nó tự chỉ về một nhiệt độ không phòng thí nghiệm nào
+chạm tới. Độ không tuyệt đối ở đây là **kết quả ngoại suy**, không phải quy ước
+chọn cho tiện. Phần nét đứt trong demo chính là đoạn ngoại suy đó, cố ý vẽ khác
+đi để nhắc rằng ở khúc ấy không có số liệu nào.
+
+## Vì sao tài liệu cũ gọi định luật này bằng tên khác
+
+Trong chương trình hiện hành, **định luật Charles là định luật của quá trình
+đẳng áp, V/T = hằng số**; còn quá trình đẳng tích, thể tích cố định, **không
+mang tên định luật nào**. Nhiều tài liệu soạn theo quy ước cũ thì ngược lại:
+gán tên Sác-lơ cho đẳng tích và gọi đẳng áp là định luật Gay-Lussac. Vẫn bộ ba
+quá trình ấy, chỉ khác cách dán nhãn — nhưng khi làm bài hãy dùng cách gọi của
+chương trình đang học. Gặp nguồn nói khác, kiểm chữ *đẳng áp* trước khi kiểm
+cái tên.
+
+Phần đẳng tích được kể riêng ở
+[quá trình đẳng tích, p/T = hằng số](/vi/posts/qua-trinh-dang-tich-ap-suat-lop-xe/),
+và cả ba đẳng quá trình đứng cạnh nhau trong
+[đồ thị p–V, p–T và V–T](/vi/posts/do-thi-dang-nhiet-dang-ap-dang-tich/). Cả loạt
+bài nằm ở [Vật lý nhiệt và khí lý tưởng lớp 12](/vi/vat-ly-12/nhiet/).
+
+## Khinh khí cầu: giống mà không phải
+
+[Khinh khí cầu](/vi/posts/khinh-khi-cau-archimedes-tren-khong) trông đúng là ví
+dụ của Charles: áp suất trong vỏ bằng áp suất khí quyển, đun nóng thì khí nở ra.
+Nhưng sổ sách ngược hẳn. Vỏ khí cầu **hở đáy**, nên khi nung, khí bị đẩy bớt ra
+ngoài: thể tích vỏ gần như cố định, n mới là đại lượng giảm. Charles nói về một
+lượng khí **xác định** — đúng những phân tử ấy, không thêm không bớt. Ống tiêm
+bịt kín thoả điều kiện đó; cái vỏ hở thì không.
+
+## Ba câu tự kiểm
+
+1. Xy-lanh có pít-tông nhẹ trượt tự do chứa 2,0 L khí ở 27 °C, đun tới 127 °C.
+   Thể tích bằng bao nhiêu? *(2,666 L — tỉ số Kelvin 400,15/300,15, không phải
+   127/27.)*
+2. Vẫn khối khí ấy nhưng giữ ở 200 kPa thay vì 100 kPa. Đường V–T đổi thế nào?
+   *(Độ dốc còn một nửa, từ 8,314×10⁻² xuống 4,157×10⁻² L/K với 1 mol; giao điểm
+   với trục nhiệt độ vẫn là 0 K.)*
+3. Một bạn vẽ đường đẳng áp cắt trục thể tích ở giá trị dương khi T = 0 K. Sai ở
+   đâu? *(Nghĩa là khí còn chiếm chỗ ở 0 K, tức V/T không còn là hằng số. Đường
+   đẳng áp bắt buộc đi qua gốc toạ độ của trục Kelvin.)*
+
+## Trường hợp biên: đường thẳng cong xuống rồi biến mất trước khi tới 0 K
+
+Đường nét đứt trong demo là một lời hứa thiên nhiên không giữ. Định luật Charles
+rút ra từ mô hình khí lý tưởng, mô hình coi phân tử là chất điểm không có thể
+tích riêng và không hút nhau — hai giả thiết đều tốt ở nhiệt độ phòng, và đều
+hỏng khi làm lạnh.
+
+Hạ nhiệt độ ở áp suất không đổi, phân tử chậm dần, lực hút giữa chúng bắt đầu
+đáng kể so với động năng còn lại. Thể tích tụt nhanh hơn đường thẳng dự đoán, đồ
+thị **cong xuống dưới** đường lý tưởng — rồi tới điểm ngưng tụ thì không còn đồ
+thị nào nữa: khí hoá lỏng, thể tích sụt một bậc đột ngột và V/T thôi là hằng số.
+Với không khí, chuyện đó xảy ra ở vùng vài chục Kelvin; carbon dioxide ở áp suất
+khí quyển thì thậm chí không có pha lỏng, nó đi thẳng từ khí sang rắn.
+
+Mọi chất khí thật đều rời đường thẳng của mình từ rất lâu trước cái chốt ở 0 K.
+Ngoại suy vẫn có giá trị — nó cho biết thang nhiệt độ tuyệt đối phải bắt đầu ở
+đâu — nhưng đó là ngoại suy về *mô hình*, không phải dự báo về chất khí trong
+ống nghiệm. Cái chốt có thật; đoạn đường dẫn tới nó thì không.
