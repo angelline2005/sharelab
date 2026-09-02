@@ -48,7 +48,7 @@ export default defineConfig({
   redirects: {
     // Astro's redirects config does not auto-prepend `base` to the destination
     // (only to the route itself), so this needs the full path spelled out.
-    '/': `${BASE_PREFIX}/vi/`,
+    // No entry for '/' — src/pages/index.astro renders it directly now.
     // The two republished non-physics notes were removed on 2026-09-02 to keep
     // the catalog purely original physics. Their URLs were live and in the
     // sitemap, so they redirect instead of 404ing.

@@ -23,6 +23,21 @@ const siblings = (
   await getCollection('posts', ({ id, data }) => id.startsWith(`${locale}/`) && !data.draft)
 ).filter((p) => p.id !== post.id);
 
+// With most posts carrying at most one meaningful tag, ties at score 1 are
+// the common case, not the exception. A localeCompare tie-break always
+// resolved to the same alphabetically-first posts for everyone; this hashes
+// (this post's id plus the candidate's id) instead, so the tie order is
+// reproducible across builds but different per source post - a real spread,
+// not one global ranking.
+const hashPair = (a: string, b: string) => {
+  const combined = a + ' ' + b;
+  let h = 0;
+  for (let i = 0; i < combined.length; i++) {
+    h = (Math.imul(31, h) + combined.charCodeAt(i)) | 0;
+  }
+  return h;
+};
+
 const myTags = new Set(tags);
 const related = siblings
   .map((p) => ({
@@ -30,7 +45,7 @@ const related = siblings
     score: meaningfulTags(p).filter((tg) => myTags.has(tg)).length,
   }))
   .filter(({ p, score }) => score > 0 && isPhysics(p) === isPhysics(post))
-  .sort((a, b) => b.score - a.score || a.p.id.localeCompare(b.p.id))
+  .sort((a, b) => b.score - a.score || hashPair(post.id, a.p.id) - hashPair(post.id, b.p.id))
   .slice(0, 3)
   .map(({ p }) => p);
 

@@ -53,6 +53,12 @@ export const TOPIC_ORDER = [
   'mo-phong',
 ];
 
+// Where a tag falls in TOPIC_ORDER; anything unlisted sorts after all of it.
+const topicRank = (tag: string): number => {
+  const i = TOPIC_ORDER.indexOf(tag);
+  return i === -1 ? TOPIC_ORDER.length : i;
+};
+
 // A tag earns a homepage section once it has this many posts. Below it, the
 // section would be a stub that makes the catalog look thinner than it is.
 const SECTION_MIN = 5;
@@ -65,15 +71,28 @@ export const homeTopics = (posts: CollectionEntry<'posts'>[]): string[] => {
   for (const post of posts) {
     for (const tag of meaningfulTags(post)) counts.set(tag, (counts.get(tag) ?? 0) + 1);
   }
-  const rank = (tag: string) => {
-    const i = TOPIC_ORDER.indexOf(tag);
-    return i === -1 ? TOPIC_ORDER.length : i;
-  };
   return [...counts.entries()]
     .filter(([, n]) => n >= SECTION_MIN)
-    .sort((a, b) => rank(a[0]) - rank(b[0]) || b[1] - a[1])
+    .sort((a, b) => topicRank(a[0]) - topicRank(b[0]) || b[1] - a[1])
     .map(([tag]) => tag);
 };
+
+// How many posts carry each real (non-noise) tag — the same count a tag page
+// itself shows, since it counts every post with the tag, not just the ones
+// where it's the primary one.
+export const tagCounts = (posts: CollectionEntry<'posts'>[]): Map<string, number> => {
+  const counts = new Map<string, number>();
+  for (const post of posts) {
+    for (const tag of post.data.tags) {
+      if (NOISE_TAGS.has(tag)) continue;
+      counts.set(tag, (counts.get(tag) ?? 0) + 1);
+    }
+  }
+  return counts;
+};
+
+export const sortTags = (tags: string[]): string[] =>
+  [...tags].sort((a, b) => topicRank(a) - topicRank(b) || a.localeCompare(b));
 
 export const tagLabel = (locale: string, tag: string): string =>
   TAG_LABELS[locale]?.[tag] ?? tag;

@@ -1,0 +1,78 @@
+---
+// src/pages/ only otherwise holds ads.txt.ts, og/, robots.txt.ts and vi/, so
+// without this file every mistyped URL hits GitHub Pages' unbranded default:
+// no nav, no search, no GTM. Astro builds this to /404.html, which GitHub
+// Pages serves automatically on a custom domain.
+import { getCollection } from 'astro:content';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PagefindSearch from '../components/PagefindSearch.astro';
+import { useTranslations } from '../i18n';
+import { tagCounts, sortTags, tagLabel } from '../utils/topics';
+import { withBase } from '../utils/url';
+
+const locale = 'vi';
+const t = useTranslations(locale);
+
+const posts = await getCollection('posts', ({ id, data }) => id.startsWith(`${locale}/`) && !data.draft);
+const counts = tagCounts(posts);
+const sortedTags = sortTags([...counts.keys()]);
+---
+
+<BaseLayout locale={locale} title="404" description={t('site.tagline')} noindex>
+  <h1>Không tìm thấy trang</h1>
+  <p class="lede">
+    Đường dẫn này không tồn tại. Thử tìm bên dưới, hoặc xem
+    <a href={withBase(`/${locale}/bai-viet/`)}>toàn bộ {posts.length} bài viết</a>.
+  </p>
+
+  <PagefindSearch />
+
+  <h2>Theo chủ đề</h2>
+  <ul class="tag-list">
+    {sortedTags.map((tag) => (
+      <li>
+        <a href={withBase(`/${locale}/tags/${tag}/`)}>{tagLabel(locale, tag)}</a>
+        <span class="count">{counts.get(tag)}</span>
+      </li>
+    ))}
+  </ul>
+</BaseLayout>
+
+<style>
+  .lede {
+    opacity: 0.75;
+    margin-bottom: 2rem;
+  }
+  h2 {
+    font-size: 1rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    opacity: 0.6;
+    margin: 2.5rem 0 1rem;
+  }
+  .tag-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+  }
+  .tag-list a {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 0.3rem;
+    font-size: 0.85rem;
+    background: rgba(37, 99, 235, 0.1);
+    color: var(--accent);
+    border-radius: 999px;
+    padding: 0.3rem 0.8rem;
+    text-decoration: none;
+  }
+  .tag-list a:hover {
+    background: rgba(37, 99, 235, 0.2);
+  }
+  .count {
+    opacity: 0.6;
+  }
+</style>

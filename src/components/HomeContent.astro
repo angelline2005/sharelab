@@ -1,0 +1,159 @@
+---
+// Shared by src/pages/vi/index.astro (canonical) and src/pages/index.astro
+// (the bare domain — same content, canonical override points back to /vi/).
+import { getCollection, type CollectionEntry } from 'astro:content';
+import PostCard from './PostCard.astro';
+import DopplerEffect from './demos/DopplerEffect.astro';
+import { useTranslations } from '../i18n';
+import { withBase } from '../utils/url';
+import { homeTopics, isPhysics, tagLabel } from '../utils/topics';
+
+const t = useTranslations('vi');
+const all = (await getCollection('posts', ({ id, data }) => id.startsWith('vi/') && !data.draft)).sort(
+  (a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf(),
+);
+const physics = all.filter(isPhysics);
+const offTopic = all.filter((p) => !isPhysics(p));
+
+// Hand-picked front-door posts: the strongest everyday hooks in the catalog.
+const START_HERE = [
+  'cau-vong-42-do-va-cu-don-toa-cua-anh-sang',
+  'tia-set-gia-bao-nhieu-tien-dien',
+  'dun-mot-am-nuoc-het-bao-nhieu-tien',
+  'gps-chay-bang-thuyet-tuong-doi',
+  'vi-sao-bau-troi-xanh-va-hoang-hon-do',
+  'hieu-ung-coriolis-va-huyen-thoai-bon-cau',
+];
+const slugOf = (p: CollectionEntry<'posts'>) => p.id.split('/').slice(1).join('/');
+const starters = START_HERE.map((s) => physics.find((p) => slugOf(p) === s)).filter(
+  (p): p is CollectionEntry<'posts'> => Boolean(p),
+);
+
+const topicSections = homeTopics(physics).map((tag) => ({
+  tag,
+  label: tagLabel('vi', tag),
+  posts: physics.filter((p) => p.data.tags.includes(tag)),
+})).filter((s) => s.posts.length > 0);
+---
+
+<section class="hero">
+  <p class="tagline">{t('site.tagline')}</p>
+  <p class="hero-note">{t('home.heroNote')}</p>
+  <DopplerEffect />
+  <a class="hero-cta" href={withBase('/vi/posts/hieu-ung-doppler-nghe-duoc/')}>{t('home.heroCta')}</a>
+</section>
+
+<section>
+  <h2 class="section-title">{t('home.start')}</h2>
+  <ul class="starter-grid">
+    {starters.map((post) => (
+      <li>
+        <a href={withBase(`/vi/posts/${slugOf(post)}/`)}>{post.data.title}</a>
+        <p>{post.data.description.split('—')[0].trim()}</p>
+      </li>
+    ))}
+  </ul>
+</section>
+
+{topicSections.map(({ tag, label, posts }) => (
+  <section>
+    <h2 class="section-title">
+      {label}
+      <a class="view-all" href={withBase(`/vi/tags/${tag}/`)}>
+        {t('home.viewAll')} {posts.length} {t('home.posts')} →
+      </a>
+    </h2>
+    <ul class="topic-list">
+      {posts.slice(0, 5).map((post) => (
+        <li>
+          <a href={withBase(`/vi/posts/${slugOf(post)}/`)}>{post.data.title}</a>
+        </li>
+      ))}
+    </ul>
+  </section>
+))}
+
+{offTopic.length > 0 && (
+  <section class="off-topic">
+    <h2 class="section-title">{t('home.offTopic')}</h2>
+    {offTopic.map((post) => (
+      <PostCard post={post} locale="vi" />
+    ))}
+  </section>
+)}
+
+<style>
+  .hero {
+    margin-bottom: 1rem;
+  }
+  .tagline {
+    font-size: 1.15rem;
+    margin: 0.5rem 0 0.25rem;
+  }
+  .hero-note {
+    opacity: 0.7;
+    font-size: 0.9rem;
+    margin: 0;
+  }
+  .hero-cta {
+    display: inline-block;
+    font-weight: 600;
+    text-decoration: none;
+    margin-top: -0.5rem;
+  }
+  .section-title {
+    font-size: 1rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    opacity: 0.85;
+    margin: 2.5rem 0 0.75rem;
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+    border-left: 3px solid var(--accent);
+    padding-left: 0.6rem;
+  }
+  .view-all {
+    font-size: 0.8rem;
+    text-transform: none;
+    letter-spacing: 0;
+    font-weight: 400;
+  }
+  .starter-grid {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(17rem, 1fr));
+    gap: 1rem;
+  }
+  .starter-grid li {
+    border: 1px solid rgba(128, 128, 128, 0.25);
+    border-radius: 10px;
+    padding: 0.9rem 1rem;
+  }
+  .starter-grid a {
+    font-weight: 600;
+    text-decoration: none;
+  }
+  .starter-grid p {
+    margin: 0.35rem 0 0;
+    font-size: 0.85rem;
+    opacity: 0.7;
+  }
+  .topic-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 0.45rem;
+  }
+  .topic-list a {
+    text-decoration: none;
+  }
+  .off-topic {
+    opacity: 0.85;
+  }
+</style>

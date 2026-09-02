@@ -1,0 +1,24 @@
+---
+// Renders the same homepage as /vi/ at the bare domain, so a share of
+// https://sharelab.fyi (not /vi/) gets a real OG card instead of the
+// meta-refresh redirect stub Astro used to serve here (200 + noindex + no OG
+// tags at all — every Facebook/Zalo share of the bare domain rendered blank).
+//
+// canonicalPath makes /vi/ the declared original: same content at two paths
+// would otherwise each claim to be canonical.
+import BaseLayout from '../layouts/BaseLayout.astro';
+import HomeContent from '../components/HomeContent.astro';
+import { useTranslations } from '../i18n';
+import { withBase } from '../utils/url';
+
+const t = useTranslations('vi');
+---
+
+<BaseLayout
+  locale="vi"
+  title={t('site.title')}
+  description={t('site.tagline')}
+  canonicalPath={withBase('/vi/')}
+>
+  <HomeContent />
+</BaseLayout>

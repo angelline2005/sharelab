@@ -1,11 +1,10 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import PagefindSearch from '../../components/PagefindSearch.astro';
 import { useTranslations } from '../../i18n';
-import { withBase } from '../../utils/url';
 
 const locale = 'vi';
 const t = useTranslations(locale);
-const isDev = import.meta.env.DEV;
 ---
 
 <BaseLayout
@@ -15,51 +14,11 @@ const isDev = import.meta.env.DEV;
   noindex
 >
   <h1>{t('nav.search')}</h1>
-
-  {isDev ? (
-    <p style="opacity: 0.6; font-size: 0.9rem;">
-      Tìm kiếm hoạt động trong bản dựng đã phát hành. Chạy <code>npm run build</code> để kiểm tra.
-    </p>
-  ) : (
-    <div id="search"></div>
-  )}
-
-  {!isDev && <link rel="stylesheet" href={withBase('/pagefind/pagefind-ui.css')} />}
-  {!isDev && (
-    // is:inline: pagefind-ui.js only exists post-build (in dist/pagefind/, not
-    // the source tree), so Astro can't resolve it as a module to bundle and
-    // silently drops the tag without this directive.
-    <script is:inline src={withBase('/pagefind/pagefind-ui.js')}></script>
-  )}
-  {!isDev && (
-    <script is:inline>
-      document.addEventListener('DOMContentLoaded', () => {
-        if (window.PagefindUI) {
-          new window.PagefindUI({
-            element: '#search',
-            showImages: false,
-          });
-          const input = document.querySelector('#search input');
-          if (input) input.focus();
-
-          const params = new URLSearchParams(window.location.search);
-          const q = params.get('q');
-          if (q && input) {
-            input.value = q;
-            input.dispatchEvent(new Event('input', { bubbles: true }));
-          }
-        }
-      });
-    </script>
-  )}
+  <PagefindSearch />
 </BaseLayout>
 
 <style>
   h1 {
     margin-bottom: 2rem;
-  }
-  :global(#search) {
-    --pf-border-radius: 8px;
-    --pf-border-width: 1px;
   }
 </style>

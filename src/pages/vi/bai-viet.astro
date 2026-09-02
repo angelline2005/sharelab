@@ -38,7 +38,13 @@ const sortedTopics = Array.from(grouped.keys()).sort((a, b) => {
 
   {sortedTopics.map((topic) => (
     <section>
-      <h2>{tagLabel(locale, topic)}</h2>
+      <h2>
+        {topic === 'other' ? (
+          tagLabel(locale, topic)
+        ) : (
+          <a href={withBase(`/${locale}/tags/${topic}/`)}>{tagLabel(locale, topic)}</a>
+        )}
+      </h2>
       <ul>
         {grouped.get(topic)?.map((post) => {
           const slug = post.id.split('/').slice(1).join('/');
