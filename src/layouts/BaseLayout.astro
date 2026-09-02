@@ -1,5 +1,4 @@
 ---
-import LangSwitcher from '../components/LangSwitcher.astro';
 import CookieConsent from '../components/CookieConsent.astro';
 import GoogleTagManager from '../components/GoogleTagManager.astro';
 import { useTranslations, defaultLocale, type Locale } from '../i18n';
@@ -141,7 +140,6 @@ const ogImage = absolute(withBase(ogImagePath ?? '/og-default.png'));
         <a href={withBase(`/${locale}/about/`)}>{t('nav.about')}</a>
         <a href={withBase(`/${locale}/donate/`)}>{t('nav.donate')}</a>
       </nav>
-      {!hideLangSwitcher && <LangSwitcher currentLocale={locale} hrefs={langHrefs} />}
     </header>
 
     <main>

@@ -26,7 +26,7 @@ export default defineConfig({
   trailingSlash: 'always',
   i18n: {
     defaultLocale: 'vi',
-    locales: ['vi', 'en'],
+    locales: ['vi'],
     routing: {
       prefixDefaultLocale: true,
     },
@@ -49,5 +49,18 @@ export default defineConfig({
     // sitemap, so they redirect instead of 404ing.
     '/vi/posts/len-ke-hoach-cam-trai-bang-ai': `${BASE_PREFIX}/vi/`,
     '/vi/posts/lo-trinh-ai-co-dao-duc-cua-my-latinh': `${BASE_PREFIX}/vi/`,
+    // English section removed 2026-09-02: site is Vietnamese physics only.
+    // All EN URLs redirect to /vi/ to prevent 404 and preserve SEO credit.
+    '/en/': `${BASE_PREFIX}/vi/`,
+    '/en/about/': `${BASE_PREFIX}/vi/`,
+    '/en/donate/': `${BASE_PREFIX}/vi/`,
+    '/en/privacy-policy/': `${BASE_PREFIX}/vi/`,
+    '/en/terms/': `${BASE_PREFIX}/vi/`,
+    '/en/rss.xml': `${BASE_PREFIX}/vi/rss.xml`,
+    '/en/posts/east-africa-replants-forests-with-timber/': `${BASE_PREFIX}/vi/`,
+    '/en/posts/how-croatian-communities-are-taking-on-planned-poultry-slaughterhouses/': `${BASE_PREFIX}/vi/`,
+    '/en/posts/latin-america-unites-on-ethical-ai-roadmap/': `${BASE_PREFIX}/vi/`,
+    '/en/posts/planning-a-camping-trip-with-ai/': `${BASE_PREFIX}/vi/`,
+    '/en/posts/why-social-media-algorithms-send-you-posts-you-dont-like-288792/': `${BASE_PREFIX}/vi/`,
   },
 });
