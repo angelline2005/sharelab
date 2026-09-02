@@ -4,7 +4,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import PostCard from '../../components/PostCard.astro';
 import DopplerEffect from '../../components/demos/DopplerEffect.astro';
 import { useTranslations } from '../../i18n';
-import { sameSlugLangHrefs, withBase } from '../../utils/url';
+import { withBase } from '../../utils/url';
 import { homeTopics, isPhysics, tagLabel } from '../../utils/topics';
 
 const t = useTranslations('vi');
@@ -39,9 +39,6 @@ const topicSections = homeTopics(physics).map((tag) => ({
   locale="vi"
   title={t('site.title')}
   description={t('site.tagline')}
-  langHrefs={sameSlugLangHrefs('/')}
-  alternates={sameSlugLangHrefs('/')}
-  hideLangSwitcher
 >
   <section class="hero">
     <p class="tagline">{t('site.tagline')}</p>

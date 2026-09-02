@@ -15,7 +15,9 @@ const posts = defineCollection({
     updatedDate: z.coerce.date().optional(),
     tags: z.array(z.string()).default([]),
     // Links the Vietnamese and English versions of the same post together.
-    translationId: z.string(),
+    // Optional since the English section was removed; existing posts keep
+    // their values, new posts need not set one.
+    translationId: z.string().optional(),
     draft: z.boolean().default(false),
   }),
 });

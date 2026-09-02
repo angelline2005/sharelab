@@ -9,35 +9,12 @@ import { meaningfulTags, tagLabel, isPhysics } from '../utils/topics';
 interface Props {
   locale: Locale;
   post: CollectionEntry<'posts'>;
-  // Slug (without locale prefix) of the sibling post in the other language, if it exists.
-  otherLocaleSlug?: string;
 }
 
-const { locale, post, otherLocaleSlug } = Astro.props;
+const { locale, post } = Astro.props;
 const { title, seoTitle, description, pubDate, updatedDate } = post.data;
 const t = useTranslations(locale);
-const otherLocale = locale === 'vi' ? 'en' : 'vi';
-const slug = post.id.split('/').slice(1).join('/');
 const tags = meaningfulTags(post);
-
-// If the other-language version doesn't exist yet, the switcher falls back
-// to that locale's homepage instead of linking to a post that isn't there.
-const langHrefs = {
-  [locale]: withBase(`/${locale}/posts/${slug}/`),
-  [otherLocale]: otherLocaleSlug
-    ? withBase(`/${otherLocale}/posts/${otherLocaleSlug}/`)
-    : withBase(`/${otherLocale}/`),
-} as Record<Locale, string>;
-
-// hreflang gets only the versions that actually exist. When there is no
-// translation the switcher still points at the other homepage, but claiming
-// that homepage as this article's translation would be a lie to search engines.
-const alternates: Partial<Record<Locale, string>> = {
-  [locale]: withBase(`/${locale}/posts/${slug}/`),
-  ...(otherLocaleSlug
-    ? { [otherLocale]: withBase(`/${otherLocale}/posts/${otherLocaleSlug}/`) }
-    : {}),
-};
 
 // --- related posts & prev/next -------------------------------------------
 // Siblings ranked by how many meaningful tags they share; the noise tags that
@@ -105,9 +82,6 @@ const jsonLd = {
   metaTitle={seoTitle}
   description={description}
   ogImagePath={`/og/${post.id}.png`}
-  langHrefs={langHrefs}
-  alternates={alternates}
-  hideLangSwitcher={!otherLocaleSlug}
   ogType="article"
   publishedTime={pubDate}
   modifiedTime={updatedDate}
@@ -128,11 +102,6 @@ const jsonLd = {
             </li>
           ))}
         </ul>
-      )}
-      {otherLocaleSlug && (
-        <a class="post-other-lang" href={withBase(`/${otherLocale}/posts/${otherLocaleSlug}/`)}>
-          {t('post.otherLanguage')}
-        </a>
       )}
     </header>
 
@@ -212,9 +181,6 @@ const jsonLd = {
   }
   .post-tags a:hover {
     background: rgba(37, 99, 235, 0.2);
-  }
-  .post-other-lang {
-    font-size: 0.85rem;
   }
   .post-content :global(h2) {
     margin-top: 2rem;

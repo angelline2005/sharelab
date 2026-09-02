@@ -3,7 +3,6 @@ import { getCollection } from 'astro:content';
 import BaseLayout from '../../../layouts/BaseLayout.astro';
 import PostCard from '../../../components/PostCard.astro';
 import { useTranslations } from '../../../i18n';
-import { withBase } from '../../../utils/url';
 import { tagLabel, NOISE_TAGS } from '../../../utils/topics';
 
 export async function getStaticPaths() {
@@ -25,16 +24,12 @@ const t = useTranslations('vi');
 const label = tagLabel('vi', tag!);
 const title = `${t('tags.title')}: ${label}`;
 const description = `${posts.length} ${t('tags.postCount')} ${label.toLowerCase()} — ${t('site.shortTagline').toLowerCase()}.`;
-const selfHref = withBase(`/vi/tags/${tag}/`);
 ---
 
 <BaseLayout
   locale="vi"
   title={title}
   description={description}
-  langHrefs={{ vi: selfHref, en: withBase('/en/') }}
-  alternates={{ vi: selfHref }}
-  hideLangSwitcher
 >
   <h1 class="tag-title">{label}</h1>
   <p class="tag-count">{posts.length} {t('tags.postCount')}</p>

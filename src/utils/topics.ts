@@ -22,25 +22,6 @@ export const TAG_LABELS: Record<string, Record<string, string>> = {
     'vat-ly': 'Vật lý',
     javascript: 'JavaScript',
   },
-  en: {
-    'co-hoc': 'Mechanics',
-    'nhiet-hoc': 'Thermodynamics',
-    'quang-hoc': 'Optics',
-    'dien-tu': 'Electricity & magnetism',
-    'dien-hoc': 'Electricity',
-    song: 'Waves',
-    'am-thanh': 'Sound',
-    'thien-van': 'Astronomy',
-    'chat-luu': 'Fluids',
-    'khi-hau': 'Climate & weather',
-    'dao-dong': 'Oscillations',
-    'hat-nhan': 'Nuclear',
-    'tuong-doi': 'Relativity',
-    'luong-tu': 'Quantum',
-    'mo-phong': 'Simulation',
-    'vat-ly': 'Physics',
-    javascript: 'JavaScript',
-  },
 };
 
 // Tags that appear on (nearly) every physics post and therefore carry no

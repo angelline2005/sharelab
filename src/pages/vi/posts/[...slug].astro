@@ -12,13 +12,8 @@ export async function getStaticPaths() {
 
 const { post } = Astro.props;
 const { Content } = await render(post);
-
-const enPosts = await getCollection('posts', ({ id }) => id.startsWith('en/'));
-const otherLocaleSlug = enPosts.find((p) => p.data.translationId === post.data.translationId)?.id.slice(
-  'en/'.length,
-);
 ---
 
-<PostLayout locale="vi" post={post} otherLocaleSlug={otherLocaleSlug}>
+<PostLayout locale="vi" post={post}>
   <Content />
 </PostLayout>
