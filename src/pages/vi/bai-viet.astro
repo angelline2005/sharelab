@@ -1,0 +1,89 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { useTranslations } from '../../i18n';
+import { meaningfulTags, TOPIC_ORDER, tagLabel } from '../../utils/topics';
+import { withBase } from '../../utils/url';
+
+const locale = 'vi';
+const t = useTranslations(locale);
+
+const posts = (await getCollection('posts', ({ id, data }) => id.startsWith(`${locale}/`) && !data.draft))
+  .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
+
+// Group posts by primary topic (first meaningful tag)
+const grouped = new Map<string, typeof posts>();
+for (const post of posts) {
+  const primaryTag = meaningfulTags(post)[0] || 'other';
+  if (!grouped.has(primaryTag)) grouped.set(primaryTag, []);
+  grouped.get(primaryTag)!.push(post);
+}
+
+// Sort topics by TOPIC_ORDER
+const sortedTopics = Array.from(grouped.keys()).sort((a, b) => {
+  const aIdx = TOPIC_ORDER.indexOf(a);
+  const bIdx = TOPIC_ORDER.indexOf(b);
+  const aRank = aIdx === -1 ? TOPIC_ORDER.length : aIdx;
+  const bRank = bIdx === -1 ? TOPIC_ORDER.length : bIdx;
+  return aRank - bRank;
+});
+---
+
+<BaseLayout
+  locale={locale}
+  title={t('nav.all')}
+  description={t('nav.all')}
+  langHrefs={{ vi: withBase(`/${locale}/bai-viet/`), en: withBase('/en/posts/') }}
+  hideLangSwitcher={true}
+>
+  <h1>{t('nav.all')}</h1>
+
+  {sortedTopics.map((topic) => (
+    <section>
+      <h2>{tagLabel(locale, topic)}</h2>
+      <ul>
+        {grouped.get(topic)?.map((post) => {
+          const slug = post.id.split('/').slice(1).join('/');
+          const hook = post.data.description.split('—')[0].trim();
+          return (
+            <li>
+              <a href={withBase(`/${locale}/posts/${slug}/`)}>{post.data.title}</a>
+              {hook && <p>{hook}</p>}
+            </li>
+          );
+        })}
+      </ul>
+    </section>
+  ))}
+</BaseLayout>
+
+<style>
+  h1 {
+    margin-bottom: 2rem;
+  }
+  h2 {
+    font-size: 1rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    opacity: 0.6;
+    margin-top: 2rem;
+    margin-bottom: 1rem;
+  }
+  ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    gap: 0.75rem;
+  }
+  li a {
+    font-weight: 600;
+    text-decoration: none;
+  }
+  li p {
+    margin: 0.15rem 0 0;
+    font-size: 0.85rem;
+    opacity: 0.7;
+    line-height: 1.5;
+  }
+</style>

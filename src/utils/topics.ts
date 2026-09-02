@@ -50,7 +50,7 @@ export const NOISE_TAGS = new Set(['vat-ly', 'javascript']);
 // Preferred order for the homepage's topic sections: the subjects a reader is
 // most likely to have a question about come first. Any tag not listed here
 // still gets a section once it has enough posts — it just sorts after these.
-const TOPIC_ORDER = [
+export const TOPIC_ORDER = [
   'co-hoc',
   'nhiet-hoc',
   'quang-hoc',
