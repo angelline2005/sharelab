@@ -162,12 +162,19 @@
       ctx.fill();
 
       // Bit width line for step-index
-      const bitRate = 1 / (2 * dt_si) / 1e6; // Mbps
-      const bitWidth = 1 / bitRate * 1e9 * (plotW / t_max); // pixels
+      // One bit occupies the whole broadened pulse: T_bit = 2·dt_si seconds. At
+      // the default 10 km of step-index fibre that is ~987 ns — wider than the
+      // entire time axis, which is exactly the post's point. So the marker is
+      // clamped to the plot edge and flagged, rather than drawn off-canvas.
+      const bitWidth = 2 * dt_si * 1e9 * (plotW / t_max); // ns → pixels
+      const bitX = X(0.5) + bitWidth;
+      const plotRight = X(1);
+      const runsOff = bitX > plotRight;
+      const markX = Math.min(bitX, plotRight);
       ctx.strokeStyle = CURVE; ctx.globalAlpha = 0.4; ctx.lineWidth = 1; ctx.setLineDash([2, 2]);
-      ctx.beginPath(); ctx.moveTo(X(0.5) + bitWidth, Y(t_max)); ctx.lineTo(X(0.5) + bitWidth, Y(0)); ctx.stroke();
-      ctx.globalAlpha = 0.3; ctx.textAlign = 'center';
-      ctx.fillText('1 bit', X(0.5) + bitWidth / 2, Y(t_max - 10));
+      ctx.beginPath(); ctx.moveTo(markX, Y(t_max)); ctx.lineTo(markX, Y(0)); ctx.stroke();
+      ctx.globalAlpha = 0.3; ctx.textAlign = runsOff ? 'right' : 'center';
+      ctx.fillText(runsOff ? '1 bit ›' : '1 bit', runsOff ? markX - 4 : X(0.5) + bitWidth / 2, Y(t_max - 10));
       ctx.setLineDash([]);
 
       // Legend

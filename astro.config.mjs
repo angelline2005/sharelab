@@ -5,10 +5,6 @@ import sitemap from '@astrojs/sitemap';
 import mdx from '@astrojs/mdx';
 import { rehypeBasePaths } from './src/plugins/rehype-base-paths.mjs';
 
-// Single source of truth for where the site lives. Moving to a custom domain
-// means editing these two lines and nothing else: the redirect below, the
-// robots.txt endpoint and every asset path inside Markdown all derive from
-// them. See src/plugins/rehype-base-paths.mjs for the Markdown half.
 const SITE = 'https://sharelab.fyi';
 const BASE = '/';
 
@@ -20,6 +16,13 @@ const BASE_PREFIX = BASE.replace(/\/+$/, '');
 const basePaths = rehypeBasePaths({ base: BASE });
 
 // https://astro.build/config
+// Pages that exist but must never be submitted to Google: the search shell is
+// empty until Pagefind's JS runs, and /donate/ is unlinked from the nav while
+// no Ko-fi account exists. Keep this in step with the `noindex` prop on each
+// page — a noindex URL left in the sitemap makes Search Console report
+// "Submitted URL marked noindex".
+const NOINDEXED = ['/tim-kiem/', '/donate/'];
+
 export default defineConfig({
   site: SITE,
   base: BASE,
@@ -32,9 +35,7 @@ export default defineConfig({
     },
   },
   integrations: [
-    // /tim-kiem/ is noindex (empty until Pagefind's JS runs) — filtered here
-    // too, or Search Console reports "Submitted URL marked noindex".
-    sitemap({ filter: (page) => !page.includes('/tim-kiem') }),
+    sitemap({ filter: (page) => !NOINDEXED.some((p) => page.includes(p)) }),
     mdx(),
   ],
   markdown: {

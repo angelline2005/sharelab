@@ -39,7 +39,16 @@ function demoFigures(): HTMLElement[] {
 
 // Posts have exactly one demo; the id prefix only matters on the rare page
 // that might have several, so a shared key like "v" doesn't collide.
-function keyFor(figure: HTMLElement, input: HTMLInputElement, figures: HTMLElement[]): string {
+// Demos drive themselves from three control shapes: range sliders (the vast
+// majority), checkboxes and selects. They are not interchangeable — a checkbox
+// keeps its state in .checked and reports .value as the literal "on" whether
+// ticked or not — so every read and write below goes through these helpers.
+type Control = HTMLInputElement | HTMLSelectElement;
+
+const isCheckbox = (el: Control): el is HTMLInputElement =>
+  el instanceof HTMLInputElement && el.type === 'checkbox';
+
+function keyFor(figure: HTMLElement, input: Control, figures: HTMLElement[]): string {
   const k = input.dataset.in!;
   return figures.length > 1 ? `${figure.dataset.demo}.${k}` : k;
 }
@@ -49,11 +58,16 @@ function restore(figures: HTMLElement[]) {
   if ([...params.keys()].length === 0) return;
 
   for (const figure of figures) {
-    for (const input of figure.querySelectorAll<HTMLInputElement>('[data-in]')) {
+    for (const input of figure.querySelectorAll<Control>('[data-in]')) {
       const key = keyFor(figure, input, figures);
       if (!params.has(key)) continue;
-      input.value = params.get(key)!;
+      if (isCheckbox(input)) input.checked = params.get(key) === '1';
+      else input.value = params.get(key)!;
+      // Sliders and selects redraw on 'input', but at least one toggle listens
+      // for 'change' instead. Both are dispatched because a demo's draw() is a
+      // pure redraw, so running it twice costs a frame and risks nothing.
       input.dispatchEvent(new Event('input', { bubbles: true }));
+      input.dispatchEvent(new Event('change', { bubbles: true }));
     }
   }
 }
@@ -61,8 +75,9 @@ function restore(figures: HTMLElement[]) {
 function record(figures: HTMLElement[]) {
   const params = new URLSearchParams();
   for (const figure of figures) {
-    for (const input of figure.querySelectorAll<HTMLInputElement>('[data-in]')) {
-      params.set(keyFor(figure, input, figures), input.value);
+    for (const input of figure.querySelectorAll<Control>('[data-in]')) {
+      const value = isCheckbox(input) ? (input.checked ? '1' : '0') : input.value;
+      params.set(keyFor(figure, input, figures), value);
     }
   }
   const hash = params.toString();
@@ -132,9 +147,10 @@ function init() {
   const interacted = new Set<string>();
 
   let timer: ReturnType<typeof setTimeout> | undefined;
-  document.addEventListener('input', (e) => {
-    const target = e.target as HTMLElement;
-    if (!(target instanceof HTMLInputElement) || !target.dataset.in) return;
+  const onInteract = (e: Event) => {
+    const target = e.target;
+    if (!(target instanceof HTMLInputElement || target instanceof HTMLSelectElement)) return;
+    if (!target.dataset.in) return;
     const figure = target.closest<HTMLElement>('[data-demo]');
     if (!figure) return;
 
@@ -146,7 +162,13 @@ function init() {
 
     clearTimeout(timer);
     timer = setTimeout(() => record(figures), DEBOUNCE_MS);
-  });
+  };
+
+  // Sliders fire 'input'; selects and checkboxes are only reliably caught on
+  // 'change'. A control that fires both is harmless here — demo_first_interact
+  // is guarded by the Set above and the hash write is debounced.
+  document.addEventListener('input', onInteract);
+  document.addEventListener('change', onInteract);
 }
 
 addEventListener('load', init);

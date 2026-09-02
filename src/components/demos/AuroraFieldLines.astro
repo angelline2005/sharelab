@@ -82,24 +82,24 @@
       const pad = 40;
       const cx = cssW / 2;
       const cy = cssH - pad - 20;
-      const scale = (cssW - 2 * pad) / 28; // 14 Earth radii across
+      const scale = (cssW - 2 * pad) / 28; // pixels per Earth radius; 28 R across
 
       // Draw Earth
       ctx.fillStyle = '#1f2937';
       ctx.beginPath();
-      ctx.arc(cx, cy, R * scale, 0, Math.PI * 2);
+      ctx.arc(cx, cy, scale, 0, Math.PI * 2);
       ctx.fill();
 
-      // Draw aurora altitude band (90-400 km)
+      // Aurora altitude band, 90-400 km above the surface. Everything here is
+      // measured in Earth radii, so altitude h km sits at (1 + h/R). That makes
+      // the band a thin rim — which is the honest picture next to a 6 371 km
+      // radius, and why it is drawn opaque rather than faint.
       ctx.fillStyle = THIRD;
-      ctx.globalAlpha = 0.15;
+      ctx.globalAlpha = 0.5;
       ctx.beginPath();
-      ctx.arc(cx, cy, 400 * scale, 0, Math.PI * 2);
+      ctx.arc(cx, cy, (1 + 400 / R) * scale, 0, Math.PI * 2);
+      ctx.arc(cx, cy, (1 + 90 / R) * scale, 0, Math.PI * 2, true);
       ctx.fill();
-      ctx.clearRect(cx - 90 * scale, cy - 90 * scale, 180 * scale, 180 * scale);
-      ctx.beginPath();
-      ctx.arc(cx, cy, 90 * scale, 0, Math.PI * 2);
-      ctx.fill('evenodd');
       ctx.globalAlpha = 1;
 
       // Draw several field lines
@@ -115,7 +115,7 @@
           const angle = -Math.PI / 2 + (i / 100) * Math.PI; // from south pole to north pole
           const latMag = angle * 180 / Math.PI;
           const latMagRad = angle;
-          const r = LL * R * Math.pow(Math.cos(latMagRad), 2);
+          const r = LL * Math.pow(Math.cos(latMagRad), 2); // Earth radii
           const x = cx + r * scale * Math.cos(latMagRad);
           const y = cy - r * scale * Math.sin(Math.abs(latMagRad));
           if (i === 0) ctx.moveTo(x, y);
@@ -131,16 +131,16 @@
       // Draw equator line (lightly)
       ctx.globalAlpha = 0.2;
       ctx.beginPath();
-      ctx.moveTo(cx - 12 * R * scale, cy);
-      ctx.lineTo(cx + 12 * R * scale, cy);
+      ctx.moveTo(cx - 12 * scale, cy);
+      ctx.lineTo(cx + 12 * scale, cy);
       ctx.stroke();
       ctx.globalAlpha = 1;
 
       // Mark footpoint of selected field line
       const fpLat = footpointLat(L);
       const fpLatRad = fpLat * Math.PI / 180;
-      const x_fp = cx + R * scale * Math.cos(fpLatRad);
-      const y_fp = cy - R * scale * Math.sin(fpLatRad);
+      const x_fp = cx + scale * Math.cos(fpLatRad);
+      const y_fp = cy - scale * Math.sin(fpLatRad);
       ctx.fillStyle = MARK;
       ctx.beginPath();
       ctx.arc(x_fp, y_fp, 5, 0, Math.PI * 2);
@@ -153,9 +153,9 @@
       ctx.textAlign = 'center';
       ctx.fillText('Xích đạo', cx, cy + 18);
       ctx.textAlign = 'right';
-      ctx.fillText('Bắc cực', cx - R * scale - 4, cy - R * scale);
+      ctx.fillText('Bắc cực', cx - scale - 4, cy - scale);
       ctx.textAlign = 'left';
-      ctx.fillText('Nam cực', cx + R * scale + 4, cy - R * scale);
+      ctx.fillText('Nam cực', cx + scale + 4, cy - scale);
       ctx.globalAlpha = 1;
 
       // Compute and display readout
