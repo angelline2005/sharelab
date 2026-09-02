@@ -1,0 +1,84 @@
+---
+title: "Ngược dòng: nước ra 66 °C trong khi dòng nóng đã tụt còn 39 °C"
+seoTitle: "Trao đổi nhiệt ngược dòng và cùng chiều khác nhau thế nào — hiệu suất ε-NTU"
+description: "Cùng một bộ trao đổi, cùng diện tích, chỉ đảo chiều một dòng: hiệu suất nhảy từ 50% lên 75%. Và ngược dòng làm được điều dòng cùng chiều không bao giờ với tới — dòng lạnh đi ra ở 66,3 °C, nóng hơn cả dòng nóng lúc rời khỏi máy (38,8 °C)."
+pubDate: 2026-09-02
+tags: ["vat-ly", "nhiet-hoc", "chat-luu", "javascript"]
+translationId: "trao-doi-nhiet-nguoc-dong-va-cu-vuot-mat"
+---
+
+import HeatExchangerEff from '../../../components/demos/HeatExchangerEff.astro';
+
+Hôm nay máy lạnh chảy nước vào máy nóng lạnh; ngày mai đảo chiều, nước vào từ bên kia
+thành nước nóng. Không thay ống, không thay bơm — chỉ lật hai cái van. Nước đi ra lạnh
+hơn hay nóng hơn? Con số sẽ giật mạnh:
+
+<HeatExchangerEff />
+
+## Tại sao chiều dòng lại quyết định hiệu suất
+
+Cả hai cách chảy đều cho phép dòng nóng hạ nhiệt độ, dòng lạnh tăng nhiệt độ, rồi gặp nhau
+ở giữa để trao đổi. Khác là **ở đâu chúng gặp nhau**. Cùng chiều — hai dòng song song, cùng
+lối vào — chúng hội tụ nhanh, từ từ đốn lên nhau mà không bao giờ có cơ hội tiệm cận. Ngược
+dòng — hai dòng bơi ngược chiều nhau — luôn có phần dòng lạnh mới gặp phần dòng nóng mới
+còn tươi; phần dòng lạnh đã nóng lên gặp phần dòng nóng đã lạnh xuống, rồi tiếp tục. Kết
+quả: **ngược dòng giữ được chênh lệch nhiệt lớn ở toàn bộ chiều dài**, còn cùng chiều
+chỉ trao đổi ở nửa đầu.
+
+Kỹ sư đo bằng công thức ε (hiệu suất, còn gọi là effectiveness): tỉ phần nhiệt mà dòng
+lạnh thực sự nạp so với tối đa nó có thể nạp nếu máy dài vô hạn. Với cùng NTU (số đơn vị
+truyền: độ dài × diện tích / thông lượng), cùng Cr (tỉ số tỉ nhiệt giữa dòng lạnh và nóng),
+**cùng chiều luôn thua ngược dòng khoảng 10–40%** — cách biệt tăng khi Cr càng cao (khi hai
+dòng cân xứng về khối lượng và tỉ nhiệt). Trao đổi nhiệt là cách vật liệu *rút luân phiên*
+năng lượng từ một dòng sang dòng kia, và hình học dòng quyết định toàn bộ trò chơi ấy.
+
+## Dòng lạnh có thể nóng hơn dòng nóng
+
+Nhìn vào demo, chạy NTU lên cao: ở cùng chiều, hai đường cong hội tụ thành một — cả hai
+dòng bạo chạy về trạng thái cân bằng tại giữa, không bao giờ vượt qua. Ngược dòng thì khác:
+dòng lạnh tiếp tục *vươn lên cao hơn dòng nóng lúc rời khỏi máy*. Với **NTU = 3,5 và Cr = 0,8**:
+dòng nóng vào 75 °C, ra 38,8 °C (mất 36 °C); dòng lạnh vào 20 °C, ra 66,3 °C — **cao hơn
+dòng nóng**. Trực giác quặn, nhưng vật lý cho phép: hai dòng không cần phải gặp nhau (chúng
+được tách bởi tấm ngăn chứa chất truyền nhiệt), nên dòng lạnh có thể "vươn lên" trên dòng
+nóng miễn là chênh lệch nhiệt tại điểm đầu tiên vẫn đủ lớn để năng lượng chảy từ nóng sang
+lạnh. Bạn chỉ không bao giờ thấy điểm nào trên ống mà cả hai dòng bằng nhau — ngược dòng
+không bao giờ chạm nhau.
+
+## Công thức ε-NTU: phán xử lực lượng
+
+Hiệu suất không phụ vào từng ống hay từng vật liệu mà chỉ vào **NTU và Cr**:
+
+```
+ε_ngược = (1 − e^(−NTU(1−Cr))) / (1 − Cr·e^(−NTU(1−Cr)))
+ε_cùng = (1 − e^(−NTU(1+Cr))) / (1 + Cr)
+```
+
+NTU = (h·A) / (ṁ·c_p): hệ số dẫn nhiệt × diện tích trao đổi, chia cho khối lượng chảy ×
+tỉ nhiệt dạng cụ thể (tính bằng J/(kg·K), giống như trong
+[phương trình khí lý tưởng](/vi/posts/phuong-trinh-khi-ly-tuong-va-cai-bay-do-c)).
+Kéo NTU từ 0,2 lên 6 trong demo: hiệu suất ngược dòng trèo từ 16% lên gần 95%
+(gần bão hoà), còn cùng chiều chỉ từ 17% lên 77% — chênh lệch lớn nhất ở NTU vừa phải.
+Tại NTU = 1: ngược dòng ε ≈ 0,53, cùng chiều ε ≈ 0,38 — **ngược dòng thắng 39%**.
+
+Với Cr → 1 (hai dòng cân xứng), cùng chiều có **trần cứng** ε = 0,5: có thể kéo dài ống vô
+hạn, hiệu suất vẫn không lòi lên trên 50%, vì hai dòng gặp nhau ở trung bình cộng rồi đứng
+yên, ΔT tại chỗ về 0. Công thức cũng khôn: mẫu số là 1 + Cr = 2, nên ε ≤ 1/2. Ngược dòng
+thoát khỏi cạm bẫy này: cùng tỉ lệ Cr, vẫn còn cách để ε tiếp tục bò lên.
+
+## Hiệu suất cao có ghẻ khi thiết kế
+
+NTU cao cần ống dài, diện tích lớn, hoặc dòng chảy chậm — mỗi cái đều có giá: chi phí,
+kích cỡ, hay mất áp. Cho nên thiết kế trao đổi không chỉ là "NTU bao nhiêu để ε = 90%" mà
+còn: **bạn đủ túi để trả cái NTU ấy không?** Với cùng túi tiền — cùng kích cỡ ống — người
+thiết kế sẽ chọn chiều ngược dòng và chấp nhận hiệu suất thấp hơn so với một bộ cùng chiều
+vô hạn, vì ngược dòng *cho* hiệu suất cao hơn. Lò nung công nghiệp, [máy lạnh](/vi/posts/may-lanh-khong-tao-lanh-no-chuyen-nha-cho-nhiet) lớn, động cơ rocket — chuyên gia hầu hết chọn ngược dòng, từ từ chọc thủng những ống đơn chiều để tiết kiệm chi phí làm thành cùng chiều.
+
+## Trường hợp biên: khi một bên không đổi nhiệt độ
+
+Với Cr → 0 (một bên đang sôi hoặc đang ngưng tụ — nhiệt độ không đổi; ví dụ: dòng nước
+làm mát kề với phần ống sôi khô ráo của refrigerant, một quá trình toàn [nhiệt ẩn](/vi/posts/nhiet-an-hai-quang-nhiet-ke-dung-im)) thì cả hai công thức suy biến thành
+ε = **1 − e^(−NTU)**: chiều dòng mất hết ý nghĩa. Ngược lại, khi Cr = 1 (hai dòng chính
+xác cân xứng), cùng chiều **chắc chắn** cap ở 0,5 dù NTU bao lớn — bạn làm không được tốt
+hơn mà không thay đổi dòng chảy hoặc tỉ nhiệt. Công thức bao quát mọi trường hợp nhưng
+không xóa được định luật bản chất: *trao đổi nhiệt không bao giờ có lợi thế nếu bạn không
+sắp xếp được chênh lệch nhiệt toàn bộ chiều dài*.

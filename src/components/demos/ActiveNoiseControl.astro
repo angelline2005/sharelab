@@ -1,0 +1,179 @@
+---
+// Active noise cancellation via destructive interference.
+// Formula: Level (dB) = 20·log10(|1 − a·e^(i·2πfΔt)|)
+// When a = 1: Level = 20·log10(2·sin(πfΔt))
+// Valid across 20–4000 Hz; time delay 0–300 µs; amplitude ratio 0.5–1.5.
+---
+
+<figure class="demo" data-demo="tai-nghe-chong-on-sai-pha-5-phan-tram">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Tần số tiếng ồn f (Hz) <output data-out="f"></output>
+      <input type="range" data-in="f" min="20" max="4000" step="10" value="1000" /></label>
+    <label>Sai lệch thời gian Δt (µs) <output data-out="dt"></output>
+      <input type="range" data-in="dt" min="0" max="300" step="5" value="50" /></label>
+    <label>Tỉ số biên độ a <output data-out="a"></output>
+      <input type="range" data-in="a" min="0.5" max="1.5" step="0.05" value="1" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Trên: sóng ồn (xanh) và sóng bù gửi ngược pha (đỏ), nhưng bị trễ Δt.
+    Sóng tổng (cam) cho thấy phần dư còn lại. Dưới: mức triệt (dB) theo tần số,
+    với sai lệch thời gian cố định — vạch 0 dB là lúc máy chống ồn bắt đầu
+    khuếch đại thay vì triệt.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const CURVE = '#2563eb', MARK = '#dc2626', SUM = '#f59e0b';
+
+  function computeLevel(f: number, dt: number, a: number): number {
+    // Level (dB) = 20·log10(|1 − a·e^(i·2πfΔt)|)
+    const phase = 2 * Math.PI * f * dt;
+    const real = 1 - a * Math.cos(phase);
+    const imag = -a * Math.sin(phase);
+    const magnitude = Math.sqrt(real * real + imag * imag);
+    return 20 * Math.log10(magnitude);
+  }
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (k: string) => root.querySelector(`[data-in="${k}"]`) as HTMLInputElement;
+    const output = (k: string) => root.querySelector(`[data-out="${k}"]`) as HTMLOutputElement;
+
+    function draw() {
+      const f = Number(input('f').value);
+      const dt = Number(input('dt').value) * 1e-6; // convert µs to seconds
+      const a = Number(input('a').value);
+
+      output('f').textContent = String(f);
+      output('dt').textContent = String(Number(input('dt').value));
+      output('a').textContent = a.toFixed(2).replace('.', ',');
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.65);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+
+      const halfH = cssH / 2;
+      const padL = 40, padR = 20, padT = 10, padB = 10;
+      const topH = halfH - padB;
+      const botH = halfH - padT;
+      const graphW = cssW - padL - padR;
+
+      // ===== TOP: Waveforms =====
+      const period = 1 / f; // seconds
+      const displayPeriods = 3; // show 3 periods
+      const displayTime = displayPeriods * period;
+      const samplesPerPeriod = 80;
+      const totalSamples = displayPeriods * samplesPerPeriod;
+
+      const X = (i: number) => padL + (i / totalSamples) * graphW;
+      const Y = (v: number, baseY: number) => baseY - v * 30;
+
+      // Draw waveforms
+      ctx.strokeStyle = CURVE; ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      for (let i = 0; i <= totalSamples; i++) {
+        const t = (i / totalSamples) * displayTime;
+        const y = Math.sin(2 * Math.PI * f * t);
+        i ? ctx.lineTo(X(i), Y(y, padT + 15)) : ctx.moveTo(X(i), Y(y, padT + 15));
+      }
+      ctx.stroke();
+
+      ctx.strokeStyle = MARK; ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      for (let i = 0; i <= totalSamples; i++) {
+        const t = (i / totalSamples) * displayTime;
+        const y = -a * Math.sin(2 * Math.PI * f * (t - dt));
+        i ? ctx.lineTo(X(i), Y(y, padT + 15)) : ctx.moveTo(X(i), Y(y, padT + 15));
+      }
+      ctx.stroke();
+
+      ctx.strokeStyle = SUM; ctx.lineWidth = 2; ctx.globalAlpha = 0.8;
+      ctx.beginPath();
+      for (let i = 0; i <= totalSamples; i++) {
+        const t = (i / totalSamples) * displayTime;
+        const y = Math.sin(2 * Math.PI * f * t) - a * Math.sin(2 * Math.PI * f * (t - dt));
+        i ? ctx.lineTo(X(i), Y(y, padT + 15)) : ctx.moveTo(X(i), Y(y, padT + 15));
+      }
+      ctx.stroke();
+      ctx.globalAlpha = 1;
+
+      // Label waveforms
+      ctx.fillStyle = fg; ctx.globalAlpha = 0.6; ctx.font = '10px system-ui,sans-serif'; ctx.textAlign = 'left';
+      ctx.fillText('ồn', 10, padT + 12);
+      ctx.fillStyle = MARK;
+      ctx.fillText('bù', 10, padT + 28);
+      ctx.fillStyle = SUM;
+      ctx.fillText('tổng', 10, topH - 5);
+      ctx.globalAlpha = 1;
+
+      // ===== BOTTOM: Frequency response curve =====
+      const botTop = halfH + padT;
+      const botY = (level: number) => botTop + ((0 - level) / 40) * botH;
+
+      const minF = 20, maxF = 4000;
+      const X2 = (ff: number) => padL + ((Math.log10(ff) - Math.log10(minF)) / (Math.log10(maxF) - Math.log10(minF))) * graphW;
+
+      // Draw axes
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.3;
+      ctx.beginPath(); ctx.moveTo(padL, botTop); ctx.lineTo(padL, botTop + botH); ctx.lineTo(cssW - padR, botTop + botH); ctx.stroke();
+
+      // 0 dB line
+      ctx.globalAlpha = 0.15;
+      ctx.beginPath(); ctx.moveTo(padL, botY(0)); ctx.lineTo(cssW - padR, botY(0)); ctx.stroke();
+      ctx.globalAlpha = 1;
+
+      // Draw frequency response curve
+      ctx.strokeStyle = CURVE; ctx.lineWidth = 2; ctx.beginPath();
+      const freqSteps = 200;
+      for (let i = 0; i <= freqSteps; i++) {
+        const ff = minF * Math.pow(maxF / minF, i / freqSteps);
+        const level = computeLevel(ff, dt, a);
+        const x = X2(ff);
+        const y = botY(level);
+        i ? ctx.lineTo(x, y) : ctx.moveTo(x, y);
+      }
+      ctx.stroke();
+
+      // Current point
+      const currentLevel = computeLevel(f, dt, a);
+      ctx.fillStyle = MARK;
+      ctx.beginPath(); ctx.arc(X2(f), botY(currentLevel), 6, 0, Math.PI * 2); ctx.fill();
+
+      // Labels
+      ctx.globalAlpha = 0.55; ctx.textAlign = 'center';
+      for (const ff of [100, 500, 1000, 2000, 4000]) ctx.fillText(ff < 1000 ? `${ff}` : `${ff/1000}k`, X2(ff), botTop + botH + 14);
+      ctx.textAlign = 'right';
+      for (const level of [-30, -20, -10, 0, 10]) ctx.fillText(`${level}`, padL - 4, botY(level) + 3);
+      ctx.globalAlpha = 1;
+
+      // Readout
+      const reg = currentLevel > 3 ? ' · <b>khuếch đại</b>' : (currentLevel < -15 ? ' · <b>triệt tốt</b>' : '');
+      readout.innerHTML = `Lệch Δt = ${Number(input('dt').value)} µs · a = ${a.toFixed(2).replace('.', ',')} · ` +
+        `ở ${f} Hz: <b>${currentLevel.toFixed(1).replace('.', ',')} dB</b>${reg}`;
+    }
+
+    root.querySelectorAll('input').forEach((el) => el.addEventListener('input', draw));
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="tai-nghe-chong-on-sai-pha-5-phan-tram"]').forEach(setup);
+</script>

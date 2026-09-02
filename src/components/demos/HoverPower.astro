@@ -1,0 +1,158 @@
+---
+// Momentum theory / actuator disk theory: P = W^1.5 / sqrt(2ρA)
+// Ideal power for hovering rotorcraft; efficiency factor ~0.7 for real power.
+// Valid for helicopters and multicopter drones in sea-level air.
+---
+
+<figure class="demo" data-demo="drone-treo-lo-lung-ton-bao-nhieu-watt">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Khối lượng (kg) <output data-out="m"></output>
+      <input type="range" data-in="m" min="0.2" max="5" step="0.1" value="1" /></label>
+    <label>Đường kính mỗi cánh (cm) <output data-out="d"></output>
+      <input type="range" data-in="d" min="10" max="60" step="1" value="25" /></label>
+    <label>Pin (Wh) <output data-out="b"></output>
+      <input type="range" data-in="b" min="10" max="200" step="10" value="100" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Treo lơ lửng không hề miễn phí. Cánh quạt phải thổi không khí xuống,
+    giảm mật độ dòng khí trong đĩa theo hàm mũ 1/D. Dòng cảm ứng (induce
+    velocity, chỉ số w) ghi trên tia khí; đường cong công suất lý tưởng P
+    = W^1.5/√(2ρA) cho thấy vì sao trực thăng có cánh dài.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const g = 9.81, rho_air = 1.225, n_props = 4, eta_real = 0.7;
+  const CURVE = '#2563eb', MARK = '#dc2626', AIRFLOW = '#f59e0b';
+
+  // Ideal hovering power from momentum theory
+  const P_ideal = (m_kg: number, D_m: number): number => {
+    const W = m_kg * g;
+    const A = n_props * Math.PI * Math.pow(D_m / 2, 2);
+    return Math.pow(W, 1.5) / Math.sqrt(2 * rho_air * A);
+  };
+
+  // Downwash (induce) velocity
+  const downwash = (m_kg: number, D_m: number): number => {
+    const W = m_kg * g;
+    const A = n_props * Math.PI * Math.pow(D_m / 2, 2);
+    return Math.sqrt(W / (2 * rho_air * A));
+  };
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (k: string) => root.querySelector(`[data-in="${k}"]`) as HTMLInputElement;
+    const output = (k: string) => root.querySelector(`[data-out="${k}"]`) as HTMLOutputElement;
+
+    function draw() {
+      const m = Number(input('m').value);
+      const D_cm = Number(input('d').value);
+      const battery = Number(input('b').value);
+      const D_m = D_cm / 100;
+
+      output('m').textContent = m.toFixed(1).replace('.', ',');
+      output('d').textContent = String(D_cm);
+      output('b').textContent = String(battery);
+
+      const P_i = P_ideal(m, D_m);
+      const P_r = P_i / eta_real;
+      const w = downwash(m, D_m);
+      const flight_min = (battery * 3600) / (P_r * 60);
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.50);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+
+      const padL = 48, padB = 28, padT = 12, padR = 10;
+      const P_min = 10, P_max = 250;
+      const D_min = 10, D_max = 60;
+
+      const X = (dd: number) => padL + ((dd - D_min) / (D_max - D_min)) * (cssW - padL - padR);
+      const Y = (pp: number) => cssH - padB - ((pp - P_min) / (P_max - P_min)) * (cssH - padB - padT);
+
+      // Axes
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.3;
+      ctx.beginPath(); ctx.moveTo(padL, padT); ctx.lineTo(padL, cssH - padB); ctx.lineTo(cssW - padR, cssH - padB); ctx.stroke();
+      ctx.globalAlpha = 0.55; ctx.fillStyle = fg; ctx.font = '10px system-ui,sans-serif';
+
+      ctx.textAlign = 'center';
+      for (const cm of [15, 30, 45, 60]) ctx.fillText(`${cm} cm`, X(cm), cssH - padB + 14);
+
+      ctx.textAlign = 'right';
+      for (const pp of [50, 100, 150, 200, 250]) ctx.fillText(`${pp} W`, padL - 4, Y(pp) + 3);
+      ctx.globalAlpha = 1;
+
+      // Power curve for current mass
+      ctx.strokeStyle = CURVE; ctx.lineWidth = 2; ctx.beginPath();
+      for (let i = 0; i <= 100; i++) {
+        const dd = D_min + ((D_max - D_min) * i) / 100;
+        const pp = P_ideal(m, dd / 100);
+        const y = Y(pp);
+        if (i === 0) ctx.moveTo(X(dd), y);
+        else ctx.lineTo(X(dd), y);
+      }
+      ctx.stroke(); ctx.lineWidth = 1;
+
+      // Draw propeller disk and airflow (simplified side view)
+      const disk_x = X(D_cm);
+      const disk_y_top = padT + 8;
+      const disk_h = 30;
+
+      // Propeller disk
+      ctx.strokeStyle = AIRFLOW; ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(disk_x, disk_y_top + disk_h / 2, 12, 0, Math.PI * 2);
+      ctx.stroke();
+
+      // Airflow streamlines
+      ctx.globalAlpha = 0.6;
+      for (let offset of [-8, 0, 8]) {
+        ctx.beginPath();
+        ctx.moveTo(disk_x - 15, disk_y_top + disk_h / 2 + offset);
+        ctx.lineTo(disk_x, disk_y_top + disk_h / 2 + offset);
+        ctx.lineTo(disk_x + 15, disk_y_top + disk_h / 2 + (offset * 1.4));
+        ctx.stroke();
+      }
+      ctx.globalAlpha = 1;
+
+      // Induce velocity label
+      ctx.fillStyle = AIRFLOW; ctx.font = '9px system-ui,sans-serif'; ctx.textAlign = 'left';
+      ctx.fillText(`w = ${w.toFixed(2)} m/s`, disk_x + 20, disk_y_top + disk_h / 2 + 3);
+
+      // Current point marker
+      ctx.fillStyle = MARK;
+      ctx.beginPath(); ctx.arc(X(D_cm), Y(P_i), 6, 0, Math.PI * 2); ctx.fill();
+
+      readout.innerHTML =
+        `${m.toFixed(1).replace('.', ',')} kg · ${D_cm} cm cánh ⟹ ` +
+        `<b>${P_i.toFixed(1).replace('.', ',')} W</b> lý tưởng, ` +
+        `<b>${P_r.toFixed(1).replace('.', ',')} W</b> thực (η 0,7) · ` +
+        `${battery} Wh → bay <b>${flight_min.toFixed(0)} phút</b>`;
+    }
+
+    root.querySelectorAll('input').forEach((el) => el.addEventListener('input', draw));
+    addEventListener('resize', draw);
+    draw();
+  }
+
+  document.querySelectorAll<HTMLElement>('[data-demo="drone-treo-lo-lung-ton-bao-nhieu-watt"]').forEach(setup);
+</script>

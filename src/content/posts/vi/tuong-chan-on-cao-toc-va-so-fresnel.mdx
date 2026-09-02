@@ -1,0 +1,87 @@
+---
+title: "Bức tường chắn ồn cao 4 mét cắt được 19 dB tiếng còi, 11 dB tiếng động cơ"
+seoTitle: "Tường chắn ồn cao tốc: công thức Maekawa và số Fresnel"
+description: "Âm không dừng ở mép tường mà nhiễu xạ vòng qua, và mức chắn chỉ phụ thuộc hiệu đường đi so với bước sóng. Với hình học điển hình, hiệu đường đi 0,92 m cho 20,4 dB ở 1 kHz nhưng chỉ 11,4 dB ở 100 Hz — bass luôn là thứ vượt tường trước tiên."
+pubDate: 2026-09-02
+tags: ["vat-ly", "song", "am-thanh", "javascript"]
+translationId: "tuong-chan-on-cao-toc-va-so-fresnel"
+---
+
+import SoundBarrier from '../../../components/demos/SoundBarrier.astro';
+
+Một bức tường chắn ồn dọc đường cao tốc cao 4 mét. Tiếng còi xe tải cách tường 15 mét
+suy yếu hẳn, nhưng gầm động cơ vẫn len lỏi. Cùng bức tường, cùng chiều cao, khác nhau ở
+*tần số* — bass luôn xuyên tường dễ hơn. Và điều đó đúng không phải vì vật lý ưu ái bass
+mà vì một tỉ lệ:
+
+<SoundBarrier />
+
+## Âm nhiễu xạ, không phải bị chặn
+
+Âm không dừng ở mép tường — nó gúp vào đó rồi tìm đường vòng quanh, chính xác hơn là
+**nhiễu xạ** theo lý thuyết sóng cổ điển. Khác với quang học (ánh sáng bước sóng nửa
+micromet quanh lỗ 2 mm [chỉ còn quang hình](/vi/posts/lo-2-mm-chan-song-cho-anh-sang)),
+âm thanh bước sóng mét — ngang tường chắn ồn — có điều kiện lý tưởng để nhiễu xạ
+xảy ra. Tia âm từ nguồn không đi thẳng tới tai bạn mà đi qua mép trên tường,
+và quãng đường ấy **dài hơn đường thẳng bị chặn** một khoảng δ.
+
+Công thức **Maekawa** định lượng mức chắn IL từ hiệu đường đi ấy qua một đại lượng
+gọi là số Fresnel:
+
+```
+IL = 10·log₁₀(3 + 20·N)    với N = 2·δ/λ
+```
+
+δ là hiệu đường đi, λ là bước sóng (λ = c/f, c = 343 m/s trong không khí). Trông như
+một hàm đơn giản, nhưng δ phụ thuộc hình học tường, chiều cao, khoảng cách người nghe,
+còn λ phụ thuộc *tần số* — chính điểm then chốt.
+
+## Số Fresnel: tỉ lệ hiệu đường đi trên bước sóng
+
+Xét một tường 4 mét, người nghe 20 mét phía sau, nguồn 15 mét phía trước. Tính toán
+hình học cho δ = 0,92 m. Bây giờ xem xét hai tần số:
+
+Ở **1 kHz**, bước sóng λ = 343/1000 = 0,343 m:
+- N = 2 × 0,92 / 0,343 = 5,37
+- IL = 10·log₁₀(3 + 20 × 5,37) = 10·log₁₀(110,4) = **20,4 dB**
+
+Ở **100 Hz**, bước sóng λ = 343/100 = 3,43 m (mười lần dài hơn):
+- N = 2 × 0,92 / 3,43 = 0,537
+- IL = 10·log₁₀(3 + 20 × 0,537) = 10·log₁₀(13,74) = **11,4 dB**
+
+**Hiệu: 20,4 − 11,4 = 9,0 dB** — chính là khoảng cách hiệu quả giữa tiếng còi và tiếng
+gầm của cùng một bức tường. Bass không bị "chặn" mạnh bằng cao âm vì nó có bước sóng dài:
+số Fresnel nhỏ, chắn yếu, công thức lôgarit không thêm được dB.
+
+## Tường cao = chắn tốt, nhưng không vô hạn
+
+[Logarit còi lại từ công suất âm](/vi/posts/thang-decibel-vi-sao-tai-nguoi-dem-bang-logarit),
+nên mỗi lần tăng IL **10 dB** là gấp 10 lần công suất yếu đi. Một tường cao hơn tăng δ, tăng
+N, tăng IL — lý thuyết nói IL → ∞ khi tường cao → ∞. Nhưng thực tế dừng ở khoảng **24 dB**.
+Tại sao? Vì tường không phải **vô hạn**:
+- Âm vòng hai *đầu* tường (người nghe nhìn thấy cả hai góc tường)
+- Âm **xuyên thân tường** qua vật liệu
+- Âm [phản xạ trở lại từ nhà cao tầng](/vi/posts/tieng-chat-cua-roi-da-va-tuong-am-thanh) phía kia đường
+
+Quá 24 dB, ba kênh ấy lấn át phần chắn từ nhiễu xạ mép tường. Xây lên thêm 1 mét nữa chắn
+khoảng 0,2 dB chứ không phải 1–2 dB như công thức dự đoán — thực tế đạt một **trần chứ không
+phải tiệm cận vô hạn**.
+
+## Bước sóng vs chiều cao tường
+
+Công thức Maekawa cho thấy hiệu quả tường phụ thuộc *tỉ lệ* δ/λ, không phụ thuộc δ hay λ
+riêng rẽ. Một tường cao 4 mét chắn 1 kHz tốt (λ = 0,343 m) nhưng 100 Hz kém (λ = 3,43 m).
+Muốn chắn 100 Hz tốt bằng 1 kHz thì phải tăng tường lên **13 mét** — cao tòa nhà gần 4 tầng —
+bọc cả đường cao tốc. Vì thế những **bức tường chắn âm thực dụng luôn kém hiệu quả với bass**:
+tấm lót năng lượng chủ động bên trong tường (thợ lắp ống thép quay ngược chiều) mới có thể
+cấm tần số thấp, nhưng đó là chuyên đề khác.
+
+## Trường hợp biên: lúc công thức tổn thất quyền lực
+
+Công thức Maekawa sụp đổ không phải ở tường quá cao mà ở **số Fresnel rất lớn** (cao âm tần
+số cao, hay N > 8–10). Tại đó bộ não lý thuyết cả ba kênh flanking (hai đầu + xuyên) bắt đầu
+không thể bỏ qua. Con số **24 dB** là biên giới thực: vượt quá nó bức tường dừng có tác dụng
+trong khi chi phí xây dựng vẫn tăng tuyến tính. Một **tường hai bên** (chắn cả hướng vào và
+hướng ra) hay **tấm chắn kín** giảm 3–5 dB do không có đầu để âm vòng quanh — lần huy động
+chinh phục tiếng bass lại quay về vật liệu, hình học phức tạp, và từ đó là toàn hỗn hợp
+kiến trúc âm học thay vì vật lý sạch sẽ.

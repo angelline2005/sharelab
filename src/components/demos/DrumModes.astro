@@ -1,0 +1,206 @@
+---
+// Drum membrane modes and Bessel functions:
+// f(m,n) = j(m,n)·c / (2π·a)
+// where j(m,n) are zeros of Bessel functions of first kind.
+// j values for lowest modes: 2.405, 3.832, 5.136, 5.520, 6.380
+// Valid for circular membrane with fixed edge, no air-loading.
+---
+
+<figure class="demo" data-demo="mat-trong-va-cac-hoa-am-khong-nguyen-lan">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Bán kính mặt trống a (cm) <output data-out="a"></output>
+      <input type="range" data-in="a" min="10" max="40" step="1" value="28" /></label>
+    <label>Tốc độ sóng c (m/s) <output data-out="c"></output>
+      <input type="range" data-in="c" min="60" max="300" step="10" value="150" /></label>
+    <label>Chọn mode <output data-out="mode"></output>
+      <select data-in="mode">
+        <option value="0">Cơ bản (0,1)</option>
+        <option value="1" selected>Hoạ âm 1 (1,1)</option>
+        <option value="2">Hoạ âm 2 (2,1)</option>
+        <option value="3">Hoạ âm 3 (3,1)</option>
+        <option value="4">Hoạ âm 4 (4,1)</option>
+        <option value="5">Hoạ âm 5 (5,1)</option>
+      </select>
+    </label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Trái: mặt trống với các nốt rung của mode được chọn — số vòng tròn (n−1)
+    và đường kính (m) hiển thị kiểu vận động. Phải: phổ tần số của trống
+    so với dây đàn — các hoạ âm không bao giờ trùng các quãng nhạc.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input, .controls select { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const CURVE = '#2563eb', MARK = '#dc2626', THIRD = '#f59e0b';
+  // Bessel zeros j(m,n): lowest 5 for j(m,1)
+  const bessel = [2.405, 3.832, 5.136, 5.520, 6.380];
+  const modes = [
+    { m: 0, n: 1 },
+    { m: 1, n: 1 },
+    { m: 2, n: 1 },
+    { m: 3, n: 1 },
+    { m: 4, n: 1 },
+    { m: 5, n: 1 },
+  ];
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (k: string) => {
+      const el = root.querySelector(`[data-in="${k}"]`);
+      return el as HTMLInputElement | HTMLSelectElement;
+    };
+    const output = (k: string) => root.querySelector(`[data-out="${k}"]`) as HTMLOutputElement;
+
+    function draw() {
+      const a = Number(input('a').value); // radius in cm
+      const c = Number(input('c').value); // wave speed in m/s
+      const modeIdx = Number(input('mode').value);
+      const mode = modes[modeIdx];
+
+      output('a').textContent = String(a);
+      output('c').textContent = String(c);
+      output('mode').textContent = `(${mode.m},${mode.n})`;
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32;
+      const cssH = Math.round(cssW * 0.5);
+      canvas.width = cssW * dpr;
+      canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+
+      // Two panels: left = drum mode visualization, right = frequency spectrum
+      const midX = cssW / 2;
+      const panelW = midX - 20;
+      const panelH = cssH - 20;
+
+      // LEFT PANEL: Drum mode visualization
+      const drumCx = 20 + panelW / 2;
+      const drumCy = 10 + panelH / 2;
+      const drumR = Math.min(panelW, panelH) * 0.35;
+
+      // Draw circle representing drum edge
+      ctx.strokeStyle = fg;
+      ctx.globalAlpha = 0.5;
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.arc(drumCx, drumCy, drumR, 0, Math.PI * 2);
+      ctx.stroke();
+
+      // Draw nodal circles (n-1 circles inside)
+      if (mode.n > 1) {
+        ctx.globalAlpha = 0.3;
+        for (let k = 1; k < mode.n; k++) {
+          const nodalR = drumR * (k / mode.n);
+          ctx.beginPath();
+          ctx.arc(drumCx, drumCy, nodalR, 0, Math.PI * 2);
+          ctx.stroke();
+        }
+      }
+
+      // Draw nodal diameters (m lines)
+      ctx.globalAlpha = 0.3;
+      for (let k = 0; k < mode.m; k++) {
+        const angle = (k * Math.PI) / mode.m;
+        const x1 = drumCx + drumR * Math.cos(angle);
+        const y1 = drumCy + drumR * Math.sin(angle);
+        const x2 = drumCx - drumR * Math.cos(angle);
+        const y2 = drumCy - drumR * Math.sin(angle);
+        ctx.beginPath();
+        ctx.moveTo(x1, y1);
+        ctx.lineTo(x2, y2);
+        ctx.stroke();
+      }
+
+      // Calculate frequency of current mode
+      const j_mn = bessel[modeIdx];
+      const freq = (j_mn * c * 100) / (2 * Math.PI * a);
+
+      // RIGHT PANEL: Frequency spectrum
+      const specL = midX + 10;
+      const specW = cssW - specL - 10;
+      const specT = 10;
+      const specH = cssH - 20;
+
+      // Draw two spectra: strings (harmonic) vs drum (inharmonic)
+      ctx.globalAlpha = 0.3;
+      ctx.strokeStyle = fg;
+      ctx.beginPath();
+      ctx.moveTo(specL, specT);
+      ctx.lineTo(specL, specT + specH);
+      ctx.lineTo(cssW - 10, specT + specH);
+      ctx.stroke();
+
+      // Axis labels
+      ctx.globalAlpha = 0.55;
+      ctx.fillStyle = fg;
+      ctx.font = '9px system-ui,sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('Dây đàn', specL + specW * 0.25, specT + specH + 12);
+      ctx.fillText('Trống', specL + specW * 0.75, specT + specH + 12);
+
+      // Draw string harmonics (1, 2, 3, 4, 5)
+      const stringX = specL + specW * 0.25;
+      ctx.globalAlpha = 1;
+      for (let k = 1; k <= 5; k++) {
+        const barH = (specH * k) / 6;
+        const y = specT + specH - barH;
+        ctx.fillStyle = CURVE;
+        ctx.fillRect(stringX - 8, y, 16, barH);
+        ctx.fillStyle = fg;
+        ctx.globalAlpha = 0.6;
+        ctx.textAlign = 'center';
+        ctx.fillText(String(k), stringX, y - 3);
+        ctx.globalAlpha = 1;
+      }
+
+      // Draw drum modes (1, 1.5933, 2.1356, 2.2952, 2.6528)
+      const drumRatios = bessel.map((j) => j / bessel[0]);
+      const drumX = specL + specW * 0.75;
+      ctx.globalAlpha = 1;
+      for (let k = 0; k < 5; k++) {
+        const ratio = drumRatios[k];
+        const barH = Math.min((specH * ratio) / 3, specH);
+        const y = specT + specH - barH;
+        ctx.fillStyle = modeIdx === k ? MARK : THIRD;
+        ctx.fillRect(drumX - 8, y, 16, barH);
+        ctx.fillStyle = fg;
+        ctx.globalAlpha = 0.6;
+        ctx.textAlign = 'center';
+        ctx.fillText(ratio.toFixed(2), drumX, y - 3);
+        ctx.globalAlpha = 1;
+      }
+
+      // Readout
+      const ratio = j_mn / bessel[0];
+      const cents = 1200 * Math.log2(ratio);
+      const vietNum = (n: number, decimals: number) => n.toFixed(decimals).replace('.', ',');
+      readout.innerHTML =
+        `Trống Ø${2 * a} cm, c = ${c} m/s → mode (${mode.m},${mode.n}) = <b>${freq.toFixed(0)} Hz</b> · ` +
+        `hoạ âm thứ ${modeIdx + 1} = <b>${vietNum(ratio, 4)}×</b> cơ bản = <b>${cents.toFixed(0)} cent</b>, ` +
+        `không trùng quãng nhạc nào (quãng 5 = 700 cent, quãng 3 = 386 cent)`;
+    }
+
+    root.querySelectorAll('input, select').forEach((el) => el.addEventListener('input', draw));
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="mat-trong-va-cac-hoa-am-khong-nguyen-lan"]').forEach(setup);
+</script>

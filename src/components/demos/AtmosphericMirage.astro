@@ -1,0 +1,200 @@
+---
+// Atmospheric refraction and superior mirages:
+// n = 1 + 77.6×10⁻⁶ × P/T; ray curvature r = −1/(dn/dz)
+// Critical gradient ≈ +0.00166 °C/m (+1.66 K/km) where ray curves equal to Earth.
+// Shows light ray paths for different temperature gradients.
+---
+
+<figure class="demo" data-demo="ao-anh-tren-bien-va-ong-dan-anh-sang">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Gradient nhiệt độ dT/dz (°C/m) <output data-out="grad"></output>
+      <input type="range" data-in="grad" min="-0.05" max="0.25" step="0.01" value="0.0065" /></label>
+    <label>Độ cao mắt h (m) <output data-out="h"></output>
+      <input type="range" data-in="h" min="1" max="50" step="1" value="2" /></label>
+    <label>Nhiệt độ nền T₀ (°C) <output data-out="t"></output>
+      <input type="range" data-in="t" min="5" max="40" step="1" value="15" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Không khí ấm nằm trên lạnh bẻ tia sáng cong xuống — nhưng khi gradient đạt
+    ngưỡng +0,00166 °C/m (+1,66 K/km), tia cong đúng bằng độ cong Trái Đất và bị mắc kẹt.
+    Thay đổi gradient để thấy tia chạy thoát ra khỏi chân trời (−0,01 °C/m),
+    chạy song song mặt biển (≈ +0,002 °C/m), hay uốn ngược tạo ảo ảnh (> +0,05 °C/m).
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const R_earth = 6.371e6;  // meters
+  const P0 = 101325;         // Pa
+  const K_n = 77.6e-6;       // refractive gradient coefficient
+  const CURVE = '#2563eb', MARK = '#dc2626', DUCT = '#22c55e';
+
+  // Compute dn/dz given gradient dT/dz (K/m) and temperature T (K)
+  // Simplified: dn/dz ≈ −K_n * (P/T²) * dT/dz (ignoring dP/dz term)
+  function compute_dn_dz(T_K: number, dT_dz: number): number {
+    const P = P0 * Math.exp(-3000 / 8435); // pressure at ~3000m (typical for surface observations)
+    return -K_n * (P / (T_K * T_K)) * dT_dz;
+  }
+
+  // Ray radius of curvature given dn/dz
+  function ray_radius(dn_dz: number): number {
+    if (Math.abs(dn_dz) < 1e-9) return Infinity;
+    return -1 / dn_dz;
+  }
+
+  // Horizon distance with refraction accounted for
+  function horizon_distance(h: number, ray_r: number): number {
+    // Effective radius: R_eff accounts for ray bending
+    // For ray radius >> R_earth, k ≈ 1.33; as ray_r → R_earth, k → ∞
+    const k = ray_r > 0 ? 1 + ray_r / R_earth : 1 / (1 - ray_r / R_earth);
+    const R_eff = k * R_earth;
+    return Math.sqrt(2 * R_eff * h);
+  }
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (k: string) => root.querySelector(`[data-in="${k}"]`) as HTMLInputElement;
+    const output = (k: string) => root.querySelector(`[data-out="${k}"]`) as HTMLOutputElement;
+
+    function draw() {
+      const grad = Number(input('grad').value);      // °C/m (will convert to K/m)
+      const h = Number(input('h').value);             // meters
+      const T_C = Number(input('t').value);           // °C
+      const T_K = T_C + 273.15;
+
+      output('grad').textContent = (grad * 1000).toFixed(0) + ' K/km';
+      output('h').textContent = String(h);
+      output('t').textContent = T_C.toFixed(0);
+
+      // Compute ray parameters
+      const dn_dz = compute_dn_dz(T_K, grad);
+      const r_ray = ray_radius(dn_dz);
+      const d_horizon = horizon_distance(h, r_ray);
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.45);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+
+      const padL = 50, padB = 28, padT = 14, padR = 10;
+      const max_dist = 20; // km for display
+      const max_alt = 3;   // km altitude
+
+      const X = (dist_km: number) => padL + (dist_km / max_dist) * (cssW - padL - padR);
+      const Y = (alt_km: number) => cssH - padB - (alt_km / max_alt) * (cssH - padB - padT);
+
+      // Draw axes
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.3;
+      ctx.beginPath(); ctx.moveTo(padL, padT); ctx.lineTo(padL, cssH - padB); ctx.lineTo(cssW - padR, cssH - padB); ctx.stroke();
+      ctx.globalAlpha = 0.55; ctx.fillStyle = fg; ctx.font = '10px system-ui,sans-serif';
+      ctx.textAlign = 'center';
+      for (const km of [5, 10, 15, 20]) ctx.fillText(`${km} km`, X(km), cssH - padB + 14);
+      ctx.textAlign = 'right';
+      for (const kma of [1, 2, 3]) ctx.fillText(`${kma} km`, padL - 4, Y(kma) + 3);
+      ctx.globalAlpha = 1;
+
+      // Draw observer
+      const obs_x = X(0), obs_y = Y(h / 1000);
+      ctx.fillStyle = MARK;
+      ctx.beginPath(); ctx.arc(obs_x, obs_y, 5, 0, Math.PI * 2); ctx.fill();
+
+      // Draw Earth surface
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.2; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.moveTo(padL, cssH - padB); ctx.lineTo(cssW - padR, cssH - padB); ctx.stroke();
+      ctx.globalAlpha = 1;
+
+      // Draw light rays: trace rays starting at different angles from observer
+      const ray_angles = [-0.005, 0, 0.005, 0.01, 0.015]; // radians from horizontal
+      ray_angles.forEach((angle_rad, idx) => {
+        const is_horizontal = Math.abs(angle_rad) < 0.001;
+        const is_critical = Math.abs(angle_rad) < 0.003;
+
+        // Simple ray tracing: assume constant dn/dz, trace straight initially
+        // For small angles, ray follows circular arc with radius r_ray
+        const num_points = 60;
+        const max_x = cssW - padR;
+
+        ctx.strokeStyle = is_horizontal ? CURVE : fg;
+        ctx.globalAlpha = is_critical ? 0.8 : (is_horizontal ? 0.7 : 0.3);
+        ctx.lineWidth = is_horizontal ? 2 : 1;
+        ctx.beginPath();
+
+        let first = true;
+        for (let step = 0; step <= num_points; step++) {
+          const frac = step / num_points;
+          const dist_km = frac * max_dist;
+          const x = X(dist_km);
+
+          let y: number;
+          if (r_ray > 0 && !Number.isFinite(r_ray)) {
+            // No refraction or weak refraction, ray travels straight
+            const dz = dist_km * 1000 * Math.tan(angle_rad);
+            const alt_km = (h + dz) / 1000;
+            y = Y(Math.min(alt_km, max_alt));
+          } else if (r_ray > 0) {
+            // Ray curves downward (normal atmosphere)
+            const arc_frac = Math.sin(dist_km * 1000 / r_ray) || 0;
+            const dz = h + arc_frac * r_ray - Math.sqrt(r_ray * r_ray - (dist_km * 1000) * (dist_km * 1000));
+            y = Y(Math.min(Math.max(dz / 1000, 0), max_alt));
+          } else {
+            // Ray curves upward (strong inversion / duct)
+            const r_abs = -r_ray;
+            const arc_frac = Math.sin(dist_km * 1000 / r_abs) || 0;
+            const dz = h - arc_frac * r_abs + Math.sqrt(r_abs * r_abs - Math.min((dist_km * 1000) * (dist_km * 1000), r_abs * r_abs - 1));
+            y = Y(Math.min(Math.max(dz / 1000, 0), max_alt));
+          }
+
+          if (x > max_x || y < padT) break; // ray escaped
+
+          if (first) {
+            ctx.moveTo(x, y);
+            first = false;
+          } else {
+            ctx.lineTo(x, y);
+          }
+        }
+        ctx.stroke();
+      });
+      ctx.globalAlpha = 1;
+
+      // Highlight duct region for strong inversions
+      if (grad > 0.005) {
+        ctx.fillStyle = DUCT; ctx.globalAlpha = 0.08;
+        const duct_depth = Math.min(0.5, grad * 500);
+        ctx.beginPath();
+        ctx.rect(padL, Y(h/1000 + duct_depth), cssW - padL - padR, Y(h/1000) - Y(h/1000 + duct_depth));
+        ctx.fill();
+        ctx.globalAlpha = 1;
+      }
+
+      // Readout
+      const regime = grad < -0.05 ? 'lạnh đáy' : grad < 0 ? 'bình thường' : grad < 0.01 ? 'nghịch' : 'ống dẫn';
+      readout.innerHTML =
+        `dT/dz = ${grad > 0 ? '+' : ''}${(grad*1000).toFixed(0)} K/km · ` +
+        `bán kính tia ≈ ${r_ray > 0 && r_ray < 1e6 ? (r_ray/1000).toFixed(0) : (r_ray > 1e6 ? '∞' : '−' + (-r_ray/1000).toFixed(0))} km · ` +
+        `chân trời ${(d_horizon/1000).toFixed(2)} km · <b>${regime}</b>`;
+    }
+
+    root.querySelectorAll('input').forEach((el) => el.addEventListener('input', draw));
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="ao-anh-tren-bien-va-ong-dan-anh-sang"]').forEach(setup);
+</script>

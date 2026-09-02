@@ -1,0 +1,32 @@
+---
+title: "Drone 1 kg đứng yên tốn 44 W — cánh to gấp đôi chỉ còn 22 W"
+seoTitle: "Lý thuyết đĩa đẩy: công suất treo lơ lửng của drone và trực thăng"
+description: "Treo lơ lửng không sinh công nào theo nghĩa cơ học, vậy mà drone 1 kg với bốn cánh ⌀25 cm vẫn phải đốt tối thiểu 44 W (thực tế ~63 W). Vì công suất tỉ lệ nghịch với đường kính cánh, nhân đôi cánh là giảm một nửa điện — đó là lý do trực thăng có cánh dài lêu nghêu."
+pubDate: 2026-09-02
+tags: ["vat-ly", "chat-luu", "co-hoc", "javascript"]
+translationId: "drone-treo-lo-lung-ton-bao-nhieu-watt"
+---
+
+import HoverPower from '../../../components/demos/HoverPower.astro';
+
+Drone 1 kg đứng yên 30 phút, pin 100 Wh — bạn sẽ tính nó tốn 200 W. Nhưng đặt vào tay lúc pin vừa mới đầy, bạn thấy nó chỉ chạy 95 phút. Công suất thực không phải 200 W mà **63 W** — gần bằng bóng đèn thường cũ. Vậy cái này đâu đủ năng lượng để nâng kiến một gram? Câu trả lời giải thích luôn vì sao trực thăng có cánh dài khủng khiếp:
+
+<HoverPower />
+
+## Treo lơ lửng không hề miễn phí
+
+Cơ học cổ điển bảo rằng "treo yên vị" làm công bằng 0: lực nâng đối trọng lực, chuyển vị bằng 0, vậy W = F · s = 0. Sai lạc ơi là sai. Cánh quạt phải **thổi không khí xuống** — bạn thấy ở demo những đường khí bị ép xuống. Mỗi giây, cánh gia tốc một khối lượng không khí từ 0 lên vận tốc w (gọi là *induce velocity* hay tốc độ dòng cảm ứng). Công suất chính là **tốc độ dịch chuyển năng lượng** cho luồng khí ấy — công thức kỹ thuật điều khiển tất cả: P = (W^1,5) / √(2ρA), với W là trọng lượng, ρ là mật độ không khí, A là diện tích đĩa cánh. Drone 1 kg, bốn cánh ⌀25 cm: A ≈ 0,196 m², P = **44,3 W** (không kế tổn thất; thêm hiệu suất 0,7 tức ~63 W thực).
+
+## Công suất tỉ lệ nghịch với đường kính — không phải tỉ lệ vô cùng
+
+Cái hay nhất ở công thức P ∝ 1/√A là mối quan hệ với đường kính D: vì A = n·π·D²/4, nên P ∝ 1/D. Nhân đôi đường kính cánh thì diện tích tăng gấp bốn, A tăng gấp bốn, √A tăng gấp hai, P giảm **một nửa**. Drone 1 kg cùng nhân với D = 50 cm thay vì 25 cm: công suất lý tưởng **22,2 W** (thực tế ~32 W). Cánh 60 cm? 18,5 W. Mối quan hệ này không phải ngẫu nhiên: nó nằm trong [bảo toàn momen động lượng](/vi/posts/bao-toan-momen-dong-luong-cu-xoay-khong-mien-phi) — nếu bạn muốn gia tốc khối khí lớn hơn bằng lực nhẹ hơn, phải làm thêm bước, và bước ấy là tăng diện tích.
+
+## Tốc độ thổi khí xuống tỉ lệ với đường kính luôn
+
+Cùng một lý do, tốc độ dòng cảm ứng w cũng tuân luật: w = √(W / (2ρA)) ∝ 1/√D. Drone 1 kg cánh 25 cm thổi khí xuống **4,52 m/s** (tức ~16 km/h); cánh 50 cm thổi **2,26 m/s**. Lúc bạn lơ lửng ở không khí yên lặng, bạn đang đẩy không khí xuống chậm hơn gió nhẹ — nhưng việc ấy liên tục, không ngưng, cho tới khi pin hết hoặc bạn hạ cánh. Vào mùa hè khô, [quạt làm mát không làm mát căn phòng](/vi/posts/gio-lanh-cam-giac-nhu-la-do-cai-gi); trực thăng cũng vậy — cánh thổi không khí xuống là thế, việc quạt ở máy bay chỉ đốn lại một lạo khí ấy. Công suất của quạt này không miễn phí dù bạn chỉ đứng yên.
+
+Thời gian bay tính từ công suất thực (η = 0,7). Drone 1 kg cánh 25 cm với pin 100 Wh đi được ~95 phút; pin 200 Wh gần 190 phút; pin 50 Wh còn ~48 phút. Số liệu này chỉ là lý tưởng khi drone lơ lửng tại chỗ — bay tới lại, nhất là bay nhanh, tiêu điện hơn **gấp ba lần**.
+
+## Trường hợp biên: công thức nói cánh vô hạn lớn thì miễn phí
+
+Nếu bạn có thể tấm cánh lớn vô hạn (D → ∞), công thức bảo rằng P → 0 — tức là treo lơ lửng miễn phí. Thực tế chặn lại ở ba chỗ. Thứ nhất, **cánh dài thì nặng** — tăng khối lượng W, lại phải tăng A để bù, cuối cùng hiệu suất toàn hệ xấu đi. Thứ hai, ma sát bề mặt cánh không hề giảm theo công thức — cánh dài nhưng lực cản với không khí không tỉ lệ với độ giảm công suất lý tưởng. Thứ ba, **đầu cánh chạm vận tốc âm thanh** ở những rpm thực tế — vùng chuyển tiếp từ dòng subsonic sang transonic sinh ra lực cản bổ sung (shock-induced drag) không có trong công thức. Vì vậy trực thăng quân sự — ví dụ Black Hawk 5 tấn với cánh 14,7 m — không cứ giảm công suất xuống 1 W. Nó vẫn cần **~700 kW** để treo yên (mỗi trong hai động cơ ~350 kW), tức ~140 W/kg — tệ hơn drone. Ngoài ra công thức này chỉ mô tả chế độ "treo" với [góc tấn của cánh](/vi/posts/goc-tan-va-luc-nang-canh-may-bay) ở những giá trị lớn — khi bạn bay tới lại, cánh quạt không còn tự trả tiền cho luồng khí nó vừa thổi xuống, chỉ cần gửi nó đi. Sai độ gốc 5 độ là bay được; treo yên có thể cần 30 độ — vì thế bay **rẻ hơn treo**, ngược với trực giác.

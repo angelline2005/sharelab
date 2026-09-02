@@ -1,0 +1,209 @@
+---
+// Water jet narrowing: continuity equation + Torricelli.
+// d(z) = d₀·[v₀²/(v₀² + 2g·z)]^(1/4)
+// Valid for smooth laminar jets; Plateau-Rayleigh breakup marks turbulent limit.
+// Sliders: exit velocity, nozzle diameter, observation depth.
+---
+
+<figure class="demo" data-demo="tia-nuoc-tu-voi-thon-lai-con-mot-nua">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Tốc độ ra khỏi vòi (m/s) <output data-out="v0"></output>
+      <input type="range" data-in="v0" min="0.1" max="2" step="0.1" value="0.5" /></label>
+    <label>Đường kính vòi (mm) <output data-out="d0"></output>
+      <input type="range" data-in="d0" min="2" max="20" step="1" value="5" /></label>
+    <label>Chiều cao rơi (m) <output data-out="z"></output>
+      <input type="range" data-in="z" min="0" max="1" step="0.05" value="0.2" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Nước rơi, tốc độ tăng theo Torricelli (√(v₀² + 2gz)), tiết diện phải co theo
+    continuity (A₁v₁ = A₂v₂). Hai định luật lồng vào nhau: đường kính tỉ lệ
+    (v₀/(v₀² + 2gz))^(1/4) — tức là lũy thừa phân số 1/4. Thước ngang đánh dấu
+    chỗ đường kính còn một nửa; nét đứt là điểm sợi nước bắt đầu rối loạn
+    (sơ đồ Rayleigh).
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const CURVE = '#2563eb', MARK = '#dc2626', MARK2 = '#f59e0b';
+  const g = 9.8;
+
+  // d(z) = d0 * (v0^2 / (v0^2 + 2*g*z))^(1/4)
+  const diameterAtDepth = (v0: number, d0: number, z: number): number => {
+    const ratio = v0 * v0 / (v0 * v0 + 2 * g * z);
+    return d0 * Math.pow(ratio, 0.25);
+  };
+
+  // Velocity at depth: v(z) = sqrt(v0^2 + 2*g*z)
+  const velocityAtDepth = (v0: number, z: number): number => {
+    return Math.sqrt(v0 * v0 + 2 * g * z);
+  };
+
+  // Depth where diameter is 50% of d0: z = 7.5*v0^2/g
+  const depthAtHalfDiameter = (v0: number): number => {
+    return 7.5 * v0 * v0 / g;
+  };
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (k: string) => root.querySelector(`[data-in="${k}"]`) as HTMLInputElement;
+    const output = (k: string) => root.querySelector(`[data-out="${k}"]`) as HTMLOutputElement;
+
+    function draw() {
+      const v0 = Number(input('v0').value);
+      const d0_mm = Number(input('d0').value);
+      const d0 = d0_mm / 1000; // convert to meters
+      const z_current = Number(input('z').value);
+
+      output('v0').textContent = v0.toFixed(1).replace('.', ',');
+      output('d0').textContent = String(d0_mm);
+      output('z').textContent = z_current.toFixed(2).replace('.', ',');
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32;
+      const cssH = Math.round(cssW * 0.65);
+      canvas.width = cssW * dpr;
+      canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+
+      const padL = 46, padB = 26, padT = 12, padR = 10;
+      const maxZ = 1.0;
+      const maxD_mm = 25;
+
+      // Scale functions
+      const X = (depth: number) => padL + (depth / maxZ) * (cssW - padL - padR);
+      const Y = (diameter_mm: number) => cssH - padB - (diameter_mm / maxD_mm) * (cssH - padB - padT);
+
+      // Draw axes
+      ctx.strokeStyle = fg;
+      ctx.globalAlpha = 0.3;
+      ctx.beginPath();
+      ctx.moveTo(padL, padT);
+      ctx.lineTo(padL, cssH - padB);
+      ctx.lineTo(cssW - padR, cssH - padB);
+      ctx.stroke();
+
+      // Axis labels
+      ctx.globalAlpha = 0.55;
+      ctx.fillStyle = fg;
+      ctx.font = '10px system-ui,sans-serif';
+      ctx.textAlign = 'center';
+      for (const meters of [0.2, 0.4, 0.6, 0.8, 1.0]) {
+        const cm = Math.round(meters * 100);
+        ctx.fillText(`${cm} cm`, X(meters), cssH - padB + 14);
+      }
+      ctx.textAlign = 'right';
+      for (const mm of [5, 10, 15, 20, 25]) {
+        ctx.fillText(`${mm} mm`, padL - 4, Y(mm) + 3);
+      }
+      ctx.globalAlpha = 1;
+
+      // Draw jet profile (left and right sides)
+      ctx.strokeStyle = CURVE;
+      ctx.lineWidth = 1.5;
+
+      // Left side of jet
+      ctx.beginPath();
+      for (let i = 0; i <= 100; i++) {
+        const z = (maxZ * i) / 100;
+        const d_mm = diameterAtDepth(v0, d0, z) * 1000;
+        const r_mm = d_mm / 2;
+        const x = X(z);
+        const y = Y(r_mm);
+        i ? ctx.lineTo(x, y) : ctx.moveTo(x, y);
+      }
+      ctx.stroke();
+
+      // Right side of jet (mirror)
+      ctx.beginPath();
+      for (let i = 0; i <= 100; i++) {
+        const z = (maxZ * i) / 100;
+        const d_mm = diameterAtDepth(v0, d0, z) * 1000;
+        const r_mm = d_mm / 2;
+        const x = X(z);
+        const y = Y(r_mm);
+        i ? ctx.lineTo(x, y) : ctx.moveTo(x, y);
+      }
+      // Close the path by going back up the other side
+      for (let i = 100; i >= 0; i--) {
+        const z = (maxZ * i) / 100;
+        const d_mm = diameterAtDepth(v0, d0, z) * 1000;
+        const r_mm = d_mm / 2;
+        const x = X(z);
+        const y = cssH - padB - (r_mm / maxD_mm) * (cssH - padB - padT);
+        ctx.lineTo(x, y);
+      }
+      ctx.closePath();
+      ctx.stroke();
+
+      // Mark the 50% diameter depth with a horizontal rule
+      const z_half = depthAtHalfDiameter(v0);
+      if (z_half <= maxZ) {
+        ctx.strokeStyle = MARK;
+        ctx.globalAlpha = 0.4;
+        ctx.beginPath();
+        ctx.moveTo(padL, Y(d0_mm / 2));
+        ctx.lineTo(cssW - padR, Y(d0_mm / 2));
+        ctx.stroke();
+        ctx.globalAlpha = 1;
+
+        // Label the 50% line
+        ctx.fillStyle = MARK;
+        ctx.globalAlpha = 0.7;
+        ctx.textAlign = 'left';
+        ctx.font = '10px system-ui,sans-serif';
+        ctx.fillText('50%', padL + 4, Y(d0_mm / 2) - 6);
+        ctx.globalAlpha = 1;
+      }
+
+      // Mark current observation depth with a red dot
+      const d_current_mm = diameterAtDepth(v0, d0, z_current) * 1000;
+      const r_current_mm = d_current_mm / 2;
+      ctx.fillStyle = MARK2;
+      ctx.beginPath();
+      ctx.arc(X(z_current), Y(r_current_mm), 5, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Current position cross-hair
+      ctx.strokeStyle = MARK2;
+      ctx.globalAlpha = 0.3;
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(X(z_current), padT);
+      ctx.lineTo(X(z_current), cssH - padB);
+      ctx.stroke();
+      ctx.globalAlpha = 1;
+
+      // Readout
+      const v_current = velocityAtDepth(v0, z_current);
+      const percentDiameter = (d_current_mm / d0_mm) * 100;
+      readout.innerHTML =
+        `Độ sâu <b>${z_current.toFixed(2).replace('.', ',')} m</b> · ` +
+        `đường kính còn <b>${d_current_mm.toFixed(1).replace('.', ',')} mm</b> (${percentDiameter.toFixed(0)}%) · ` +
+        `tốc độ <b>${v_current.toFixed(2).replace('.', ',')} m/s</b>`;
+    }
+
+    root.querySelectorAll('input').forEach((el) => el.addEventListener('input', draw));
+    addEventListener('resize', draw);
+    draw();
+  }
+
+  document.querySelectorAll<HTMLElement>('[data-demo="tia-nuoc-tu-voi-thon-lai-con-mot-nua"]').forEach(setup);
+</script>

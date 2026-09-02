@@ -1,0 +1,82 @@
+---
+title: "Hai con lắc nối lò xo: quả A đứng im hoàn toàn sau 4,4 giây"
+seoTitle: "Dao động liên kết: chu kỳ trao đổi năng lượng giữa hai con lắc"
+description: "Nối hai con lắc giống hệt nhau bằng một lò xo yếu, đẩy một quả: sau 4,39 giây toàn bộ năng lượng nằm ở quả kia và quả đầu đứng im tuyệt đối. Rồi mọi thứ chảy ngược lại, đúng nhịp, mãi mãi — hai tần số riêng chỉ chênh nhau 0,72 rad/s là đủ tạo ra cả vòng luân chuyển đó."
+pubDate: 2026-09-02
+tags: ["vat-ly", "dao-dong", "co-hoc", "javascript"]
+translationId: "hai-con-lac-noi-lo-xo-doi-nang-luong"
+---
+
+import CoupledPendulum from '../../../components/demos/CoupledPendulum.astro';
+
+Nối hai con lắc giống hệt nhau bằng một lò xo yếu và đẩy một quả mạnh mà
+buông tay: nó lắc qua lại, biên độ tụt dần, rồi bỗng **dừng hẳn** — không
+chao liếng gì nữa, đứng im tuyệt đối. Lúc ấy quả kia đang lắc qua lại đầy đủ
+biên độ. Rồi mọi thứ chảy ngược lại, đúng từng bước, cho tới khi quả đầu lại
+full biên độ và quả kia lại dừng im — một vòng luân chuyển năng lượng hoàn hảo
+không cần tay can thiệp:
+
+<CoupledPendulum />
+
+## Hai tần số khác nhau gây ra phách dao động
+
+[Con lắc đơn dài L có tần số riêng](/vi/posts/chu-ky-con-lac-don-co-that-su-khong-phu-thuoc-bien-do)
+ω₁ = √(g/L). Khi nối hai quả bằng lò xo, quả thứ hai chịu thêm một lực từ
+lò xo — nên tần số riêng của hệ *thặng dư* (chỉ tính quả B, làm như quả A
+là điểm tựa cố định) là ω₂ = √(g/L + 2k/m). Ở hai quả lắc giống hệt (L = 1
+m, m = 200 g, k = 0,5 N/m), ta có ω₁ = **3,13 rad/s** và ω₂ = **3,85
+rad/s** — chênh nhau chỉ Δω = **0,72 rad/s**.
+
+Một hiệu tần số nhỏ xíu ấy đủ để tạo ra [hiện tượng phách](/vi/posts/hien-tuong-phach-len-day-dan-bang-tai):
+hai dao động gần tần số khi này cùng pha (cộng nhau), lúc khác ngược pha
+(triệt nhau). Chỉ khác ở đây không phải hai sóng âm mà là năng lượng chuyển
+đổi giữa kinh năng hai quả.
+
+## Lò xo bơm năng lượng như một van một chiều
+
+Tưởng lò xo kết nối hai quả nên mọi thứ cân bằng — nhưng không: khi quả A lắc
+nhanh và quả B lắc chậm (hay đứng im), lò xo vừa nén vừa kéo, mà *pha* của
+những cú nén-kéo ấy có nghĩa — nó luôn **chuyển năng lượng về hướng làm hai
+quả lắc gần nhau hơn về pha**. Hiểu theo cách khác: khi quả A chuyển động và
+quả B đứng im, lò xo có thể truyền lực từ A sang B; nhưng khi hai quả chuyển
+động cùng pha, lò xo chỉ nén-giãn song song mà không truyền năng lượng được.
+
+Đúng vì thế mà thời gian trao đổi trọn vẹn năng lượng từ quả này sang quả kia là:
+
+```
+t_trao_đổi = π / Δω
+```
+
+Với Δω = 0,72 rad/s, ta được t_trao_đổi = **4,39 giây**. Rồi chu kỳ phách
+(thời gian một quả từ full biên độ về lại full biên độ) là **2π/Δω = 8,77
+giây** — gấp đôi thời gian trao đổi một chiều, vì cả hai quả đều trải qua
+một vòng đầy đủ.
+
+## Hiệu tần số nhỏ mới cho trao đổi trọn vẹn
+
+Tại sao trao đổi phải **trọn vẹn** — quả này về 0, quả kia về max? Vì hai
+tần số phải đủ gần nhau để trong suốt hành trình, chúng luôn giữ được *mối
+liên hệ pha* tốt. Nếu hiệu tần số lớn hơn (lò xo cứng, hay khối lượng khác
+nhau), thì khi quả A về 0 thì quả B chưa tới max — năng lượng mới "flip
+flop" được một phần, rồi lại chuyển ngược, tạo một kiểu dao động phức tạp
+hơn. Chính vì vậy mà dù lò xo yếu "chỉ" 0,5 N/m, nó vẫn tạo được hiệu ứng
+thức tỉnh — quả A gần như bế tắc một cách kỳ lạ.
+
+Huygens quan sát hiện tượng tương tự ở đôi đồng hồ con lắc: hai chiếc chính
+xác gần như giống nhau sẽ **tự động bắt nhịp** qua tương tác cơ học. Bây giờ
+các nhà vật lý gọi nó là "phase locking" hay "đồng bộ hoá". Nó xảy ra ở khắp
+nơi: các lò xo tim, vòng quay các hành tinh — hệ thống luôn tìm cách năng lượng
+chuyển động được trơn tru nhất.
+
+## Trường hợp biên: lắc không đúng cặp, năng lượng bận tâm
+
+Làm một con lắc dài hơn cái kia chỉ 10% — nói là lệch từ 1 m xuống 0,9 m:
+tần số riêng của cái ngắn hơn vọt lên **5,4% cao hơn**. Hiệu tần số giữa
+chúng giờ chỉ **0,17 rad/s**. Thời gian trao đổi năng lượng kéo dài tới
+**18−20 giây** — gấp bốn lần so với cặp lắc giống nhau — và phần năng lượng
+chuyển được không còn trọn vẹn, chỉ được 70−80%. Quả lắc không bao giờ dừng
+hẳn, mà luôn nhúc nhích — phá vỡ cái "dừng tuyệt đối" thần kỳ ấy.
+
+Đó là lý do Huygens phải cầu chỉnh lại hai đồng hồ của mình tới sáu chữ số
+mới có được sự bắt nhịp ổn định. Thiên tính của vật lý: trao đổi năng lượng
+trọn vẹn không phải miễn phí — nó đòi sự khớp khít gần như hoàn hảo.

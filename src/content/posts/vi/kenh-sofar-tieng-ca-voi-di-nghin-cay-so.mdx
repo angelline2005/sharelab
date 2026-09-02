@@ -1,0 +1,50 @@
+---
+title: "Kênh SOFAR: đại dương tiết kiệm cho cá voi đúng 60 decibel"
+seoTitle: "Kênh SOFAR là gì: vì sao tiếng cá voi đi được nghìn km dưới biển"
+description: "Ở độ sâu khoảng 1 km, tốc độ âm trong nước đạt cực tiểu và mọi tia âm bị bẻ cong quay lại — thành một ống dẫn sóng không có thành. Suy hao đổi từ nghịch đảo bình phương sang nghịch đảo bậc nhất: ở cự ly 1 000 km, đó là 60 dB được giữ lại, và tia âm quay đầu đều đặn mỗi 60,5 km."
+pubDate: 2026-09-02
+tags: ["vat-ly", "song", "am-thanh", "chat-luu", "javascript"]
+translationId: "kenh-sofar-tieng-ca-voi-di-nghin-cay-so"
+---
+
+import SofarChannel from '../../../components/demos/SofarChannel.astro';
+
+Cá voi bưng cầu hát dưới biển Bắc Đại Tây Dương với cường độ khoảng **120 decibel** — gầm máy bay lên cầu. Tiếng ấy vọng qua 1 000 km nước mà không tổn thất quá mức khiến bạn nghe từ một bờ sang bờ kia — không phải vì biển yên tĩnh, mà vì ở độ sâu khoảng 1 km, nước biển tạo ra một **ống dẫn sóng vô hình** hoàn hảo:
+
+<SofarChannel />
+
+## Nước nguạng tốc độ: ống dẫn âm không thành tường
+
+Tốc độ âm trong nước phụ thuộc vào **nhiệt độ, độ muối, và áp suất**. Mặt biển ấm hơn; xuống ~1 km là vùng [chuyển tiếp nhanh (thermocline)](/vi/posts/toc-do-song-than-va-can-bac-hai-cua-do-sau) (nhiệt độ sụt 20 → 5 °C) làm tốc độ âm giảm. Xuống sâu hơn, áp suất tăng làm tốc độ tăng lại. Kết quả: **thung lũng tốc độ V-hình**, với đáy (tốc độ cực tiểu ~1 485 m/s) ở ~1 km — **trục kênh SOFAR**.
+
+Tia âm từ trục này bị [bẻ cong quay lại](/vi/posts/khuc-xa-va-phan-xa-toan-phan) khi đi từ tốc độ thấp sang cao — giống sóng nước đập bãi xéo. Tia bật lên bật xuống lặp đi, mỗi chu kỳ **~60 km theo chiều ngang**.
+
+## 60 decibel tiết kiệm ở cự ly 1 000 km
+
+Suy hao sóng âm trong nước có hai thành phần: hấp thụ (phân tử chuyển độc lập sang nhiệt) và **lan truyền học**. Lan truyền từ một nguồn điểm trong không gian ba chiều tuân quy luật bình phương nghịch đảo: cường độ tỉ lệ 1/r², nên áp suất tỉ lệ 1/r. Mỗi khi gấp đôi khoảng cách, cường độ giảm **6 dB**, hay từ dạng dB: suy hao = −20·log₁₀(r).
+
+Kênh SOFAR biến bài toán từ **ba chiều thành hai chiều** — tia bị nhốt trong ống dẫn, chỉ lan truyền ngang, không buông theo chiều sâu. Nước biển trở thành một **làn mỏng vô hạn**, cường độ tuân **quy luật hình trụ**: suy hao = −10·log₁₀(r). Ở cự ly 1 000 km:
+- Nếu không có kênh (lan cầu): −20·log₁₀(10⁶) = **−120 dB**
+- Với kênh SOFAR (lan trụ): −10·log₁₀(10⁶) = **−60 dB**
+
+**Khoản tiết kiệm: 60 decibel.** Từ cường độ gốc 120 dB, tia còn 60 dB ở 1 000 km — vẫn nghe rõ bằng một con tàu thủy gần gũi, hay như [một người gọi lớn từ ngoài phòng](/vi/posts/nghe-tieng-tau-hai-lan-am-thanh-trong-vat-ran).
+
+## Bán kính cong: điều khiển hướng
+
+Tia âm trong gradient tuyến tính theo đường tròn:
+
+```
+R = c / (g·cos(θ₀))
+```
+
+với c ~1 485 m/s, g ~**0,01–0,03 s⁻¹**, θ₀ là góc phát.
+
+Cá voi phát ở **góc rất nhỏ** (vài độ) để bán kính lớn, tia nông. Tia từ góc 10° với g = 0,02 s⁻¹ có bán kính **~75 km**, chạm sâu **~1 150 m** — vẫn trong vùng tốc độ cao nên quay lại đúng quy tắc.
+
+## Tần số thấp đi xa, tần số cao bị hấp thụ
+
+Kênh SOFAR chỉ hiệu quả với **tần số thấp**. Nước biển hấp thụ âm tỉ lệ f². Cá voi bầu hát ở **~20 Hz**, hấp thụ yếu, đi 1 000 km. Cá heo phát ở **~100 Hz** (gấp 5 lần tần số), hấp thụ tăng **25 lần** — khoản 60 dB tiết kiệm bị xóa sạch. Chúng phát gần mặt nước, tầm xa vài trăm mét để tìm con mồi gần kề.
+
+## Trường hợp biên: vùng cực và tần số cao
+
+Ở vùng cực, nước mặt lạnh làm thung lũng dâng sát mặt biển. Kênh trở thành "kênh mặt": tia va liên tục với băng đá, mất vài dB mỗi lần, tầm xa sụp từ 1 000 km xuống trăm km. Kênh SOFAR là hệ thống **có cửa sổ tần số** — tần số quá thấp (< 1 Hz) sóng dài không bị ròng, tần số quá cao (> 100 kHz) bị hấp thụ f² phá nát. Dải 10–100 Hz là dải vàng cho [âm thanh dưới nước](/vi/posts/nghe-tieng-tau-hai-lan-am-thanh-trong-vat-ran): kênh SOFAR hoạt động đủ hiệu quả, nhưng động vật cũng đủ nhỏ để lợi dụng nó.

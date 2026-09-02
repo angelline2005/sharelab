@@ -1,0 +1,75 @@
+---
+title: "Tai nghe chống ồn ăn được tiếng máy bay nhưng chịu thua tiếng người nói"
+seoTitle: "Tai nghe chống ồn hoạt động thế nào và vì sao chỉ cắt được tiếng trầm"
+description: "Muốn triệt 10 dB, sóng ngược pha phải khớp trong vòng 5,05% bước sóng — ở 1 kHz là 1,7 cm hay 50 micro giây, ở 100 Hz là 17 cm. Sai nửa bước sóng thì máy chống ồn cộng thêm đúng 6 dB thay vì trừ. Toàn bộ lý do tai nghe ANC ăn tiếng máy bay mà chịu thua tiếng người nói nằm trong một dòng công thức."
+pubDate: 2026-09-02
+tags: ["vat-ly", "song", "am-thanh", "javascript"]
+translationId: "tai-nghe-chong-on-sai-pha-5-phan-tram"
+---
+
+import ActiveNoiseControl from '../../../components/demos/ActiveNoiseControl.astro';
+
+Bạn mang tai nghe chống ồn lên sân bay — tiếng động cơ máy bay biến mất gần hết, mà
+tiếng nữ tiếp viên còn rõ như không có tai nghe. Tại sao máy chống ồn có thể triệt
+tiếng thấp mà lại chịu thua tiếng cao? Câu trả lời không phải trong các chip tối tân
+mà trong một thất bại đơn giản: sóng bù tới chậm một chút ích thị.
+
+<ActiveNoiseControl />
+
+## Tấm sóng đối lập vẫn là sóng: triệt bằng cách... chồng lên
+
+Tai nghe chống ồn (ANC) không tách các tần số hay che chắn vật lý — nó **gửi sóng âm
+ngược pha** vào tai bạn, đúng lúc sóng ồn tới. Hai sóng cùng tần số nhưng cách biên
+180° gặp nhau → [các đỉnh của sóng bù trùng lên các hẻm của sóng ồn](/vi/posts/hien-tuong-phach-len-day-dan-bang-tai)
+→ tổng bằng không. Dạo này bạn nghe cái gì? Không khí yên tĩnh.
+
+Công thức của sự triệt chính xác là mức còn lại (dB) = 20·log10(|1 − a·e^(i·2πfΔt)|),
+với a là tỉ số biên độ của hai sóng, f là tần số, Δt là sai lệch thời gian từ khi ghi
+âm tới lúc phát ngược lại. Khi a = 1 (hai sóng bằng sức), công thức này rút thành
+20·log10(2·sin(πfΔt)) — chỉ một hàm sin, đặc biệt giản dị.
+
+## Sai lệch bước sóng, sai lệch gấp rưỡi
+
+Để triệt được **10 dB** (giảm đi gấp 3,16 lần), sóng bù phải tới đúng trong cửa sổ
+tương đối quanh pha ngược lại. Cứ tính ngược từ công thức: sin phải bằng 0,1581, điều
+này xảy ra khi Δt/T = **5,05%** — sai lệch chỉ được một chốc bọt so với độ dài
+bước sóng.
+
+Ở **1 kHz**, một bước sóng là **34,3 cm**, nên 5,05% ấy tương đương **1,7 cm**, hay
+trong thời gian: **50 µs** (50 phần triệu giây). Sai khỏi cửa sổ ấy, triệt yếu đi.
+Ở **100 Hz**, bước sóng dài gấp 10 — **3,43 m** — nên cửa sổ cũng dài gấp 10:
+**17 cm** hoặc **505 µs**. Máy bay phát tiếng 100 Hz, tiếp viên nói khoảng 3 kHz:
+bước sóng khác nhau gấp 30 lần, cửa sổ cũng khác gấp 30.
+
+Các mạch ANC ghi âm ồn rồi chế tạo sóng bù phát qua loa trong tai nghe — tất cả phải
+xong trong 50 µs ở 1 kHz. **Chip nhỏ hay mạch dài = trễ hơn = triệt yếu**, đặc biệt
+dải cao nơi cửa sổ nhỏ. Vì thế mỗi tai nghe phải tùy chỉnh bằng phần mềm, vẫn không
+bao giờ hoàn hảo.
+
+## Tại sao máy bay mà tiếng người không
+
+Tiếng động cơ máy bay chủ yếu ở dải 100–500 Hz — bước sóng 3,4–0,68 m — những tần số
+nơi một sai lệch 17–3 cm hoặc hàng trăm µs không làm cho kế hoạch sập. Lại thêm, ở
+dải thấp, để triệt 10 dB không cần biên độ bù hoàn hảo — a = 0,8 hay 0,9 cũng đủ khá.
+Mà tiếng người — vùng [phát tán từ 85–255 Hz nhưng lân cận nhất ở 1–3 kHz](/vi/posts/dao-dong-tat-dan-diem-vang-cua-giam-xoc)
+— có tần số cao hơn gấp rồi lại cần cửa sổ nhỏ để triệt. **Máy chống ồn nơi này bắt
+đầu bực**: sai một tí, thay vì triệt, sóng bù cộng thêm, làm ồn thêm hay ít nhất là
+bỏ cuộc.
+
+Đây là lý do tất cả tai nghe ANC đều **lọc cứng ở dải cao** — không cố triệt bằng
+phương pháp này, thay vào đó dùng vật liệu mềm như bọt mút để cơ học hấp thụ tiếng
+cao. ANC hiệu quả chỉ từ 20 Hz tới khoảng 1–2 kHz, chỉnh không hoàn hảo; tiếng người
+nói đòi sự yên tĩnh bắt đầu từ ngắt ANC này.
+
+## Trường hợp biên: bỏ qua sai lệch, máy bắt đầu khuếch đại
+
+Đẩy Δt lên tới một nửa chu kỳ (T/2), sóng bù đến cùng pha với ồn. Khi ấy,
+|1 − e^(iπ)| = 2, mức nhảy lên **+6,0 dB** — máy chống ồn biến thành **máy khuếch đại**.
+Một chiếc tai nghe với trễ quá lâu hoặc lọc yếu dải cao sẽ hành động đúng vậy,
+làm tai bạn chịu đựng ồn **gấp đôi** thay vì giảm.
+
+Đó là lý do tất cả ANC phải có **ranh giới thả**, thường khoảng 1–2 kHz — ở tần số
+cao hơn, chip đừng cố gắng triệt nữa, chỉ dùng cách âm thụ động bằng mút. Nếu máy
+vẫn cố chạy song song ở dải cao, không những thất bại mà còn tạo lợi thế cho ồn.
+Vậy nên quang cáo tai nghe ANC luôn nói "tốt nhất dưới 1 kHz" — không phải chê, đó
+chỉ là vật lý viết sơ đồ của nó.

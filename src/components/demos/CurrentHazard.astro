@@ -1,0 +1,158 @@
+---
+// Electric shock current through body per IEC 60479 (50–60 Hz AC).
+// Formula: I = V / (R_body + R_ground); zones by current, not voltage.
+// 30 mA RCCB triggers within 30 ms in Zone AC-4 (fibrillation risk).
+---
+
+<figure class="demo" data-demo="cb-chong-giat-30-ma-va-dong-qua-nguoi">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Điện trở cơ thể (Ω) <output data-out="r"></output>
+      <input type="range" data-in="r" min="500" max="100000" step="100" value="1000" /></label>
+    <label>Điện áp chạm (V) <output data-out="v"></output>
+      <input type="range" data-in="v" min="12" max="380" step="1" value="220" /></label>
+    <label>Điện trở giày/nền (Ω) <output data-out="rg"></output>
+      <input type="range" data-in="rg" min="0" max="10000" step="100" value="200" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Dòng điện qua người nguy hiểm ở mức 30 mA trở lên: nó làm tim rung
+    loạn. Không phải điện áp giết bạn — là dòng điện. Một chiếc CB chống
+    giật (RCCB) ngắt mạch trong 30 ms khi dòng vượt 30 mA, đủ cứu mạng.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const CURVE = '#2563eb', MARK = '#dc2626', THIRD = '#f59e0b';
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (k: string) => root.querySelector(`[data-in="${k}"]`) as HTMLInputElement;
+    const output = (k: string) => root.querySelector(`[data-out="${k}"]`) as HTMLOutputElement;
+
+    function iecZone(i: number): [string, string] {
+      if (i < 0.5) return ['AC-1', 'không cảm thấy'];
+      if (i < 10) return ['AC-2', 'cảm nhận'];
+      if (i < 30) return ['AC-3', 'co cứng không rời tay'];
+      return ['AC-4', 'nguy cơ rung thất'];
+    }
+
+    function draw() {
+      const r_body = Number(input('r').value);
+      const v = Number(input('v').value);
+      const r_ground = Number(input('rg').value);
+      output('r').textContent = r_body.toLocaleString('vi-VN');
+      output('v').textContent = String(v);
+      output('rg').textContent = r_ground.toLocaleString('vi-VN');
+
+      const r_total = r_body + r_ground;
+      const i_ma = (v / r_total) * 1000;
+      const p = v * (v / r_total);
+      const [zone, zoneName] = iecZone(i_ma);
+      const tripTime = i_ma >= 30 ? '30 ms' : i_ma >= 10 ? '200–500 ms' : '—';
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.5);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+
+      const padL = 50, padB = 26, padT = 12, padR = 10;
+      const iMin = 0.1, iMax = 500;
+      const logRMin = Math.log10(500), logRMax = Math.log10(100000);
+
+      const X = (logR: number) => padL + ((logR - logRMin) / (logRMax - logRMin)) * (cssW - padL - padR);
+      const Y = (ii: number) => cssH - padB - (Math.log10(Math.max(ii, iMin)) / Math.log10(iMax)) * (cssH - padB - padT);
+
+      // Zone background colors for IEC 60479
+      const zones = [
+        [iMin, 0.5, 'rgba(76,175,80,0.15)'],  // AC-1: green
+        [0.5, 10, 'rgba(255,193,7,0.15)'],    // AC-2: yellow
+        [10, 30, 'rgba(255,152,0,0.15)'],     // AC-3: orange
+        [30, iMax, 'rgba(244,67,54,0.15)']    // AC-4: red
+      ];
+      zones.forEach(([iLo, iHi, col]) => {
+        ctx.fillStyle = col;
+        ctx.fillRect(padL, Y(iHi), cssW - padL - padR, Y(iLo) - Y(iHi));
+      });
+
+      // 30 mA RCCB threshold line
+      ctx.strokeStyle = MARK; ctx.globalAlpha = 0.5; ctx.lineWidth = 2; ctx.setLineDash([4, 4]);
+      ctx.beginPath(); ctx.moveTo(padL, Y(30)); ctx.lineTo(cssW - padR, Y(30)); ctx.stroke();
+      ctx.setLineDash([]);
+
+      // Axes
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.3; ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(padL, padT); ctx.lineTo(padL, cssH - padB); ctx.lineTo(cssW - padR, cssH - padB); ctx.stroke();
+      ctx.globalAlpha = 0.55; ctx.fillStyle = fg; ctx.font = '10px system-ui,sans-serif';
+
+      // X-axis labels (resistance, log scale)
+      ctx.textAlign = 'center';
+      for (const r of [500, 1000, 5000, 10000, 100000]) {
+        const logR = Math.log10(r);
+        const label = r >= 10000 ? `${r / 1000}×10³` : String(r);
+        ctx.fillText(label + ' Ω', X(logR), cssH - padB + 14);
+      }
+
+      // Y-axis labels (current, log scale)
+      ctx.textAlign = 'right';
+      for (const ii of [0.5, 1, 5, 10, 50, 100, 500]) {
+        const logI = Math.log10(ii);
+        ctx.fillText(`${ii} mA`, padL - 4, Y(ii) + 3);
+      }
+
+      // Zone labels
+      ctx.globalAlpha = 0.4; ctx.textAlign = 'left'; ctx.font = '8px system-ui,sans-serif';
+      ctx.fillText('AC-1', padL + 4, Y(0.25) - 2);
+      ctx.fillText('AC-2', padL + 4, Y(5) - 2);
+      ctx.fillText('AC-3', padL + 4, Y(20) - 2);
+      ctx.fillText('AC-4', padL + 4, Y(100) - 2);
+      ctx.globalAlpha = 1; ctx.font = '10px system-ui,sans-serif';
+
+      // Current curve at fixed voltage
+      ctx.strokeStyle = CURVE; ctx.lineWidth = 2; ctx.beginPath();
+      for (let i = 0; i <= 200; i++) {
+        const logR = logRMin + ((i / 200) * (logRMax - logRMin));
+        const r = Math.pow(10, logR);
+        const ii = (v / r) * 1000;
+        const xx = X(logR);
+        const yy = Y(ii);
+        i ? ctx.lineTo(xx, yy) : ctx.moveTo(xx, yy);
+      }
+      ctx.stroke(); ctx.lineWidth = 1;
+
+      // Marker for current scenario
+      ctx.fillStyle = MARK;
+      const logRBody = Math.log10(r_body);
+      ctx.beginPath(); ctx.arc(X(logRBody), Y(i_ma), 6, 0, Math.PI * 2); ctx.fill();
+
+      ctx.fillStyle = fg; ctx.globalAlpha = 0.55; ctx.textAlign = 'center';
+      ctx.fillText(`${(v / r_total).toFixed(3).replace('.', ',')} A`, X(logRBody), Y(i_ma) - 12);
+
+      const rccbNote = i_ma >= 30 ? ' · <b>CB chống giật ngắt sau 30 ms</b>' : '';
+      const powerNote = p < 100 ? '' : ` · công suất tiêu thụ: <b>${p.toFixed(0)} W</b>`;
+      readout.innerHTML =
+        `R_người = ${r_body.toLocaleString('vi-VN')} Ω · V = ${v} V · R_nền = ${r_ground.toLocaleString('vi-VN')} Ω → I = <b>${i_ma.toFixed(1).replace('.', ',')} mA</b> · vùng <b>${zone}</b> (${zoneName})${rccbNote}${powerNote}`;
+    }
+
+    root.querySelectorAll('input').forEach((el) => el.addEventListener('input', draw));
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="cb-chong-giat-30-ma-va-dong-qua-nguoi"]').forEach(setup);
+</script>

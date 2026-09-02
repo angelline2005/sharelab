@@ -1,0 +1,163 @@
+---
+// Euler's disk precession frequency: Ω = sqrt(4·g/(3·a·α))
+// where a = disk radius (m), α = tilt angle (rad), g ≈ 9.8 m/s²
+// f = Ω / (2π) in Hz
+// Valid for α > 0.2° to ~20° (log scale). Curve approaches singularity as α → 0.
+---
+
+<figure class="demo" data-demo="euler-disk">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Bán kính đĩa a (mm) <output data-out="a"></output>
+      <input type="range" data-in="a" min="5" max="60" step="1" value="12.5" /></label>
+    <label>Góc nghiêng α (°, thang log) <output data-out="alpha"></output>
+      <input type="range" data-in="alpha" min="0.2" max="20" step="0.1" value="2.9" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Khi đĩa nghiêng góc α, điểm tiếp xúc chạy vòng với tần số Ω = √(4g/3aα).
+    Tần số phân kỳ theo α^(−1/2) khi góc tiến về 0. Dùng lôgarit để xem toàn bộ
+    dải từ 0,2° đến 20°, nơi công thức vẫn giữ đúng.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const g = 9.8;
+  const CURVE = '#2563eb', MARK = '#dc2626', THIRD = '#f59e0b';
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (k: string) => root.querySelector(`[data-in="${k}"]`) as HTMLInputElement;
+    const output = (k: string) => root.querySelector(`[data-out="${k}"]`) as HTMLOutputElement;
+
+    function draw() {
+      const a_mm = Number(input('a').value);
+      const a = a_mm / 1000; // convert to meters
+      const alpha_deg = Number(input('alpha').value);
+      const alpha_rad = alpha_deg * Math.PI / 180;
+
+      // Current precession frequency
+      const omega = Math.sqrt(4 * g / (3 * a * alpha_rad));
+      const f = omega / (2 * Math.PI);
+
+      output('a').textContent = a_mm.toFixed(1).replace('.', ',');
+      output('alpha').textContent = alpha_deg.toFixed(1).replace('.', ',');
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32;
+      const cssH = Math.round(cssW * 0.5);
+      canvas.width = cssW * dpr;
+      canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+
+      const padL = 50, padB = 30, padT = 12, padR = 10;
+      const logMin = Math.log10(0.2), logMax = Math.log10(20);
+      const fMin = 5, fMax = 1000; // Hz range for display
+
+      // X axis: log scale for angle
+      const X = (deg: number) => {
+        const logDeg = Math.log10(deg);
+        return padL + ((logDeg - logMin) / (logMax - logMin)) * (cssW - padL - padR);
+      };
+
+      // Y axis: log scale for frequency
+      const Y = (freq: number) => {
+        const logFreq = Math.log10(freq);
+        const logFMin = Math.log10(fMin), logFMax = Math.log10(fMax);
+        return cssH - padB - ((logFreq - logFMin) / (logFMax - logFMin)) * (cssH - padB - padT);
+      };
+
+      // Draw axes and grid
+      ctx.strokeStyle = fg;
+      ctx.globalAlpha = 0.3;
+      ctx.beginPath();
+      ctx.moveTo(padL, padT);
+      ctx.lineTo(padL, cssH - padB);
+      ctx.lineTo(cssW - padR, cssH - padB);
+      ctx.stroke();
+
+      // Draw major grid lines and labels
+      ctx.globalAlpha = 0.55;
+      ctx.fillStyle = fg;
+      ctx.font = '10px system-ui,sans-serif';
+
+      // Angle labels (bottom)
+      ctx.textAlign = 'center';
+      for (const deg of [0.3, 1, 3, 10, 20]) {
+        if (deg >= 0.2 && deg <= 20) {
+          ctx.fillText(`${deg}°`, X(deg), cssH - padB + 14);
+        }
+      }
+
+      // Frequency labels (left)
+      ctx.textAlign = 'right';
+      for (const hz of [10, 50, 100, 500, 1000]) {
+        if (hz >= fMin && hz <= fMax) {
+          ctx.fillText(`${hz} Hz`, padL - 4, Y(hz) + 3);
+        }
+      }
+
+      // Mark audible range (20–20000 Hz, but we show 20–1000 Hz)
+      ctx.globalAlpha = 0.1;
+      ctx.fillStyle = THIRD;
+      const audibleY1 = Y(fMin);
+      const audibleY2 = Y(fMax);
+      ctx.fillRect(padL, audibleY1, cssW - padL - padR, audibleY2 - audibleY1);
+
+      // Draw precession curve: Ω(α)
+      ctx.globalAlpha = 1;
+      ctx.strokeStyle = CURVE;
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      for (let i = 0; i <= 200; i++) {
+        const alpha_i_deg = Math.pow(10, logMin + ((logMax - logMin) * i) / 200);
+        const alpha_i_rad = alpha_i_deg * Math.PI / 180;
+        const omega_i = Math.sqrt(4 * g / (3 * a * alpha_i_rad));
+        const f_i = omega_i / (2 * Math.PI);
+        if (f_i >= fMin && f_i <= fMax) {
+          const x = X(alpha_i_deg);
+          const y = Y(f_i);
+          i ? ctx.lineTo(x, y) : ctx.moveTo(x, y);
+        }
+      }
+      ctx.stroke();
+      ctx.lineWidth = 1;
+
+      // Draw current point
+      ctx.fillStyle = MARK;
+      ctx.globalAlpha = 1;
+      ctx.beginPath();
+      ctx.arc(X(alpha_deg), Y(f), 6, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Readout
+      const omega_rounded = omega.toFixed(1);
+      const f_rounded = f.toFixed(1);
+      const audibleNote = f >= 20 ? ' · nghe được' : '';
+      readout.innerHTML =
+        `Đồng xu a = ${a_mm.toFixed(1).replace('.', ',')} mm nghiêng ${alpha_deg.toFixed(1).replace('.', ',')}° → Ω = ${omega_rounded.replace('.', ',')} rad/s = <b>${f_rounded.replace('.', ',')} Hz</b>${audibleNote}`;
+    }
+
+    root.querySelectorAll('input').forEach((el) => el.addEventListener('input', draw));
+    addEventListener('resize', draw);
+    draw();
+  }
+
+  document.querySelectorAll<HTMLElement>('[data-demo="euler-disk"]').forEach(setup);
+</script>

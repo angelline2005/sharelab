@@ -1,0 +1,81 @@
+---
+title: "Phản lực vòi cứu hoả gấp ĐÔI con số 'áp suất nhân tiết diện' — hệ số 2 đến từ đâu"
+seoTitle: "Vì sao phản lực tia nước là 2·A·Δp chứ không phải A·Δp"
+description: "Trực giác nói: áp suất nhân tiết diện. Đầu vòi ⌀25 mm ở 6 bar cho A·Δp = 295 N. Đo thật ra 589 N — gấp đúng hai lần, không phải xấp xỉ. Hệ số 2 sinh ra vì nước không chỉ bị đẩy, nó còn được TĂNG TỐC trong đoạn thu hẹp: ρAv² với v = √(2Δp/ρ) rút gọn thành đúng 2·A·Δp."
+pubDate: 2026-09-02
+tags: ["vat-ly", "chat-luu", "co-hoc", "javascript"]
+translationId: "voi-cuu-hoa-day-nguoc-bang-mot-nguoi"
+---
+
+import HoseReaction from '../../../components/demos/HoseReaction.astro';
+
+Bạn khuôn theo một cái vòi cứu hoả mở tung áp suất 6 bar, cảm thấy sức đẩy lùi
+quyết liệt. Bạn nhẩm tính: tiết diện nòng 25 mm là ~490 mm², nhân áp suất 600 kPa
+ra được ~300 newton. Nhưng khi bạn cân thử, lực thật gấp đúng **hai lần**: 589 N.
+Hệ số 2 là vật lý, không phải sai số.
+
+<HoseReaction />
+
+## Trực giác của bạn vừa đúng vừa sai
+
+Suy luận áp suất × tiết diện có cơ sở: nước bị đẩy bởi chênh áp. Ứng suất (áp
+lực trên một đơn vị diện tích) nhân diện tích cho ra lực. Ở vòi, áp suất tác
+dụng lên tiết diện nước phía trong ống chính là Δp = 6 bar. Tiết diện A =
+490,9 mm² ≈ 0,0004909 m². Tích số: F = **0,0004909 × 600 000 = 295 N**. Bạn cảm
+thấy dễ dàng giữ vòi với lực này.
+
+Nhưng tia nước phun ra không chỉ bị áp suất đẩy ngang — nó còn được nén và
+tăng tốc lại khi qua chỗ thu hẹp từ ống chính vào nòng phun. Nước không thể
+nén; khi tiết diện giảm, vận tốc phải tăng để lưu lượng khối lượng không đổi.
+Sự tăng tốc ấy — [theo nguyên lý Bernoulli](/vi/posts/nguyen-ly-bernoulli-nhanh-hon-la-loang-ap-hon) — là kết quả
+của sự chênh áp chính đó: áp suất cao bên trong, áp suất thường (không khí)
+bên ngoài. Nước phải đạt một vận tốc nhất định để thoát ra.
+
+## Vận tốc không phải là chi tiết, nó là lực
+
+Vật lý không tính lực từ áp suất rồi xong. Lực thật sự tác dụng khi dòng nước
+bị phản xạ — là **momentum của tia nước**. Nước khối lượng m bay ra với vận tốc
+v, mỗi giây rơi vào tường và dừng lại hoàn toàn, phải chuyển giao hết momentum
+mv mỗi giây. Lực là tốc độ thay đổi momentum: F = dm/dt × v = ρ·A·v × v =
+**ρ·A·v²**.
+
+Nhưng v bằng bao nhiêu? Từ [phương trình Bernoulli](/vi/posts/nguyen-ly-bernoulli-nhanh-hon-la-loang-ap-hon), chênh áp Δp
+trên toàn bộ đoạn hẹp được chuyển hết thành động năng của nước:
+
+```
+½ρv² = Δp
+v = √(2Δp/ρ)
+```
+
+Thay vào biểu thức lực:
+
+```
+F = ρ·A·v² = ρ·A·(2Δp/ρ) = 2·A·Δp
+```
+
+Hệ số 2 không phải từ đâu xa — nó đến từ công thức động năng. Chính áp suất
+đó tăng tốc nước, và tia nước tăng tốc đó là thứ sinh ra phản lực, lớn gấp
+đôi dự đoán thơm phức của bạn. Với vòi 25 mm ở 6 bar: F = **2 × 490 mm² ×
+600 kPa = 589 N** — và bạn chính xác như vậy khi cân.
+
+## Cùng một áp suất, hai công việc
+
+Chênh áp làm hai việc cùng lúc: (1) nó đẩy nước ra khỏi ống; (2) nó tăng tốc
+nước để nó bay ra nhanh. Chỉ tính công việc thứ nhất cho F = A·Δp là bỏ quên
+công việc thứ hai — chính sự tăng tốc là thứ nhân đôi lực lên thành 2·A·Δp.
+
+Đó là lý do vòi hẹp hơn nhưng tia nước chế được dũng sĩ hơn — [áp suất cao như
+nhau, nhưng tiết diện A nhỏ](/vi/posts/hep-ong-20-phan-tram-mat-59-luu-luong) nên
+lưu lượng thấp, nước tăng tốc cao hơn, ρ·A·v² tập trung vào một điểm nhỏ. Một
+[vòi cứu hoả phun 18 bar vào một cánh cửa thép](/vi/posts/bua-nuoc-cu-dap-18-bar-khi-khoa-voi) lại đẩy bạn lùi, vì 18 bar
+mà vùng phun chỉ hẹp bằng một ngón tay.
+
+## Trường hợp biên: khi tia thực sự thành luồng từng mảnh
+
+Thực tế tia nước không bao giờ hoàn toàn dẫn suất — nó rẽ và phân tán. Tiết
+diện nó lớn dần khi bay xa, vận tốc giảm (được bảo toàn bởi lưu lượng
+Bernoulli), và phản lực theo công thức ρ·A·v² cũng giảm theo. Một vòi 25 mm
+ở 6 bar phun 10 mét đi không còn sức như tại chân vòi — không phải do Đất hút,
+mà do chính nó tự lan rội ra khi xa nguồn. Tại chân vòi, hệ số 2 là chính xác;
+tại 10 mét, nó là xấp xỉ cò xỉu. Đó cũng là lý do vòi cứu hoả phải phun gần,
+không phải tại từ khoảng cách — sức công phá phụ thuộc vào tia chưa tán mạnh.

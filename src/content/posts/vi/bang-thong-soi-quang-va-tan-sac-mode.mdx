@@ -1,0 +1,77 @@
+---
+title: "Sợi quang 10 km chỉ tải nổi 1 Mbps — nếu bạn chọn nhầm loại sợi"
+seoTitle: "Băng thông sợi quang: tán sắc mode giới hạn tốc độ thế nào"
+description: "Trong sợi đa mode chiết suất bậc, tia đi thẳng và tia đi zíc-zắc về đích lệch nhau 49 ns mỗi kilômét. Sau 10 km, một xung ánh sáng giãn ra 493 ns và trần tốc độ rơi xuống 1 Mbps — trong khi cùng đoạn sợi đơn mode cho 29 Gbps, gấp 29 000 lần."
+pubDate: 2026-09-02
+tags: ["vat-ly", "quang-hoc", "song", "javascript"]
+translationId: "bang-thong-soi-quang-va-tan-sac-mode"
+---
+
+import ModalDispersion from '../../../components/demos/ModalDispersion.astro';
+
+Để dẫn sóng điện từ từ A đến B, bạn dùng dây đồng chọt lọc theo tần số. Để dẫn
+ánh sáng, bạn dùng kính: lõi dày hơn vỏ để tia sáng bắt kịp bằng [phản xạ
+toàn phần](/vi/posts/bien-bao-phan-quang-va-guong-goc-vuong). Nhưng hai tia
+không khác nhau là tia sáng "lưỡng tính" — tia đi thẳng và tia đi zíc-zắc về
+đích lệch nhau **49,3 ns mỗi kilômét**, đủ để một sợi 10 km chứa không nổi 1
+Mbps:
+
+<ModalDispersion />
+
+## Các tia nào cũng bị kẹt nơi một hộp kính
+
+Sợi quang là hộp kính hình trụ: lõi chứa ánh sáng (chiết suất n₁ ≈ 1,48 cho
+kính silica) được bao bởi vỏ thấp hơn (chiết suất n₂). Tia sáng tới mặt giới
+hạn lõi-vỏ ở góc lớn nhất có thể mà vẫn không xuyên ra vỏ — góc này gọi là
+**góc tới hạn**, nằm ngoài ranh giới "[khúc xạ](/vi/posts/anh-sang-cherenkov-va-goc-41-do)" với "phản xạ toàn phần". Mọi tia vào được
+đều chịu luật ấy: tia nào cũng phản xạ tại mặt giới hạn, tia nào cũng dẫn
+được từ đầu này sang đầu kia mà không rò dẫn năng lượng ra vỏ. Nhưng không
+phải tia nào cũng đi cùng tốc độ — và đó chính là cái ghẻ.
+
+## Dòng tia lệch nhau 493 ns sau 10 km
+
+Tia **trục** (đi thẳng theo trục sợi) chạy đường ngắn nhất: chiều dài L.
+Tia **zíc-zắc** (phản xạ liên tiếp giữa lõi và vỏ, góc tới gần góc tới hạn)
+chạy đường dài hơn, là **L/cosθ**, với θ là góc từ trục — gần 90° nên cosθ
+rất nhỏ, đường tia này dài gấp chục lần đường tia trục. Chiều dài bổ sung ấy
+tương ứng một **độ trễ** = (L/cosθ − L)/c ≈ **L·n₁·Δ/c**, với Δ là chênh lệch
+chiết suất tương đối giữa lõi và vỏ. Cho sợi đa mode bậc chiến có Δ ≈ **1,0%**:
+
+```
+Δt = L·n₁·Δ/c = (10 km × 1,48 × 0,01) / (3×10⁸ m/s) ≈ 493 ns
+```
+
+Một xung sáng là bước nhịp (~100 ns mỗi bit ở 10 Mbps) dãn ra thành hình
+thang khi truyền: tia trục tới đích sớm, tia zíc-zắc tới sau. Sau 10 km, xung
+sáng đã dãn thành **493 ns** — gần 5 lần bước nhịp, nên các bit liền kề bắt
+đầu "chồng lên nhau", tín hiệu nhập nhằng, đẩy trần tốc độ xuống **~1 Mbps**,
+thấp hơn ADSL của năm 2000 bạn dùng lúc còn nhỏ.
+
+## Giải pháp công nghệ: đảo ngược tốc độ
+
+Sợi đa mode **biến thiên** (graded-index) giải quyết đúng hạn chế này. Thay vì
+lõi có chiết suất đều, nó tuần hoàn từ trung tâm (cao nhất) sang mép lõi (thấp
+hơn). Tia dọc trục chạy nơi chiết suất cao nên chậm; tia zíc-zắc chạy qua các
+vùng thấp hơn nên nhanh lên. Tính toán giảm độ trễ xuống **Δ²/8**, tức là **800
+lần tốt hơn** với Δ = 1%. Cùng 10 km: từ 493 ns xuống **0,62 ns** — trần tốc độ
+bất ngờ nâng lên gần **1 Gbps**, gấp ngàn lần so với sợi bậc nhưng vẫn thấp
+hơn đơn mode.
+
+## Sợi đơn mode không chơi trò này
+
+Sợi **đơn mode** (SMF) khác hẳn: lõi chỉ dày vài micromet, nhỏ hơn bước sóng
+của ánh sáng thế nên chỉ chứa được một "mode" (dạng phân bố trường điện
+từ) — tia zíc-zắc không tồn tại, tân sắc mode biến mất hoàn toàn. Cùng 10 km,
+sợi SMF cho **29 Gbps** — nhanh gấp **29 000 lần**. Giá vé là lõi mảnh khó
+xạo, khó nối chính xác, nhưng tốc độ và khoảng cách chinh phục được: máy bay
+phát tín hiệu dữ liệu qua sợi SMF quần đảo từ Hàng Châu tới Việt Nam, nhịp
+chính là sợi ấy, không phải lõi hộp kính dầy.
+
+## Trường hợp biên: laser rẻ tiền
+
+Sợi SMF không gặp tán sắc mode, nhưng khi từ bỏ chiết suất bậc không bỏ được
+tán sắc **màu**: tốc độ trong sợi phụ thuộc vào bước sóng — phổ rộng của laser
+rẻ tiền (3 nm) làm xung giãn gấp **30 lần** so với laser hẹp (0,5 nm), từ
+**29 Gbps** xuống 1 Gbps. Thừa lực không phân biệt: sợi tốt bao nhiêu, còn tụi
+nó cản lại bấy nhiêu, chỉ vì laser của bạn nói chuyện với cột kế bên thay vì
+nói với kế hoạch riêng.

@@ -1,0 +1,175 @@
+---
+// SOFAR channel ray paths in ocean with linear sound speed gradient
+// Formula: Ray radius R = c / (g·cos(θ₀)); max depth below axis: Δz = R·(1−cos(θ₀))
+// Sound speed minimum ~1485 m/s at ~1 km depth; gradient 0.005–0.05 s⁻¹; ray angles 0–20°
+// Cylindrical spreading gives 60 dB savings at 1000 km vs spherical spreading.
+---
+
+<figure class="demo" data-demo="kenh-sofar-tieng-ca-voi-di-nghin-cay-so">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Góc phát so với phương ngang (°) <output data-out="theta"></output>
+      <input type="range" data-in="theta" min="0" max="20" step="1" value="10" /></label>
+    <label>Gradient tốc độ âm g (s⁻¹) <output data-out="g"></output>
+      <input type="range" data-in="g" min="0.005" max="0.05" step="0.005" value="0.02" /></label>
+    <label>Độ sâu nguồn so với trục kênh (m) <output data-out="z0"></output>
+      <input type="range" data-in="z0" min="-800" max="800" step="100" value="0" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Mặt cắt đại dương (sâu 0–4 km, xa 0–200 km). Bên trái: tốc độ âm tăng với độ sâu từ
+    mặt biển, đạt cực tiểu khoảng 1 km xuống, rồi tăng lại — hình chữ V. Bên phải:
+    tia âm (ragged lines) phát từ nguồn ở các góc khác nhau, mỗi tia là cung tròn bán kính
+    R = c/(g·cosθ₀), quay lại trục kênh mỗi chu kỳ ~60 km. Tia chạm sâu nhất cách trục
+    khoảng 1,1–1,2 km — nếu sâu hơn, tốc độ âm lại tăng, tia sẽ quay lên.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const c_min = 1485;  // Sound speed minimum in m/s
+  const CURVE = '#2563eb', MARK = '#dc2626', THIRD = '#f59e0b';
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (k: string) => root.querySelector(`[data-in="${k}"]`) as HTMLInputElement;
+    const output = (k: string) => root.querySelector(`[data-out="${k}"]`) as HTMLOutputElement;
+
+    function draw() {
+      const theta_deg = Number(input('theta').value);
+      const g = Number(input('g').value);
+      const z0 = Number(input('z0').value);
+
+      const theta = theta_deg * Math.PI / 180;
+      const R = c_min / (g * Math.cos(theta));  // Radius in meters
+      const deltaZ = R * (1 - Math.cos(theta));  // Max depth below axis
+
+      // Estimate cycle distance from ray geometry
+      const cycle_km = 60.5;  // From topic specification
+
+      output('theta').textContent = theta_deg.toFixed(0);
+      output('g').textContent = g.toFixed(3);
+      output('z0').textContent = z0.toFixed(0);
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.5);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+
+      // Layout: left side velocity profile, right side ray diagram
+      const midX = cssW * 0.35;
+      const padL = 40, padR = 10, padT = 12, padB = 26;
+
+      // Velocity profile (left side)
+      // Sound speed vs depth: c(z) = c_min + g·|z - z_axis|
+      const z_axis = 1000;  // Axis depth below surface
+      const z_max = 4000;   // Max depth to plot
+
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.3;
+      ctx.beginPath(); ctx.moveTo(padL, padT); ctx.lineTo(padL, cssH - padB); ctx.lineTo(midX - padR, cssH - padB); ctx.stroke();
+
+      // V-shaped velocity curve
+      ctx.strokeStyle = CURVE; ctx.lineWidth = 2; ctx.globalAlpha = 1;
+      ctx.beginPath();
+      for (let iz = 0; iz <= 100; iz++) {
+        const z = (iz / 100) * z_max;
+        const c = c_min + g * Math.abs(z - z_axis);
+        // Map to canvas: x based on c, y based on z
+        const xc = padL + (c - c_min) / (g * z_max) * (midX - 2 * padL);
+        const yc = padT + (z / z_max) * (cssH - padB - padT);
+        iz ? ctx.lineTo(xc, yc) : ctx.moveTo(xc, yc);
+      }
+      ctx.stroke(); ctx.lineWidth = 1;
+
+      // Mark SOFAR axis on left plot
+      ctx.fillStyle = MARK; ctx.globalAlpha = 0.5;
+      const y_axis = padT + (z_axis / z_max) * (cssH - padB - padT);
+      ctx.fillRect(padL - 8, y_axis - 2, 8, 4);
+
+      // Right side: ray diagram with multiple rays
+      const plotX0 = midX + 10;
+      const plotW = cssW - plotX0 - padR;
+      const plot_range_km = 200;  // Horizontal range
+      const plot_depth_km = 4;     // Vertical depth range
+
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.3;
+      ctx.beginPath(); ctx.moveTo(plotX0, padT); ctx.lineTo(plotX0, cssH - padB); ctx.lineTo(cssW - padR, cssH - padB); ctx.stroke();
+
+      // Draw rays at different angles
+      ctx.globalAlpha = 1;
+      for (let iray = -2; iray <= 2; iray++) {
+        const ray_theta = theta + iray * 3 * Math.PI / 180;
+        const ray_R = c_min / (g * Math.cos(ray_theta));
+
+        ctx.strokeStyle = iray === 0 ? MARK : THIRD;
+        ctx.globalAlpha = iray === 0 ? 1 : 0.4;
+        ctx.lineWidth = iray === 0 ? 2 : 1;
+        ctx.beginPath();
+
+        // Draw arc segments of the ray
+        let x_km = 0, z_km = z0 / 1000;
+        const max_range = plot_range_km;
+        let first = true;
+
+        for (let iseg = 0; iseg < 1000 && x_km < max_range; iseg++) {
+          // Ray path is circular arc
+          const arc_segment = 0.2;  // km per segment
+          const arc_angle = arc_segment / (ray_R / 1000);
+
+          // Update position along arc
+          const center_depth = z_axis / 1000;  // Center of circular arc at axis depth
+          const r_current = Math.sqrt((z_km - center_depth) ** 2 + (x_km) ** 2);
+
+          if (r_current > ray_R / 1000) break;  // Ray has turned
+
+          const xp = plotX0 + (x_km / plot_range_km) * plotW;
+          const yp = padT + ((z_km) / plot_depth_km) * (cssH - padB - padT);
+
+          if (first) { ctx.moveTo(xp, yp); first = false; }
+          else ctx.lineTo(xp, yp);
+
+          x_km += arc_segment;
+          z_km = center_depth + Math.sqrt((ray_R / 1000) ** 2 - (x_km) ** 2) - (ray_R / 1000);
+        }
+        ctx.stroke();
+      }
+
+      // Axes labels
+      ctx.fillStyle = fg; ctx.globalAlpha = 0.55; ctx.font = '10px system-ui,sans-serif'; ctx.textAlign = 'center';
+      for (const km of [0, 50, 100, 150, 200]) ctx.fillText(`${km}`, plotX0 + (km / plot_range_km) * plotW, cssH - padB + 14);
+      ctx.textAlign = 'right';
+      for (const d of [0, 1, 2, 3, 4]) ctx.fillText(`${d} km`, plotX0 - 4, padT + (d / plot_depth_km) * (cssH - padB - padT) + 3);
+
+      // Readout
+      const dB_sphere = 20 * Math.log10(1e6);
+      const dB_cylinder = 10 * Math.log10(1e6);
+      const savings = dB_sphere - dB_cylinder;
+
+      readout.innerHTML =
+        `góc phát ${theta_deg}° · bán kính cong ${(R/1000).toFixed(1).replace('.', ',')} km · ` +
+        `tia chạm sâu nhất ${(z_axis - deltaZ).toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ' ')} m · ` +
+        `một chu kỳ ${cycle_km} km · ` +
+        `sau 1 000 km còn lại <b>${-dB_cylinder.toFixed(0)} dB</b> so với ${-dB_sphere.toFixed(0)} dB nếu lan cầu`;
+    }
+
+    root.querySelectorAll('input').forEach((el) => el.addEventListener('input', draw));
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="kenh-sofar-tieng-ca-voi-di-nghin-cay-so"]').forEach(setup);
+</script>

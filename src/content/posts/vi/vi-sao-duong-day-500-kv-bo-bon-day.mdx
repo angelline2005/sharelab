@@ -1,0 +1,93 @@
+---
+title: "Đường dây 500 kV: vì sao mỗi pha phải bó bốn dây"
+seoTitle: "Vầng quang trên đường dây cao thế: điện trường bề mặt dây và lý do bó dây"
+description: "Không khí đánh thủng ở 30 kV/cm. Một dây trần đường kính 3 cm mang 500 kV có điện trường bề mặt 29,6 kV/cm — sát ngay ngưỡng, và mưa xuống là vượt. Bó bốn dây cách nhau 45 cm nâng bán kính hiệu dụng từ 1,5 cm lên 21 cm và kéo điện trường xuống 3,56 kV/cm."
+pubDate: 2026-09-02
+tags: ["vat-ly", "dien-hoc", "dien-tu", "javascript"]
+translationId: "vi-sao-duong-day-500-kv-bo-bon-day"
+---
+
+import BundledConductor from '../../../components/demos/BundledConductor.astro';
+
+Trên đỉnh một cột thép cao 40 mét, ba "dây" treo xuống dân cư phía dưới. Đó
+không phải ba dây điện mà mỗi cái là **một bó bốn dây mỏng** xếp hình bốn
+cạnh hình vuông, cách nhau 45 cm. Vì sao? Bởi một sợi dây đơn lẻ sẽ nổ ra
+vầng quang mỗi khi trời mưa:
+
+<BundledConductor />
+
+## Điện trường 29,6 kV/cm: sát ngay ngưỡng của không khí
+
+Dòng điện [phải chạy ở cao thế](/vi/posts/vi-sao-duong-day-tai-dien-phai-cao-the)
+để giảm tổn hao I²R dọc con đường hàng trăm cây số. Đường dây 500 kV
+nghĩa là chênh thế 500 kV giữa ba pha và đất. Điện áp pha tới trung tính là
+500 / √3 ≈ **289 kV**.
+
+Xung quanh một sợi dây trần đường kính 3 cm (bán kính 1,5 cm) ở 289 kV,
+điện trường bề mặt là E = U / (r · ln(D/r)) — công thức cho một dây
+hình trụ. Số đó ra là **29,6 kV/cm**. Không khí khô, phẳng, ở mực nước
+biển, đánh thủng ở **30 kV/cm**. Con số này không phải luật tự nhiên mơ hồ —
+nó là tiêu chuẩn quốc tế. Một dây đơn lẻ chạy ngay ngay trên cạnh vực, với
+**dư lề chỉ 0,4 kV/cm**. Không có chỗ cho lỗi, không có chỗ cho mưa.
+
+## Mưa cắt giảm ngưỡng xuống 18 kV/cm và nó đã hết cơ hội
+
+Mặt trời mọc, không khí khô, E = 29,6 kV/cm còn sống sót. Trời mưa, những
+giọt nước treo lơ lửng trên dây với phần nhọn chếch ra. Mỗi mũi nhọn là
+một điểm tập trung điện trường — công thức E ∝ 1/r bảo rằng đầu nhọn bán kính
+0,1 mm nhìn thấy trường gấp 15 lần so với dây. Hiệu quả lẫn nhân: ngưỡng
+thực tế tụt xuống chỉ còn **~18 kV/cm**. Ngay lập tức, điện li không khí,
+electron lạc mất, phát sáng xanh nước biển — hiện tượng gọi là **vầng quang**
+(corona). Nó phát ra xèo xèo xèo và nhiễu radio mạnh — vì thế trời mưa,
+radio cạnh tuyến cao thế xào xạc không nghe được gì.
+
+## Bó bốn dây: bán kính tăng gấp 14 lần, trường trên xuống 8 lần
+
+Giải pháp: thay vì một dây bán kính 1,5 cm, bó bốn dây mỏng cách nhau 45 cm.
+Toán học nó lại ra bán kính hiệu dụng:
+
+```
+r_eff = 1,09 · (r · s³)^(1/4)
+```
+
+Với r = 1,5 cm và s = 45 cm:
+
+```
+r_eff = 1,09 · (1,5 · 45³)^(1/4) = 1,09 · 19,3 ≈ 21,0 cm
+```
+
+Bán kính sinh ra từ hình học: từ 1,5 cm lên 21 cm, gấp **14 lần**. Điện
+trường bề mặt là E = U / (r_eff · ln(D/r_eff)); mẫu số nhân 14 thì E
+giảm chỉ còn **3,56 kV/cm**. So với ngưỡng 30 kV/cm, nó mang về an toàn,
+nằm gọn trong vùng xanh ngay cả khi trời mưa xuống 18 kV/cm — dư lề gần 15 kV/cm.
+
+Thực tế không đơn giản đến vậy: bó bốn dây có diện tích dây cộng tăng lên,
+nên tiết diện dây *giảm* từ khoảng 100 mm² còn ~25 mm² mỗi dây. Công suất
+hao trên bốn dây mỏng so với một dây trái chiều: tổng I²R *tăng* lên. Nhưng
+dây mỏng hơn dễ lạnh đi nhanh — có một điểm cân bằng tối ưu, và thực tiễn
+chọn cách này là vì sao.
+
+## Corona kêu hót và tiêu hao năng lượng ẩn
+
+Vầng quang không chỉ phát tiếng. Nó là **dòng rò từ dây xuống đất** —
+không phải trong một cú nổ, mà một dòng liên tục yếu yếu, ion âm và dương
+trong lớp không khí gần dây quay trở về các lực điện. Tổn hao ấy lúc bình
+thường nhỏ tới 1 W/km, nhưng hôm mưa lên tới 50 W/km, thậm chí vượt cái
+tổn hao I²R dọc dây. Đó cũng là lý do các hệ thống điện áp ultra cao (765 kV
+trở lên) phải dùng bó năm hay sáu dây — lên được cao thế để [giảm
+tổn hao](/vi/posts/vi-sao-duong-day-tai-dien-phai-cao-the), nhưng lại
+phải bó dây ngay lập tức vì điện trường sinh vầng quang, bó dây lại
+trả giá bằng diện tích dây và tiêu điểm hao phí.
+
+## Trường hợp biên: lên độ cao 1 500 m, ngưỡng lại tụt
+
+Không khí loãng hơn là điện li khó hơn. Lên 1 500 m (Sa Pa), không khí
+mỏng hơn 15%, và ngưỡng đánh thủng của nó cũng tụt 15% xuống **25,5 kV/cm**.
+Đoạn dây 500 kV qua đèo Fansipan (hơn 3 000 m) không thể dùng bó bốn
+dây như đồng bằng — phải bó năm hay sáu dây, hay uốn dây ngang rộng hơn.
+Nhà thiết kế đường dây phải chơi một trò chơi ba chiều: độ cao quyết định
+ngưỡng điện li, điện áp quyết định trường, bán kính hiệu dụng quyết định
+bao nhiêu dây phải bó. Thậm chí hai cây cột cách nhau 300 m cũng có thể có
+yêu cầu khác nhau nếu cái này ở chân đèo và cái kia ở đỉnh. Toàn bộ nước
+Việt Nam chạy trên hơn 2 500 km đường dây 500 kV — mỗi mét đều là một
+thỏa thuận giữa vật lý, địa hình và tiền bạc.

@@ -1,0 +1,180 @@
+---
+// Hydrostatic force on dam: F = 0.5·ρ·g·H²·b
+// Center of pressure at H/3 from bottom; moment M = F·H/3
+// Pressure at depth d: p(d) = ρ·g·d (triangular distribution)
+// Valid for all reasonable dam heights and liquid densities.
+---
+
+<figure class="demo" data-demo="luc-nuoc-day-dap-khong-phu-thuoc-ho-dai">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Chiều sâu nước H (m) <output data-out="H"></output>
+      <input type="range" data-in="H" min="2" max="200" step="1" value="100" /></label>
+    <label>Đoạn đập xét b (m) <output data-out="b"></output>
+      <input type="range" data-in="b" min="1" max="50" step="0.5" value="1" /></label>
+    <label>Khối lượng riêng (kg/m³) <output data-out="rho"></output>
+      <input type="range" data-in="rho" min="800" max="1800" step="10" value="1000" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Áp suất nước tăng tuyến tính từ 0 ở mặt nước đến ρgH ở đáy (đơn vị Pa).
+    Hợp lực F = ½·ρ·g·H²·b tác dụng tại H/3 từ đáy, tạo mô men lật M = F·H/3
+    quanh chân đập. Chiều dài hồ ảnh hưởng như thế nào tới lực này?
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const g = 9.81; // m/s²
+  const CURVE = '#2563eb', MARK = '#dc2626', AXIS = '#f59e0b';
+
+  // Hydrostatic formulas
+  const F = (rho: number, H: number, b: number) => 0.5 * rho * g * H * H * b; // Force in N
+  const M = (rho: number, H: number, b: number) => F(rho, H, b) * (H / 3); // Moment in N·m
+  const p_bottom = (rho: number, H: number) => rho * g * H; // Pressure at depth H in Pa
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (k: string) => root.querySelector(`[data-in="${k}"]`) as HTMLInputElement;
+    const output = (k: string) => root.querySelector(`[data-out="${k}"]`) as HTMLOutputElement;
+
+    function draw() {
+      const H = Number(input('H').value);
+      const b = Number(input('b').value);
+      const rho = Number(input('rho').value);
+
+      output('H').textContent = String(H);
+      output('b').textContent = b.toFixed(1).replace('.', ',');
+      output('rho').textContent = String(rho);
+
+      const force = F(rho, H, b);
+      const moment = M(rho, H, b);
+      const pb = p_bottom(rho, H);
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32;
+      const cssH = Math.round(cssW * 0.55);
+      canvas.width = cssW * dpr;
+      canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+
+      const padL = 50, padR = 15, padT = 20, padB = 30;
+      const plotW = cssW - padL - padR;
+      const plotH = cssH - padT - padB;
+
+      // Dam structure (simplified vertical wall)
+      const damX = padL + plotW * 0.15;
+      const damW = plotW * 0.08;
+      const waterSurface = padT + 15;
+      const damBottom = cssH - padB;
+      const waterH = damBottom - waterSurface; // pixels per meter
+
+      // Scaling: map H (meters) to screen pixels
+      const pxPerMeter = waterH / H;
+
+      // Draw lake and dam
+      ctx.fillStyle = 'rgba(100,180,255,0.15)';
+      ctx.fillRect(padL, waterSurface, plotW, damBottom - waterSurface);
+
+      // Dam profile (simple rectangle)
+      ctx.fillStyle = fg;
+      ctx.globalAlpha = 0.1;
+      ctx.fillRect(damX, waterSurface, damW, damBottom - waterSurface);
+      ctx.globalAlpha = 1;
+
+      // Draw pressure distribution triangle on dam face
+      ctx.strokeStyle = CURVE;
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(damX + damW, waterSurface); // Top: zero pressure
+      ctx.lineTo(damX + damW + plotW * 0.15, damBottom); // Bottom: max pressure
+      ctx.stroke();
+
+      // Shade the pressure area
+      ctx.fillStyle = CURVE;
+      ctx.globalAlpha = 0.15;
+      ctx.beginPath();
+      ctx.moveTo(damX + damW, waterSurface);
+      ctx.lineTo(damX + damW, damBottom);
+      ctx.lineTo(damX + damW + plotW * 0.15, damBottom);
+      ctx.fill();
+      ctx.globalAlpha = 1;
+
+      // Mark center of pressure (at H/3 from bottom)
+      const centerPressureY = damBottom - (H / 3) * pxPerMeter;
+      ctx.fillStyle = MARK;
+      ctx.beginPath();
+      ctx.arc(damX + damW + plotW * 0.155, centerPressureY, 5, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Draw resultant force arrow at center of pressure
+      const arrowX = damX + damW + plotW * 0.22;
+      ctx.strokeStyle = MARK;
+      ctx.lineWidth = 2.5;
+      ctx.beginPath();
+      ctx.moveTo(damX + damW + plotW * 0.155, centerPressureY);
+      ctx.lineTo(arrowX, centerPressureY);
+      ctx.stroke();
+      // Arrow head
+      ctx.beginPath();
+      ctx.moveTo(arrowX, centerPressureY);
+      ctx.lineTo(arrowX - 4, centerPressureY - 4);
+      ctx.moveTo(arrowX, centerPressureY);
+      ctx.lineTo(arrowX - 4, centerPressureY + 4);
+      ctx.stroke();
+
+      // Draw depth markings and pressure labels
+      ctx.fillStyle = fg;
+      ctx.globalAlpha = 0.5;
+      ctx.font = '9px system-ui,sans-serif';
+      ctx.textAlign = 'right';
+
+      for (let d = 0; d <= H; d += Math.ceil(H / 5)) {
+        const y = waterSurface + (d * pxPerMeter);
+        ctx.fillText(d + ' m', damX - 4, y + 3);
+        if (d > 0) {
+          const p = p_bottom(rho, d);
+          const pKpa = (p / 1000).toFixed(0);
+          ctx.textAlign = 'center';
+          ctx.fillText(pKpa + ' kPa', damX + damW + plotW * 0.15, y - 6);
+        }
+      }
+
+      ctx.globalAlpha = 1;
+      ctx.textAlign = 'center';
+      ctx.fillStyle = AXIS;
+      ctx.fillText('Hợp lực', arrowX + 8, centerPressureY - 10);
+      ctx.fillText('tại H/3', arrowX + 8, centerPressureY + 8);
+
+      // Readout with all key values
+      const tonnes = force / 9810;
+      const momentMNm = moment / 1e6;
+
+      readout.innerHTML =
+        `Lực mỗi mét ngang: <b>${force.toLocaleString('vi-VN', {maximumFractionDigits: 0})} N</b> = <b>${tonnes.toFixed(0)}</b> tấn ` +
+        `· mô men lật: <b>${momentMNm.toFixed(1).replace('.', ',')}</b> MN·m ` +
+        `· áp suất đáy: <b>${(pb / 1000).toFixed(1).replace('.', ',')} kPa</b>`;
+    }
+
+    root.querySelectorAll('input').forEach((el) => el.addEventListener('input', draw));
+    addEventListener('resize', draw);
+    draw();
+  }
+
+  document.querySelectorAll<HTMLElement>('[data-demo="luc-nuoc-day-dap-khong-phu-thuoc-ho-dai"]').forEach(setup);
+</script>

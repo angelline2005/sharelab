@@ -1,0 +1,42 @@
+---
+title: "Nối thẳng tấm pin mặt trời vào ắc quy: mất 24% công suất ngay giữa trưa nắng"
+seoTitle: "MPPT là gì: điểm công suất cực đại của tấm pin mặt trời và vì sao PWM lãng phí"
+description: "Tấm pin 36 cell có nhãn V_oc = 22,5 V, I_sc = 5,86 A, V_mp = 18,5 V, I_mp = 5,71 A, tức công suất cực đại 105,6 W. Nối thẳng vào ắc quy 12 V, nó bị ép làm việc ở 13,8 V — dưới V_mp nên dòng gần như đứng yên ở 5,80 A, và công suất chỉ còn 80,0 W. Mất 24% dù nắng không đổi, dù tấm pin hoàn toàn lành lặn."
+pubDate: 2026-09-02
+tags: ["vat-ly", "dien-tu", "khi-hau", "javascript"]
+translationId: "mppt-va-diem-cong-suat-cuc-dai-tam-pin"
+---
+
+import SolarMppt from '../../../components/demos/SolarMppt.astro';
+
+Tấm pin mặt trời giữa trưa nắng đủ sức chạy một quạt 100 W; bạn nối thẳng vào ắc quy 12 V
+tưởng sẽ sạc đầy — nhưng khối năng lượng mất đi vô cùng, không ai chạm vào, không có tổn thất
+nhiệt, chỉ vì bạn ấn tất cả lên một điện áp sai. Mười có tám:
+
+<SolarMppt />
+
+## Tấm pin không là nguồn điện áp cố định
+
+Tấm pin có **bốn con số trên nhãn**: điện áp hở mạch V_oc = 22,5 V (không có dòng), dòng ngắn mạch I_sc = 5,86 A (không có điện áp), rồi hai con số ở điểm công suất cực đại V_mp = 18,5 V và I_mp = 5,71 A — nơi tấm pin **sản xuất công suất nhiều nhất**: **105,6 W**. Bốn con số ấy là nền tảng để [tự tính lợi nhuận từ điện mặt trời](/vi/posts/dien-mat-troi-mai-nha-tinh-bang-tay-trong-nam-phut). Vấn đề là nó sản xuất công suất cực đại này ở một điện áp cụ thể, chứ không phải bất kỳ điện áp nào.
+
+Điều gì xảy ra khi bạn ép tấm pin làm việc ở các điện áp khác? Nếu điện áp quá cao (gần 22,5 V), dòng sẽ rất nhỏ nên công suất vẫn nhỏ (P = V × I). Nếu điện áp quá thấp (gần 0 V), điện áp sẽ bé nên công suất cũng nhỏ. Chỉ ở một điểm duy nhất — V_mp = **18,5 V** với dòng I_mp = **5,71 A** — công suất đạt **đỉnh cao 105,6 W**. Đó là một lu luận phổ biến trong tất cả hệ thống công suất: bạn luôn cần tìm điểm tối ưu giữa hai yếu tố đối lập.
+
+## Ắc quy ép tấm pin khỏi điểm công suất cực đại
+
+Bộ sạc PWM (điều chế chiều rộng xung) rẻ tiền chỉ làm một việc: nối thẳng tấm pin vào ắc quy. Một ắc quy 12 V lúc sạc được ép ở **13,8 V** — dưới V_mp = 18,5 V. [Dung lượng ắc quy phụ thuộc cách bạn xả nó](/vi/posts/dinh-luat-peukert-ac-quy-100ah-con-47ah); điện áp bạn ép nó làm việc cũng vậy. Ở điện áp thấp này, dòng **gần như không thay đổi**, vẫn cứ **~5,80 A** (tấm pin cố gắng duy trì dòng), nên công suất chỉ còn **80,0 W** — mất **24%** dù nắng không đổi, dù tấm pin hoàn toàn lành lặn.
+
+Bộ sạc MPPT (điểm công suất cực đại theo dõi) làm điều khác: nó không nối thẳng. Thay vào đó, nó điều chỉnh để tấm pin luôn làm việc ở V_mp = 18,5 V — **thu được 105,6 W** — rồi dùng mạch biến áp để chuyển thành điện áp ắc quy. Kết quả: ắc quy nhận lấy **105,6 W thay vì 80,0 W**, tức **33% công suất thêm** mỗi phút so với PWM.
+
+## Nhiệt độ và nắng thay đổi điểm công suất cực đại
+
+Bốn con số trên nhãn chỉ đúng ở một điều kiện: 25 °C, 1 000 W/m². Nếu trời thay đổi thì V_mp trôi dạo.
+
+Cường độ nắng ảnh hưởng thẳng: ở **500 W/m² nửa trưa**, dòng giảm nửa, công suất cũng giảm nửa — nhưng V_mp không đổi quá nhiều, vẫn **~18,5 V**. Bộ sạc MPPT vẫn khóa vào điểm đó và vẫn bắt được hầu hết công suất khả dụng.
+
+Nhiệt độ ảnh hưởng khác: mỗi độ C tăng lên, V_oc và V_mp đều giảm theo **−0,35%/K** (chiều dài sóng bước sóng của điện tử tăng, tiềm năng giảm). Ở **65 °C — nhiệt độ thực tế ngoài trời giữa trưa hè** — V_mp tụt xuống **khoảng 15,9 V**. Khi đó, ắc quy ở 13,8 V bỗng gần bằng V_mp, bộ sạc PWM rẻ tiền chỉ còn mất **~13%** thay vì 24%. Nhưng lúc đó **công suất tối đa đã rơi xuống ~78 W** vì tấm pin nóng — bạn chỉ mất 13% của một cái bình tồi hơn.
+
+## Trường hợp biên: pin gần đầy hay trời lạnh
+
+Buổi sáng lạnh **15 °C**, V_mp vọt lên **khoảng 19,1 V**. Khoản mất công suất ở 13,8 V **lên 27%**. Bộ sạc MPPT thu 105 W; bộ sạc PWM chỉ được 82 W.
+
+Nhưng khi ắc quy gần đầy hoặc tải rất nhẹ, MPPT không giúp gì: nó có thể khóa tấm pin ở 18,5 V, nhưng không có chỗ để đổ điện. Mọi con số hiệu suất chỉ có ý nghĩa khi ắc quy **đang sạc tích cực**.

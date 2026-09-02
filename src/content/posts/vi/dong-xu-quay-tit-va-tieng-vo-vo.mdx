@@ -1,0 +1,83 @@
+---
+title: "Đồng xu quay tít: tiếng vo vo tăng đến vô hạn rồi tắt phụt"
+seoTitle: "Đĩa Euler: tần số tiến động của đồng xu quay và điểm kỳ dị"
+description: "Khi đồng xu sắp nằm xuống, điểm tiếp xúc chạy vòng ngày càng nhanh: từ 9,4 Hz ở góc nghiêng 17° lên 71,1 Hz ở 0,3°. Công thức nói tần số phân kỳ ra vô hạn theo α^(−1/2) — nhưng cả quá trình kết thúc trong thời gian hữu hạn, và tiếng vo vo tắt đột ngột."
+pubDate: 2026-09-02
+tags: ["vat-ly", "co-hoc", "dao-dong", "javascript"]
+translationId: "dong-xu-quay-tit-va-tieng-vo-vo"
+---
+
+import EulerDisk from '../../../components/demos/EulerDisk.astro';
+
+Nằm lại trên bàn một đồng xu quay, bạn chủ động tính tắt lửa — nhưng nó không
+chịu nằm im. Tiếng "vo vo vo" dường như cao hơn mỗi giây, nhanh như tấc và cao
+như nốt nhạc, rồi đột ngột im phụt:
+
+<EulerDisk />
+
+## Điểm tiếp xúc chạy với tần số không gì bằng
+
+Khi đồng xu thẳng đứng, đĩa ổn định, chỉ [quay quanh trục của
+nó](/vi/posts/con-quay-hoi-chuyen-vi-sao-khong-chiu-do). Nhưng khi ngả một
+góc nhỏ α, lực trọng lực tạo mô-men làm mép đĩa **hạ xuống nhưng không rơi** —
+thay vào đó, trục quay **tiến động** (precession), giống con quay hồi chuyển.
+Tiếp điểm của đĩa với bàn vẽ ra một vòng tròn, và vòng tròn ấy chạy ngày càng
+nhanh: **Ω = √(4g/3aα)**. Mỗi α giảm đi 10 lần, tần số Ω tăng √10 ≈ 3,16 lần
+— tức là **tỉ lệ với α^(−1/2)**.
+
+Đó là tần số tiến động (rad/s). Chuyển sang Hz: f = Ω/(2π) là tần số mà tai
+bạn nghe được, nơi bàn rung và phát ra tiếng vo vo. Ở **α = 17° toàn bộ tần số
+là 9,4 Hz** — thấp, rõ từng nhịp. Hạ xuống **0,3°, tần số nhảy lên 71,1 Hz** —
+quanh vùng cao nghe của tai người. Toàn bộ hành trình từ góc lớn đến góc nhỏ,
+từ nốt thấp đến nốt cao, xảy ra trong vài giây — bạn thấy vậy, nhưng **công
+thức lý thuyết nói khi α → 0 thì f → ∞**.
+
+## Vô hạn trên giấy, nhưng thời gian vẫn hữu hạn
+
+Đây là điểm kỳ dị (singularity) của công thức: tần số phân kỳ, không bao giờ
+dừng tăng. Nhưng thực tế, đồng xu dừng quay trong **hữu hạn thời gian** — vài
+giây. Cầu hỏi tự nhiên: nếu f → ∞, làm sao quá trình kết thúc trong thời gian
+hữu hạn? Câu trả lời nằm ở năng lượng. Mỗi quay, đĩa mất năng lượng — theo công
+thức tiến động, năng lượng **rồi sẽ cạn kiệt trong thời gian hữu hạn**, dù tần
+số tăng vô hạn. Con số thời gian cạn hết → vài giây, tùy đĩa. Toán học ứng dụng
+viết ra tích phân, ai đó chứng minh nó hội tụ đến một số hữu hạn — và thực tế
+xác nhận: tiếng vo vo tắt.
+
+## Công thức nào mà chính xác tới mức này
+
+Công thức **Ω = √(4g/3aα)** không rơi ra từ không trung — nó đến từ cơ học
+chặt chẽ: [mô-men động lượng](/vi/posts/bao-toan-momen-dong-luong-cu-xoay-khong-mien-phi)
+bảo toàn, quán tính đĩa cứng, và hình học tiến động. Bạn có thể tự tính nếu
+muốn: phương trình Euler (nó không phải về đĩa Euler, mà là công thức quay của
+vật cứng) cho bạn dω/dt; thiết lập đúng điều kiện biên (tiếp xúc bàn, nhưng
+không bị cuốn), bạn ra công thức ấy. Nó đúng miễn là đĩa còn trơn trợt mà
+không bị dính bàn hay xước.
+
+Số liệu demo: a = 12,5 mm (cỡ đồng xu 1000 đồng Việt Nam), tại **α = 2,9°
+tần số là 23 Hz** — nghe được dễ dàng, rơi vào vùng dễ bị rê tuyến ghi âm
+điện thoại). Hạ α xuống **0,3°, f lên 71,1 Hz** — gấp 7,5 lần. Tỉ lệ từ 17°
+xuống 0,3° gấp khoảng 57 lần, tần số gấp **7,5 lần** — chính xác với α^(−1/2):
+√(17/0,3) = 7,53.
+
+## Điểm dừng thật là hơi khác
+
+Trong chân không, công thức ấy chạy toàn tốc, và tiếng vo vo sẽ kéo dài lâu
+hơn — có thể tới vài phút. Nhưng trên không khí thường, nhớt của lớp
+khí bị ép ra dưới mép đĩa phát huy tác dụng không nhỏ. Keith Moffatt (Nature, 2000) chứng minh rằng đó chính
+là kẻ hạ gục đĩa, không phải ma sát trượt
+của bàn — ngay cả khi bàn sạch sẽ. Và nếu bàn nhám, ma sát trượt sẽ cướp phần
+còn lại của năng lượng trước khi tần số kịp đạt nốt cao nhất. Vì thế, con số
+"vài giây" mà bạn nghe được trong thực tế là một trận chiến ba phía: tiến động,
+nhớt khí, và ma sát — chứ không phải một công thức đơn độc.
+
+## Trường hợp biên: chân không giải phóng tiếng vo vo
+
+Kéo mép đĩa gọn lại đầu giây hay để khi góc còn 5°, đĩa vẫn "ngoại tuyến" —
+nó sẽ dừng trước khi tần số đạt công thức dự báo. Nhưng ở một mức độ khác,
+công thức sắp vỡ tung: khi α quá nhỏ (dưới 0,1°), trọng lượng của chính lớp
+không khí bị ép ra dưới mép đĩa trở nên không thể phớt lờ, nó khóa chặt tiếp
+điểm, và "tiếng vo vo" chuyển từ hiện tượng lý thuyết thành hiện tượng nhớt
+thuần túy. Trong chân không, bạn có toàn quyền quan sát tiếp điểm chạy nhanh
+hơn, tần số cao hơn, và quá trình kéo dài lâu hơn — tất cả đúng dự báo hàm
+mũ. Ngoài không khí? Lớp khí đó là vệ sĩ câm lặng của trọng lực, giữ tiếng
+vo vo trong tầm tay của tai người.

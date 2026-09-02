@@ -1,0 +1,83 @@
+---
+title: "40 oát đủ để giết bạn, còn ấm siêu tốc 2 000 oát thì vô can"
+seoTitle: "Dòng điện qua người bao nhiêu thì nguy hiểm và CB chống giật 30 mA"
+description: "Tay ướt, điện trở người tụt còn 1 000 Ω: 220 V đẩy 183 mA qua lồng ngực — gấp 6 lần ngưỡng ngắt 30 mA của CB chống giật và thừa sức gây rung thất. Toàn bộ cú giật ấy chỉ tiêu 40 W, bằng một bóng đèn bàn."
+pubDate: 2026-09-02
+tags: ["vat-ly", "dien-hoc", "javascript"]
+translationId: "cb-chong-giat-30-ma-va-dong-qua-nguoi"
+---
+
+import CurrentHazard from '../../../components/demos/CurrentHazard.astro';
+
+Bạn tay ướt, cầm dây nóng cắm ấm nước. Điện trở da đã tụt xuống **1 000 Ω**,
+và 220 V không thương tiếc: nó đẩy dòng **183 mA** xuyên qua — gấp 6 lần
+ngưỡng giết người, với công suất chỉ **40 W**, chưa bằng một phần năm mươi
+ấm siêu tốc đứng ngay cạnh. Dòng điện, không phải volt, là kẻ giết:
+
+<CurrentHazard />
+
+## Dòng điện, không phải điện áp
+
+Tất cả bạn từng nghe "*điện áp cao nguy hiểm*" — toàn sai. **Điện áp là tấm
+bảo hiểm của bạn.** Một máy phát tĩnh điện tạo **50 000 V** từ một cái nơm
+chải— khi nó thoát ra bạn nổ tung như bóng nước, nhưng tổng dòng chỉ vài
+microampere, bạn chỉ thấy tia lửa. Ngược lại, **12 V** (pin xe máy), nếu bạn
+giữ hai đầu dây cực dưới lưỡi — tức là chỉ **1 000 Ω** — cũng chỉ cho dòng 12 mA
+(cảm giác như Kim loại chạm vào trong cơ thể đầy nước, dòng lại bị cơ thể
+[dẫn tương đối tốt](/vi/posts/dien-tro-tiep-xuc-o-cam-long-gay-chay), và tâm
+điểm ở một thứ duy nhất: **dòng điện, không phải áp suất**.
+
+## Ngưỡng IEC 60479: dòng nào bạn thoát nổi, dòng nào thì không
+
+Cơ thể bạn có một sơ đồ an toàn. Về điện, con người tuân theo tiêu chuẩn
+quốc tế **IEC 60479** (đầu mục cho dòng AC 50–60 Hz):
+
+- **0,5 mA**: ranh giới cảm giác — bạn không biết gì xảy ra
+- **10 mA**: dòng "let-go" — các cơ tay co cứng quanh dây, bạn không rút tay ra được dù chết cũng muốn
+- **30 mA**: ngưỡng tối kỵ — tim có thể bắt đầu rung loạn, nhất là nếu dòng chạy ngang lồng ngực
+- **100+ mA**: rung thất không thể hồi phục, và thường là tử vong ngay
+
+Con số **30 mA** không phải ngẫu nhiên — nó là ngưỡng quá độ nguy hiểm với
+diễn tục ba trăm miligiây trở lên. Ở cái ví dụ bạn tay ướt, **183 mA** là **6 lần**
+qua ngưỡng này, đặt bạn trong vùng **AC-4**, nơi tử vong là khả năng cao.
+
+## CB chống giật (RCCB): cú áp phát 30 ms
+
+Nước tới đây, bạn cần một người bảo vệ. Đó là **RCCB** (hay gọi là CB chống
+giật, *Residual-Current Circuit Breaker*). Cái này không chờ. Khi dòng vượt
+**30 mA**, nó ngắt mạch trong vòng **30 miligiây** — đủ nhanh để tim bạn không
+kịp rung loạn hoàn toàn. Nó không chặn dòng; nó chỉ **cắt nhanh đến mức không
+kịp chết**.
+
+Các cơ thể khác cũng được bảo vệ bằng nguyên tắc tương tự — điều gì làm tổn
+thương bạn phụ thuộc vào thời gian tiếp xúc và dòng. Một lỏi điện 220 V qua
+tim một phần giây có thể hạn chế thiệt hại; cùng dòng suốt ba giây là câu
+chuyện khác.
+
+## Công suất mà bạn không để ý
+
+**40 watt** là số. Bạn có thể chẳng bao giờ để ý một cái bóng đèn bàn 40 W
+— nó sáng nhẹ và không nóng. Nhưng nếu năng lượng ấy không tỏa ra trên sợi
+carbon mà tỏa trong máu và cơ của bạn, nó sẽ làm gì?
+
+Một ấm siêu tốc 2 000 W nước sôi trong 5 phút — bạn nhìn thấy sức mạnh. Một
+cú giật 40 W không nhìn thấy được, nhưng nó tập trung vào vùng nhỏ (từ điểm
+tiếp xúc qua lồng ngực), và **thời gian ngắn không phải lý do bạn sống — mà là
+may mắn** của việc RCCB kích động đủ nhanh.
+
+## Trường hợp biên: CB chống giật không cứu lại bạn
+
+Tuy nhiên, RCCB có một **bí mật lớn**: nó đo *sự chênh lệch* dòng vào và ra.
+Nếu bạn cầm dây nóng bằng tay trái và dây nguội bằng tay phải, dòng **vào bằng
+dòng ra** — lõi từ nó không thấy bất cứ chênh lệch nào, và **nó không ngắt**. Khi
+đó, toàn bộ 220 V chạy qua tim bạn, và bạn chỉ có thể cầu nguyện CB tiêu chuẩn
+(**MCB**, bảo vệ quá dòng) ngắt trước khi quá muộn — nhưng điều đó mất tới **200
+miligiây**, gấp 7 lần thời gian RCCB cần. Cũng không bảo vệ ở dòng dưới 30 mA;
+con số ấy vẫn đủ làm bạn không rút tay ra được, trong khi toàn bộ nhà không hề
+biết gì.
+
+Vì thế, CB chống giật chỉ là **một phần** của câu chuyện. Điều khác là cách lắp
+đặt: nếu dây kết đất đúng cách — chẳng hạn, [một cọc tiếp địa tốt](/vi/posts/coc-tiep-dia-va-dien-tro-lan-truyen-dat)
+— thì dòng từ dây nóng đã chảy qua đất về trước khi bạn kịp chạm nó. Đó là lý
+do **bảo vệ nhiều tầng**: RCCB ngắt vì sợ, cọc tiếp địa làm cho không có gì để
+sợ.

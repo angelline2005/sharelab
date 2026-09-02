@@ -1,0 +1,81 @@
+---
+title: "Thuyền gỗ 10 mét: 14 km/h là bức tường, máy gấp mười cũng vô ích"
+seoTitle: "Hull speed và số Froude: giới hạn tốc độ của thân tàu chở hàng"
+description: "Mọi thân tàu lướt nước đều đụng trần ở v = 1,25·√L: thuyền 10 m dừng ở 14,2 km/h, ghe 6 m ở 11 km/h. Lý do không phải công suất mà là con sóng do chính nó tạo ra — khi bước sóng bằng chiều dài thân, con tàu phải trèo lên chính cái dốc nước của mình."
+pubDate: 2026-09-02
+tags: ["vat-ly", "chat-luu", "song", "javascript"]
+translationId: "toc-do-than-tau-va-buc-tuong-song"
+---
+
+import HullSpeed from '../../../components/demos/HullSpeed.astro';
+
+Bạn chèo thuyền trên hồ và nhấn ga từ từ: cái khúc xuồng tăng tốc suôn sẻ
+tới một độ nào đó, rồi bốc tiếp như có bối cảnh. Không phải máy yếu — là
+**con tàu đang mắc kẹt trong chính cái dốc nước nó vừa tạo ra**:
+
+<HullSpeed />
+
+## Thuyền không tạo từng gợn sóng riêng lẻ — nó tạo một hệ sóng mũi–đuôi
+
+Khi con tàu chuyển động, vỏ tàu đẩy nước sang hai bên: nước dồn lên phía
+trước tạo sóng mũi (crest), chảy xuống phía sau tạo vũt nước (trough). Hai
+cái ấy không phải chi tiết lặt vặt — chúng **sóng thật sự** ([cơ chế giống
+như sóng đứng trên dây](/vi/posts/song-dung-tren-day-dan) nhưng trong chất
+lưu hai chiều). Bất cứ sóng nào cũng có một bước sóng λ (khoảng cách từ đỉnh
+này tới đỉnh tiếp theo). Sóng do tàu tạo ra tuân một quy luật đơn giản:
+**λ = 2πv²/g**, với g là trọng lực (9,81 m/s²). Khi tàu đi nhanh, λ lớn —
+khi chậm, λ nhỏ.
+
+Tàu cũng không bao giờ "thoát" khỏi sóng của nó: nó lúc nào cũng ngồi
+trên đỉnh của sóng mũi (một trạng thái gọi là "riding the bow wave"). Cây
+số trên một bước sóng, vị trí của tàu trên sóng không đổi theo thời gian —
+nó ổn định. Nhưng khi bước sóng **bằng chiều dài thân tàu** (λ = L), thì
+có chuyện lạ: tàu lúc đó ngồi ở cả trên một **cưỡi chiều dài L** của cùng
+một con sóng. Phía trước là đỉnh (crest), phía sau cũng là đỉnh — có nghĩa
+tàu đang bị ép lên chính **cái dốc nước của nó**, khó có thể vượt qua được
+nếu không có thêm công suất khẩu chiến.
+
+## Khi λ = L, con tàu phải trèo lên một dốc vô tận
+
+Với một chiếc thuyền dài **10 mét**: khi λ = 10, bước sóng mà nó tạo ra
+cũng chính bằng chiều dài nó. Tốc độ này là bao nhiêu? Giải phương trình
+λ = L = 2πv²/g:
+
+v = √(g·L/2π) ≈ **1,25·√L** (tính theo m/s)
+
+Với L = 10 m: v = 1,25·√10 = **3,95 m/s = 14,2 km/h**. Đó là **hull speed**
+— một trần tốc độ vật lý chứ không phải giới hạn của máy. Ghe sông dài 6 m?
+Công thức cho **11,0 km/h**. Mỗi thân tàu có **trần riêng của nó**, phụ
+thuộc vào căn bậc hai của chiều dài — đúng vì thế thương nhân tàu hàng nước
+ngoài vẫn thích tàu dài, không phải vì thiết kế đẹp mà vì **dài gấp 4 lần thì
+hull speed gấp đôi**. [Đó là một trong những hệ quả của luật bình
+phương–lập phương](/vi/posts/nhen-nuoc-di-tren-mat-ho-va-luat-choi-cua-kich-thuoc):
+thân tàu phải tạo sóng tỉ lệ với chiều dài, nhưng khối lượng tăng theo khối
+— nên thân lớn hơn có lợi thế vượt trân không tương xứng với quảng lộ mặt
+nước mà nó quét qua.
+
+Câu hỏi kinh điển của một công sơn lao động: "Nâng công suất máy từ 50 lên
+500 mã lực, tối đa bao nhiêu nhanh hơn?" — Đáp số thực tế: chỉ gấp 1,4
+lần. Phần dư năng lượng đi đâu? Sang **tạo sóng vô ích**, một quá trình được
+gọi là wave-making resistance — hoàn toàn nằm ngoài quyền kiểm soát của
+công suất.
+
+## Số Froude định nghĩa chế độ hoạt động
+
+Tỉ số v/√(g·L) gọi là **số Froude** (Fr). Hull speed tương ứng Fr ≈ **0,4**.
+Tàu chở hàng kìm chậm ở Fr ~0,2 để tiết kiệm nhiên liệu; ca-nô chạy ở
+Fr > 1 — lúc đó nó trèo hẳn lên sóng của mình, vào chế độ lướt (planing)
+và công thức λ = L mất nghĩa.
+
+## Trường hợp biên: ca-nô lên mặt nước, thuyền rồng rẽ ngoài
+
+Với hull speed là một trần cứng, làm sao tàu đặc biệt vượt qua được? Ca-nô
+thể thao phá luật bằng **chế độ lượn** (planing): tàu trèo hẳn lên sóng của
+mình, để **lực nâng thủy động** thay thế lực đẩy Archimedes. Cái giá là
+tiêu thụ nhiên liệu tăng vọt, tốc độ chỉ bổ sung chút ít so với công suất
+tăng phi mũ.
+
+Thuyền rồng vẫn ở chế độ lướt nhẹ nhàng: **thân hẹp, dài/rộng = 10** nên
+hull speed cao hơn, lực cản sóng tương đối giảm. Thuyền đôi cũng thế. Nhưng
+tỷ lệ cao có bất lợi: sóng lớn bẻ tàu mạnh. Vì thế thương nhân chọn thân
+rộng mạnh: từng bước là sự lựa chọn.

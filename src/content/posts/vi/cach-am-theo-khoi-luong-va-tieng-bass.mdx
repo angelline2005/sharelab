@@ -1,0 +1,77 @@
+---
+title: "Vì sao xuyên tường bạn chỉ nghe thấy tiếng 'ùm ùm' của hàng xóm"
+seoTitle: "Định luật khối lượng trong cách âm: tường nặng gấp đôi được thêm mấy dB"
+description: "Tường gạch 200 kg/m² chặn tiếng hi-hat 4 kHz tới 71 dB nhưng chỉ chặn tiếng bass 100 Hz được 39 dB — chênh 32 dB, và đó là toàn bộ lý do dàn karaoke nhà bên chỉ còn lại nhịp trống. Muốn thêm 6 dB cách âm phải xây tường nặng gấp đôi: không có đường tắt nào rẻ hơn."
+pubDate: 2026-09-02
+tags: ["vat-ly", "song", "am-thanh", "javascript"]
+translationId: "cach-am-theo-khoi-luong-va-tieng-bass"
+---
+
+import MassLawAcoustic from '../../../components/demos/MassLawAcoustic.astro';
+
+Dàn karaoke nhà bên phát tung tứ phương, nhưng qua tường bạn chỉ còn nghe một
+mớ âm thầm, nhất là tiếng trống — tầm bass. Tại sao không phải từng nốt nhạc
+mà chỉ những tần số thấp lọt qua? Bức tường không công bằng với all frequencies.
+
+<MassLawAcoustic />
+
+## Tường nặng hơn gấp đôi = thêm 6 dB, không hơn, không kém
+
+Khi sóng âm đập vào tường, một phần bị phản xạ, phần còn lại chuyển thành rung động — cứ như tường là lá cờ bị gió thổi. Lá cờ nặng khó rung, nhẹ thì rung dễ: **độ chặn âm TL tăng theo trọng lượng mặt**. Công thức chính xác là
+
+```
+TL = 20·log₁₀(m·f) − 47
+```
+
+với m tính bằng kg/m² và f bằng Hz — mỗi tham số vào trong logarit rồi được
+nhân với 20. Hệ quả trực tiếp: **nhân đôi m cộng 6 dB**, nhân đôi f cũng
+cộng 6 dB. Xây tường gạch gấp đôi nặng (400 thay 200 kg/m²) được thêm đúng 6
+dB ở mọi tần số — không tận dụng được bề mặt tốt hơn, không có kỳ diệu nào.
+
+Tường gạch 200 kg/m² (khoảng 23 cm gạch đặc) chặn được bao nhiêu? Ở 100 Hz
+(bass): **39 dB** — âm thanh qua tường nhỏ gấp **gần 90 lần**. Ở 4 000 Hz (cymbal,
+tiếng khua): **71,1 dB** — nhỏ gấp **gần 3 600 lần**. Chênh nhau **32 dB**,
+bass lọt qua mạnh gấp **1 600 lần** tiếng cymbal. Vì thế dàn karaoke nhà bên
+chỉ còn ùm ùm — tất cả cao, trung bị xóa sạch. Nó chỉ là đặc tính của công thức log.
+
+## Tần số thấp luôn lừa: năng lượng nhiều mà dễ thoát
+
+Sóng âm tần số thấp có bước sóng dài: 100 Hz ở không khí là 3,4 mét, 1 000 Hz
+là 34 cm, 4 000 Hz là 8,5 cm. Tường gạch, kính, hay bất kỳ chất rắn nào, kích
+thước **cũng nhỏ đối với sóng bass** — sóng vô tư đi xuyên qua như cách một
+bức rèm không chứa được sóng biển. Phụ thuộc vào khối lượng mặt, không phụ
+thuộc vào tuổi tác hay độ dày (miễn sao chất vẫn liền lạc). [Nước sôi ở nhiệt độ
+thấp khi bơm không khí ra](/vi/posts/nhiet-an-hai-quang-nhiet-ke-dung-im) — tương
+tự thế, bass luôn giỏi bẻ cong quanh chướng ngại vật nhỏ. Trường hợp ở đây là
+chướng ngại vật không "nhỏ", mà sóng quá dài: bước sóng 3,4 m không thấy được
+một bức tường 25 cm.
+
+## Muốn cách âm bass: chỉ có cách nặng lên
+
+Nếu 200 kg/m² chặn được 39 dB ở 100 Hz, muốn thêm 6 dB (tổng 45 dB) cần
+**400 kg/m²** — tường gạch 46 cm. Muốn 51 dB (thêm 12 dB) cần 800 kg/m²,
+tức 92 cm gạch liền — một bình phương nhà bạn. Không có vật liệu ma thuật nào,
+không có khoảng không khí, không có "công thức thứ hai" — chỉ có **thêm khối
+lượng**. Đó cũng lý do các phòng thu âm, phòng test loa, hầm chống bom lại
+dày và nặng: không phải thẩm mỹ, mà là vật lý bắt buộc.
+
+[Tường xốp EPS dày nhưng nhẹ không cách được bass](/vi/posts/tuong-gach-nuot-nua-cai-may-lanh) —
+nó chỉ cách tiếng cao tốt, vì tiếng cao bước sóng ngắn không xuyên khoảng
+không khí tốt. Kính cách âm dày, khoảng không khí, rồi lại kính — mỗi lớp
+kính nặng 25 kg/m² chặn được 53 dB ở 4 kHz nhưng chỉ 21 dB ở 100 Hz. Ba lớp
+kính cách nhau bằng khoảng không khí tạo hiệu ứng tốt hơn một mảnh kính dày,
+[bởi vì không khí dù mỏng cũng cách trở lại do sự không khớp trở kháng âm](/vi/posts/so-reynolds-vi-khuan-boi-trong-mat-ong) —
+nhưng bass vẫn lọt qua, vì bước sóng dài vô tư xuyên khoảng 5 cm.
+
+## Trường hợp biên: tần số tới hạn kính và hiệu ứng trùng hợp
+
+Công thức TL = 20·log₁₀(m·f) − 47 chỉ đúng **ở trên tần số tới hạn f_c** của
+vật liệu — đó là tần số mà bước sóng uốn trong tấm kính bằng bước sóng không khí,
+tạo **cộng hưởng**. Với kính 4 mm, f_c ≈ 3 000 Hz — ngay giữa dải giọng nói
+và cao. Tại đó TL sụt xuống 10–15 dB so với dự đoán, tạo thành **hố trùng
+hợp** — tầm bước sóng chính xác để cộng hưởng, tường kính như "hở ải". Tường
+gạch dày hơn nên f_c thấp hơn (≈200 Hz), gần ranh giữa bass và tiếng nói —
+cũng rủi, nhưng rất ít người nhạy cảm. Đó là vì sao máy bay không dùng kính
+dày đơn, mà kính ba lớp với khe không khí riêng, mỗi khe gây hố trùng hợp ở
+tần số khác — xếp lẻ nhau, tập hợp các "hố" không bao giờ gặp tần số báo
+động hoặc tiếng ngoại cảm của cabin.

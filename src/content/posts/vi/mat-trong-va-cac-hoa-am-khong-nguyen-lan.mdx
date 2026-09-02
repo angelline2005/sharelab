@@ -1,0 +1,40 @@
+---
+title: "Vì sao tiếng trống không có nốt nhạc nào"
+seoTitle: "Vì sao trống không có cao độ: các mode Bessel của màng tròn"
+description: "Dây đàn cho hoạ âm 1, 2, 3 lần tần số gốc; mặt trống tròn cho 1 – 1,59 – 2,14 – 2,30 – 2,65, những con số không có ước chung nên tổng không tuần hoàn và tai không gán nổi một cao độ. Cái nồi đồng dưới trống định âm kéo dãy ấy về gần 1 – 1,5 – 2 – 2,5, và trống bỗng hát được."
+pubDate: 2026-09-02
+tags: ["vat-ly", "song", "am-thanh", "dao-dong", "javascript"]
+translationId: "mat-trong-va-cac-hoa-am-khong-nguyen-lan"
+---
+
+import DrumModes from '../../../components/demos/DrumModes.astro';
+
+Gõ vào một lồng trống — bạn nhận ra âm thanh lúc nào cũng là "cái bum bum" mơ hồ chứ không bao giờ là "nốt La 110 Hz" rõ ràng như gảy một sợi dây đàn. Hầu như một tấm màng tròn chỉ hát duy nhất một cách: **không hát**. Lý do không phải là chất liệu hay kỹ thuật, mà là toán học của hình tròn:
+
+<DrumModes />
+
+## Dây đàn xếp theo cấp số cộng, trống xếp lung tung
+
+Khi gảy một sợi dây, [sóng phát sinh từ hai đầu ghim chết](/vi/posts/song-dung-tren-day-dan) — sóng chạy đi, dội lại, chồng chéo với sóng quay ngược, chỉ những tần số thoả điều kiện hình học mới sống sót: f₁, 2f₁, 3f₁, 4f₁… Các hoạ âm xếp thành cấp số cộng với công sai chính f₁. Hai hoạ âm bất kỳ đều có một ước chung nào đó, nên tổng của chúng vẫn lặp lại định kỳ — tai bạn khỏa được một nốt duy nhất ở tần số thấp nhất, dù sóng thực tế phức tạp hơn gấp trăm lần.
+
+Mặt trống là một vấn đề khác hoàn toàn. Cố định cạnh trống (màng không thể rung ngoài mép) và để tâm tự do, mỗi chế độ dao động được xác định bởi các số không của hàm Bessel: **j₀,₁ = 2,405; j₁,₁ = 3,832; j₂,₁ = 5,136; j₃,₁ = 5,520; j₄,₁ = 6,380**. Chia tất cả cho j₀,₁ để thấy tỉ số với nốt cơ bản: **1 – 1,59 – 2,14 – 2,30 – 2,65**. Sáu con số này không chia hết cho nhau — không có ước chung (ngoài 1), nên chúng không tạo ra một hình dạng sóng tuần hoàn nào. Tổng các hoạ âm này lệch lạc mãi, không bao giờ quay về đúng pha cũ.
+
+## Tai nghe một sự lặp không tồn tại
+
+Vì sao đó là vấn đề? Vì các hoạ âm khác đó là tất cả những gì tai bạn có. Không có nốt cơ bản — mặt trống không phát f₀ nào cả, chỉ phát các bội của những f₀ khác nhau mà chúng không cộng gộp được.
+
+Tai con người hoạt động bằng cách tìm kiếm **sự lặp lại định kỳ**. Nó không phân tích từng sóng riêng, nó hỏi: "Sau bao lâu thì tín hiệu này lặp lại lần nữa?" Khi bạn nghe một giọng nói ở 110 Hz, kênh thoại cắt sạch hoạ âm đầu nhưng tai vẫn nghe thấy cao độ 110 Hz — vì [28 hoạ âm còn sống xếp hàng hơi rời rạc nhưng vẫn lặp lại sau đúng 1/110 = 9,09 ms](/vi/posts/hoa-am-goc-bi-thieu-va-loa-dien-thoai). Đó là "hoạ âm gốc bị thiếu" — cái cơ chế giúp bạn nghe nhạc trên loa điện thoại tồi.
+
+Trống lại hoàn toàn trái ngược: không có tần số nào lặp lại, bất kể cao hay thấp. Bạn nghe một khúc cơn với hình dạng thay đổi mãi, "bum" ấy khô cạn, mơ hồ — vô cao độ.
+
+## Một nồi đồng đặt dưới trống thì sao?
+
+Trống định âm (timpani) giải quyết vấn đề hoàn toàn khác. Dưới mặt màng trống là một cái nồi đồng — cái thùng không khí kín. Khi mặt trống rung, nó kéo theo không khí bên dưới; áp suất tạo lực ngược lại. Hiệu ứng này **không rung đều**— nó kéo mode (0,1) xuống mạnh hơn mode (2,1). Thay vì 1 – 1,59 – 2,14 – 2,30 – 2,65, các hoạ âm thực đo được trên timpani là gần 1 – 1,5 – 1,95 – 2,37 — những con số bàng hoàng gần giống 2 : 3 : 4 : 5.
+
+Đó có ý nghĩa gì? **Cao độ của timpani không phải là thứ nó phát trực tiếp, mà là một nốt gốc bị thiếu** — một tần số f₀ không hề tồn tại, nhưng các hoạ âm (khoảng 2, 3, 4, 5) lần của nó xếp hàng đẹp đủ để tai nhận ra nó. Trống không hát, nhưng timpani hát bằng cách tạo ra một **ảo ảnh cao độ** — cùng cơ chế với giọng nam qua điện thoại, chỉ mục tiêu là tạo hòa âm thay vì xoá tín hiệu.
+
+## Trường hợp biên: khi độ cao không còn quan trọng nữa
+
+Những gì xảy ra khi bạn muốn một mặt trống hát gọn? Không phải tìm cách "sửa" các mode Bessel — chúng là định mệnh của hình học — mà là kéo chúng chuyển vị bằng tải khối lượng (thêm cát, đặt đồng xu) hoặc tải khí (nồi đồng).
+
+Nhưng tại sao lại bao phiền? Hầu hết nhạc cụ gõ không cần cao độ xác định — con gong, chuông, trống ba lê (tam tam) có "màu sắc" phong phú hơn từ sự không hòa hợp ấy. Cơ chế Bessel chính là lý do: một tấm màng tròn tự do cho ra rất nhiều tần số cùng lúc, tất cả những con số kỳ lạ đó bao nhau, tạo lên một tiếng "trống" gợn sóng, sâu sắc, không thể nhầm thành thứ khác. Nó không hát, nhưng nó **nói chuyện** — và trong nhạc, cái tiếng nói ấy có giá trị riêng.

@@ -1,0 +1,140 @@
+---
+// Ionospheric skip: critical frequency f_c = 8.98*sqrt(N), MUF = f_c/sin(theta),
+// skip distance d = 2*h/tan(theta). Electron density day/night, frequency transmitted,
+// elevation angle determine whether wave reflects and how far it hops.
+---
+
+<figure class="demo" data-demo="tang-dien-ly-va-cu-nhay-cua-song-am">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Mật độ electron N (m⁻³) <output data-out="n"></output>
+      <input type="range" data-in="n" min="50000000000000" max="1000000000000000000" step="50000000000000" value="200000000000000" /></label>
+    <label>Tần số phát f (MHz) <output data-out="f"></output>
+      <input type="range" data-in="f" min="0.5" max="30" step="0.1" value="7" /></label>
+    <label>Góc ngẩng tia phát (°) <output data-out="theta"></output>
+      <input type="range" data-in="theta" min="5" max="80" step="1" value="20" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Ban đêm tầng F2 điện tử ít đi gấp năm lần: tần số phản xạ từ 9 MHz rơi xuống 4 MHz,
+    và sóng AM bắt đầu nảy giữa tầng điện ly với mặt đất thay vì bị hấp thụ. Một cú nhảy
+    từ tầng điện ly ở 300 km với góc 20° phủ 1 650 km. Slider cho bạn thay electron density
+    (ban đêm ← → ban ngày), tần số phát, và góc ngẩng để xem khi nào sóng phản xạ và phủ bao xa.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const CURVE = '#2563eb', MARK = '#dc2626', THIRD = '#f59e0b';
+  const h = 300; // ionosphere height in km
+  const f_critical = (N: number) => 8.98 * Math.sqrt(N) / 1e6; // Hz input, MHz output
+  const muf = (N: number, theta_deg: number) => {
+    const theta_rad = theta_deg * Math.PI / 180;
+    return f_critical(N) / Math.sin(theta_rad);
+  };
+  const skip_distance = (theta_deg: number) => {
+    const theta_rad = theta_deg * Math.PI / 180;
+    return 2 * h / Math.tan(theta_rad);
+  };
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (k: string) => root.querySelector(`[data-in="${k}"]`) as HTMLInputElement;
+    const output = (k: string) => root.querySelector(`[data-out="${k}"]`) as HTMLOutputElement;
+
+    function draw() {
+      const N = Number(input('n').value);
+      const f = Number(input('f').value);
+      const theta = Number(input('theta').value);
+
+      const fc = f_critical(N);
+      const muf_val = muf(N, theta);
+      const skip = skip_distance(theta);
+      const reflects = f < muf_val;
+
+      output('n').textContent = (N / 1e11).toFixed(1);
+      output('f').textContent = f.toFixed(1);
+      output('theta').textContent = String(theta);
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.5);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+
+      const padL = 50, padB = 30, padT = 20, padR = 20;
+      const gW = cssW - padL - padR, gH = cssH - padT - padB;
+
+      // Draw Earth and ionosphere
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.3; ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(padL, cssH - padB); ctx.lineTo(cssW - padR, cssH - padB); ctx.stroke();
+      const ionosphere_y = cssH - padB - (h / 2000) * gH; // scale: 2000 km to canvas
+      ctx.beginPath(); ctx.moveTo(padL, ionosphere_y); ctx.lineTo(cssW - padR, ionosphere_y); ctx.stroke();
+
+      // Labels
+      ctx.globalAlpha = 0.6; ctx.fillStyle = fg; ctx.font = '11px system-ui,sans-serif';
+      ctx.textAlign = 'right';
+      ctx.fillText('Mặt đất', padL - 5, cssH - padB + 4);
+      ctx.fillText('Tầng F2 (h=' + h + ' km)', padL - 5, ionosphere_y + 4);
+
+      // Ray trace
+      ctx.globalAlpha = 1;
+      if (reflects) {
+        ctx.strokeStyle = CURVE; ctx.lineWidth = 2;
+        const theta_rad = theta * Math.PI / 180;
+        // Ray from ground upward
+        const ray_dx = (h / 2) / Math.tan(theta_rad);
+        const start_x = padL + cssW / 2;
+        ctx.beginPath();
+        ctx.moveTo(start_x, cssH - padB);
+        ctx.lineTo(start_x + ray_dx * (gW / 2000), ionosphere_y);
+        ctx.stroke();
+        // Reflected ray downward to distance = skip
+        const total_dx = skip * (gW / 2000);
+        ctx.beginPath();
+        ctx.moveTo(start_x + ray_dx * (gW / 2000), ionosphere_y);
+        ctx.lineTo(start_x + total_dx * (gW / 2000), cssH - padB);
+        ctx.stroke();
+        // Mark reflection point
+        ctx.fillStyle = CURVE;
+        ctx.beginPath();
+        ctx.arc(start_x + ray_dx * (gW / 2000), ionosphere_y, 4, 0, Math.PI * 2);
+        ctx.fill();
+      } else {
+        ctx.strokeStyle = '#999'; ctx.lineWidth = 2; ctx.globalAlpha = 0.5;
+        const theta_rad = theta * Math.PI / 180;
+        const ray_dx = h / Math.tan(theta_rad);
+        const start_x = padL + cssW / 2;
+        ctx.beginPath();
+        ctx.moveTo(start_x, cssH - padB);
+        ctx.lineTo(start_x + ray_dx * (gW / 2000), ionosphere_y - 40);
+        ctx.stroke();
+      }
+
+      // Readout
+      ctx.globalAlpha = 1;
+      const daynight = N > 5e11 ? 'ban ngày' : N > 1e11 ? 'chuyển tiếp' : 'ban đêm';
+      const reflectText = reflects ? `phản xạ, cự ly nhảy ${skip.toFixed(0)} km` : `xuyên qua (không phản xạ)`;
+      readout.innerHTML = `N = ${(N/1e11).toFixed(1)}·10¹¹ m⁻³ (${daynight}) · f_tới hạn = <b>${fc.toFixed(2)} MHz</b> · f = ${f.toFixed(1)} MHz, θ = ${theta}° · MUF = ${muf_val.toFixed(2)} MHz · <b>${reflectText}</b>`;
+    }
+
+    root.querySelectorAll('input').forEach((el) => el.addEventListener('input', draw));
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="tang-dien-ly-va-cu-nhay-cua-song-am"]').forEach(setup);
+</script>

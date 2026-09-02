@@ -1,0 +1,202 @@
+---
+// Wing lift and angle of attack (thin airfoil theory):
+// L = ½ρv²·S·C_L with C_L = 2π·α (rad) = 0.11·α (deg) up to stall ~15°
+// Stall: flow separation, C_L drops; formula invalid beyond
+// Valid: α 0–15°, v 60–260 m/s, h 0–12 km, assumes A320-class wing (S ≈ 123 m²)
+---
+
+<figure class="demo" data-demo="goc-tan-va-luc-nang-canh-may-bay">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Góc tấn α (độ) <output data-out="alpha"></output>
+      <input type="range" data-in="alpha" min="0" max="20" step="0.5" value="4.88" /></label>
+    <label>Tốc độ bay (m/s) <output data-out="v"></output>
+      <input type="range" data-in="v" min="60" max="260" step="10" value="250" /></label>
+    <label>Độ cao (km) <output data-out="h"></output>
+      <input type="range" data-in="h" min="0" max="12" step="1" value="11" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Bên trái: mặt cắt cánh máy bay ở góc tấn đã chọn, với mũi tên lực nâng dài theo tỉ lệ.
+    Bên phải: đường cong C_L theo α — đoạn thẳng 2πα từ 0° tới ~15° rồi gãy khúc
+    khi thất tốc (dòng khí tách khỏi bề mặt trên). Cùng một công thức C_L, nhưng dưới
+    và trên lực nâng biến đổi theo ρ và v².
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const g = 9.81, rho_sea = 1.225, H = 8435, S = 122.6, m = 70000;
+  const CURVE = '#2563eb', MARK = '#dc2626', STALL = '#dc2626';
+
+  const rho = (h: number) => rho_sea * Math.exp(-h * 1000 / H);
+  const C_L = (alpha: number) => 0.11 * alpha; // linear approximation
+  const L = (alpha: number, v: number, h: number) => 0.5 * rho(h) * v * v * S * C_L(alpha);
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (k: string) => root.querySelector(`[data-in="${k}"]`) as HTMLInputElement;
+    const output = (k: string) => root.querySelector(`[data-out="${k}"]`) as HTMLOutputElement;
+
+    function draw() {
+      const alpha = Number(input('alpha').value);
+      const v = Number(input('v').value);
+      const h = Number(input('h').value);
+
+      output('alpha').textContent = alpha.toFixed(1).replace('.', ',');
+      output('v').textContent = String(v);
+      output('h').textContent = String(h);
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.45);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+
+      // Layout: left half (wing cross-section), right half (C_L curve)
+      const midX = cssW / 2;
+      const padL = 10, padR = 10, padT = 12, padB = 24;
+
+      // LEFT: Wing cross-section
+      const wingX = padL + (midX - padL - padR) * 0.5;
+      const wingY = padT + (cssH - padT - padB) * 0.5;
+      const wingScale = 20; // pixels per airfoil unit
+
+      // Draw airfoil shape (simplified symmetric or cambered profile)
+      ctx.fillStyle = fg; ctx.globalAlpha = 0.2;
+      ctx.beginPath();
+      for (let i = 0; i <= 100; i++) {
+        const x = (i / 100) * 3 - 1.5; // chord from -1.5 to 1.5
+        const y_upper = 0.2 * Math.sqrt(Math.max(0, 1 - x * x)); // parabolic thickness
+        const y = y_upper;
+        const rotX = x * Math.cos(alpha * Math.PI / 180) - y * Math.sin(alpha * Math.PI / 180);
+        const rotY = x * Math.sin(alpha * Math.PI / 180) + y * Math.cos(alpha * Math.PI / 180);
+        const px = wingX + rotX * wingScale;
+        const py = wingY - rotY * wingScale;
+        if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+      }
+      for (let i = 100; i >= 0; i--) {
+        const x = (i / 100) * 3 - 1.5;
+        const y_lower = -0.2 * Math.sqrt(Math.max(0, 1 - x * x));
+        const rotX = x * Math.cos(alpha * Math.PI / 180) - y_lower * Math.sin(alpha * Math.PI / 180);
+        const rotY = x * Math.sin(alpha * Math.PI / 180) + y_lower * Math.cos(alpha * Math.PI / 180);
+        const px = wingX + rotX * wingScale;
+        const py = wingY - rotY * wingScale;
+        ctx.lineTo(px, py);
+      }
+      ctx.closePath();
+      ctx.fill();
+      ctx.globalAlpha = 1;
+
+      // Draw lift arrow
+      const liftMag = Math.min(L(alpha, v, h), 2e6); // cap for visualization
+      const liftScale = 30 / Math.max(liftMag, 1e6);
+      const liftLen = Math.min(liftMag * liftScale, 60);
+      const liftAngle = (90 - alpha) * Math.PI / 180;
+      const arrowX = wingX + Math.cos(liftAngle) * liftLen;
+      const arrowY = wingY - Math.sin(liftAngle) * liftLen;
+
+      ctx.strokeStyle = CURVE; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.moveTo(wingX, wingY); ctx.lineTo(arrowX, arrowY); ctx.stroke();
+      ctx.fillStyle = CURVE;
+      const arrowSize = 6;
+      ctx.beginPath();
+      ctx.moveTo(arrowX, arrowY);
+      ctx.lineTo(arrowX - arrowSize * Math.cos(liftAngle - 0.3), arrowY + arrowSize * Math.sin(liftAngle - 0.3));
+      ctx.lineTo(arrowX - arrowSize * Math.cos(liftAngle + 0.3), arrowY + arrowSize * Math.sin(liftAngle + 0.3));
+      ctx.closePath();
+      ctx.fill();
+
+      // RIGHT: C_L vs angle of attack
+      const graphL = midX + padL, graphR = cssW - padR;
+      const graphT = padT, graphB = cssH - padB;
+      const graphW = graphR - graphL, graphH = graphB - graphT;
+
+      // Axes
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.3; ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(graphL, graphT); ctx.lineTo(graphL, graphB); ctx.lineTo(graphR, graphB); ctx.stroke();
+
+      // Grid and labels
+      ctx.globalAlpha = 0.55; ctx.fillStyle = fg; ctx.font = '9px system-ui,sans-serif';
+      ctx.textAlign = 'center';
+      for (const deg of [0, 5, 10, 15, 20]) {
+        const x = graphL + (deg / 20) * graphW;
+        ctx.fillText(String(deg) + '°', x, graphB + 12);
+      }
+      ctx.textAlign = 'right';
+      for (const c of [0, 0.5, 1.0, 1.5, 2.0]) {
+        const y = graphB - (c / 2.2) * graphH;
+        ctx.fillText(c.toFixed(1).replace('.', ','), graphL - 6, y + 3);
+      }
+      ctx.globalAlpha = 0.4; ctx.font = '8px system-ui,sans-serif';
+      ctx.textAlign = 'center'; ctx.fillText('α (độ)', graphL + graphW / 2, graphB + 22);
+      ctx.save(); ctx.translate(graphL - 18, graphT + graphH / 2);
+      ctx.rotate(-Math.PI / 2);
+      ctx.textAlign = 'center';
+      ctx.fillText('C_L', 0, 0);
+      ctx.restore();
+      ctx.globalAlpha = 1;
+
+      // C_L curve (linear up to ~15°, then stall)
+      ctx.strokeStyle = CURVE; ctx.lineWidth = 2; ctx.beginPath();
+      for (let i = 0; i <= 200; i++) {
+        const a = (i / 200) * 20;
+        const cl = a <= 15 ? 0.11 * a : (0.11 * 15) - 0.05 * (a - 15); // simple stall model
+        const x = graphL + (a / 20) * graphW;
+        const y = graphB - Math.max(0, cl / 2.2) * graphH;
+        i ? ctx.lineTo(x, y) : ctx.moveTo(x, y);
+      }
+      ctx.stroke();
+
+      // Stall line at 15°
+      ctx.strokeStyle = STALL; ctx.globalAlpha = 0.4; ctx.lineWidth = 1; ctx.setLineDash([4, 4]);
+      ctx.beginPath();
+      const stallX = graphL + (15 / 20) * graphW;
+      const stallY = graphB - (0.11 * 15 / 2.2) * graphH;
+      ctx.moveTo(stallX, graphT); ctx.lineTo(stallX, stallY); ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.globalAlpha = 1;
+
+      // Current point
+      const curAlpha = Math.min(alpha, 20);
+      const curCL = C_L(curAlpha);
+      const pointX = graphL + (curAlpha / 20) * graphW;
+      const pointY = graphB - Math.max(0, curCL / 2.2) * graphH;
+
+      ctx.fillStyle = MARK;
+      ctx.beginPath(); ctx.arc(pointX, pointY, 5, 0, Math.PI * 2); ctx.fill();
+
+      // Readout
+      const cl = C_L(alpha);
+      const lift = L(alpha, v, h);
+      const lift_tons = lift / g / 1000;
+      const max_mass_tons = (0.5 * rho(h) * v * v * S * 0.11 * 15) / g / 1000; // max at 15°
+
+      const status = alpha > 15 ? ' · <b style="color:#dc2626">THẤT TỐC</b>' : (alpha > 13.5 ? ' · <b style="color:#f59e0b">gần thất tốc</b>' : '');
+
+      readout.innerHTML =
+        `ρ = ${rho(h).toFixed(3).replace('.', ',')} kg/m³ · C_L = <b>${cl.toFixed(3).replace('.', ',')}</b> ` +
+        `· Lực nâng = <b>${lift_tons.toFixed(1).replace('.', ',')}</b> tấn · ` +
+        `tối đa cánh đỡ: <b>${max_mass_tons.toFixed(0)}</b> tấn${status}`;
+    }
+
+    root.querySelectorAll('input').forEach((el) => el.addEventListener('input', draw));
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="goc-tan-va-luc-nang-canh-may-bay"]').forEach(setup);
+</script>

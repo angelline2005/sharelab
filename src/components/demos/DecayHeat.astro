@@ -1,0 +1,192 @@
+---
+// Decay heat following Wigner-Way formula: P/P₀ = 0.066·[t^(−0.2) − (t+t₀)^(−0.2)]
+// where t is time after shutdown (seconds), t₀ is prior operation time (seconds)
+// Applicable to fission product decay; formula best fit to experimental data
+// from reactor physics literature. Slider range covers typical reactor scenarios.
+---
+
+<figure class="demo" data-demo="decay-heat">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Công suất lò (MW) <output data-out="p0"></output>
+      <input type="range" data-in="p0" min="10" max="4000" step="10" value="3000" /></label>
+    <label>Thời gian sau khi dừng (s, log) <output data-out="t"></output>
+      <input type="range" data-in="t" min="0" max="1000" step="1" value="0" /></label>
+    <label>Vận hành trước đó (năm, log) <output data-out="t0y"></output>
+      <input type="range" data-in="t0y" min="0.1" max="5" step="0.1" value="1" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Công suất dư từ phân rã mảnh vỡ phân hạch giảm theo luật thứ năm (t^−0.2), từ hơn 6% ngay khi dừng xuống 0,03% sau một năm. Trục log-log bằng phẳng vì số mũ nhỏ. Đường cong không phụ thuộc thời gian vận hành trước — hệ số 0,066 đã nhúng sẵn thời gian quá khứ.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const CURVE = '#2563eb', MARK = '#dc2626', LM = '#f59e0b';
+
+  // Key landmarks on log scale: (time_seconds, label, is_minor)
+  const LANDMARKS: Array<[number, string, boolean]> = [
+    [1, '1 s', true],
+    [10, '10 s', true],
+    [60, '1 min', false],
+    [300, '5 min', true],
+    [600, '10 min', true],
+    [3600, '1 h', false],
+    [86400, '1 d', false],
+    [604800, '1 tuần', false],
+    [2592000, '1 tháng', false],
+    [31536000, '1 năm', false],
+  ];
+
+  function decayHeat(t: number, t0: number): number {
+    return 0.066 * (Math.pow(t, -0.2) - Math.pow(t + t0, -0.2));
+  }
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const inP0 = root.querySelector('[data-in="p0"]') as HTMLInputElement;
+    const inT = root.querySelector('[data-in="t"]') as HTMLInputElement;
+    const inT0y = root.querySelector('[data-in="t0y"]') as HTMLInputElement;
+    const outP0 = root.querySelector('[data-out="p0"]') as HTMLOutputElement;
+    const outT = root.querySelector('[data-out="t"]') as HTMLOutputElement;
+    const outT0y = root.querySelector('[data-out="t0y"]') as HTMLOutputElement;
+
+    function draw() {
+      const P0_MW = Number(inP0.value);
+      const t_log = Number(inT.value); // 0-1000 maps to log scale 1s to 1 year
+      const t0_years = Number(inT0y.value);
+
+      // Convert log slider (0-1000) to actual time in seconds: 10^(log_slider/166.67)
+      // Range: 10^0 = 1s to 10^6 = 1,000,000s ≈ 11.6 days is not enough
+      // Better: t = exp(t_log * ln(1_year) / 1000) = exp(t_log * 13.815 / 1000)
+      const t = Math.exp((t_log / 1000) * Math.log(31536000)); // 0→1s, 1000→1year
+      const t0 = t0_years * 31536000; // years to seconds
+      const ratio = decayHeat(t, t0);
+      const power_mw = ratio * P0_MW;
+
+      // Convert to tons/hour evaporation and kettle equivalents
+      const latent_heat = 2.26e6; // J/kg water
+      const power_w = power_mw * 1e6;
+      const evap_kg_s = power_w / latent_heat;
+      const evap_tons_hour = evap_kg_s * 3600 / 1000;
+      const num_kettles = Math.round(power_w / 2000);
+
+      // Format outputs
+      outP0.textContent = P0_MW.toString();
+      outT.textContent = formatTime(t);
+      outT0y.textContent = t0_years.toFixed(1);
+
+      // Canvas sizing
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.5);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+
+      const padL = 46, padB = 26, padT = 12, padR = 10;
+      const tMin = 1, tMax = 31536000; // 1 second to 1 year
+      const pMin = 0.001, pMax = 0.15; // 0.1% to 15%
+
+      const logX = (tt: number) => Math.log10(tt);
+      const logY = (pp: number) => Math.log10(pp);
+      const X = (tt: number) => padL + ((logX(tt) - logX(tMin)) / (logX(tMax) - logX(tMin))) * (cssW - padL - padR);
+      const Y = (pp: number) => cssH - padB - ((logY(pp) - logY(pMin)) / (logY(pMax) - logY(pMin))) * (cssH - padB - padT);
+
+      // Grid and axes
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.2;
+      ctx.beginPath(); ctx.moveTo(padL, padT); ctx.lineTo(padL, cssH - padB); ctx.lineTo(cssW - padR, cssH - padB); ctx.stroke();
+
+      // Log grid lines (faint)
+      for (let exp = 0; exp <= 6; exp++) {
+        const tt = Math.pow(10, exp);
+        if (tt >= tMin && tt <= tMax) {
+          const xx = X(tt);
+          ctx.beginPath(); ctx.moveTo(xx, padT); ctx.lineTo(xx, cssH - padB); ctx.stroke();
+        }
+      }
+      for (let exp = -3; exp <= 0; exp++) {
+        const pp = Math.pow(10, exp);
+        if (pp >= pMin && pp <= pMax) {
+          const yy = Y(pp);
+          ctx.beginPath(); ctx.moveTo(padL, yy); ctx.lineTo(cssW - padR, yy); ctx.stroke();
+        }
+      }
+
+      ctx.globalAlpha = 0.55; ctx.fillStyle = fg; ctx.font = '10px system-ui,sans-serif';
+      ctx.textAlign = 'center';
+      for (const [tt] of LANDMARKS.filter(([t]) => t >= tMin && t <= tMax)) {
+        ctx.fillText(formatTime(tt), X(tt), cssH - padB + 14);
+      }
+      ctx.textAlign = 'right';
+      for (let exp = -3; exp <= 0; exp++) {
+        const pp = Math.pow(10, exp);
+        if (pp >= pMin && pp <= pMax) {
+          const pct = (pp * 100).toFixed(0);
+          ctx.fillText(pct + '%', padL - 4, Y(pp) + 3);
+        }
+      }
+      ctx.globalAlpha = 1;
+
+      // Main curve
+      ctx.strokeStyle = CURVE; ctx.lineWidth = 2.5; ctx.beginPath();
+      for (let i = 0; i <= 200; i++) {
+        const tt = tMin * Math.pow(tMax / tMin, i / 200);
+        const pp = decayHeat(tt, t0);
+        const xx = X(tt), yy = Y(pp);
+        if (i === 0) ctx.moveTo(xx, yy);
+        else ctx.lineTo(xx, yy);
+      }
+      ctx.stroke(); ctx.lineWidth = 1;
+
+      // Landmarks (minor dots)
+      LANDMARKS.forEach(([tt, , isMinor]) => {
+        const pp = decayHeat(tt, t0);
+        if (pp >= pMin && pp <= pMax) {
+          ctx.fillStyle = isMinor ? fg : LM;
+          ctx.globalAlpha = isMinor ? 0.3 : 0.7;
+          ctx.beginPath(); ctx.arc(X(tt), Y(pp), isMinor ? 2.5 : 4, 0, Math.PI * 2); ctx.fill();
+        }
+      });
+
+      // Marker at current position
+      ctx.globalAlpha = 1; ctx.fillStyle = MARK;
+      ctx.beginPath(); ctx.arc(X(t), Y(ratio), 6, 0, Math.PI * 2); ctx.fill();
+
+      readout.innerHTML =
+        `Lò ${P0_MW.toLocaleString('vi-VN')} MWth, ${formatTime(t)} sau khi dừng → <b>${(ratio*100).toFixed(2).replace('.', ',')}%</b>` +
+        ` = <b>${power_mw.toFixed(1).replace('.', ',')} MW</b>` +
+        ` = <b>${evap_tons_hour.toFixed(1).replace('.', ',')} tấn</b> nước/giờ` +
+        ` = <b>${num_kettles.toLocaleString('vi-VN')}</b> ấm 2 kW`;
+    }
+
+    function formatTime(seconds: number): string {
+      if (seconds < 60) return seconds.toFixed(0) + ' s';
+      if (seconds < 3600) return (seconds / 60).toFixed(0) + ' min';
+      if (seconds < 86400) return (seconds / 3600).toFixed(1).replace('.', ',') + ' h';
+      if (seconds < 2592000) return (seconds / 86400).toFixed(1).replace('.', ',') + ' ngày';
+      if (seconds < 31536000) return (seconds / 2592000).toFixed(1).replace('.', ',') + ' tháng';
+      return (seconds / 31536000).toFixed(1).replace('.', ',') + ' năm';
+    }
+
+    root.querySelectorAll('input').forEach((el) => el.addEventListener('input', draw));
+    addEventListener('resize', draw);
+    draw();
+  }
+
+  document.querySelectorAll<HTMLElement>('[data-demo="decay-heat"]').forEach(setup);
+</script>

@@ -1,0 +1,38 @@
+---
+title: "Cánh máy bay chỉ ngửa 4 độ để nâng 70 tấn — và 15 độ thì rơi"
+seoTitle: "Lực nâng và góc tấn: công thức C_L = 2πα của cánh mỏng"
+description: "Mỗi độ góc tấn cho thêm đúng 0,11 đơn vị hệ số nâng, nên chiếc A320 70 tấn bay hành trình chỉ cần ngửa cánh 5°. Vượt quá 15° thì đường thẳng ấy gãy, lực nâng sụp — cánh không 'ép' được không khí thêm nữa."
+pubDate: 2026-09-02
+tags: ["vat-ly", "chat-luu", "co-hoc", "javascript"]
+translationId: "goc-tan-va-luc-nang-canh-may-bay"
+---
+
+import WingLift from '../../../components/demos/WingLift.astro';
+
+Máy bay chỉ ngửa cánh độc lập mấy độ — không phải ba mươi. A320 nặng 70 tấn ở tốc độ
+hành trình 250 m/s, độ cao 11 km, cánh chỉ cần ngửa **5 độ** để cân bằng trọng lực.
+Nhưng vượt 15 độ, lực nâng ngừng tăng rồi sụp đột ngột:
+
+<WingLift />
+
+## Lực nâng từ cánh ép không khí xuống, không phải "cánh cong"
+
+Cánh ngửa một góc tấn α **ép không khí xuống** — theo Newton không khí ép lại máy bay lên ngược chiều. Mỗi độ góc tấn thêm vào hệ số nâng **C_L = 0,11·α** (từ công thức 2π·α radian, trong vùng tuyến tính). Lực nâng là **L = ½ρv²·S·C_L** — phụ thuộc vào bình phương vận tốc v, diện tích cánh S, mật độ không khí ρ, và góc tấn qua C_L. Công thức này từ thuyết cánh mỏng (thin airfoil theory), đúng rất tốt tới khi dòng khí tách khỏi bề mặt cánh.
+
+## Tốc độ cao = góc tấn nhỏ; độ cao thưa = phải bay nhanh hơn
+
+Ở tốc độ hạ cánh 100 m/s mặt biển, A320 phải ngửa gần **8°** để nâng 70 tấn. Ở hành trình 250 m/s chỉ **5°** — ít hơn gấp đôi dù nâng cùng khối lượng. (Ở độ cao 11 km không khí thưa còn **27%** mặt biển; bình phương vận tốc v² mặt biển tương đương bộ nhớ động học ở độ cao cao, nên 250 m/s ở độ cao ấy nâng được như 100 m/s ở mặt biển nhưng với C_L nhỏ hơn gấp hai lần — tổng cộng góc tấn giảm gấp bốn.)
+
+Cảm tính "máy bay ngửa cánh nhiều sẽ nhanh hơn" sai hoàn toàn. Nâng góc tấn không làm máy bay nhanh hơn — thay vào đó làm lực kéo (drag) tăng, máy bay chậm xuống — điều mà [quạt và bơm cũng phải đối mặt](/vi/posts/quat-tran-giam-toc-mot-nac-cat-nua-dien) khi tốc độ giảm. Phi công hạ cánh phải vừa nâng góc để nâng thêm (vì tốc độ giảm), vừa giảm công suất động cơ — bằng cách này mới giữ được ngã lên an toàn mà không tăng tốc độ.
+
+## Độ 15°: đường thẳng gãy khúc, lực nâng đảo dấu
+
+Từ 0° tới 15°, công thức C_L = 0,11·α đúng tuyệt đối. Qua 15° — **góc thất tốc (stall)** — dòng khí tách khỏi bề mặt trên cánh, chênh áp sụp, C_L rơi mất. Tăng góc từ 15° lên 20° thay vì nâng thêm lực còn **mất lực**: máy bay không thể nâng bằng cách ngửa cánh cao hơn nữa — nó phải rơi. Phi công nói "máy bay stall" không phải "máy bay bay chậm" — lực nâng **không còn**, không phải tốc độ giảm.
+
+## Góc tấn tăng từ 4° lên 15°: lực nâng thêm 3,6 lần, rồi sụp
+
+Qua thất tốc C_L giảm từ 1,65 (ở 15°) xuống ~1,2 (ở 20°) — dòng khí tách khỏi cánh, chênh áp sụp. Phi công không thể "đấm thêm góc" để nâng tiếp; thay vào đó càng ngửa lên càng mất lực. Ở 250 m/s độ cao 11 km, nâng từ 5° lên 15° lực tăng từ 70 tấn lên **215 tấn** — máy bay ở chế độ leo dốc. Nhưng vượt 15° rơi xuống ~155 tấn — một cú "nhún" đột ngột giữa không trung. Phi công huấn luyện nhận biết sắp thất tốc bằng cảm giác (tay cầm có dấu hiệu rung) chứ không chỉ nhìn tốc độ — gió mạnh, hướng không ngờ, thị lực xấu mà nâng góc ngây thơ — thất tốc đến trong tích tắc.
+
+## Trường hợp biên: cánh phẳng hay cánh lộn ngược
+
+Tấm phẳng không hề cong vẫn bay được — có C_L khác không miễn là ngửa góc tấn dương. Công thức C_L = 2π·α không phụ thuộc hình dáng cánh, chỉ phụ thuộc góc tấn (miễn lưu thẳng). Cánh máy bay lộn ngược vẫn nâng được nếu góc tấn dương (cánh trỏ lên). Thuyết "đường đi trên dài hơn tạo áp suất thấp" hay "cánh cong thì nâng, tấm phẳng không" là hình dung sai cơ chế — [cánh ép không khí xuống](/vi/posts/nguyen-ly-bernoulli-nhanh-hon-la-loang-ap-hon) đó là nguồn gốc, hình dáng cong chỉ giúp góc tấn nhỏ vẫn nâng đủ ở tốc độ thấp. Cơ chế cốt lõi: không phải hình dáng cánh mà **góc tấn**.

@@ -1,0 +1,69 @@
+---
+title: "Vì sao một bóng đèn không bao giờ thành laser: tỉ số 10⁻³³"
+seoTitle: "Đảo ngược mật độ: điều kiện để có laser và vì sao nhiệt không làm được"
+description: "Ở 300 K, tỉ lệ nguyên tử nằm sẵn ở mức trên của vạch đỏ 632,8 nm là 1,2×10⁻³³ — cả khối không khí trong một căn phòng 50 m³ cũng chỉ 'có' 1,5 phần triệu nguyên tử như thế. Muốn phát xạ kích thích thắng hấp thụ, phải có nhiều nguyên tử ở trên hơn ở dưới, mà nhiệt độ dù cao đến đâu cũng không làm nổi điều đó."
+pubDate: 2026-09-02
+tags: ["vat-ly", "luong-tu", "quang-hoc", "javascript"]
+translationId: "vi-sao-bong-den-khong-bao-gio-thanh-laser"
+---
+
+import LaserPopulation from '../../../components/demos/LaserPopulation.astro';
+
+Một bóng đèn sợi đốt phát sáng bằng nhiệt — cái tóc vonfram nóng 2700 K thì bức xạ toàn phổ
+từ hồng ngoại tới xanh. Vậy tại sao không lấy dây tóc nóng 6000 K để thành laser? Câu trả lời
+nằm ở một con số rất nhỏ:
+
+<LaserPopulation />
+
+## Phân bố Boltzmann: nguyên tử hiếm quý ở mức trên
+
+Mỗi nguyên tử chỉ tồn tại ở những mức năng lượng rời rạc. Để phát xạ ánh sáng, nó phải "rơi" từ
+mức cao xuống mức thấp — nhưng trước tiên phải **ở trên**. Phân bố Boltzmann nói rằng tỷ lệ nguyên
+tử ở hai mức bất kỳ là:
+
+```
+N₂/N₁ = exp(−hc/λkT)
+```
+
+Lũy thừa âm khiến tỷ lệ **luôn nhỏ hơn 1**. Với bước sóng 632,8 nm (laser He–Ne) ở 300 K,
+lũy thừa bằng **75,8** — vừa đủ để con số xuống thêm 33 bậc mũ.
+
+Kết quả: **N₂/N₁ ≈ 1,2×10⁻³³**. Một phòng 50 m³ không khí có ~1,3×10²⁷ phân tử, vậy số nguyên tử
+ở mức kích thích **dự kiến chỉ 1,5 phần triệu**. Không đủ để tạo ánh sáng.
+
+## Laser đòi hỏi điều không thể từ nhiệt độ
+
+Laser đòi hỏi N₂ > N₁ (mật độ ở mức cao vượt mức thấp). Lũy thừa âm e^(−x) luôn nhỏ hơn 1 với x > 0.
+Cần nhiệt độ bao nhiêu để đạt N₂/N₁ = 0,01 (chỉ 1% tỷ lệ)? Với He–Ne 632,8 nm: **4937 K** — gấp
+16 lần nhiệt độ phòng, hơn bề mặt Mặt Trời chỉ chút ít. Vẫn chỉ 1%, không phải đảo ngược.
+
+[Định luật Wien](/vi/posts/dinh-luat-wien-mau-cua-nhiet-do) cho vật ở 4937 K phát bức xạ đỉnh
+~585 nm. Nhưng "phát sáng" không phải laser: là bức xạ **tự do** — photon bay theo mọi hướng, không
+cùng pha.
+
+## Bơm quang: ba mức năng lượng, không phải nhiệt
+
+Bất kỳ laser thật nào đều có **ba mức năng lượng trở lên**. Ánh sáng bơm (UV) kích thích nguyên tử
+từ mức 1 lên mức 3; chúng rơi không bức xạ xuống mức 2 (trung gian), chỉ tỏa nhiệt. Mắc kẹt ở mức 2
+→ đảo ngược mật độ → phát xạ kích thích (toàn bộ cùng lúc, cùng pha, cùng hướng).
+
+Laser He–Ne hoạt động vậy: [mỗi photon kích thích gây phản ứng tương tự](/vi/posts/mat-nguoi-thay-duoc-bao-nhieu-photon)
+— họ đi cùng nhau, cùng bước sóng, cùng pha. Nhiệt độ không thể làm được.
+
+## Tại sao không cứ tăng nhiệt độ lên?
+
+Ở 4937 K, nhiệt độ cao phá vỡ tất cả: mức 3, 4, 5 cùng dân cư; nguyên tử phân tán trên dàn mức;
+va chạm liên tục **phá vỡ kết hợp pha** (điều kiện của laser). Bóng đèn ở 6000 K là hỗn độn
+lộn xộn, không phải chùm sắp hàng.
+
+Người phát minh laser chọn hệ ba mức, bơm ánh sáng vào để xây **bẫy năng lượng** ở mức trung gian,
+chứ không chờ nhiệt. Cần **bơm năng lượng liên tục** — "amplification" trong laser.
+
+## Trường hợp biên: nhiệt độ âm tuyệt đối
+
+Để N₂ > N₁, phải có exp(−x) > 1, tức **T âm**. Âm tuyệt đối (T < 0 K) không tồn tại trong tự
+nhiên — nhưng toán học cho phép. Nó không phải lạnh; nó là **trạng thái năng lượng ngược** — mức
+cao dân cư hơn mức thấp, cực kỳ trật tự, chặt gọn ở năng lượng cao. Các nhà vật lý từng tạo ra
+trạng thái nhiệt độ âm trong phòng thí nghiệm [bằng bẫy từ trường](/vi/posts/phuong-trinh-khi-ly-tuong-va-cai-bay-do-c)
+— vừa đủ để công thức Boltzmann "chuyển dấu" và xuất hiện laser. Laser không phải khám phá vật lý
+mới, mà là công nghệ **kiểm soát trạng thái**.

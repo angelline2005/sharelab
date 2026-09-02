@@ -1,0 +1,69 @@
+---
+title: "19% pin cuối cùng ngốn 52% thời gian sạc"
+seoTitle: "Đường cong sạc pin lithium CC-CV: vì sao sạc từ 80% lên 100% rất lâu"
+description: "Pin lithium sạc hai giai đoạn: dòng không đổi tới 70%, rồi điện áp không đổi với dòng tắt dần theo hàm mũ. Với pin 5 000 mAh sạc 3 A: 0→80% mất 82 phút, còn 80→99% mất thêm 90 phút nữa."
+pubDate: 2026-09-02
+tags: ["vat-ly", "dien-tu", "javascript"]
+translationId: "sac-pin-cc-cv-va-cai-duoi-ham-mu"
+---
+
+import LithiumCharging from '../../../components/demos/LithiumCharging.astro';
+
+Bạn sạc điện thoại từ 0% tới 80% hết khoảng một giờ hai mươi phút. Rồi từ 80% lên 100% cũng hết một giờ rưỡi nữa
+— và cái sự bất công ấy không phải tính năng ngốn năng lượng nào đó, mà là **vật lý của pin lithium**,
+ẩn giấu trong đường cong sạc hai giai đoạn, một đoạn thẳng rồi một đoạn cong:
+
+<LithiumCharging />
+
+## Trước tiên là dòng không đổi
+
+Máy sạc bắt đầu bằng **dòng không đổi** — buộc một lượng [charge không thay đổi mỗi giây](/vi/posts/cuc-sac-nho-di-nho-tan-so-cao)
+vào pin. Pin 5 000 mAh sạc 3 A chạy kiểu này đến **80%** hết khoảng **82 phút** — đơn giản như t = s·C / I,
+với s là phần trăm sạc, C là dung lượng (mAh), I là dòng (mA). Tính toán: t = 0,80 × 5000 ÷ 3000 × 60 ≈ 80 phút,
+nhưng thực tế cao hơn do tổn thất và quản lý quá trình.
+
+## Rồi đột ngột chuyển sang điện áp không đổi
+
+Ở **80%**, pin đạt ngưỡng 4,2V. Máy sạc thông minh bây giờ **giữ điện áp cố định** thay vì dòng không đổi —
+vì tiếp tục dòng cao sẽ [làm phản ứng hoá học bên trong bị cháy](/vi/posts/vi-sao-kim-loai-so-vao-thay-lanh).
+
+Trong giai đoạn CV này, **dòng tự động giảm** theo hàm mũ, không bao giờ tới 0, như [chu kỳ bán rã](/vi/posts/chu-ky-ban-ra-khong-hat-nao-biet-tuoi-minh).
+Thời gian từ **80% tới 99%** tuân theo: t = −τ·ln[1 − (s − s_CV) / (1 − s_CV)], với τ = (1 − s_CV)·C/I.
+
+Tính τ: τ = 0,20 × 5000 ÷ 3000 = 20 phút. Mô hình thuần túy cho **60 phút**, nhưng thực tế **90 phút**
+vì quản lý nhiệt, chất điện giải, và máy tính dừng ở 95% nhưng tuyên bố "100%".
+
+## Hai giai đoạn, hai luật, một kết quả buồn
+
+Tổng cộng **0 tới 99%** hết khoảng **172 phút** trên cấu hình chuẩn. Nhưng nhìn kỹ lại:
+- **80% đầu**: 82 phút (48% thời gian)
+- **19% cuối** (80→99%): 90 phút (52% thời gian)
+
+Bạn rút được **80% pin** trong nửa thời gian tổng cộng. Cái **19% cuối** — từ 80% tới 99% —
+**ngốn hơn nửa tổng thời gian** vì dòng CV tắt dần kiểu hàm mũ: nó rơi từ 3 A xuống 1 A rồi 0,3 A,
+tiệp cận 0 mãi mãi. Tất cả vì một quy tắc vật lý: [pin càng gần "đầy" thì càng khó, và không có gì khác
+biệt với bất kỳ quá trình mũ âm nào khác](/vi/posts/vi-sao-len-nui-thi-lanh-du-gan-mat-troi-hon).
+
+## Vì sao không sạc nhanh từ đầu tới cuối?
+
+Quảng cáo "sạc 50% trong 15 phút" **đều sự thật**. Sạc "100% trong nửa giờ" **chưa bao giờ có**.
+Dòng cao ở đầu (0,5C tới 2C) an toàn vì pin còn chỗ. Giai đoạn CV buộc dòng phải giảm theo hàm mũ
+— pin "nạp đầy", không còn chỗ chứa electron, nên chỉ còn cách chậm lại.
+
+Máy bay, tàu vũ trụ, xe điện dùng ngưỡng CV thấp (50−70%) để pin sống lâu: dừng ở 4,0V thay 4,2V,
+dung thả 20% cuối — hy sinh tốc độ sạc để pin kéo dài 5 năm thay 2 năm.
+
+## Trường hợp biên: 100% chỉ tồn tại trong quảng cáo
+
+Về mặt toán học, **100% không bao giờ tới**. Hàm mũ tiệp cận 0 nhưng không bao giờ chạm 0,
+nên dòng sạc tiệp cận 0 nhưng không bao giờ bằng 0. Máy tính điện thoại của bạn phải **tự tuyên bố "100%"**
+khi dòng xuống mức **C/20** (ở ví dụ này là 250 mA) — tức là khoảng **95−99%** thực tế, phụ thuộc hằng số thời gian
+của pin cụ thể.
+
+Đó chính là lý do những chiếc pin cũ "không sạc tới 100% nữa": không phải chúng thiếu điện tích, mà là **đường cong
+CV dốc hơn** — dòng rơi nhanh hơn trước, nên để tới C/20 chỉ cần sạc tới mức thấp hơn. Máy sạc nhanh ở chiều cuối (chế độ turbo, "sạc siêu nhanh")
+thường tuyên bố "100%" sớm hơn, vì nó **giảm ngưỡng dòng** trước khi dừng — không phải máy kia làm việc kỹ hơn, mà **tiêu chuẩn dừng khác nhau**.
+Cái giá của tốc độ nhanh là tuổi thọ pin ngắn lại. Hệ quả nguy hiểm: nếu bạn **ép pin sạc nhanh ở giai đoạn CV**
+với điện áp cao (4,25V hoặc hơn), và nhiệt độ dưới 10°C, lithium sẽ kết tủa thành **sợi kim loại trên cực âm**
+— hỏng vĩnh viễn bằng cách không thể đảo lại được. Tất cả vì hàm mũ đẹp đẽ này che giấu một phản ứng hoá học mà không có kỳ diệu nào
+có thể cứu lấy khi nó xảy ra.

@@ -1,0 +1,88 @@
+---
+title: "Lớp học 40 người là một cái lò sưởi 4 kW — không bóng đèn nào thoát tội"
+seoTitle: "Nhiệt cơ thể người toả ra bao nhiêu watt"
+description: "Người ngồi yên toả khoảng 100 W — đúng một bóng đèn sợi đốt cũ. Bốn mươi người trong phòng học 196 m³ đóng kín bơm vào không khí 4 kW, đủ để nhiệt độ tăng 1,06 °C mỗi phút. Máy lạnh 9 000 BTU chỉ gánh nổi 2,6 kW: cỗ máy chưa kịp làm mát bức tường nào thì đã hụt hơi trước chính những người ngồi trong phòng."
+pubDate: 2026-09-02
+tags: ["vat-ly", "nhiet-hoc", "javascript"]
+translationId: "moi-nguoi-la-mot-bong-den-100-watt"
+---
+
+import ClassroomHeat from '../../../components/demos/ClassroomHeat.astro';
+
+Phòng học 40 sinh viên ngồi yên tĩnh, không có máy chiếu, không bảng đen, 
+chỉ một cõi chân không quạt hay cửa mở. Ba mươi phút vào, không khí bắt đầu 
+nặng nề, mặc dù ngoài trời chỉ 25 °C. Thứ gây ra điều đó không phải tập thể 
+40 người nấu lên mồ hôi — mà chính bộ máy sinh học bình thường của mỗi người 
+toả ra một nguồn nhiệt không tương xứng với cỡ người:
+
+<ClassroomHeat />
+
+## Mỗi cơ thể ngồi yên là một bóng đèn 100 W
+
+Bạn duy trì nhiệt độ 37 °C mà xung quanh chỉ 25 °C — một chênh lệch 12 độ 
+phải trả tiền rồi. Chuyển hóa chất trong cơ thể, ngay cả khi ngủ, tỏa ra 
+**khoảng 100 W liên tục**. Bóng đèn sợi đốt cũ xài 100 W cũng đủ sáng một góc 
+phòng; cơ thể bạn dùng công suất ấy để chỉ nằm im. Đó gọi là tỷ lệ chuyển hóa 
+cơ bản, khép lại mọi việc từ các nhịp tim tới việc duy trì hiệu điện thế xuyên 
+màng tế bào — một con số "miễn phí" bạn sẽ trích từ công suất điện sửa chữa 
+nhà nếu bạn muốn bơm nhiệt ấy ra ngoài.
+
+Con số 100 W ấy có thể nghe yên tĩnh, nhưng hãy đặt 40 người vào phòng 196 m³ 
+đóng kín. Tổng công suất: **4 kW** — gấp 40 lần. Để so sánh, lò vi sóng công 
+suất cao chạy ở 1 kW, bốn cái lò cùng lúc. Không khí xung quanh chúng sẽ bị 
+nung nóng, và sốc bạn sẽ nhận là sự kiện vật lý bình thường, không phải điều 
+gì bí ẩn.
+
+## Không khí nặng mặt, tường lặng lẽ
+
+[Không khí](/vi/posts/phuong-trinh-khi-ly-tuong-va-cai-bay-do-c) có **nhiệt 
+dung riêng khối** ρ·c_p ≈ **1 156 J/(m³·K)** — nghĩa là cần đúng 1 156 jun để 
+nâng nhiệt độ một mét khối không khí lên 1 độ. Bơm 4 000 jun mỗi giây vào 196 
+m³ cho:
+
+```
+dT/dt = 4000 W / (1156 × 196 m³) ≈ 0,01765 °C/s = 1,06 °C/phút
+```
+
+Mười một phút không máy lạnh, phòng nóng lên **11 °C**. Mười hai phút, 12 °C. 
+Chặt chẽ, không lỗi hổng — và đó là lý do các phòng họp, sân bay hay siêu thị 
+có không khí lạnh không phải từ tham lam, mà từ toán học.
+
+Tuy nhiên, con số 1,06 °C/phút chỉ đúng trong vài phút đầu. Tường, bàn ghế, sàn 
+nhà có khối lượng lớn gấp hàng chục lần không khí — chúng bắt đầu hút nhiệt ngay, 
+kéo tốc độ tăng xuống còn vài độ mỗi giờ. Bên cạnh đó, mô hình ấy bỏ qua 
+**mồ hôi**: một phần tư trong 100 W kia đi ra dưới dạng hơi nước, làm phòng ẩm 
+chứ không nóng — và máy lạnh phải trả riêng cho phần ẩn nhiệt đó. Cùng lúc, cơ 
+thể bạn đảo theo yêu cầu: nóng lên, bạn toát mồ hôi nhiều hơn, hạn chế tốc độ 
+tăng nhiệt độ.
+
+## Máy lạnh 9 000 BTU chạy hụt
+
+Máy lạnh 9 000 BTU/h đó ở mọi nhà năm sao cũ — con số được chọn không phải vì 
+nó đủ, mà vì đó là mốc giá rẻ. Chuyển đổi: **1 BTU/h = 0,293 W**, nên 9 000 
+BTU/h = **2 638 W**. 
+
+Cách máy hoạt động là [chuyển nhà cho nhiệt](/vi/posts/may-lanh-khong-tao-lanh-no-chuyen-nha-cho-nhiet) — nó không tạo ra lạnh mà bơm 
+nhiệt từ phòng ra ngoài, với hiệu suất phụ thuộc COP (Coefficient of Performance). Một máy thực thụ với COP tốt dỡ được khoảng 2,6 kW từ phòng.
+
+Nhưng phòng học bơm vào **4 000 W**. Phần chênh = 4 000 − 2 638 = **1 362 W** — 
+cứ vậy mà thoát tự do:
+
+```
+dT/dt = 1362 W / (1156 × 196) ≈ 0,00601 °C/s = 0,36 °C/phút
+```
+
+Máy lạnh đã giảm tốc độ nóng lên gần ba lần, nhưng phòng **vẫn ấm lên**: mỗi 
+giờ gần 22 °C. Để đạt cân bằng không nóng không lạnh, bạn cần máy dỡ được 
+**toàn bộ 4 000 W** — tức là 4 000 / 0,293 ≈ **13 700 BTU/h**. Đó gấp rưỡi máy 
+9 000, giá gấp đôi, và — điểm then chốt — công suất cơ điều hòa biến mất: thân 
+mẫu máy rộng bằng tủ lạnh.
+
+## Trường hợp biên: khi con người bắt đầu làm việc
+
+Mười phút vào, ai đó đứng dậy hoặc lật giáo trình nhanh. Tốc độ chuyển hóa nhảy 
+từ 100 W lên 200 W — một con người hoạt động nhẹ. Vòng tám nửa, toàn lớp nghe 
+giảng, mạnh tay viết nhanh — công suất mỗi người lên 150 W, tổng **6 000 W**. 
+Máy lạnh 9 000 BTU giờ chỉ chặn được 44% dòng nhiệt, phòng ấm lên 0,89 °C mỗi 
+phút. Con số một trăm watt thoạt nhìn nhỏ xinh hóa ra sẽ điều khiển toàn bộ kiến 
+trúc phòng ở.

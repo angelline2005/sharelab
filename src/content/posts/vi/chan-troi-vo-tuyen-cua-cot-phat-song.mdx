@@ -1,0 +1,71 @@
+---
+title: "Cột phát sóng cao gấp bốn mới phủ xa gấp đôi"
+seoTitle: "Chân trời vô tuyến: công thức tầm phủ sóng theo chiều cao cột anten"
+description: "Sóng VHF và UHF đi thẳng, nên tầm phủ bị chặn bởi độ cong Trái Đất và chỉ tăng theo căn bậc hai của chiều cao. Cột 100 mét phủ 41 km; muốn 82 km phải dựng cột 400 mét. Và nếu quên khúc xạ khí quyển, bạn sẽ tính nhầm còn 36 km."
+pubDate: 2026-09-02
+tags: ["vat-ly", "dien-tu", "song", "javascript"]
+translationId: "chan-troi-vo-tuyen-cua-cot-phat-song"
+---
+
+import RadioHorizon from '../../../components/demos/RadioHorizon.astro';
+
+Bạn tự hỏi vì sao đài phát FM ở Hà Nội nghe rõ tới Hải Phòng nhưng không tới Huế,
+mặc dù chỉ cách nhau đều nhau trên bản đồ. Không phải là sức mạnh phát — mà là chân trời
+vô tuyến: sóng VHF/UHF đi **thẳng** theo con mắt, bị cả hành tinh chặn lại:
+
+<RadioHorizon />
+
+## Sóng cao tần không có cách nào uốn cong quanh Trái Đất
+
+Sóng dài và sóng trung (AM—dưới 3 MHz) bám theo mặt đất dẫn điện, bao vòng quanh hành tinh như
+[bội sóng qua dây dẫn](/vi/posts/duong-ham-la-mot-ong-dan-song), nên đài AM phủ được cả miền bằng một cột duy nhất.
+Sóng VHF (FM, truyền hình) và UHF từ 30 MHz trở lên lại không được phép — chúng [dao động nhanh quá để
+bám mặt đất](/vi/posts/cuc-sac-nho-di-nho-tan-so-cao), nên thoát thẳng vào khí quyển như tia sáng.
+Tia sáng bị chân trời cản lại, và chân trời vô tuyến cách chân trời nhìn thấy chỉ bằng
+**khúc xạ khí quyển**: không khí lạnh dưới nén dọc không khí ấm ở cao độ, kéo dãn tia sóng xuống
+gấp rưỡi, thành ra Trái Đất trông "dẹt" hơn với sóng — chân trời lùi ra xa thêm **20–30%**.
+
+Công thức tính tầm phủ không mệ:
+```
+d = √(2·k·R·h₁) + √(2·k·R·h₂)
+```
+Ở đó h₁ là chiều cao cột phát, h₂ là chiều cao máy thu (hay mắt người đứng), k ≈ **1,33** là hệ số bán kính hiệu dụng
+(tính sẵn khúc xạ), R = 6378 km là bán kính Trái Đất, nên k·R ≈ **8 500 km**.
+
+## Luật căn bậc hai: chiều cao không thể cứu rỗi tầm phủ
+
+Cột **100 mét** phủ d = √(2 × 8 500 × 0,1) ≈ **41,2 km**. Thêm máy thu cao 10 mét nữa —
+thêm √(2 × 8 500 × 0,01) ≈ 13 km — tổng **54,3 km**. Muốn phủ **82,5 km** (gấp đôi) phải **400 mét** —
+vì tầm **tỷ lệ với căn bậc hai của chiều cao**. Nhân chiều cao gấp bốn, tầm chỉ tăng gấp hai:
+đó là vì sao xây cột siêu cao chỉ giải quyết một phần vấn đề — Trái Đất cong chi phối cả kinh tế ngành viễn thông.
+Để tăng tầm thêm 10 km từ 80 lên 90 km, cột phải từ 400 m tăng gần 500 m — rắc rối lớn cho tầm tương đối nhỏ.
+
+## Cúp khúc xạ khí quyển là tự sát tính toán
+
+Con số hook — 41,2 km — chỉ đúng khi k = 1,33. Quên khúc xạ và dùng k = 1 (tính Trái Đất
+là hình cầu hoàn hảo không có không khí), cột 100 m chỉ phủ **35,7 km**, kém **5,5 km**
+so với thực tế. Con số sai lệch này không nhỏ — nó chi phối độ sâu của bản đồ phủ sóng,
+dự báo vùng khuất, quyết định chỗ đặt cột trung tâm chuyển mạch tiếp sóng. Các kỹ sư từng mắc cái bẫy này,
+và sau đó phải dựng lại cả mạng lưới.
+
+Điều may là k không phải hằng số tuyệt đối — nó dao động từ **1,0 tới 1,5** tuỳ theo
+điều kiện khí quyển, nhiệt độ, độ ẩm. Ở điều kiện khô nóng của đồng bằng trước mùa mưa,
+k có thể tụt xuống **1,15**; ở vùng lạnh ẩm, bơm lên **1,40**. Các công ty viễn thông khi lên
+kế hoạch dự phòng sẽ dùng k = 1,0 (trường hợp xấu nhất) để chắc chắn phủ sóng dựa vào
+chính cột phát, rồi dùng k = 1,33 để ước lượng thực tế.
+
+## Trường hợp biên: tần số định đoạt luật chơi
+
+Dưới khoảng 30 MHz ([sóng dài và sóng trung](/vi/posts/cuc-sac-nho-di-nho-tan-so-cao)), sóng
+không còn tuân luật căn bậc hai: **sóng bám mặt đất** dẫn điện, xuyên qua tầng điện ly phản xạ
+từ các tầng trên, còn có thể bao vòng trái đất như tia hạt nhân, một vòng tính tới cả nghìn km —
+đó là lý do đài AM ở Hà Nội nghe được ở Phúc Kiến. Ngược lại, ở tần số cao hơn 1 GHz (vi sóng, WiFi),
+tầm hẹp mau chóng: **WiFi 5 GHz phủ mười mét**; sóng nhân tạo ở 60 GHz không xuyên tường.
+Sóng VHF/UHF (30–3000 MHz) ở vùng qua độ vừa vặn: đủ cao tần để bay thẳng,
+đủ thấp để Trái Đất không cắn gẫm quá gắt.
+
+Riêng vùng nước ấm có lớp đảo nhiệt (phổ biến ở vịnh Bắc Bộ mùa hè), khí quyển hình thành
+**ống dẫn sóng** — nơi sóng lại bám theo như ở tầng điện ly. Lúc ấy k tiến về vô cùng, sóng VHF
+trượt như nằm trong ống, bay được hàng trăm km — đó là lý do đôi khi bạn xem được truyền hình
+Hải Nam từ Quảng Ninh, hay nghe đài FM Đặc khu Macao từ Giang Tây. Không phải sức mạnh phát lạ,
+mà là bầu trời tạo ra đường mòn sóng không ai dự báo được.

@@ -1,0 +1,50 @@
+---
+title: "Máy biến áp ù ở 100 Hz — cho tới khi 10% từ thông một chiều lẻn vào"
+seoTitle: "Tiếng ù máy biến áp: vì sao tần số là 100 Hz chứ không phải 50 Hz"
+description: "Lực từ tỉ lệ với B², mà bình phương thì không phân biệt chiều dòng điện — nên trạm biến áp đầu ngõ ù ở 100 Hz chứ không phải 50. Khai triển (sin ωt + b)² cho thấy thành phần 1f có biên độ 2b còn thành phần 2f có biên độ ½: chỉ cần b = 10% thiên áp một chiều là tiếng ù mọc thêm một nốt 50 Hz bằng 40% nốt chính, và bão từ Mặt Trời làm đúng chuyện đó ở quy mô lưới điện."
+pubDate: 2026-09-02
+tags: ["vat-ly", "dien-tu", "am-thanh", "javascript"]
+translationId: "vi-sao-may-bien-ap-u-o-100-hz"
+---
+
+import TransformerHumming from '../../../components/demos/TransformerHumming.astro';
+
+Đi ngang trạm biến áp của điện lực, bạn nghe một tiếng ù liên tục — không phải tiếng gió hay máy quạt, mà âm thanh khác lạ và không vui. Tiếng ấy ở tần số cố định, **gấp đôi tần số lưới**: ở Việt Nam là 100 Hz, ở Bắc Mỹ là 120 Hz. Không phải quyết định thiết kế, mà là một định luật vật lý vô tư trong công thức lực từ:
+
+<TransformerHumming />
+
+## Lực từ bình phương tần số
+
+Lực trên dây dẫn trong từ trường tỉ lệ với bình phương mật độ từ thông: F ∝ B². Ở máy biến áp, từ thông B(t) = B_m sin ωt là một hình sin sạch tần số lưới, nhưng khi bình phương nó, [định luật Faraday](/vi/posts/cam-ung-faraday-hai-cu-hich-nguoc-dau) không còn quan tâm chiều dòng nữa — âm và dương cộng thành dương. Khai triển (sin ωt)²:
+
+```
+(sin ωt)² = ½ − ½ cos 2ωt
+```
+
+Ngay lúc bình phương, tần số tăng gấp đôi. Hình sin 50 Hz biến thành sóng 100 Hz. Đó chính là tiếng ù máy biến áp: từ thông dao động **50 Hz** nhưng lực dao động **100 Hz**, và [kim loại bị kéo căng-thả đều đặn 100 lần mỗi giây](/vi/posts/noi-com-dien-va-nam-cham-quen-tu-tinh) — thép trong lõi rung, dẫn xuất tiếng ù gầm.
+
+## Chỉ cần 10% từ thông một chiều, một nốt 50 Hz bỗng xuất hiện
+
+Ở trường hợp lý tưởng, lõi máy biến áp không nên có từ thông một chiều — dòng xoay chiều là toàn bộ tín hiệu. Nhưng trong thế giới thực, nếu thêm một thành phần DC vào:
+
+```
+B(t) = B_m(sin ωt + b)
+```
+
+thì khi bình phương:
+
+```
+B²(t) = B_m²(sin ωt + b)² = B_m²[½(1 + 2b²) + 2b sin ωt − ½ cos 2ωt]
+```
+
+Ba thành phần xuất hiện: một DC hằng số, một hình sin ở **tần số gốc f = 50 Hz**, và một hình sin ở tần số **2f = 100 Hz**. Với b = 0,1 (tức 10% từ thông một chiều), biên độ của thành phần 50 Hz bằng 2b = 0,2, còn biên độ 100 Hz bằng 0,5 — tỷ số chính là **40%**. Chỉ một chút rỉa từ thông chiều ngang lõi mà tiếng ù gào lên kèm một nốt 50 Hz bằng 40% nốt chính, khiến tai người mua nhạc đặc.
+
+## Từ thông một chiều: quặng của bão từ
+
+Vì sao lõi máy biến áp lại có từ thông một chiều? Có một nguyên nhân ngoài mong muốn: **bão từ Mặt Trời** bơm dòng cảm ứng qua mặt đất (gọi là GIC — Geomagnetically Induced Current). Dòng này chạy ngầm lưới điện, chui vào lõi máy biến áp qua lớp ngoài của cuộn sơ cấp, và trong những trường hợp năng lượng cao, nó bão hoà nửa chu kỳ của lõi — tức là thêm một thành phần DC to đùng.
+
+Sự kiện nổi tiếng nhất là **bão từ tháng 3 năm 1989**, khi một cơn bão từ dữ dội làm máy biến áp 735 kV ở Hydro-Québec bão hoà và quá nhiệt, đốt cháy lõi trong vòng **90 giây**. Toàn bộ hệ thống Québec — 6 triệu người — mất điện vì một máy biến áp. Tiếng ù của lõi nóng sẽ là tín hiệu cảnh báo cuối cùng trước khi sập, và nó sẽ gào lên mạnh gấp bội vì thành phần DC quá lớn.
+
+## Trường hợp biên: lõi nóng chảy khi từ thông cân bằng mất
+
+Khi từ thông một chiều còn dưới 10% từ thông xoay chiều, lõi chỉ nóng lên vừa phải dù bão hoà nửa chu kỳ; máy biến áp có đủ khả năng tản nhiệt. Nhưng vượt qua ngưỡng ấy — từ thông một chiều bằng 20%, 30%, hay hơn — lõi bão hoà **toàn bộ chu kỳ** thay vì nửa chu kỳ. Từ thông không còn biến thiên hình sin mà trở thành một con sóng rẽ ngoạn, từ trường bão hoà và thôi — và dòng điện tiếp ứng vọt lên vài lần, nhiệt phát sinh theo I² tăng nhanh. Các cuộn dây quấn xung quanh lõi mỗi nơi thế nào đó cũng có phần bị dòng tập trung, và sự không cân bằng ấy khiến một vài vòng cuộn nóng nhanh hơn — sơn cách điện ngoài vòng dây cháy, đồng bị oxi hóa, và trong vòng vài phút lõi sắt có thể chảy như giấc mơ. Một bệnh viện, một trạm tàu đỏ, hay một phố nghìn người chìm trong tối — toàn bộ từ một thành phần từ thông chiều 30%, và một máy biến áp quên mất cách ứng xử khi thế giới từ hỏng toán.

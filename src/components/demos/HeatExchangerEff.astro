@@ -1,0 +1,202 @@
+---
+// Heat exchanger effectiveness (ε-NTU method):
+// Counter-flow: ε = (1 − e^(−NTU(1−Cr))) / (1 − Cr·e^(−NTU(1−Cr)))
+// Co-current: ε = (1 − e^(−NTU(1+Cr))) / (1 + Cr)
+// Shows temperature profiles along the length for both configurations.
+---
+
+<figure class="demo" data-demo="heat-exchanger-eff">
+  <div class="plots-container">
+    <div class="plot-wrapper">
+      <canvas class="plot" data-plot="counter"></canvas>
+      <div class="plot-label">Ngược dòng</div>
+    </div>
+    <div class="plot-wrapper">
+      <canvas class="plot" data-plot="cocurrent"></canvas>
+      <div class="plot-label">Cùng chiều</div>
+    </div>
+  </div>
+  <div class="controls">
+    <label>NTU (diện tích quy đổi) <output data-out="ntu"></output>
+      <input type="range" data-in="ntu" min="0.2" max="6" step="0.1" value="3.5" /></label>
+    <label>Cr (tỉ số nhiệt dung) <output data-out="cr"></output>
+      <input type="range" data-in="cr" min="0.1" max="1" step="0.05" value="0.8" /></label>
+    <label>Dòng nóng vào T°C <output data-out="th"></output>
+      <input type="range" data-in="th" min="40" max="95" step="1" value="75" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Trái: ngược dòng — hai dòng chạy ngược nhau, cho phép dòng lạnh
+    vượt nhiệt độ của dòng nóng ở lối ra. Phải: cùng chiều — hai dòng
+    song song, outlet nhiệt độ gần nhau, hiệu suất thấp hơn cùng điều
+    kiện. Kéo NTU để thấy sự bão hoà: ngược dòng tiếp tục hiệu suất
+    cao; cùng chiều trần cứng ở ε = 1/(1+Cr) khi Cr ≠ 1.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .plots-container { display: flex; gap: 1.5rem; margin-bottom: 1rem; }
+  .plot-wrapper { flex: 1; min-width: 0; }
+  .plot { width: 100%; height: auto; display: block; }
+  .plot-label { text-align: center; font-size: 0.8rem; opacity: 0.7; margin-top: 0.3rem; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const CURVE_HOT = '#2563eb', CURVE_COLD = '#dc2626';
+
+  // Effectiveness formulas
+  const eff_counter = (NTU: number, Cr: number): number => {
+    if (Math.abs(Cr - 1) < 0.001) return NTU / (1 + NTU);
+    const exp_term = Math.exp(-NTU * (1 - Cr));
+    return (1 - exp_term) / (1 - Cr * exp_term);
+  };
+
+  const eff_cocurrent = (NTU: number, Cr: number): number => {
+    const exp_term = Math.exp(-NTU * (1 + Cr));
+    return (1 - exp_term) / (1 + Cr);
+  };
+
+  // Temperature profiles along exchanger (x from 0 to 1)
+  // Counter-flow: hot inlet at x=0, cold inlet at x=1
+  const temp_counter = (x: number, T_h_in: number, T_c_in: number, eff: number, Cr: number, is_hot: boolean): number => {
+    const dT = T_h_in - T_c_in;
+    const T_c_out = T_c_in + eff * dT;
+    const T_h_out = T_h_in - eff * Cr * dT;
+
+    if (is_hot) {
+      // Hot stream: enters at x=0 (T_h_in), exits at x=1 (T_h_out)
+      return T_h_in - x * (T_h_in - T_h_out);
+    } else {
+      // Cold stream: enters at x=1 (T_c_in), exits at x=0 (T_c_out)
+      return T_c_in + (1 - x) * (T_c_out - T_c_in);
+    }
+  };
+
+  // Co-current: both enter at x=0
+  const temp_cocurrent = (x: number, T_h_in: number, T_c_in: number, eff: number, Cr: number, is_hot: boolean): number => {
+    const dT = T_h_in - T_c_in;
+    const T_c_out = T_c_in + eff * dT;
+    const T_h_out = T_h_in - eff * Cr * dT;
+
+    if (is_hot) {
+      return T_h_in - x * (T_h_in - T_h_out);
+    } else {
+      return T_c_in + x * (T_c_out - T_c_in);
+    }
+  };
+
+  function drawPlot(canvas: HTMLCanvasElement, temp_func: (x: number, T_h_in: number, T_c_in: number, eff: number, Cr: number, is_hot: boolean) => number,
+                     T_h_in: number, T_c_in: number, eff: number, Cr: number) {
+    const ctx = canvas.getContext('2d')!;
+    const dpr = Math.min(devicePixelRatio || 1, 2);
+    const cssW = canvas.parentElement!.clientWidth - 4;
+    const cssH = Math.round(cssW * 0.5);
+
+    canvas.width = cssW * dpr;
+    canvas.height = cssH * dpr;
+    canvas.style.height = `${cssH}px`;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.clearRect(0, 0, cssW, cssH);
+
+    const fg = getComputedStyle(canvas.closest('[data-demo]')!).color;
+
+    const padL = 42, padB = 24, padT = 10, padR = 8;
+    const X = (pos: number) => padL + pos * (cssW - padL - padR);
+    const Y = (t: number) => cssH - padB - ((t - T_c_in) / (T_h_in - T_c_in)) * (cssH - padB - padT);
+
+    // Axes
+    ctx.strokeStyle = fg;
+    ctx.globalAlpha = 0.3;
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(padL, padT);
+    ctx.lineTo(padL, cssH - padB);
+    ctx.lineTo(cssW - padR, cssH - padB);
+    ctx.stroke();
+
+    // Axis labels
+    ctx.globalAlpha = 0.55;
+    ctx.fillStyle = fg;
+    ctx.font = '9px system-ui,sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('0', X(0), cssH - padB + 12);
+    ctx.fillText('1', X(1), cssH - padB + 12);
+    ctx.textAlign = 'right';
+    const temps = [T_c_in, Math.round((T_c_in + T_h_in) / 2), T_h_in];
+    temps.forEach(t => {
+      ctx.fillText(`${t}°`, padL - 4, Y(t) + 3);
+    });
+    ctx.globalAlpha = 1;
+
+    // Hot curve
+    ctx.strokeStyle = CURVE_HOT;
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    for (let i = 0; i <= 100; i++) {
+      const x = i / 100;
+      const y = temp_func(x, T_h_in, T_c_in, eff, Cr, true);
+      if (i === 0) ctx.moveTo(X(x), Y(y));
+      else ctx.lineTo(X(x), Y(y));
+    }
+    ctx.stroke();
+
+    // Cold curve
+    ctx.strokeStyle = CURVE_COLD;
+    ctx.beginPath();
+    for (let i = 0; i <= 100; i++) {
+      const x = i / 100;
+      const y = temp_func(x, T_h_in, T_c_in, eff, Cr, false);
+      if (i === 0) ctx.moveTo(X(x), Y(y));
+      else ctx.lineTo(X(x), Y(y));
+    }
+    ctx.stroke();
+  }
+
+  function setup(root: HTMLElement) {
+    const canvases = root.querySelectorAll('canvas') as NodeListOf<HTMLCanvasElement>;
+    const canvas_counter = Array.from(canvases).find(c => c.dataset.plot === 'counter')!;
+    const canvas_cocurrent = Array.from(canvases).find(c => c.dataset.plot === 'cocurrent')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (k: string) => root.querySelector(`[data-in="${k}"]`) as HTMLInputElement;
+    const output = (k: string) => root.querySelector(`[data-out="${k}"]`) as HTMLOutputElement;
+
+    function draw() {
+      const ntu = Number(input('ntu').value);
+      const cr = Number(input('cr').value);
+      const t_h_in = Number(input('th').value);
+      const t_c_in = 20;  // Fixed
+
+      output('ntu').textContent = ntu.toFixed(1);
+      output('cr').textContent = cr.toFixed(2);
+      output('th').textContent = String(t_h_in);
+
+      const ε_c = eff_counter(ntu, cr);
+      const ε_co = eff_cocurrent(ntu, cr);
+
+      const t_h_out_c = t_h_in - ε_c * cr * (t_h_in - t_c_in);
+      const t_c_out_c = t_c_in + ε_c * (t_h_in - t_c_in);
+      const t_h_out_co = t_h_in - ε_co * cr * (t_h_in - t_c_in);
+      const t_c_out_co = t_c_in + ε_co * (t_h_in - t_c_in);
+
+      drawPlot(canvas_counter, temp_counter, t_h_in, t_c_in, ε_c, cr);
+      drawPlot(canvas_cocurrent, temp_cocurrent, t_h_in, t_c_in, ε_co, cr);
+
+      readout.innerHTML =
+        `<b>Ngược dòng:</b> ε = ${ε_c.toFixed(3)} · nóng ra ${t_h_out_c.toFixed(1)} °C / lạnh ra ${t_c_out_c.toFixed(1)} °C` +
+        ` · <b>Cùng chiều:</b> ε = ${ε_co.toFixed(3)} · nóng ra ${t_h_out_co.toFixed(1)} °C / lạnh ra ${t_c_out_co.toFixed(1)} °C`;
+    }
+
+    root.querySelectorAll('input').forEach(el => el.addEventListener('input', draw));
+    addEventListener('resize', draw);
+    draw();
+  }
+
+  document.querySelectorAll<HTMLElement>('[data-demo="heat-exchanger-eff"]').forEach(setup);
+</script>

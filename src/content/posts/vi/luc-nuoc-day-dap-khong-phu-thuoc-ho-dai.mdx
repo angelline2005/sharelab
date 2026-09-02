@@ -1,0 +1,86 @@
+---
+title: "Hồ dài 200 km hay 200 mét thì thành đập vẫn chịu đúng ngần ấy lực"
+seoTitle: "Áp lực thuỷ tĩnh lên thành đập: công thức F = ½ρgH² và điểm đặt H/3"
+description: "Mỗi mét ngang của một con đập cao 100 m chịu 49,1 triệu newton — tức 5 000 tấn nước đẩy. Trong công thức F = ½ρgH² không có chiều dài hồ, không có thể tích nước: chỉ có chiều sâu, và nó vào bình phương."
+pubDate: 2026-09-02
+tags: ["vat-ly", "chat-luu", "javascript"]
+translationId: "luc-nuoc-day-dap-khong-phu-thuoc-ho-dai"
+---
+
+import DamPressure from '../../../components/demos/DamPressure.astro';
+
+Đập Three Gorges dài 2 335 m, hồ nước phía sau trải dài 632 km — nhưng một
+mét ngang của thành đập cao 185 m chịu một lực duy nhất, con số ấy chỉ phụ
+thuộc vào chiều sâu nước, không hề biết hồ dài bao xa:
+
+<DamPressure />
+
+## Áp suất nước tăng từ 0 đến ρgH
+
+Nước có một tính chất đơn giản: nó đè lên mọi bề mặt dưới nó với một áp suất
+bằng **trọng lượng cột nước trên đó chia cho diện tích**. Ở độ sâu d mét, áp
+suất là `p(d) = ρ·g·d`, trong đó ρ = 1 000 kg/m³ (nước thường), g = 9,81 m/s²,
+d là độ sâu tính bằng mét.
+
+Ở mặt nước (d = 0): áp suất là **0**. Xuống 10 mét: **98 kPa** (bằng khí quyển).
+Xuống 50 mét: **490 kPa**. Xuống 100 mét: **981 kPa** — gấp chín lần áp suất
+không khí bình thường. Áp suất không nhảy từng bước; nó tăng từ từ, thẳng tuyến.
+
+Vì thế, áp suất trên một thành đập không phải hằng số mà là một **phân bố tam
+giác**: từ 0 ở đỉnh xuống ρgH ở đáy. Muốn tính tổng lực, không thể nhân áp suất
+với diện tích như khi áp suất đều — phải tích phân.
+
+## Tích phân phân bố tam giác cho công thức F = ½ρgH²b
+
+Nước đẩy một mặt đập thẳng đứng cao H mét, rộng b mét. Để tìm hợp lực, chia
+thành đập thành các lớp mỏng ngang cao dd. Lớp ở độ sâu d có áp suất ρgd, diện
+tích b·dd, nên lực trên nó là ρgd·b·dd. Tích phân từ 0 đến H:
+
+```
+F = ∫₀^H (ρ·g·d·b) dd = ρ·g·b·[d²/2]₀^H = ½·ρ·g·H²·b
+```
+
+Chính vì thế: **lực chỉ phụ thuộc H bình phương, không phụ thuộc chiều dài hồ
+hay thể tích nước**. Một mét ngang đập cao 100 m chịu F = ½ × 1 000 × 9,81 ×
+100² × 1 = **49,1 triệu newton**, hay **5 000 tấn** — con số này giống hệt dù
+hồ dài 200 m hay 200 km. Chiều dài hồ chỉ ảnh hưởng đến tổng thể tích nước
+(nhiều nước hơn) mà thế thôi; lực tác dụng lên từng mét ngang không hề quan
+tâm.
+
+## Điểm đặt lực không ở giữa: H/3 từ đáy
+
+Vì áp suất lớn ở dưới, không phải phân bố đều, hợp lực không tác dụng ở
+**trung điểm** của thành đập (H/2) mà ở thấp hơn. Tính chính xác: **H/3 từ
+đáy** (hay 2H/3 từ mặt nước). Với H = 100 m, lực tác dụng ở độ cao 33,3 m từ
+đáy, chứ không phải 50 m.
+
+Điều này tạo ra **mô men lật** quanh chân đập: M = F × (H/3) = ½ρgH³b. Với
+H = 100 m, mô men lật mỗi mét ngang là **1,635 tỷ newton-mét** — con số khổng
+lồ, và nó tăng với H mũ ba, không mũ hai. Để chống lật, [đập phải dày ở đáy,
+tạo khoảnh cân bằng như một con bê tông](/vi/posts/luc-day-archimedes-va-tam-bang-chin-phan-chim) để mô men phản lực của trọng lượng đập
+đủ lớn.
+
+## Tại sao người ta xây đập kiến trúc hình chữ A
+
+Đập không thể là tường thẳng đứng được. Đập thực tế có hình **chữ A** nhìn
+từ bên: mặt thượng lưu (tiếp xúc nước) dốc gần 50 độ, mặt hạ lưu dốc hẹp hơn.
+Tính toán cho thấy đập thẳng đứng cần dày **H/2,4** để ổn định (chống lật);
+đập kiến trúc A chỉ cần dày **H/3** ở đáy. Kết quả: ít bê tông hơn, chi phí
+thấp hơn — nhưng với H = 200 m, đáy đập vẫn cần dày **67 m**, hơn 20 tầng nhà.
+
+Sức nước còn làm việc khác. [Áp suất không chỉ đẩy nước từ phía trước mà còn
+lên từ bên dưới](/vi/posts/ap-suat-khi-quyen-va-tran-10-met-cua-moi-may-bom) — những hạt đất và nước xâm nhập qua nền đất,
+tạo **lực đẩy lên** (uplift) dưới thân đập. Thứ này đủ mạnh để nâng bê tông lên
+nếu không xả được — vì thế mọi đập lớn phải khoan **hệ thống lỗ thoát áp**
+dưới đáy.
+
+## Trường hợp biên: bùn silt nặng gấp 1,8 lần nước
+
+Con số 5 000 tấn là với nước sạch. Nhưng hồ có tuổi thì bùn cát bồi lắng chân
+đập — bùn silt có khối lượng riêng tới 1 800 kg/m³, **nặng gấp 1,8 lần nước**.
+Thay nước vào công thức F = ½ρgH²b với ρ = 1 800: lực bồng không lên đến **9 000
+tấn** trên mỗi mét ngang. Hồ càng già, bùn càng dày — tải lực trên đập tăng dần.
+Đó là lý do các đập lớn phải thường xuyên nạo vét đáy, vừa để lấy lại dung tích
+lưu trữ, vừa để giảm tải lực (và lực nâng) trên nền đế. Cuối cùng, chiếc đập đổ
+không phải vì lực nước đẩy — nó chổng đổ vì mô men lật, vì không chịu được những
+cú xoay trầm trọc này lâu lâu.

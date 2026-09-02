@@ -1,0 +1,197 @@
+---
+// Modal dispersion in optical fibers: Δt = L·n₁·Δ/c
+// Step-index: delay between axial ray (straight) and skew ray (zigzag)
+// Graded-index: reduces dispersion to ~Δ²/8 factor
+// Valid for L: 0.1–50 km, Δ: 0.1–2.0%
+---
+
+<figure class="demo" data-demo="bang-thong-soi-quang-va-tan-sac-mode">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Chiều dài sợi L (km) <output data-out="l"></output>
+      <input type="range" data-in="l" min="0.1" max="50" step="0.1" value="10" /></label>
+    <label>Chênh lệch chiết suất Δ (%) <output data-out="d"></output>
+      <input type="range" data-in="d" min="0.1" max="2" step="0.1" value="1" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Trên: mặt cắt dọc sợi quang với tia trục (đi thẳng) và tia phản xạ toàn
+    phần (zíc-zắc). Dưới: xung sáng bị giãn khi truyền, với đường nét chỉ
+    trần tốc độ của sợi đa mode bậc và sợi đơn mode cùng cự ly.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const c = 299792458, n1 = 1.48; // speed of light, silica core index
+  const CURVE = '#2563eb', MARK = '#dc2626', GRAY = '#f59e0b';
+
+  // Calculate modal dispersion delay (seconds)
+  const dt_stepindex = (L_km: number, delta: number) => (L_km * 1000 * n1 * delta / 100) / c;
+  const dt_gradedindex = (L_km: number, delta: number) => (L_km * 1000 * n1 * delta * delta / 10000 / 8) / c;
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const slider_l = root.querySelector('[data-in="l"]') as HTMLInputElement;
+    const slider_d = root.querySelector('[data-in="d"]') as HTMLInputElement;
+    const out_l = root.querySelector('[data-out="l"]') as HTMLOutputElement;
+    const out_d = root.querySelector('[data-out="d"]') as HTMLOutputElement;
+
+    function draw() {
+      const L = Number(slider_l.value);
+      const delta = Number(slider_d.value);
+      out_l.textContent = L.toFixed(1).replace('.', ',');
+      out_d.textContent = delta.toFixed(1).replace('.', ',');
+
+      const dt_si = dt_stepindex(L, delta);
+      const dt_gi = dt_gradedindex(L, delta);
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.65);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+
+      // ===== TOP HALF: Fiber cross-section with rays =====
+      const topH = cssH * 0.45;
+      const fiberCx = 80, fiberY = topH / 2;
+      const coreR = 22, claddingR = 35;
+
+      // Cladding
+      ctx.fillStyle = fg; ctx.globalAlpha = 0.08;
+      ctx.beginPath(); ctx.arc(fiberCx, fiberY, claddingR, 0, Math.PI * 2); ctx.fill();
+      // Core
+      ctx.fillStyle = fg; ctx.globalAlpha = 0.15;
+      ctx.beginPath(); ctx.arc(fiberCx, fiberY, coreR, 0, Math.PI * 2); ctx.fill();
+      ctx.globalAlpha = 1;
+
+      // Axial ray (straight down)
+      ctx.strokeStyle = CURVE; ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.moveTo(fiberCx, fiberY - coreR); ctx.lineTo(fiberCx, fiberY + coreR);
+      ctx.stroke();
+
+      // Skew ray (zigzag at critical angle)
+      const theta = Math.asin(Math.sqrt(delta / 100)); // simplified critical angle
+      const zigW = coreR * Math.cos(theta);
+      ctx.strokeStyle = MARK; ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(fiberCx - zigW, fiberY - coreR);
+      ctx.lineTo(fiberCx + zigW, fiberY + coreR * 0.3);
+      ctx.lineTo(fiberCx - zigW, fiberY + coreR);
+      ctx.stroke();
+
+      // Labels
+      ctx.fillStyle = fg; ctx.globalAlpha = 0.6; ctx.font = '9px system-ui,sans-serif';
+      ctx.textAlign = 'left';
+      ctx.fillText('tia trục', fiberCx + 40, fiberY - 8);
+      ctx.fillStyle = MARK;
+      ctx.fillText('tia zíc-zắc', fiberCx + 40, fiberY + 12);
+      ctx.globalAlpha = 1;
+
+      // Delay labels
+      const rayLen_axial = 2 * coreR;
+      const rayLen_skew = Math.hypot(2 * zigW, 2 * coreR);
+      const delayDiff = rayLen_skew - rayLen_axial;
+      ctx.fillStyle = fg; ctx.globalAlpha = 0.55; ctx.textAlign = 'center'; ctx.font = '8px system-ui,sans-serif';
+      ctx.fillText('L = ' + L.toFixed(1) + ' km', 80, topH - 8);
+
+      // ===== BOTTOM HALF: Pulse broadening on time axis =====
+      const bottomH = cssH - topH;
+      const botY0 = topH;
+      const padL = 50, padB = 20, padT = 10, padR = 10;
+      const plotW = cssW - padL - padR, plotH = bottomH - padB - padT;
+
+      // Time axis range: 0 to 2x max dispersion
+      const t_max = Math.max(dt_si * 2 * 1e9, 200); // ns
+      const Y = (t_ns: number) => botY0 + padT + ((t_max - t_ns) / t_max) * plotH;
+      const X = (x_norm: number) => padL + x_norm * plotW;
+
+      // Draw axis
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.3;
+      ctx.beginPath(); ctx.moveTo(padL, botY0 + padT); ctx.lineTo(padL, botY0 + padT + plotH);
+      ctx.lineTo(cssW - padR, botY0 + padT + plotH); ctx.stroke();
+
+      // Time tick labels
+      ctx.globalAlpha = 0.55; ctx.fillStyle = fg; ctx.textAlign = 'center'; ctx.font = '9px system-ui,sans-serif';
+      const timeSteps = 4;
+      for (let i = 0; i <= timeSteps; i++) {
+        const t_tick = (t_max * i) / timeSteps;
+        const y = Y(t_tick);
+        ctx.fillText(t_tick.toFixed(0) + ' ns', padL - 18, y + 3);
+      }
+
+      // Input pulse (narrow)
+      const inputW = 12;
+      ctx.fillStyle = CURVE; ctx.globalAlpha = 0.3;
+      ctx.fillRect(X(0.15) - inputW / 2, Y(5) - 15, inputW, 30);
+
+      // Output pulse (broadened step-index)
+      const outputW_si = Math.max(20, dt_si * 1e9 * (plotW / t_max));
+      ctx.fillStyle = CURVE; ctx.globalAlpha = 0.25;
+      ctx.beginPath();
+      ctx.moveTo(X(0.5), Y(dt_si * 1e9));
+      ctx.lineTo(X(0.5) + outputW_si / 2, Y(0));
+      ctx.lineTo(X(0.5) + outputW_si / 2, Y(dt_si * 1e9));
+      ctx.lineTo(X(0.5) - outputW_si / 2, Y(dt_si * 1e9));
+      ctx.closePath();
+      ctx.fill();
+
+      // Output pulse (broadened graded-index)
+      const outputW_gi = Math.max(5, dt_gi * 1e9 * (plotW / t_max));
+      ctx.fillStyle = GRAY; ctx.globalAlpha = 0.25;
+      ctx.beginPath();
+      ctx.moveTo(X(0.5), Y(dt_gi * 1e9));
+      ctx.lineTo(X(0.5) + outputW_gi / 2, Y(0));
+      ctx.lineTo(X(0.5) + outputW_gi / 2, Y(dt_gi * 1e9));
+      ctx.lineTo(X(0.5) - outputW_gi / 2, Y(dt_gi * 1e9));
+      ctx.closePath();
+      ctx.fill();
+
+      // Bit width line for step-index
+      const bitRate = 1 / (2 * dt_si) / 1e6; // Mbps
+      const bitWidth = 1 / bitRate * 1e9 * (plotW / t_max); // pixels
+      ctx.strokeStyle = CURVE; ctx.globalAlpha = 0.4; ctx.lineWidth = 1; ctx.setLineDash([2, 2]);
+      ctx.beginPath(); ctx.moveTo(X(0.5) + bitWidth, Y(t_max)); ctx.lineTo(X(0.5) + bitWidth, Y(0)); ctx.stroke();
+      ctx.globalAlpha = 0.3; ctx.textAlign = 'center';
+      ctx.fillText('1 bit', X(0.5) + bitWidth / 2, Y(t_max - 10));
+      ctx.setLineDash([]);
+
+      // Legend
+      ctx.globalAlpha = 0.6; ctx.textAlign = 'left'; ctx.font = '8px system-ui,sans-serif';
+      ctx.fillStyle = CURVE;
+      ctx.fillText('Đa mode bậc: ' + (dt_si * 1e9).toFixed(1) + ' ns', X(0.1), Y(t_max - 30));
+      ctx.fillStyle = GRAY;
+      ctx.fillText('Đa mode biến thiên: ' + (dt_gi * 1e9).toFixed(2) + ' ns', X(0.1), Y(t_max - 20));
+
+      // Readout
+      const bitRate_si = 1 / (2 * dt_si) / 1e6;
+      const bitRate_gi = 1 / (2 * dt_gi) / 1e6;
+      const bitRate_smf = 29000; // Gbps → Mbps
+      readout.innerHTML =
+        `Δ = ${delta.toFixed(1).replace('.', ',')}% · L = ${L.toFixed(1).replace('.', ',')} km → ` +
+        `giãn đa mode bậc: <b>${(dt_si * 1e9).toFixed(1).replace('.', ',')} ns</b> (${Math.round(bitRate_si)} Mbps) · ` +
+        `đa mode biến thiên: ${(dt_gi * 1e9).toFixed(2).replace('.', ',')} ns (${Math.round(bitRate_gi)} Mbps) · ` +
+        `sợi đơn mode: ~29 Gbps`;
+    }
+
+    slider_l.addEventListener('input', draw);
+    slider_d.addEventListener('input', draw);
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="bang-thong-soi-quang-va-tan-sac-mode"]').forEach(setup);
+</script>

@@ -1,0 +1,36 @@
+---
+title: "Vặn quạt xuống một nấc: mất 20% gió, cắt 49% điện"
+seoTitle: "Định luật đồng dạng quạt bơm: công suất tỉ lệ luỹ thừa ba tốc độ"
+description: "Lưu lượng tỉ lệ n, áp tỉ lệ n², nhưng công suất tỉ lệ n³ — nên giảm tốc 20% là tiết kiệm 48,8% điện. Quạt trần 75 W chạy 10 giờ mỗi ngày tốn 56 000 đồng một tháng; hạ một nấc còn 28 800."
+pubDate: 2026-09-02
+tags: ["vat-ly", "chat-luu", "dien-hoc", "javascript"]
+translationId: "quat-tran-giam-toc-mot-nac-cat-nua-dien"
+---
+
+import FanPowerCube from '../../../components/demos/FanPowerCube.astro';
+
+Vặn nút hộp số quạt trần xuống một nấc — mất ngay 20% gió. Nhưng vì sao hóa đơn điện lại rơi gần nửa? Không phải quạt chế độ đó tốn kém, mà **công suất bơm chất lưu tỉ lệ lập phương tốc độ**, một luật thiết yếu của mọi quạt và bơm:
+
+<FanPowerCube />
+
+## Lưu lượng, áp suất, công suất — ba anh em mất cân bằng
+
+Tốc độ quạt là bão, còn ba đại lượng chảy (lưu lượng, áp suất, công suất) là tuyết lở ba nơi khác nhau. **Lưu lượng Q tỉ lệ thuận với tốc độ**: quạt chạy nửa tốc độ thì vẫn gửi đi nửa gió — không bí ẩn ở đây, chỉ là phần tử chất lưu được đẩy ít lần hơn nên cộng dồn ít hơn.
+
+**Áp suất Δp tỉ lệ bình phương tốc độ** — đây bắt đầu lạc. Mỗi hạt nước được đẩy bởi cánh quay lẽ ra phải tăng tốc từ 0 lên v nào đó. Năng lượng để tăng tốc từ 0 lên v tỉ lệ v², vì thế áp suất — lực đạp một hạt — cũng tỉ lệ v². Tốc độ giảm nửa, áp suất giảm **một phần tư** — quạt trần hạ một nấc từ 100% xuống 80%, áp lập tức từ 100% rơi còn **64%**.
+
+**Công suất P là tích của lưu lượng và áp suất**: bơm Q lít mỗi giây chống lại Δp pascal nghĩa là mỗi giây bạn phải cung cấp `Q × Δp` joule. Vậy `P ∝ Q × Δp ∝ n × n² = n³` — công suất tỉ lệ **lập phương tốc độ**. Giảm từ 100% xuống 80%? Công suất từ 100% rơi còn `0,8³ = 0,512`, tức **51,2%**, tiết kiệm **48,8%**. Quạt 75 W chạy 10 giờ mỗi ngày bình thường tốn 22,5 kWh/tháng × 2 500 đồng/kWh ≈ **56 000 đồng**; hạ một nấc còn **28 800 đồng** — chênh lệch 27 200 đồng mỗi tháng, hay hơn 300 000 đồng mỗi năm.
+
+## Luật chơi này là của chất lưu, không phải động cơ
+
+Dung tích hộp số quạt — kiểu điện trở hay tụ giảm áp — không quyết định được cuộc chơi ấy. [Định luật Bernoulli](/vi/posts/nguyen-ly-bernoulli-nhanh-hon-la-loang-ap-hon) và [số Reynolds](/vi/posts/so-reynolds-vi-khuan-boi-trong-mat-ong) là những quy tắc của chất lưu, không của thiết bị điều khiển. Một hộp số điện trở AC bình thường — **thêm điện trở nối tiếp** — giảm được áp dòng điện tới quạt, nhưng phần điện năng bị "cắt đi" vẫn đốt thành nhiệt bên trong hộp số. Kết quả: công suất quạt giảm theo đúng luật n³, nhưng toàn bộ điện từ nguồn cung cấp không giảm bao nhiêu — chỉ đốt ở hai chỗ thay vì một. Động cơ AC thường kiểu như vậy, nên **tiền điện gần như không thay đổi**.
+
+Luật lập phương chỉ "ghi" khi động cơ có khả năng **điều chỉnh công suất yêu cầu** theo tốc độ — động cơ DC có bộ điều khiển PWM, hoặc động cơ AC inverter với VFD (biến tần). Những động cơ ấy **không đốt điện thừa** — chúng thực sự mà tiêu thụ ít năng lượng khi tốc độ giảm. Đó là nơi duy nhất bạn thấy được 48,8% tiết kiệm ấy trên hóa đơn.
+
+## Máy bay và những chỗ khác luật n³ là vua
+
+Đằng sau luật này là bảo toàn năng lượng: năng lượng mỗi giây bạn bơm vào chất lưu bằng **lực × vận tốc**, hay **áp suất × lưu lượng**. Vì thế bất kỳ hệ thống nào sử dụng lưu lượng và áp suất — bơm nước, quạt gió, động cơ phản lực — đều bị chi phối bởi lập phương ấy. Chiếc máy bay tăng công suất động cơ gấp đôi không phải để bay gấp đôi nhanh (vận tốc chỉ tăng căn bậc hai), mà vì **kéo máy bay nặng qua không khí đặc cần áp suất và lưu lượng gấp đôi**, nhân lại là lập phương. Đó cũng là lý do tại sao **tàu bay chế độ đẩy toàn lực** tiêu hao xăng nhanh không tưởng — họ không chỉ tăng tốc mà đang chống lại luật n³.
+
+## Trường hợp biên: dưới một ngưỡng, gió không còn tới bạn
+
+Luật lập phương là điều kiện lý thuyết của một chất lưu lý tưởng chảy qua máy quay hoàn hảo. Thực tế thêm hai điều kiện biên: thứ nhất, **động cơ DC/inverter thôi** — nếu dùng hộp số điện trở hoặc tụ, tiền điện chỉ giảm tới đâu là tuỳ thiết bị, chứ không phải tuỳ công thức. Thứ hai, dưới một tốc độ tới hạn — khoảng **50–60% định mức** — luồng gió từ quạt không còn đủ mạnh để **chinh phục khoảng cách** từ quạt tới chỗ bạn ngồi. Giảm tốc quá thấp, bạn không thấy gió nữa, tiết kiệm lại thành vô nghĩa. Đó là ranh giới thực tế: không phải công thức phá vỡ, mà **điều kiện vật lý thay đổi** — từ trường hợp lý thuyết bước sang thế giới cần vận tốc tối thiểu.

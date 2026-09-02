@@ -1,0 +1,157 @@
+---
+// Water caught while running through rain: V = (I/u)·d·(A_ngực + A_đầu·u/v)
+// I = rainfall intensity (mm/h)
+// u = rain falling speed (m/s)
+// d = distance traveled (m) — fixed at 500 m for physical intuition
+// A_ngực = chest cross-section = 0.50 m²
+// A_đầu = head cross-section = 0.20 m²
+// v = running speed (m/s)
+---
+
+<figure class="demo" data-demo="di-hay-chay-duoi-mua-ai-uot-hon">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Tốc độ di chuyển (m/s) <output data-out="v"></output>
+      <input type="range" data-in="v" min="0.5" max="8" step="0.1" value="1.4" /></label>
+    <label>Cường độ mưa (mm/h) <output data-out="i"></output>
+      <input type="range" data-in="i" min="1" max="40" step="1" value="5" /></label>
+    <label>Tốc độ rơi hạt mưa u (m/s) <output data-out="u"></output>
+      <input type="range" data-in="u" min="3" max="9" step="0.5" value="6" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Nước bạn hứng gồm hai phần: phần rơi lên đầu (tỉ lệ với thời gian ở ngoài
+    trời) và phần bạn tự đâm vào bằng ngực (gần như không đổi). Chạy nhanh gấp
+    ba (từ 1,4 lên 4 m/s) chỉ bớt ướt 41%, vì phần ngực chiếm ưu thế.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const CURVE = '#2563eb', MARK = '#dc2626', ASYMPTOTE = '#f59e0b';
+  const d = 500; // distance in meters
+  const A_chest = 0.50, A_head = 0.20;
+
+  // V in ml, with I in mm/h, u and v in m/s, d in m
+  const V = (I: number, u: number, v: number) => {
+    const I_mh = I * 1e-3; // mm/h to m/h
+    const u_mh = u * 3600; // m/s to m/h
+    const v_mh = v * 3600; // m/s to m/h
+    return (I_mh / u_mh) * d * (A_chest + A_head * u_mh / v_mh) * 1e6; // m³ to ml
+  };
+
+  const V_chest = (I: number, u: number) => {
+    const I_mh = I * 1e-3;
+    const u_mh = u * 3600;
+    return (I_mh / u_mh) * d * A_chest * 1e6;
+  };
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (k: string) => root.querySelector(`[data-in="${k}"]`) as HTMLInputElement;
+    const output = (k: string) => root.querySelector(`[data-out="${k}"]`) as HTMLOutputElement;
+
+    function draw() {
+      const v = Number(input('v').value), I = Number(input('i').value), u = Number(input('u').value);
+      output('v').textContent = v.toFixed(1).replace('.', ',');
+      output('i').textContent = String(I);
+      output('u').textContent = u.toFixed(1).replace('.', ',');
+
+      const V_current = V(I, u, v);
+      const V_asym = V_chest(I, u);
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.45);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+
+      const padL = 44, padB = 26, padT = 12, padR = 10;
+      const vMin = 0.5, vMax = 8;
+      const vRange = vMax - vMin;
+
+      // Find max V for scaling
+      const V_max = V(I, u, vMin);
+      const Vmax = Math.max(V_max, V_asym) * 1.15;
+
+      const X = (vv: number) => padL + ((vv - vMin) / vRange) * (cssW - padL - padR);
+      const Y = (vv: number) => cssH - padB - (vv / Vmax) * (cssH - padB - padT);
+
+      // Axes
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.3;
+      ctx.beginPath(); ctx.moveTo(padL, padT); ctx.lineTo(padL, cssH - padB); ctx.lineTo(cssW - padR, cssH - padB); ctx.stroke();
+      ctx.globalAlpha = 0.55; ctx.fillStyle = fg; ctx.font = '10px system-ui,sans-serif';
+
+      // X-axis labels
+      ctx.textAlign = 'center';
+      for (const vv of [1, 2, 3, 4, 5, 6, 7]) ctx.fillText(`${vv}`, X(vv), cssH - padB + 14);
+
+      // Y-axis labels
+      ctx.textAlign = 'right';
+      const V_step = Math.ceil(Vmax / 80) * 20;
+      for (let VV = V_step; VV <= Vmax; VV += V_step) ctx.fillText(`${VV}`, padL - 4, Y(VV) + 3);
+
+      // Axis titles
+      ctx.textAlign = 'center'; ctx.globalAlpha = 0.4;
+      ctx.fillText('tốc độ (m/s)', cssW / 2, cssH - 2);
+      ctx.textAlign = 'right';
+      ctx.fillText('ml', padL - 25, padT + 5);
+
+      ctx.globalAlpha = 1;
+
+      // Asymptote line (dashed)
+      ctx.strokeStyle = ASYMPTOTE; ctx.lineWidth = 1.5; ctx.setLineDash([3, 3]);
+      ctx.beginPath(); ctx.moveTo(padL, Y(V_asym)); ctx.lineTo(cssW - padR, Y(V_asym)); ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillStyle = ASYMPTOTE; ctx.globalAlpha = 0.6;
+      ctx.fillText('trần lý thuyết', cssW - padR - 50, Y(V_asym) - 5);
+      ctx.globalAlpha = 1;
+
+      // Curve
+      ctx.strokeStyle = CURVE; ctx.lineWidth = 2.5; ctx.beginPath();
+      for (let i = 0; i <= 160; i++) {
+        const vv = vMin + (vRange * i) / 160;
+        const yy = Y(V(I, u, vv));
+        i ? ctx.lineTo(X(vv), yy) : ctx.moveTo(X(vv), yy);
+      }
+      ctx.stroke(); ctx.lineWidth = 1;
+
+      // Current point marker
+      ctx.fillStyle = MARK;
+      ctx.beginPath(); ctx.arc(X(v), Y(V_current), 6, 0, Math.PI * 2); ctx.fill();
+
+      // Readout with examples
+      const t_walk = (d / 1.4 / 3600).toFixed(3); // hours
+      const t_run = (d / 4.0 / 3600).toFixed(3);
+      const V_walk = V(I, u, 1.4);
+      const V_run = V(I, u, 4.0);
+      const reduction_pct = ((V_walk - V_run) / V_walk * 100).toFixed(0);
+      const asym_pct = ((V_walk - V_asym) / V_walk * 100).toFixed(0);
+
+      readout.innerHTML =
+        `Mưa ${I} mm/h, quãng ${d} m, ngực ${A_chest.toFixed(2).replace('.', ',')} m², đầu ${A_head.toFixed(2).replace('.', ',')} m², hạt mưa ${u.toFixed(1).replace('.', ',')} m/s · ` +
+        `<b>${v.toFixed(1).replace('.', ',')} m/s → ${V_current.toFixed(0)} ml</b> · ` +
+        `đi 1,4 m/s: ${V_walk.toFixed(0)} ml | chạy 4 m/s: ${V_run.toFixed(0)} ml (bớt ${reduction_pct}%) · ` +
+        `trần ${V_asym.toFixed(0)} ml (bớt ${asym_pct}% so với đi bộ)`;
+    }
+
+    root.querySelectorAll('input').forEach((el) => el.addEventListener('input', draw));
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="di-hay-chay-duoi-mua-ai-uot-hon"]').forEach(setup);
+</script>

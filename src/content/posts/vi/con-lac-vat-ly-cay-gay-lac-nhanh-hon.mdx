@@ -1,0 +1,90 @@
+---
+title: "Cây gậy 1 mét lắc nhanh hơn con lắc dây 1 mét — 18%"
+seoTitle: "Con lắc vật lý: chu kỳ của thanh cứng và vị trí trục treo tốt nhất"
+description: "Treo một cây gậy 1 m ở đầu, nó lắc hết một chu kỳ trong 1,64 giây — nhanh hơn con lắc dây cùng chiều dài (2,01 giây) đúng 18%. Vì gậy chỉ 'dài' bằng 2/3 chính nó, và nếu dời trục treo về cách tâm 28,9 cm thì chu kỳ chạm đáy 1,52 giây."
+pubDate: 2026-09-02
+tags: ["vat-ly", "dao-dong", "co-hoc", "javascript"]
+translationId: "con-lac-vat-ly-cay-gay-lac-nhanh-hon"
+---
+
+import PhysicalPendulum from '../../../components/demos/PhysicalPendulum.astro';
+
+Treo một cây gậy 1 mét vào dây sợi, ở đúng đầu gậy, rồi thả nó lắc.
+Lắc nhanh hơn bạn tưởng. Mất **1,638 giây** mỗi chu kỳ — nhanh hơn con lắc dây
+dài 1 mét (2,006 giây) đúng **18%**. Gậy không chỉ là một vật nặng treo ở
+một vị trí: mọi phần của nó dao động với tốc độ khác nhau, và tác dụng tổng
+hợp của chúng là làm gậy "short" lại:
+
+<PhysicalPendulum />
+
+## Cây gậy chỉ "dài" bằng 2/3 chính nó
+
+Công thức con lắc đơn T = 2π√(L/g) chứa một giả định ngầm: toàn bộ khối lượng
+tập trung ở một chấm điểm cách trục một khoảng L. Thực tế của cây gậy khác
+hơn rất nhiều. Mỗi phần nhỏ ở khoảng cách r từ trục có góc lắc θ, nên gia tốc
+bằng r·θ" — tất cả các phần ấy chia sẻ cùng một θ" nhưng đóng góp lực phục
+hồi khác nhau tùy vị trí của chúng.
+
+Kết quả (lấy từ [phương trình động lực học quay](/vi/posts/con-quay-hoi-chuyen-vi-sao-khong-chiu-do))
+là một **thay đổi ngoạc nhặc** trong công thức: thay vì L, bạn dùng `L_eq = (L²/12 + d²) / d`.
+Với L = 1 m treo ở đầu (d = 0,5 m), thì:
+
+```
+L_eq = (1²/12 + 0,5²) / 0,5 = (0,0833 + 0,25) / 0,5 = 0,667 m
+```
+
+Con lắc dây **0,667 m** và con lắc dây 1 m không cùng chu kỳ —
+đúng lý do gậy nhanh hơn: nó hành xử như con lắc dây rút ngắn tới **chỉ 2/3 chiều dài**.
+Khối lượng biến mất khỏi phương trình (cả gậy nặng hay nhẹ đều có T như nhau) —
+chỉ hình học và vị trí trục quan trọng.
+
+## Trục treo ở đâu là nhanh nhất?
+
+Nếu bạn được phép dời trục treo dọc gậy thay vì cứ ở đầu, bạn có thể tìm vị
+trí làm chu kỳ nhỏ nhất. Đó là câu hỏi của tối ưu hóa: **d = L/√12 ≈ 0,289·L**.
+Với L = 1 m, điểm tối ưu là **28,9 cm** từ tâm gậy. Treo gậy ở chỗ ấy, chu
+kỳ rơi xuống **1,524 giây** — nhanh hơn cả vị trí ở đầu (1,638 s) thêm 7%.
+
+Thực hiện nó thế nào? Có một lý do sâu xa: mô-men quán tính của gậy xung
+quanh một trục không cách tâm (trục song song) tính bằng công thức Steiner.
+Khi trục gần tâm, mô-men I bé, nhưng **d cũng bé** — lực hồi phục giảm tỉ
+lệ với d (vì chỉ phần gậy từ trục xuống tâm tạo lực hồi phục lệch). Hai cái
+này đấu với nhau, và **tại d = L/√12 chúng cân bằng tối ưu** — đây là chút
+toán học gói trong một con số.
+
+## Chu kỳ phụ thuộc khoảng cách từ trục tới tâm
+
+Công thức hoàn chỉnh cho con lắc vật lý:
+
+```
+T = 2π·√((L²/12 + d²) / (g·d))
+```
+
+Đây không phải con lắc đơn tuyến tính theo L — nó phức tạp hơn. Bạn thấy trong
+demo: khi d thay đổi, T vẽ ra một **đường cong có một cái máng sâu** ở mỗi
+chiều dài L. Cái máng ấy chính là vị trí tối ưu mà chúng ta vừa nói. Ở hai
+bên cái máng, chu kỳ tăng lên dần — treo gặy quá gần tâm thì T rất lâu (vì
+lực hồi phục suy yếu), treo quá xa cũng làm T dài (vì mô-men quán tính lớn).
+
+Có một tính chất thú vị: **với mỗi chu kỳ T, luôn tồn tại đúng hai vị trí
+treo** cho cùng T ấy — một ở gần tâm, một ở gần đầu. Đó là lý do [Kater phát
+minh ra con lắc Kater](/vi/posts/chu-ky-con-lac-don-co-that-su-khong-phu-thuoc-bien-do)
+để đo gia tốc trọng lực g tới độ chính xác kỷ lục: dùng tính chất hai vị trí
+ấy, bạn có thể tính g mà không cần phải biết khối lượng hay mô-men quán tính
+chính xác.
+
+## Trường hợp biên: khi trục lại tâm
+
+Thử đẩy d về phía 0 — tức là treo gậy **đúng tại tâm của nó**. Công thức
+T → ∞ (vô hạn). Lý do vật lý: khi trục nằm tại tâm khối lượng, **gậy không
+còn lực hồi phục** nào cả — không sao nó không đẩy nó ra khỏi cân bằng đứng.
+Nếu thả lệch 1 độ ở trục tâm, nó nằm yên lệch 1 độ mãi — nó không dao động.
+Đó là ranh giới vật lý nơi con lắc vật lý suy biến thành một vật không-dao-động.
+
+Ở đầu kia, khi d → L/2 (trục tới mép gậy), mô-men quán tính bội số với L²
+vẫn quá lớn để tránh khỏi, và T lại tăng dần — nhưng không bao giờ vô hạn
+như ở tâm. Công thức con lắc vật lý ẩn chứa tất cả ba kiểu mà gợi nhớ lại
+[dao động tắt dần](/vi/posts/dao-dong-tat-dan-diem-vang-cua-giam-xoc): quá
+yếu (d nhỏ: T rất lâu, hay nói khác đi là lực hồi phục quá yếu), quá mạnh (d
+lớn: mô-men quán tính thắng), và giữa chúng là một vùng vàng nơi gậy lắc nhanh
+nhất.

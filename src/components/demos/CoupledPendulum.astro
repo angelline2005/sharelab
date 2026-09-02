@@ -1,0 +1,174 @@
+---
+// Coupled pendulums with energy exchange via connecting spring.
+// ω₁ = √(g/L), ω₂ = √(g/L + 2k/m)
+// Amplitude envelopes: A(t) = A₀|cos(Δω·t/2)|, B(t) = A₀|sin(Δω·t/2)|
+// Energy exchange time: t_exchange = π/Δω
+// Valid for small oscillations; spring must be weak (k << mg/L).
+---
+
+<figure class="demo" data-demo="hai-con-lac-noi-lo-xo-doi-nang-luong">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Độ cứng lò xo k (N/m) <output data-out="k"></output>
+      <input type="range" data-in="k" min="0.05" max="3" step="0.05" value="0.5" /></label>
+    <label>Khối lượng mỗi quả m (kg) <output data-out="m"></output>
+      <input type="range" data-in="m" min="0.05" max="1" step="0.05" value="0.2" /></label>
+    <label>Chiều dài dây L (m) <output data-out="L"></output>
+      <input type="range" data-in="L" min="0.3" max="2" step="0.1" value="1" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Hai con lắc có khối lượng bằng nhau nối bằng lò xo yếu: chúng dao động
+    ở hai tần số khác nhau. Năng lượng trao đổi lặp đi lặp lại giữa hai quả
+    theo chu kỳ phách (beat period). Khi tần số càng gần nhau, thời gian
+    trao đổi năng lượng càng lâu; nếu lò xo quá cứng, năng lượng khó chuyển
+    nhanh.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const g = 9.8, CURVE_A = '#2563eb', CURVE_B = '#f59e0b', MARK = '#dc2626';
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (k: string) => root.querySelector(`[data-in="${k}"]`) as HTMLInputElement;
+    const output = (k: string) => root.querySelector(`[data-out="${k}"]`) as HTMLOutputElement;
+
+    function draw() {
+      const L = Number(input('L').value);
+      const m = Number(input('m').value);
+      const k = Number(input('k').value);
+
+      output('k').textContent = k.toFixed(2).replace('.', ',');
+      output('m').textContent = m.toFixed(2).replace('.', ',');
+      output('L').textContent = L.toFixed(1).replace('.', ',');
+
+      const w1 = Math.sqrt(g / L);
+      const w2 = Math.sqrt(g / L + 2 * k / m);
+      const dw = w2 - w1;
+      const t_exchange = Math.PI / dw;
+      const beat_period = 2 * Math.PI / dw;
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.5);
+      canvas.width = cssW * dpr;
+      canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+
+      const padL = 46, padB = 30, padT = 20, padR = 10;
+      const tMax = beat_period * 1.1;
+      const X = (t: number) => padL + (t / tMax) * (cssW - padL - padR);
+      const Y = (amp: number) => cssH - padB - amp * (cssH - padB - padT) * 0.9;
+
+      // Axes
+      ctx.strokeStyle = fg;
+      ctx.globalAlpha = 0.3;
+      ctx.beginPath();
+      ctx.moveTo(padL, padT);
+      ctx.lineTo(padL, cssH - padB);
+      ctx.lineTo(cssW - padR, cssH - padB);
+      ctx.stroke();
+
+      // Time grid and labels
+      ctx.globalAlpha = 0.55;
+      ctx.fillStyle = fg;
+      ctx.font = '10px system-ui,sans-serif';
+      ctx.textAlign = 'center';
+      const tSteps = [2, 4, 6, 8, 10];
+      for (const tt of tSteps) {
+        if (tt <= tMax) {
+          ctx.fillText(`${tt} s`, X(tt), cssH - padB + 14);
+        }
+      }
+      ctx.textAlign = 'right';
+      for (const amp of [0.25, 0.5, 0.75, 1]) {
+        ctx.fillText(amp === 1 ? 'A₀' : (amp * 100).toFixed(0) + '%', padL - 4, Y(amp) + 3);
+      }
+      ctx.globalAlpha = 1;
+
+      // Envelope curve A(t) = |cos(Δω·t/2)|
+      ctx.strokeStyle = CURVE_A;
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      for (let i = 0; i <= 300; i++) {
+        const t = (tMax * i) / 300;
+        const amp = Math.abs(Math.cos((dw * t) / 2));
+        const y = Y(amp);
+        i ? ctx.lineTo(X(t), y) : ctx.moveTo(X(t), y);
+      }
+      ctx.stroke();
+
+      // Envelope curve B(t) = |sin(Δω·t/2)|
+      ctx.strokeStyle = CURVE_B;
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      for (let i = 0; i <= 300; i++) {
+        const t = (tMax * i) / 300;
+        const amp = Math.abs(Math.sin((dw * t) / 2));
+        const y = Y(amp);
+        i ? ctx.lineTo(X(t), y) : ctx.moveTo(X(t), y);
+      }
+      ctx.stroke();
+      ctx.lineWidth = 1;
+
+      // Mark energy exchange times (when one amplitude is zero)
+      ctx.globalAlpha = 0.4;
+      ctx.strokeStyle = MARK;
+      for (let j = 0; j <= 2; j++) {
+        const t_mark = (j * t_exchange);
+        if (t_mark <= tMax) {
+          ctx.beginPath();
+          ctx.moveTo(X(t_mark), padT);
+          ctx.lineTo(X(t_mark), cssH - padB);
+          ctx.stroke();
+        }
+      }
+      ctx.globalAlpha = 1;
+
+      // Legend (just text)
+      ctx.fillStyle = CURVE_A;
+      ctx.beginPath();
+      ctx.arc(padL + 10, padT + 8, 3, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = fg;
+      ctx.textAlign = 'left';
+      ctx.font = '9px system-ui,sans-serif';
+      ctx.fillText('quả A', padL + 18, padT + 11);
+
+      ctx.fillStyle = CURVE_B;
+      ctx.beginPath();
+      ctx.arc(padL + 90, padT + 8, 3, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = fg;
+      ctx.fillText('quả B', padL + 98, padT + 11);
+
+      readout.innerHTML =
+        `ω₁ = <b>${w1.toFixed(3).replace('.', ',')} rad/s</b> · ` +
+        `ω₂ = <b>${w2.toFixed(3).replace('.', ',')} rad/s</b> · ` +
+        `năng lượng chuyển trọn vẹn sau <b>${t_exchange.toFixed(2).replace('.', ',')} s</b> · ` +
+        `chu kỳ phách <b>${beat_period.toFixed(2).replace('.', ',')} s</b>`;
+    }
+
+    root.querySelectorAll('input').forEach((el) => el.addEventListener('input', draw));
+    addEventListener('resize', draw);
+    draw();
+  }
+
+  document.querySelectorAll<HTMLElement>('[data-demo="hai-con-lac-noi-lo-xo-doi-nang-luong"]').forEach(setup);
+</script>

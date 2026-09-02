@@ -1,0 +1,85 @@
+---
+title: "2,828: con số đóng đinh vào niềm tin rằng thế giới có sẵn câu trả lời"
+seoTitle: "Bất đẳng thức Bell và CHSH: rối lượng tử được kiểm chứng thế nào"
+description: "Nếu mỗi photon mang sẵn câu trả lời cho mọi góc đo, một tổng gọi là S không thể vượt quá 2 — đó là toán học thuần tuý, không cần vật lý. Thí nghiệm đo được 2,828, và ở góc 22,5° hai máy dò trùng nhau 85,4% trong khi mọi mô hình 'có sẵn đáp án' bị chặn ở 75%."
+pubDate: 2026-09-02
+tags: ["vat-ly", "luong-tu", "quang-hoc", "javascript"]
+translationId: "bat-dang-thuc-bell-va-con-so-2-828"
+---
+
+import BellCHSH from '../../../components/demos/BellCHSH.astro';
+
+Tưởng tượng một cặp fotôn rời khỏi cùng một sự kiện. Bạn đo fotôn này ở góc
+0°, bạn kia đo ở góc 22,5° — hai máy dò cách nhau tới 10 km, đủ nhanh đến
+không thể nào liên lạc được. Kết quả trùng nhau 85,4% số lần. Nhưng nếu mỗi
+fotôn mang sẵn câu trả lời cho mọi góc, thì bằng toán học thuần tuý, tỉ lệ ấy
+không bao giờ được vượt quá 75%. (Cách [đo được một fotôn riêng lẻ](/vi/posts/mat-nguoi-thay-duoc-bao-nhieu-photon) có một cách riêng.)
+
+<BellCHSH />
+
+## Hàm tương quan E(θ) = −cos(2θ)
+
+Hai fotôn rối tuân theo hàm duy nhất. Khi máy dò thứ nhất xoay góc θ so với
+máy dò thứ hai, **tỉ lệ trùng khớp** tuân theo:
+
+```
+E(θ) = −cos(2θ)
+```
+
+Con số này dao động từ −1 đến +1. Ở θ = 0° (máy dò song song), nó bằng −1:
+fotôn trùng lặp hoàn toàn. Ở θ = 45° nó bằng 0. Đó là dấu hiệu sự rối — hai
+hạt hành động **bảng hội đấu** không thể giải thích bằng lệnh riêng cài sẵn
+trong mỗi cái.
+
+Mô hình "có sẵn câu trả lời" nói: mỗi fotôn sinh ra mang bộ giá trị đã định
+("nếu đo ở 0° thì lên, ở 22,5° thì xuống, ở 45° thì lên") — máy dò chỉ đọc nó.
+Lý thuyết ẩn cục bộ. Thế toán học nói gì?
+
+## Bất đẳng thức Bell
+
+John Bell 1964: chọn bốn góc (A: 0° và 45°; B: 22,5° và 67,5°), cộng bốn giá
+trị E:
+
+```
+S = |E(0°,22,5°) − E(0°,67,5°) + E(45°,22,5°) + E(45°,67,5°)|
+```
+
+Dưới lý thuyết ẩn cục bộ, **S không bao giờ vượt quá 2** — toán học thuần tuý.
+Lượng tử dự đoán **2√2 = 2,828** — phá vỡ 41%.
+
+Thí nghiệm Aspect 1982 tìm S = 2,70 ± 0,05, vượt 2. Kể từ đó mọi thí nghiệm với
+fotôn rối đều cho kết quả quanh 2,7. Thực tế không bao giờ chạm 2,828 (thực hiện
+hoàn hảo bất khả năng), nhưng đủ để kết luận: **rối lượng tử là bắt buộc, không
+thể ẩn nào mà cục bộ được**.
+
+## 85,4% ở góc 22,5°
+
+Ở chính góc 22,5° giữa hai máy dò, lượng tử dự đoán tỉ lệ trùng **85,4%**.
+Nếu fotôn thực sự mang sẵn câu trả lời từ lúc sinh ra, dữ liệu ấy sẽ cố định —
+toán học bảo bạn: không thể quá 75% đồng ý ở góc 22,5° nếu tuân luật cục bộ.
+
+Thí nghiệm chính xác nhất (Aspect 1982, 2022) đo được chính xác **85,4%** —
+lượng tử dự đoán, không phải 75% của biến ẩn. Cú đấm vào nguyên tắc: không thể
+xây "câu trả lời tạo sẵn" nào mà vẫn cục bộ (thông tin không siêu tốc độ) mà lại
+dự đoán 85,4%.
+
+## Tại sao phá vỡ trực giác
+
+Trực giác: nếu biết trước mọi kết quả đo, các dữ liệu ấy tuân ràng buộc hình
+học tự hạn chế. Lượng tử nói không. Một fotôn không "biết" sẽ đo ở góc nào tới
+khi máy dò kích hoạt. Nó không mang dữ liệu hoàn chỉnh từ trước. Trạng thái của
+nó là **chồng chất** — mọi khả năng lẫn lộn — cho đến phút đo. Khi đó sập vào
+kết quả: không phải lệnh bí mật từng ghi sẵn, mà cấu trúc toán học của lượng
+tử.
+
+## Trường hợp biên: lỗ hổng phát hiện
+
+Vượt trần Bell **không phải tín hiệu siêu tốc độ**. Xác suất riêng mỗi bên vẫn
+50/50 bất kể bên kia xoay góc nào — chỉ **tương quan** vượt cổ điển.
+
+Lỗ hổng thực thụ: hiệu suất máy dò. Máy dò chỉ bắt 60% fotôn, phần 40% "mất"
+lại là ngẫu nhiên. Hiệu suất 70% sẽ thấy S tụt dưới 2 dù bản chất rối. Một lối
+thoát: "Fotôn bị mất đều là 'ngoại lệ' không vi phạm Bell nếu được đo". Lỗ hổng
+này tồn tại từ Bell tới 2015, khi ba nhóm (Delft, Vienna, Boulder) đồng thời bịt
+bằng máy dò hiệu quả cực cao. Vì thế Nobel Vật lý 2022 trao Aspect, Clauser,
+Zeilinger muộn bốn mươi năm — [kỹ thuật phải bắt kịp logic](/vi/posts/hieu-ung-quang-dien-anh-sang-tra-tien-le).

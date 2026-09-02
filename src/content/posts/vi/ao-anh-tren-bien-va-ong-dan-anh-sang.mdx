@@ -1,0 +1,73 @@
+---
+title: "Chân trời mờ thêm nửa cây số: khí quyển uốn ánh sáng ngoài kỳ vọng"
+seoTitle: "Ảo ảnh trên biển: khúc xạ khí quyển và ống dẫn ánh sáng"
+description: "Không khí ấm nằm trên không khí lạnh bẻ tia sáng cong xuống; khi gradient đạt +0,13 °C mỗi mét, tia cong đúng bằng độ cong Trái Đất và không bao giờ rời mặt biển. Ngay cả khí quyển bình thường cũng đã đẩy chân trời từ 5,05 km lên 5,55 km — con tàu bạn thấy có thể đang ở chỗ hình học nói là không thể thấy."
+pubDate: 2026-09-02
+tags: ["vat-ly", "quang-hoc", "khi-hau", "javascript"]
+translationId: "ao-anh-tren-bien-va-ong-dan-anh-sang"
+---
+
+import AtmosphericMirage from '../../../components/demos/AtmosphericMirage.astro';
+
+Bạn đứng trên bãi biển, nhìn xa tìm con tàu. Không thấy — đã qua chân trời hình
+học cách **5,05 km**. Nhưng sau mười phút, nó lại xuất hiện như từ dưới nước, mỏm
+mũi với ăng-ten chọc lên từ phía bên kia chân trời. Không phải ảo giác. Ánh sáng
+từ con tàu đã bị **uốn cong xuống** bởi khí quyển:
+
+<AtmosphericMirage />
+
+## Không khí lạnh uốn ánh sáng—hình học nói không, vật lý có
+
+Ánh sáng không tức thời — nó có tốc độ hữu hạn và phụ thuộc vào môi trường. Trong
+không khí, tốc độ ánh sáng phụ thuộc vào **mật độ**: mật độ cao → chậm, thấp →
+nhanh. Từ mặt biển lên trời, mật độ giảm liên tục (áp suất, nhiệt độ cùng giảm),
+nên tia sáng tăng tốc độ với độ cao. Khi tốc độ thay đổi không gian, ánh sáng bị
+uốn cong — cũng như [ánh sáng qua lăng kính](/vi/posts/cau-vong-42-do-va-cu-don-toa-cua-anh-sang)
+— và luôn uốn về vùng chậm (mật độ cao). Ở biển, vùng chậm ở dưới, nên tia cong **xuống**.
+
+Hình học cho horizon từ mắt cao h: d = √(2Rh), với R = 6.371 Mm. Bạn cao 2 m,
+chân trời ở **5,05 km**. Nhưng thực tế xem được **5,55 km** — thêm nửa cây số chỉ
+vì khúc xạ. Bầu trời bình thường cũng có khúc xạ, đủ để [kéo dãn chân trời](/vi/posts/chan-troi-vo-tuyen-cua-cot-phat-song).
+500 mét thêm vào không phải lỗi tính toán; đó là sự khéo léo của không khí: tia
+sáng từ con tàu bị uốn một chút, đủ để thoát ra khỏi ràng buộc hình học. Chính vì
+thế con tàu vẫn nhìn thấy được lâu hơn dự kiến.
+
+## Độ dốc nhiệt độ: từ bình thường sang ống dẫn ánh sáng
+
+Khúc xạ được điều khiển bởi **gradient nhiệt độ** (dT/dz). Ở bầu trời bình thường,
+nhiệt độ giảm ~6,5 K/km (dT/dz ≈ −0,0065 °C/m). Biển ấm có lớp không khí nóng trên
+lạnh — **ngược chiều** — với gradient dương: **lớp nghịch nhiệt**.
+
+Nhưng có một ngưỡng đặc biệt: **+0,00166 °C mỗi mét** (hay +1,66 K/km). Ở gradient ấy, ánh sáng từ
+chân trời bị uốn cong **đúng bằng độ cong của Trái Đất**. Tia sáng không còn thoát
+hay lạc, mà chạy **song song với mặt biển mãi mãi** — bị kẹt trong một ống dẫn vô
+hình. Chân trời trong trường hợp ấy lùi ra vô hạn; bạn nhìn tay có thể thấy xuống
+gần mặt nước.
+
+Gradient +1,66 K/km nghe rất nhỏ — trên 1 km là chỉ **+1,66 °C** — nhưng trong lớp
+mỏng sát mặt nước, điều kiện có thể cực đoan: nước 0 °C dưới, không khí ấm 20 °C
+nằm trên lớp 10–30 m. Gradient địa phương khi đó vượt qua 0,5 °C/m, tạo điều kiện
+cho ống dẫn xuất hiện. Tại sao xảy ra? [Hơi nước
+bay lên từ nước ấm, giãn nở khi tăng độ cao thấp áp](/vi/posts/nhiet-an-hai-quang-nhiet-ke-dung-im),
+lạnh đi, đâm xuống lại. Quá trình lặp đi lặp lại tạo lớp ấm trữ—một lớp cách
+nhiệt tự nhiên—trên mặt nước. Và khi nó đủ mạnh, tia sáng bị mắc kẹt.
+
+## Khi bị mắc kẹt: ảo ảnh xuất hiện khi bị "dự báo"
+
+Khi gradient mạnh hơn (vượt qua 0,01 °C/m hay hơn nữa), tia sáng bị uốn **quay ngược lên**. Không
+thể thoát lớp ấm, người thấy ảnh bầu trời ở mặt nước — "vũng nước" hay "cơn gió"
+tùy hướng. Đó là ảo ảnh trên biển hay đường nóng — cơ chế giống, chỉ khác vị trí.
+
+Nhưng ống dẫn **không bền**. Lớp nghịch nhiệt dày 10−30 m, tia chệch góc tới hạn
+lẻn ra khỏi lớp, mất hút. Fata Morgana chỉ hiện lóe nhất thời rồi biến. Người chứng
+kiến tại Messina hay Baltic thấy ảo ảnh vào mùa đông — khi ống dẫn bền bỉ nhất:
+nước lạnh dưới không khí ấm, chênh ~20 °C trên vài chục mét. Đó là bằng chứng vật
+lý, không phải tâm thức.
+
+## Trường hợp biên: ảnh mặt đường và mặt nước — hai mặt của một hiện tượng
+
+Đảo dấu gradient cho đảo dấu hiện tượng. Mặt đường 60 °C dưới không khí 35 °C tạo
+**−0,5 °C/cm sát mặt**. Tia sáng quay lên, không khí lạnh trông như "vũng nước"
+trên đường — không phải ảo giác, mà ảnh thật bầu trời bị khúc xạ. Pilot sa mạc biết:
+"vũng nước" = khí quyển nóng, mặt đất rắn. Biển lạnh là ngược lại: không khí nóng
+trên, nước lạnh dưới, ảnh bầu trời ở mặt nước — **Fata Morgana** (nữ phù thủy).

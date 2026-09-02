@@ -1,0 +1,165 @@
+---
+// Drying time of clothes based on humidity deficit.
+// Vapor saturation density via Magnus formula:
+// ρ_sat(T) = 216.7 * e_s(T) / (T + 273.15)
+// where e_s(T) = 6.112 * exp(17.67*T / (T+243.5)) in hPa
+// Valid from 0–50°C. Wind speed affects mass transfer coefficient h_m.
+---
+
+<figure class="demo" data-demo="troi-nom-va-thoi-gian-kho-cua-quan-ao">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Độ ẩm tương đối (%) <output data-out="rh"></output>
+      <input type="range" data-in="rh" min="30" max="99" step="1" value="60" /></label>
+    <label>Nhiệt độ (°C) <output data-out="t"></output>
+      <input type="range" data-in="t" min="15" max="38" step="0.5" value="30" /></label>
+    <label>Tốc độ gió (m/s) <output data-out="wind"></output>
+      <input type="range" data-in="wind" min="0" max="4" step="0.1" value="0.5" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Thời gian khô của quần áo phụ thuộc vào độ ẩm không khí chứ không phải
+    nhiệt độ. Khi không khí đã gần bão hoà (RH cao), đó là lúc bay hơi
+    chập chờn — và trong nhà kín gió, quần áo cần vài giờ thậm chí cả ngày
+    để khô hoàn toàn. Gió làm tăng tốc độ bay hơi bằng cách thay thế lớp
+    không khí ẩm xung quanh vải bằng không khí khô hơn.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const CURVE = '#2563eb', MARK = '#dc2626', BAR = '#f59e0b';
+
+  // Saturation vapor density in g/m³
+  function satVaporDensity(T: number): number {
+    const es = 6.112 * Math.exp((17.67 * T) / (T + 243.5));
+    return 216.7 * es / (T + 273.15);
+  }
+
+  // Drying time model: t ∝ 1/(deficit)
+  // deficit = ρ_sat * (1 - RH)
+  // Practical constant tuned to 41 min at T=30, RH=60%, wind=0.5 m/s, 300g clothes
+  function dryingTime(T: number, RH: number, windSpeed: number): number {
+    const rho_sat = satVaporDensity(T);
+    const deficit = rho_sat * (1 - RH);
+    // Effective time constant (empirical, gives sensible values)
+    // Without wind: larger tau; with wind: smaller tau (h_m increases)
+    const windFactor = 1 + 0.5 * windSpeed; // wind speed boost
+    const tau = 37355 / windFactor; // base time constant in seconds
+    if (deficit < 0.001) return 999999; // near saturation
+    return tau / deficit;
+  }
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (k: string) => root.querySelector(`[data-in="${k}"]`) as HTMLInputElement;
+    const output = (k: string) => root.querySelector(`[data-out="${k}"]`) as HTMLOutputElement;
+
+    function draw() {
+      const RH = Number(input('rh').value) / 100;
+      const T = Number(input('t').value);
+      const wind = Number(input('wind').value);
+
+      output('rh').textContent = String(Math.round(RH * 100));
+      output('t').textContent = T.toFixed(1).replace('.', ',');
+      output('wind').textContent = wind.toFixed(1).replace('.', ',');
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.5);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+
+      const padL = 50, padB = 30, padT = 12, padR = 10;
+      const X = (rh: number) => padL + rh * (cssW - padL - padR);
+      const Y = (t: number) => cssH - padB - Math.log(Math.max(t, 1)) / 4 * (cssH - padB - padT);
+
+      // Grid and axes
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.3;
+      ctx.beginPath(); ctx.moveTo(padL, padT); ctx.lineTo(padL, cssH - padB); ctx.lineTo(cssW - padR, cssH - padB); ctx.stroke();
+
+      // Axis labels
+      ctx.globalAlpha = 0.55; ctx.fillStyle = fg; ctx.font = '10px system-ui,sans-serif';
+      ctx.textAlign = 'center';
+      for (const pct of [30, 50, 70, 90]) ctx.fillText(`${pct}%`, X(pct / 100), cssH - padB + 14);
+
+      ctx.textAlign = 'right';
+      const timeLabels: Array<[number, string]> = [
+        [60, '1 phút'],
+        [300, '5 phút'],
+        [1800, '30 phút'],
+        [3600, '1 giờ'],
+        [7200, '2 giờ'],
+        [21600, '6 giờ'],
+        [86400, '24 giờ'],
+      ];
+      for (const [sec, lab] of timeLabels) {
+        if (Y(sec) > padT && Y(sec) < cssH - padB) {
+          ctx.fillText(lab, padL - 4, Y(sec) + 3);
+        }
+      }
+      ctx.globalAlpha = 1;
+
+      // Curve: drying time vs RH
+      ctx.strokeStyle = CURVE; ctx.lineWidth = 2.5; ctx.beginPath();
+      for (let i = 0; i <= 160; i++) {
+        const rhh = 0.30 + (0.69 * i) / 160; // 30% to 99%
+        const t = dryingTime(T, rhh, wind);
+        const y = Y(t);
+        if (i === 0) ctx.moveTo(X(rhh), y);
+        else ctx.lineTo(X(rhh), y);
+      }
+      ctx.stroke(); ctx.lineWidth = 1;
+
+      // Current point
+      const t_current = dryingTime(T, RH, wind);
+      ctx.fillStyle = MARK;
+      ctx.beginPath(); ctx.arc(X(RH), Y(t_current), 6, 0, Math.PI * 2); ctx.fill();
+
+      // Vapor deficit bar
+      const rho_sat = satVaporDensity(T);
+      const deficit = rho_sat * (1 - RH);
+      const barH = (deficit / rho_sat) * 60;
+      ctx.fillStyle = BAR; ctx.globalAlpha = 0.6;
+      ctx.fillRect(cssW - padR - 30, cssH - padB - barH, 25, barH);
+      ctx.globalAlpha = 1;
+      ctx.strokeStyle = BAR; ctx.lineWidth = 1;
+      ctx.strokeRect(cssW - padR - 30, cssH - padB - 60, 25, 60);
+      ctx.fillStyle = fg; ctx.globalAlpha = 0.6; ctx.font = '8px system-ui'; ctx.textAlign = 'center';
+      ctx.fillText('thiếu hụt', cssW - padR - 17, cssH - padB - 65);
+
+      // Readout
+      const minutes = Math.round(t_current / 60);
+      const hours = (t_current / 3600).toFixed(1);
+      const timeStr = minutes < 90 ? `${minutes} phút` : `${hours} giờ`;
+
+      // Reference: at same T but RH 60% with this wind
+      const t_ref = dryingTime(T, 0.60, wind);
+      const ratio = t_current / t_ref;
+
+      readout.innerHTML =
+        `${Math.round(RH * 100)}% độ ẩm, ${T.toFixed(1).replace('.', ',')} °C, gió ${wind.toFixed(1).replace('.', ',')} m/s → ` +
+        `quần áo khô trong <b>${timeStr}</b> · ` +
+        `ở 60% độ ẩm ấy chỉ cần ${Math.round(t_ref/60)} phút (chậm gấp <b>${ratio.toFixed(1)}</b>)`;
+    }
+
+    root.querySelectorAll('input').forEach((el) => el.addEventListener('input', draw));
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="troi-nom-va-thoi-gian-kho-cua-quan-ao"]').forEach(setup);
+</script>

@@ -1,0 +1,166 @@
+---
+// Varistor I-V characteristic: I = k·V^α
+// Metal-oxide varistor (MOV): Zn oxide with rare earth dopants
+// Valid range: 1 µA (100V) to 10 kA (peak surge)
+// α ≈ 25–30 gives the extreme nonlinearity; demo uses α = 30 for dramatic effect
+---
+
+<figure class="demo" data-demo="varistor-chong-set-va-so-mu-ba-muoi">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Điện áp đặt (V) <output data-out="v"></output>
+      <input type="range" data-in="v" min="200" max="800" step="10" value="220" /></label>
+    <label>Số mũ φ tuyến α <output data-out="alpha"></output>
+      <input type="range" data-in="alpha" min="10" max="40" step="1" value="30" /></label>
+    <label>Điện áp danh định <output data-out="rated"></output>
+      <input type="range" data-in="rated" min="275" max="470" step="55" value="275" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Đặc tuyến I–V của varistor trên trục log–log (từ 1 µA đến 10 kA).
+    Độ dốc rất gất — 10% tăng điện áp gây dòng tăng 1.1^α lần.
+    Chính độ dốc ấy cắt ngọn xung sét, nhưng mỗi cú sét cũng già hóa nó thêm.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const CURVE = '#2563eb', MARK = '#dc2626', THIRD = '#f59e0b';
+
+  // Reference points for the varistor
+  // At 690V and 100A clamping
+  const V_clamp_ref = 690;  // V
+  const I_clamp_ref = 100;  // A
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (k: string) => root.querySelector(`[data-in="${k}"]`) as HTMLInputElement;
+    const output = (k: string) => root.querySelector(`[data-out="${k}"]`) as HTMLOutputElement;
+
+    function draw() {
+      const V = Number(input('v').value);
+      const alpha = Number(input('alpha').value);
+      const rated = Number(input('rated').value);
+
+      output('v').textContent = String(V);
+      output('alpha').textContent = String(alpha);
+      output('rated').textContent = String(rated);
+
+      // Calculate k from reference point: I = k·V^α
+      // At V_clamp_ref and I_clamp_ref: k = I_clamp_ref / V_clamp_ref^α
+      const k = I_clamp_ref / Math.pow(V_clamp_ref, alpha);
+
+      // Current at the selected voltage
+      const I_V = k * Math.pow(V, alpha);
+
+      // 10% overvoltage effect
+      const V_over = V * 1.1;
+      const I_V_over = k * Math.pow(V_over, alpha);
+      const ratio_10pct = I_V_over / I_V;
+
+      // Clamp voltage at 100A
+      const V_clamp_at_100A = Math.pow(I_clamp_ref / k, 1 / alpha);
+
+      // Current at rated voltage
+      const I_rated = k * Math.pow(rated, alpha);
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.55);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+
+      // Log-log plot: V from 100V to 1000V, I from 1µA to 10kA
+      const V_min = 100, V_max = 1000;
+      const I_min = 1e-6, I_max = 10000;  // 1µA to 10kA
+
+      const padL = 48, padB = 30, padT = 12, padR = 10;
+
+      const logX = (vv: number) => padL + (Math.log10(vv) - Math.log10(V_min)) / (Math.log10(V_max) - Math.log10(V_min)) * (cssW - padL - padR);
+      const logY = (ii: number) => cssH - padB - (Math.log10(ii) - Math.log10(I_min)) / (Math.log10(I_max) - Math.log10(I_min)) * (cssH - padB - padT);
+
+      // Draw axes
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.3;
+      ctx.beginPath(); ctx.moveTo(padL, padT); ctx.lineTo(padL, cssH - padB); ctx.lineTo(cssW - padR, cssH - padB); ctx.stroke();
+
+      // Grid and labels
+      ctx.globalAlpha = 0.55; ctx.fillStyle = fg; ctx.font = '10px system-ui,sans-serif';
+
+      // Voltage axis labels
+      ctx.textAlign = 'center';
+      for (const vv of [100, 200, 300, 500, 1000]) {
+        ctx.fillText(`${vv} V`, logX(vv), cssH - padB + 14);
+      }
+
+      // Current axis labels
+      ctx.textAlign = 'right';
+      for (const ii of [1e-6, 1e-3, 1, 100, 1e4]) {
+        let label = '';
+        if (ii === 1e-6) label = '1 µA';
+        else if (ii === 1e-3) label = '1 mA';
+        else if (ii === 1) label = '1 A';
+        else if (ii === 100) label = '100 A';
+        else if (ii === 1e4) label = '10 kA';
+        ctx.fillText(label, padL - 4, logY(ii) + 3);
+      }
+      ctx.globalAlpha = 1;
+
+      // Draw the characteristic curve I = k·V^α
+      ctx.strokeStyle = CURVE; ctx.lineWidth = 2.5; ctx.beginPath();
+      for (let i = 0; i <= 250; i++) {
+        const vv = V_min * Math.pow(V_max / V_min, i / 250);
+        const ii = k * Math.pow(vv, alpha);
+        // Clamp to display range
+        const iiClipped = Math.max(I_min * 0.5, Math.min(I_max * 2, ii));
+        if (i === 0) ctx.moveTo(logX(vv), logY(iiClipped));
+        else ctx.lineTo(logX(vv), logY(iiClipped));
+      }
+      ctx.stroke();
+      ctx.lineWidth = 1;
+
+      // Mark the selected voltage point
+      ctx.fillStyle = MARK;
+      ctx.beginPath(); ctx.arc(logX(V), logY(Math.max(I_min * 0.5, Math.min(I_max * 2, I_V))), 7, 0, Math.PI * 2); ctx.fill();
+
+      // Mark reference clamping point
+      ctx.fillStyle = THIRD;
+      ctx.beginPath(); ctx.arc(logX(V_clamp_at_100A), logY(100), 5, 0, Math.PI * 2); ctx.fill();
+
+      ctx.globalAlpha = 1;
+
+      // Readout: show key numbers in Vietnamese with comma decimals
+      const ratioText = ratio_10pct.toFixed(2).replace('.', ',');
+      const I_V_text = I_V < 1e-3 ? (I_V * 1e6).toFixed(1).replace('.', ',') + ' µA' :
+                       I_V < 1 ? (I_V * 1e3).toFixed(2).replace('.', ',') + ' mA' :
+                       I_V.toFixed(1).replace('.', ',') + ' A';
+      const I_rated_text = I_rated < 1e-3 ? (I_rated * 1e6).toFixed(1).replace('.', ',') + ' µA' :
+                           I_rated < 1 ? (I_rated * 1e3).toFixed(2).replace('.', ',') + ' mA' :
+                           I_rated.toFixed(2).replace('.', ',') + ' A';
+
+      readout.innerHTML =
+        `V = <b>${V.toLocaleString('vi-VN')}</b> V → I = ${I_V_text} · ` +
+        `tăng 10% → ${ratioText}× · ` +
+        `điện áp ghim ở 100 A: <b>${Math.round(V_clamp_at_100A)}</b> V · ` +
+        `dòng rò ở ${rated} V: ${I_rated_text}`;
+    }
+
+    root.querySelectorAll('input').forEach((el) => el.addEventListener('input', draw));
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="varistor-clamp"]').forEach(setup);
+</script>

@@ -1,0 +1,132 @@
+---
+// Ghost voltage (capacitive voltage divider, 50 Hz grid 220V Vietnam):
+// V_measure = V_grid · R / √(R² + X_C²), where X_C = 1/(2πf·C_coupling)
+// The coupling capacitance between two wires in conduit depends on length.
+// Valid for meter impedances 10 kΩ – 10 MΩ and coupling capacitance 10–500 pF.
+---
+
+<figure class="demo" data-demo="dien-ap-ma-tren-day-da-cat-dien">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Chiều dài đoạn dây song song (m) <output data-out="len"></output>
+      <input type="range" data-in="len" min="1" max="30" step="1" value="10" /></label>
+    <label>Điện dung ghép (pF) <output data-out="c"></output>
+      <input type="range" data-in="c" min="10" max="500" step="10" value="100" /></label>
+    <label>Trở kháng vào đồng hồ (kΩ) <output data-out="r"></output>
+      <input type="range" data-in="r" min="0" max="10000" step="100" value="10" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Hai sợi dây chạy song song trong ống tạo ra điện dung ghép C, hình thành
+    một tụ điện nối giữa hai dây. Ở 50 Hz với điện áp lưới 220V, tụ này tạo
+    ra một mạch chia áp với trở kháng vào của đồng hồ. Đồng hồ số có trở
+    kháng vào thấp (10–100 kΩ) sẽ đo điện áp hẹp, nhưng đồng hồ chỉ kim có
+    trở kháng vào cao (10 MΩ) sẽ đo ra điện áp ma khoảng 66 vôn.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const CURVE = '#2563eb', MARK = '#dc2626';
+  const V_GRID = 220, F = 50, PI = Math.PI;
+
+  const measureVoltage = (R: number, C: number) => {
+    const X_C = 1 / (2 * PI * F * C);
+    const Z = Math.sqrt(R * R + X_C * X_C);
+    return (V_GRID * R) / Z;
+  };
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (k: string) => root.querySelector(`[data-in="${k}"]`) as HTMLInputElement;
+    const output = (k: string) => root.querySelector(`[data-out="${k}"]`) as HTMLOutputElement;
+
+    function draw() {
+      const lenM = Number(input('len').value);
+      const capPF = Number(input('c').value);
+      const rKohm = Number(input('r').value);
+
+      output('len').textContent = String(lenM);
+      output('c').textContent = String(capPF);
+      output('r').textContent = String(rKohm);
+
+      const R = rKohm * 1000; // convert to Ohms
+      const C = capPF * 1e-12; // convert to Farads
+      const X_C = 1 / (2 * PI * F * C);
+      const Z = Math.sqrt(R * R + X_C * X_C);
+      const V = measureVoltage(R, C);
+      const I = V_GRID / Z;
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.42);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+
+      const padL = 50, padB = 26, padT = 12, padR = 10;
+      const rMin = 10, rMax = 10000; // kΩ range for x-axis
+
+      // Logarithmic scale for x-axis
+      const X = (rkohm: number) => {
+        const logPos = Math.log10(rkohm);
+        const logMin = Math.log10(rMin);
+        const logMax = Math.log10(rMax);
+        return padL + ((logPos - logMin) / (logMax - logMin)) * (cssW - padL - padR);
+      };
+      const Y = (v: number) => padT + ((250 - v) / 250) * (cssH - padB - padT);
+
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.3;
+      ctx.beginPath(); ctx.moveTo(padL, padT); ctx.lineTo(padL, cssH - padB); ctx.lineTo(cssW - padR, cssH - padB); ctx.stroke();
+      ctx.globalAlpha = 0.55; ctx.fillStyle = fg; ctx.font = '10px system-ui,sans-serif';
+      ctx.textAlign = 'center';
+      for (const rk of [10, 100, 1000, 10000]) {
+        const label = rk < 1000 ? `${rk} kΩ` : `${rk / 1000} MΩ`;
+        ctx.fillText(label, X(rk), cssH - padB + 14);
+      }
+      ctx.textAlign = 'right';
+      for (const vv of [0, 50, 100, 150, 200, 250]) {
+        ctx.fillText(`${vv} V`, padL - 4, Y(vv) + 3);
+      }
+      ctx.globalAlpha = 1;
+
+      // Voltage curve vs meter impedance at current C and len
+      ctx.strokeStyle = CURVE; ctx.lineWidth = 2; ctx.beginPath();
+      for (let i = 0; i <= 200; i++) {
+        const rkohm = rMin * Math.pow(rMax / rMin, i / 200);
+        const v = measureVoltage(rkohm * 1000, C);
+        const y = Y(v);
+        i ? ctx.lineTo(X(rkohm), y) : ctx.moveTo(X(rkohm), y);
+      }
+      ctx.stroke(); ctx.lineWidth = 1;
+
+      // Mark the current measurement point
+      ctx.fillStyle = MARK;
+      ctx.beginPath(); ctx.arc(X(rKohm), Y(V), 6, 0, Math.PI * 2); ctx.fill();
+
+      // Readout text
+      readout.innerHTML =
+        `C_ghép = <b>${capPF} pF</b> → X_C = ${(X_C / 1e6).toFixed(1)} MΩ · ` +
+        `đồng hồ ${rKohm} kΩ đọc <b>${V.toFixed(1).replace('.', ',')} V</b> · ` +
+        `dòng khả dụng ${(I * 1e6).toFixed(1)} µA`;
+    }
+
+    root.querySelectorAll('input').forEach((el) => el.addEventListener('input', draw));
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="ghost-voltage"]').forEach(setup);
+</script>

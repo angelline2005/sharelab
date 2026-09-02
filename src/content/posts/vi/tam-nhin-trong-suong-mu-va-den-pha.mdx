@@ -1,0 +1,87 @@
+---
+title: "Sương mù tầm nhìn 50 mét: đèn mạnh gấp mười cũng không mua thêm mét nào"
+seoTitle: "Tầm nhìn trong sương mù: công thức Koschmieder và độ tắt"
+description: "Tầm nhìn khí tượng 50 m nghĩa là hệ số tắt 0,078 mỗi mét; ở khoảng cách 100 m, tương phản của chiếc xe phía trước chỉ còn 0,04% — dưới ngưỡng mắt 50 lần. Tăng công suất đèn không cứu được, vì nó nhân cả vật lẫn nền sương lên cùng một hệ số."
+pubDate: 2026-09-02
+tags: ["vat-ly", "quang-hoc", "khi-hau", "javascript"]
+translationId: "tam-nhin-trong-suong-mu-va-den-pha"
+---
+
+import Visibility from '../../../components/demos/Visibility.astro';
+
+Đèn pha sáng nhất xe bạn, và sương mù quanh bạn dày như bông. Nhấn ga tăng
+sáng thêm — một lần, hai lần, mười lần. Nhưng chiếc xe phía trước không hiện
+rõ hơn, nó chỉ biến mất lâu hơn một chút, như thể đèn của bạn đang dắt chiếc
+xe còn lại ra khỏi thế giới thay vì rọi nó sáng:
+
+<Visibility />
+
+## Tương phản, không phải ánh sáng tuyệt đối
+
+Mắt bạn không nhìn vật bằng cách đo ánh sáng phản chiếu tuyệt đối — nó nhìn
+bằng **hiệu số** giữa vật và nền. Chiếc xe đen trong đêm không dày đủ hơn chiếc
+xe trắng cạnh ngọn lửa; cái quyết định là bao nhiêu phần trăm **tương phản**
+— (L_vật − L_nền) / L_nền. Mắt người phát hiện được vật khi tương phản vượt
+**~2%**, và phát hiện kém lại khi tương phản thấp hơn — đó là luật cứng nhắc
+không chuyển động được.
+
+Sương mù không che giấu bằng cách ăn ảnh sáng. Nó ăn ảnh bằng cách [phân tán ánh
+sáng](https://vi.wikipedia.org/wiki/Tán_xạ) — hạt sương cỡ 10 µm lớn hơn bước
+sóng nên dùng phương pháp Mie, rải rác mọi photon về mọi hướng. Kết quả: vật
+truyền đi rồi bị sương trả lại nửa về phía bạn, nửa đi chỗ khác. Hiệu số chiếu
+sáng vật − chiếu sáng nền sương **co lại** theo hàm mũ với khoảng cách.
+
+## Công thức Koschmieder: hệ số tắt theo tầm nhìn
+
+Năm 1926, khí tượng học gia Koschmieder rút ra quy luật từ thực nghiệm: nếu tầm
+nhìn khí tượng là V (khoảng cách nơi vật biến mất hoàn toàn), thì tương phản còn
+lại ở khoảng cách d tuân theo:
+
+```
+C(d) = C₀·e^(−σ·d), với σ = 3,912 / V
+```
+
+Con số 3,912 được hiệu chỉnh sao cho tầm nhìn = khoảng cách tương phản rơi tới **2%**.
+Ở sương mù tầm nhìn 50 m: σ = **0,0782 mỗi mét**. Ở 100 m, tương phản còn:
+
+```
+C(100) = 1,0 · e^(−0,0782 × 100) = e^(−7,82) ≈ 0,0004 = 0,04%
+```
+
+Đó là **50 lần dưới ngưỡng mắt**. Con số này không phụ thuộc vào công suất đèn —
+vì sáng lên theo cùng hệ số, hiệu số (vật − nền) nhân với một hằng số, nhưng
+tỉ số vẫn giữ nguyên. Đèn mạnh gấp 100 lần chỉ phóng to lớp sương lên 100 lần,
+không cứu được gì.
+
+## Tầm nhìn không phải độ cao hay nhân lực
+
+Sương mù 50 m là con số khí tượng học, không phải chiều dài thực — nó phụ thuộc
+vào kích cỡ hạt. Sương chuẩn (10 µm) cho tầm nhìn ngắn; mưa phùn (20 µm) để lại
+tầm nhìn dài hơn vì ít hạt hơn; sương mù sâu (5 µm) ngược lại. Cùng một bầu trời
+đắp dầy, hai tài xế ở hai đầu đất nước có thể báo cáo tầm nhìn khác nhau. Nhưng
+điều dễ nhầm là tưởng "tầm nhìn 50 m" có nghĩa là mọi vật 50 m đều nhìn thấy rõ —
+sai bét. Nó chỉ nói: *vật có tương phản 100% sẽ biến mất hoàn toàn ở 50 m;
+chiếc xe greyish (tương phản 50%) sẽ ngoái ra ở khoảng 41 m; vật mờ nhạt (tương phản
+10%) biến mất ở khoảng 21 m*.
+
+Người cũng vậy. Bạn không tàng hình vì sương mà vì [tương phản giữa bạn và nền không đủ](/vi/posts/choi-loa-den-pha-lop-suong-tren-vong-mac). Áo bạc phản quang sáng hơn áo đen; đứng trong ánh đèn hậu xe tối hơn ở ngoài.
+
+## Vì sao đèn vàng tốt hơn
+
+Tán xạ Mie không chọn màu — đèn vàng (590 nm) không xuyên sương tốt hơn đèn trắng.
+Cái thắng là **hình học chứ không phải vật lý**: đèn sương mù cũ được lắp thấp hơn
+và chếch hướng so với headlight, nên nó soi dưới lớp sương thay vì rơi vào chính nó.
+Phần vàng chỉ để giảm độ chói. Phát minh thực sự là vị trí đèn, không phải màu.
+
+## Trường hợp biên: sương mỏng và cảm giác sai
+
+Công thức Koschmieder phân kỳ ở hai đầu. Lên tới sương rất rõ (V = 2 km), lớp
+sương mỏng bắt đầu mơ hồ những hình dáng xa chứ không làm chúng biến mất — lúc
+đó bạn không nhìn **tương phản tối đa nữa** mà nhìn **độ sáng tương đối**. Núi xa
+nhạt màu xanh không phải vì [Rayleigh tán xạ
+lam](/vi/posts/vi-sao-bau-troi-xanh-va-hoang-hon-do), mà vì bạn nhận bức xạ từ
+chính lớp sương giữa bạn với núi — mặt là tấm màn xanh, và bạn nhìn xuyên nó.
+Mục đích lúc đó không còn là "nhìn thấy" mà là "ước lượng khoảng cách" — ngành
+tôpô họa và nghệ thuật phục dựng phong cảnh toàn dựa vào hiệu ứng này, gọi là
+*atmospheric perspective*. Sương là con dao hai lưỡi: với tài xế vào phủ dày là
+sát thủ; với họa sĩ nhìn từ xa nó là cô trợ lý tốt nhất.

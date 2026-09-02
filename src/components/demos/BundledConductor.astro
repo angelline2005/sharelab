@@ -1,0 +1,193 @@
+---
+// Electric field around transmission line conductors
+// E_surface = U_phase / (r_eff * ln(D/r_eff))
+// r_eff for n-wire bundle = 1.09 * (r * s^3)^(1/4)
+// Threshold: air breakdown at 30 kV/cm (dry, sea level)
+// Demo shows cross-section: 1, 2, 3, 4 wires bundled with s=45cm spacing
+---
+
+<figure class="demo" data-demo="vi-sao-duong-day-500-kv-bo-bon-day">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Điện áp pha U (kV) <output data-out="u"></output>
+      <input type="range" data-in="u" min="110" max="750" step="10" value="289" /></label>
+    <label>Bán kính dây r (cm) <output data-out="r"></output>
+      <input type="range" data-in="r" min="0.5" max="3" step="0.1" value="1.5" /></label>
+    <label>Số dây trong bó <output data-out="n"></output>
+      <input type="range" data-in="n" min="1" max="4" step="1" value="1" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Mặt cắt ngang một pha đường dây cao thế. Bó nhiều dây cách nhau 45 cm để
+    tăng bán kính hiệu dụng, kéo điện trường bề mặt xuống dưới ngưỡng đánh thủng
+    không khí (30 kV/cm màu đỏ). Khi điện trường vượt ngưỡng, sẽ xảy ra vầng quang
+    (corona) — tổn hao và nhiễu radio mạnh.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const CURVE = '#2563eb', MARK = '#dc2626', THIRD = '#f59e0b';
+  const THRESHOLD = 30;  // kV/cm
+  const s_bundle = 45;  // cm spacing for bundled wires
+  const D = 1200;  // effective distance to ground/return path (cm)
+
+  // Calculate effective radius for n-wire bundle
+  function r_eff(r: number, n: number): number {
+    if (n === 1) return r;
+    // r_eff = 1.09 * (r * s^3)^(1/4)
+    return 1.09 * Math.pow(r * Math.pow(s_bundle, 3), 0.25);
+  }
+
+  // Electric field at surface of conductor
+  function E_surface(U: number, r: number, n: number): number {
+    const r_e = r_eff(r, n);
+    // E = U / (r_e * ln(D / r_e))
+    return U / (r_e * Math.log(D / r_e));
+  }
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (k: string) => root.querySelector(`[data-in="${k}"]`) as HTMLInputElement;
+    const output = (k: string) => root.querySelector(`[data-out="${k}"]`) as HTMLOutputElement;
+
+    function draw() {
+      const U = Number(input('u').value);
+      const r = Number(input('r').value);
+      const n = Number(input('n').value);
+
+      output('u').textContent = String(U);
+      output('r').textContent = r.toFixed(1).replace('.', ',');
+      output('n').textContent = String(n);
+
+      const r_e = r_eff(r, n);
+      const E = E_surface(U, r, n);
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.5);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+
+      const padL = 50, padB = 30, padT = 15, padR = 15;
+      const graphW = cssW - padL - padR;
+      const graphH = cssH - padB - padT;
+
+      // Draw axes
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.3;
+      ctx.beginPath(); ctx.moveTo(padL, padT); ctx.lineTo(padL, cssH - padB); ctx.lineTo(cssW - padR, cssH - padB); ctx.stroke();
+      ctx.globalAlpha = 0.55; ctx.fillStyle = fg; ctx.font = '10px system-ui,sans-serif';
+      ctx.textAlign = 'center';
+      for (const d of [10, 20, 30, 40, 50]) {
+        const x = padL + (d / 50) * graphW;
+        ctx.fillText(`${d} cm`, x, cssH - padB + 14);
+      }
+      ctx.textAlign = 'right';
+      for (const e of [10, 20, 30, 40]) {
+        const y = cssH - padB - (e / 40) * graphH;
+        ctx.fillText(`${e}`, padL - 4, y + 3);
+      }
+      ctx.textAlign = 'center'; ctx.globalAlpha = 0.7;
+      ctx.fillText('Khoảng cách từ tâm (cm)', cssW / 2, cssH - 2);
+      ctx.save(); ctx.translate(8, cssH / 2); ctx.rotate(-Math.PI / 2);
+      ctx.fillText('Điện trường E (kV/cm)'); ctx.restore();
+      ctx.globalAlpha = 1;
+
+      // Helper functions
+      const X = (d: number) => padL + (d / 50) * graphW;
+      const Y = (e: number) => cssH - padB - Math.max(0, Math.min((e / 40) * graphH, graphH));
+
+      // Threshold line at 30 kV/cm
+      ctx.strokeStyle = MARK; ctx.globalAlpha = 0.5; ctx.lineWidth = 2;
+      ctx.setLineDash([4, 2]);
+      ctx.beginPath(); ctx.moveTo(padL, Y(THRESHOLD)); ctx.lineTo(cssW - padR, Y(THRESHOLD)); ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillStyle = MARK; ctx.globalAlpha = 0.6; ctx.font = 'bold 10px system-ui,sans-serif';
+      ctx.textAlign = 'left';
+      ctx.fillText('ngưỡng 30 kV/cm', padL + 3, Y(THRESHOLD) - 4);
+      ctx.globalAlpha = 1;
+
+      // Draw conductors (circles)
+      ctx.fillStyle = THIRD; ctx.globalAlpha = 0.3;
+      if (n === 1) {
+        // Single wire at center
+        ctx.beginPath(); ctx.arc(X(r), Y(0), r, 0, Math.PI * 2); ctx.fill();
+      } else {
+        // Multiple wires in circle
+        const angle_step = (2 * Math.PI) / n;
+        const R = s_bundle / 2;  // radius of arrangement circle
+        for (let i = 0; i < n; i++) {
+          const angle = i * angle_step;
+          const cx = R * Math.cos(angle);
+          const cy = R * Math.sin(angle);
+          ctx.beginPath(); ctx.arc(X(cx + 25), Y(cy), r, 0, Math.PI * 2); ctx.fill();
+        }
+      }
+      ctx.globalAlpha = 1;
+
+      // Draw electric field curve (simplified: assumes effective radius)
+      ctx.strokeStyle = CURVE; ctx.lineWidth = 2; ctx.globalAlpha = 1;
+      ctx.beginPath();
+      for (let i = 0; i <= 250; i++) {
+        const d = r_e + (50 - r_e) * (i / 250);
+        // Field decays as 1 / (d * ln(D/d)) approximately
+        const e = U / (d * Math.log(D / d));
+        const x = X(d);
+        const y = Y(e);
+        i ? ctx.lineTo(x, y) : ctx.moveTo(x, y);
+      }
+      ctx.stroke();
+
+      // Shade region above threshold
+      ctx.fillStyle = MARK; ctx.globalAlpha = 0.15;
+      for (let i = 0; i <= 250; i++) {
+        const d = r_e + (50 - r_e) * (i / 250);
+        const e = U / (d * Math.log(D / d));
+        if (e >= THRESHOLD) {
+          const x = X(d);
+          const y = Y(e);
+          const y_thresh = Y(THRESHOLD);
+          if (i === 0) ctx.beginPath();
+          ctx.lineTo(x, y_thresh);
+        }
+      }
+      ctx.lineTo(cssW - padR, Y(THRESHOLD));
+      ctx.lineTo(cssW - padR, cssH - padB);
+      ctx.lineTo(padL, cssH - padB);
+      ctx.fill();
+      ctx.globalAlpha = 1;
+
+      // Mark the surface field
+      ctx.fillStyle = MARK;
+      ctx.beginPath(); ctx.arc(X(r_e), Y(E), 5, 0, Math.PI * 2); ctx.fill();
+
+      // Readout
+      const re_str = r_e.toFixed(1).replace('.', ',');
+      const E_str = E.toFixed(2).replace('.', ',');
+      const status = E >= THRESHOLD ? ' · <b style="color:#dc2626">vượt ngưỡng → vầng quang</b>' : '';
+      readout.innerHTML =
+        `U pha = <b>${U} kV</b> · ${n === 1 ? `1 dây r = ${r.toFixed(1).replace('.', ',')} cm` : `bó ${n} dây s = ${s_bundle} cm, r hiệu dụng = ${re_str} cm`}` +
+        ` → E = <b>${E_str} kV/cm</b>${status}`;
+    }
+
+    root.querySelectorAll('input').forEach((el) => el.addEventListener('input', draw));
+    addEventListener('resize', draw);
+    draw();
+  }
+
+  document.querySelectorAll<HTMLElement>('[data-demo="vi-sao-duong-day-500-kv-bo-bon-day"]').forEach(setup);
+</script>

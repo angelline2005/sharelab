@@ -1,0 +1,190 @@
+---
+// Plane mirror full-body reflection geometry
+// Formula: bottom_edge = h_eye/2; top_edge = (h_eye + h_body)/2; mirror_height = h_body/2
+// Valid for any person height and viewing distance; distance does NOT affect minimum mirror size
+---
+
+<figure class="demo" data-demo="guong-phang-cao-bang-nua-nguoi-la-du">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Chiều cao người (m) <output data-out="h"></output>
+      <input type="range" data-in="h" min="1.2" max="2.0" step="0.05" value="1.70" /></label>
+    <label>Độ cao mép dưới gương (m) <output data-out="b"></output>
+      <input type="range" data-in="b" min="0.4" max="1.2" step="0.01" value="0.80" /></label>
+    <label>Khoảng cách tới gương (m) <output data-out="d"></output>
+      <input type="range" data-in="d" min="0.2" max="5" step="0.1" value="0.5" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Gương phẳng: muốn soi toàn thân, mép dưới phải ở đúng nửa chiều cao mắt bạn.
+    Điểm phản chiếu trên gương tính bằng trung bình cộng của chiều cao mắt và điểm
+    cần soi; khoảng cách tới gương biến mất khỏi phép toán — bạn có thể đứng gần
+    hay xa, chiều cao gương cần dùng vẫn không thay đổi.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const CURVE = '#2563eb', MARK = '#dc2626', GOOD = '#16a34a';
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (k: string) => root.querySelector(`[data-in="${k}"]`) as HTMLInputElement;
+    const output = (k: string) => root.querySelector(`[data-out="${k}"]`) as HTMLOutputElement;
+
+    function draw() {
+      const h = Number(input('h').value);  // person height
+      const b = Number(input('b').value);  // mirror bottom edge height
+      const d = Number(input('d').value);  // distance to mirror
+
+      output('h').textContent = h.toFixed(2).replace('.', ',');
+      output('b').textContent = b.toFixed(2).replace('.', ',');
+      output('d').textContent = d.toFixed(1).replace('.', ',');
+
+      // Eye height is typically 94% of body height
+      const h_eye = h * 0.94;
+
+      // Correct positioning (distance-independent)
+      const b_correct = h_eye / 2;
+      const t_correct = (h_eye + h) / 2;
+      const mirror_height = h / 2;
+
+      // What can we see with the current mirror position?
+      // Using mirror_point = (eye + body_point) / 2, we get:
+      // body_point = 2 * mirror_point - eye
+      const lowest_visible = 2 * b - h_eye;
+      const highest_visible = 2 * (b + mirror_height) - h_eye;
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.65);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+
+      const padL = 20, padR = 20, padT = 10, padB = 10;
+      const graphW = cssW - padL - padR;
+      const graphH = cssH - padT - padB;
+
+      // Scale: person height spans most of the graph
+      const scale = graphH / Math.max(2.2, h + 0.3);
+      const Y = (height: number) => cssH - padB - height * scale;
+
+      // Draw person silhouette on the left
+      const personX = padL + graphW * 0.15;
+      const eyeY = Y(h_eye);
+      const feetY = Y(0);
+      const headY = Y(h);
+
+      ctx.strokeStyle = fg;
+      ctx.fillStyle = fg;
+      ctx.globalAlpha = 0.2;
+
+      // Draw person outline
+      ctx.beginPath();
+      ctx.moveTo(personX, headY - 8);
+      ctx.arc(personX, headY - 12, 8, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.moveTo(personX, headY - 4);
+      ctx.lineTo(personX, Y(h * 0.5));  // torso
+      ctx.lineTo(personX - 6, Y(h * 0.3));  // left arm
+      ctx.moveTo(personX, Y(h * 0.5));
+      ctx.lineTo(personX + 6, Y(h * 0.3));  // right arm
+      ctx.lineTo(personX - 3, Y(0));  // left leg
+      ctx.moveTo(personX, Y(h * 0.5));
+      ctx.lineTo(personX + 3, feetY);  // right leg
+      ctx.stroke();
+
+      // Mark eye position
+      ctx.globalAlpha = 0.5;
+      ctx.fillStyle = MARK;
+      ctx.beginPath();
+      ctx.arc(personX, eyeY, 3, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Draw mirror on the right
+      const mirrorX = padL + graphW * 0.75;
+
+      // Draw the physical mirror
+      ctx.strokeStyle = '#999';
+      ctx.lineWidth = 3;
+      ctx.globalAlpha = 0.6;
+      ctx.beginPath();
+      ctx.moveTo(mirrorX, Y(b));
+      ctx.lineTo(mirrorX, Y(b + mirror_height));
+      ctx.stroke();
+
+      // Draw ray from eye to mirror bottom and reflect to feet
+      ctx.strokeStyle = CURVE;
+      ctx.lineWidth = 1;
+      ctx.globalAlpha = 0.7;
+      ctx.setLineDash([2, 2]);
+      ctx.beginPath();
+      ctx.moveTo(personX, eyeY);
+      ctx.lineTo(mirrorX, Y(b));
+      ctx.lineTo(personX, feetY);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      // Draw ray from eye to mirror top and reflect to head
+      ctx.beginPath();
+      ctx.moveTo(personX, eyeY);
+      ctx.lineTo(mirrorX, Y(b + mirror_height));
+      ctx.lineTo(personX, headY);
+      ctx.stroke();
+
+      // Highlight what's visible vs cut off
+      ctx.globalAlpha = 0.3;
+      if (lowest_visible > 0) {
+        // Part of feet are cut off
+        ctx.fillStyle = MARK;
+        ctx.fillRect(personX - 5, Y(lowest_visible), 10, Y(0) - Y(lowest_visible));
+      }
+      if (highest_visible < h) {
+        // Part of head is cut off
+        ctx.fillStyle = MARK;
+        ctx.fillRect(personX - 5, headY, 10, Y(highest_visible) - headY);
+      }
+
+      // Readout
+      const can_see_all = lowest_visible <= 0 && highest_visible >= h;
+      const cut_top = Math.max(0, h - highest_visible);
+      const cut_bottom = Math.max(0, lowest_visible);
+
+      if (can_see_all) {
+        readout.innerHTML =
+          `Mép dưới <b>${b.toFixed(2).replace('.', ',')} m</b> · mép trên <b>${(b + mirror_height).toFixed(2).replace('.', ',')} m</b> ` +
+          `· gương cần <b>${mirror_height.toFixed(2).replace('.', ',')} m</b> · soi được toàn thân ✓ · cách ${d.toFixed(1).replace('.', ',')} m: không đổi`;
+      } else {
+        let msg = `Mép dưới ${b.toFixed(2).replace('.', ',')} m · mép trên ${(b + mirror_height).toFixed(2).replace('.', ',')} m`;
+        if (cut_bottom > 0.01) {
+          msg += ` · <b>mất ${(cut_bottom * 100).toFixed(0)} cm dưới cùng</b>`;
+        }
+        if (cut_top > 0.01) {
+          msg += ` · <b>mất ${(cut_top * 100).toFixed(0)} cm trên cùng</b>`;
+        }
+        msg += ` · khoảng cách: không đổi`;
+        readout.innerHTML = msg;
+      }
+    }
+
+    root.querySelectorAll('input').forEach((el) => el.addEventListener('input', draw));
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="guong-phang-cao-bang-nua-nguoi-la-du"]').forEach(setup);
+</script>

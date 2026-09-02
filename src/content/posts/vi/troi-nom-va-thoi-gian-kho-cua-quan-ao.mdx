@@ -1,0 +1,96 @@
+---
+title: "Trời nồm: cùng 30 °C, quần áo khô lâu gấp 8 lần"
+seoTitle: "Vì sao trời nồm quần áo lâu khô: tốc độ bay hơi và độ ẩm tương đối"
+description: "Bay hơi không chạy theo nhiệt độ mà chạy theo phần hơi nước còn thiếu: ở 30 °C không khí bão hoà chứa 30,3 g/m³, nên RH 60% để lại khoảng trống 12,1 g/m³ còn RH 95% chỉ còn 1,5 g/m³. Cùng chiếc áo 300 g nước: 41 phút thành 5,5 giờ — gấp 8 lần. Ở RH 100%, thời gian khô là vô hạn theo đúng nghĩa toán học."
+pubDate: 2026-09-02
+tags: ["vat-ly", "nhiet-hoc", "khi-hau", "javascript"]
+translationId: "troi-nom-va-thoi-gian-kho-cua-quan-ao"
+---
+
+import DryingTime from '../../../components/demos/DryingTime.astro';
+
+Tắm xong bạn vắt quần áo và phơi ngoài balcony — ban trưa trời ửng nắng
+30 °C, không khí se mát như lúc sáng. Chiều, quần áo vẫn còn ướt cáu. Hôm
+kia trời nóng như nhau nhưng trong nháy mắt đã khô — chứng tỏ cái khác
+không phải nhiệt độ mà **chính độ ẩm của không khí**:
+
+<DryingTime />
+
+## Bão hoà không khí chỉ là một con số duy nhất
+
+Không khí ấm có dung lượng chứa hơi nước hạn định. Ở 30 °C, không khí
+bão hoà chứa đúng **30,3 g/m³** — không nhiều, không ít, chỉ có một con số.
+Phần hơi nước còn thiếu để chạm tới mức bão hoà ấy gọi là **độ ẩm tương đối**
+(RH): 60% RH nghĩa là không khí đã chứa sáu phần mười, còn thiếu bốn phần
+mười tới mức bão hoà.
+
+Tính toán thiếu hụt:
+- Ở **RH 60%**: không khí chứa 0,6 × 30,3 = 18,2 g/m³, còn thiếu **12,1 g/m³**
+- Ở **RH 95%**: không khí chứa 0,95 × 30,3 = 28,8 g/m³, chỉ còn thiếu **1,5 g/m³**
+
+Khoảng trống ấy chính là cái "cưỡi gió" cho hơi nước thoát ra khỏi vải. Chiếc
+áo 300 g nước bay hơi theo tốc độ tỉ lệ với thiếu hụt ấy — ở RH 60% nhanh tới
+**41 phút**, ở RH 95% chậm tới **5,5 giờ**, gấp đúng **8 lần**. Cùng áo, cùng
+ánh nắng, cùng phơi ngoài, nhưng thiếu hụt 8 lần nhỏ hơn thì thời gian gấp
+8 lần lâu hơn.
+
+## Tấm màng ẩm xung quanh vải không bao giờ yên
+
+Mỗi phân tử nước thoát khỏi sợi vải thành hơi nước không phải tự do bay vào
+không khí — nó phải chinh phục một lớp không khí gần vải [rất ẩm và gần như
+không chuyển động](/vi/posts/so-reynolds-vi-khuan-boi-trong-mat-ong). Lớp này
+gọi là **lớp biên giới** (boundary layer), cục diện tích nhỏ bằng sợi vải,
+dầy vài milli-mét, ẩm gần tới 100%. Hơi nước từ vải phải khuyếch tán qua
+lớp ấy rồi mới tỏa ra không khí chung.
+
+Tốc độ khuyếch tán tỉ lệ với độ dốc nồng độ: nó bao nhiêu phụ thuộc vào
+cách không khí chung **cách xa bao lâu khi đạt tới 30% RH** thay vì 99% rồi.
+Mô hình đơn giản cho thời gian khô là:
+
+```
+t = m_nước / (h_m · A · ρ_bh(T) · (1 − RH))
+```
+
+Rút ra: **thời gian khô tỉ lệ nghịch với thiếu hụt hơi**, tức là **tỉ lệ
+thuận với 1/(1 − RH)**. Ở RH 95% thì mẫu số chỉ 0,05; ở RH 60% là 0,40 —
+hiệu 8 lần đúng như vậy.
+
+## Gió là chìa khoá tăng tốc độ bay hơi
+
+Ở nhà trong trời nồm, quần áo mãi không khô. Cùng độ ẩm, nhưng ra ban công
+có gió **tăng tốc độ bay hơi ba tới năm lần**. Gió không làm không khí chung
+khô đi — RH vẫn 95%, nhưng gió liên tục **thổi lớp ẩm quanh vải đi**, thay
+thế nó bằng không khí từ phía khác, nơi thiếu hụt lại bằng 95% RH của không
+khí chung.
+
+Kỹ sư gọi hiệu ứng này là **tăng hệ số truyền khối** (mass transfer
+coefficient): gió tăng giá trị h_m, làm tử số của công thức bay hơi tăng.
+Chỉ cần **gió 1 m/s là đã tăng 50% tốc độ**. Đó chính là lý do những ngày trời
+tĩnh lặng mặc dù ấm nắng quần áo vẫn khô chậm — không phải nhiệt độ thấp,
+mà là gió thiếu quỷ quái: thiếu hụt hơi chỗ ở không khí, và lớp ẩm quanh
+vải không thay thế được.
+
+## Bạn không thể sấy quần áo ở phòng kín nước
+
+[Treo quần áo trong nhà ẩm không bao giờ khô](/vi/posts/tuong-day-22-cm-va-buoi-trua-den-cham)
+— phòng kín gió thì không khí ấy chứa 30 g/m³ hơi nước từ mọi nguồn, và quần áo thêm lại cho tới khi chạm cân bằng với không khí. Không khí không bao giờ đủ khô để khô vắt hết
+được.
+
+Mở cửa sổ hay quạt để thay không khí mới — đó là **toàn bộ bí quyết**. Quạt
+máy không tỏ tác dụng ở RH 95%, nhưng ở RH 70% thì hiệu quả. Bạn cần gió từ
+bên ngoài, nơi nó khô hơn, hoặc ít nhất là không khí mới thay thế cá nhân
+không khí bão hoà quanh vải.
+
+## Trường hợp biên: trời 100% ẩm
+
+Khi RH = 100%, mẫu số công thức về 0 và thời gian khô theo đúng toán học là
+**vô hạn**: quần áo không bao giờ khô. Điều đó đúng với bề mặt vải — nước
+trên vải không bay hơi được một hơi nữa. Nhưng trên thực tế còn hai kênh
+thoát nước khác. **Thứ nhất**: [bức xạ mặt trời](/vi/posts/nhiet-an-hai-quang-nhiet-ke-dung-im) — nắng nung
+vải nóng hơn không khí vài độ, nâng độ bão hoà ngay tại bề mặt vải lên cao
+hơn của không khí chung, tạo ra thiếu hụt địa phương dù không khí ngoài đầy
+ẩm. Dưới mưa hay trời u ám, lúc nào cũng mát hơn vải nên cơ chế ấy sập.
+**Thứ hai**: ở dưới 0 °C, nước đóng băng rồi [**thăng hoa**](/vi/posts/chu-ky-ban-ra-khong-hat-nao-biet-tuoi-minh)
+— đá bay hơi trực tiếp thành hơi nước mà không qua nước lỏng, chậm hơn nhiều
+nhưng vẫn khô được. Đó chính là nguyên lý của sấy đông khô, bộ máy có pin
+để giặt đồ trên núi cao.

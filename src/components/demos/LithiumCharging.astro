@@ -1,0 +1,200 @@
+---
+// Lithium battery CC-CV charging curve. CC phase: t = s·C/I where s is state of charge
+// (0-1), C is capacity (mAh), I is current (mA). CV phase: t = −τ·ln[1−(s−s_CV)/(1−s_CV)],
+// τ = (1−s_CV)·C/I. Valid for I from 0.5C to 2C, threshold 50-90%. Curve shows battery %
+// and charging current vs time; readout shows times to key milestones.
+---
+
+<figure class="demo" data-demo="sac-pin-cc-cv-va-cai-duoi-ham-mu">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Dòng sạc (A) <output data-out="i"></output>
+      <input type="range" data-in="i" min="0.5" max="8" step="0.1" value="3" /></label>
+    <label>Dung lượng (mAh) <output data-out="c"></output>
+      <input type="range" data-in="c" min="2000" max="6000" step="100" value="5000" /></label>
+    <label>Ngưỡng CV (%) <output data-out="t"></output>
+      <input type="range" data-in="t" min="50" max="90" step="1" value="80" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Sạc pin lithium hai giai đoạn: trước tiên dòng không đổi (CC, đường thẳng) cho tới
+    điện áp ngưỡng, rồi điện áp không đổi (CV, dòng tắt dần theo hàm mũ). Đoạn cuối
+    kéo dài vì dòng giảm tiệp cận 0, nên 100% không bao giờ tới về toán học — thiết bị
+    tuyên bố đầy khi dòng xuống mức C/20.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const CURVE = '#2563eb', MARK = '#dc2626', CURRENT = '#f59e0b';
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (k: string) => root.querySelector(`[data-in="${k}"]`) as HTMLInputElement;
+    const output = (k: string) => root.querySelector(`[data-out="${k}"]`) as HTMLOutputElement;
+
+    // CC phase time in minutes: t = s·C / I, where I in mA
+    // CV phase time in minutes: t = −τ·ln[1 − (s − s_CV)/(1 − s_CV)], τ = (1−s_CV)·C/I in minutes
+    function timeCC(s: number, C_mAh: number, I_A: number): number {
+      return (s * C_mAh) / (I_A * 1000) * 60; // return minutes
+    }
+
+    function timeCVtillState(s: number, C_mAh: number, I_A: number, s_CV: number): number {
+      if (s <= s_CV) return 0;
+      const tau_min = ((1 - s_CV) * C_mAh) / (I_A * 1000) * 60; // time constant in minutes
+      return -tau_min * Math.log(1 - (s - s_CV) / (1 - s_CV));
+    }
+
+    function currentAtState(s: number, I_A: number, s_CV: number): number {
+      if (s <= s_CV) return I_A;
+      // In CV phase, current decays as I = I_max · exp(−(s−s_CV)/(1−s_CV))
+      return I_A * Math.exp(-(s - s_CV) / (1 - s_CV));
+    }
+
+    function draw() {
+      const I_A = Number(input('i').value);
+      const C_mAh = Number(input('c').value);
+      const s_CV_pct = Number(input('t').value);
+      const s_CV = s_CV_pct / 100;
+
+      output('i').textContent = I_A.toFixed(1).replace('.', ',');
+      output('c').textContent = C_mAh.toLocaleString('vi-VN');
+      output('t').textContent = s_CV_pct;
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.5);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+
+      // Compute key times
+      const t_CC_end = timeCC(s_CV, C_mAh, I_A); // time at CV threshold
+      const t_95 = timeCC(s_CV, C_mAh, I_A) + timeCVtillState(0.95, C_mAh, I_A, s_CV);
+      const t_99 = timeCC(s_CV, C_mAh, I_A) + timeCVtillState(0.99, C_mAh, I_A, s_CV);
+
+      const t_max = t_99 * 1.1; // leave 10% space
+      const padL = 48, padB = 32, padT = 12, padR = 10;
+
+      // X axis: time (minutes), Y1 axis: battery % (left), Y2 axis: current A (right)
+      const X = (t: number) => padL + (t / t_max) * (cssW - padL - padR);
+      const Y_pct = (pct: number) => cssH - padB - (pct / 100) * (cssH - padB - padT);
+      const Y_curr = (curr: number) => cssH - padB - (curr / I_A) * (cssH - padB - padT);
+
+      // Draw axes
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.3;
+      ctx.beginPath(); ctx.moveTo(padL, padT); ctx.lineTo(padL, cssH - padB); ctx.lineTo(cssW - padR, cssH - padB); ctx.stroke();
+      ctx.globalAlpha = 0.55; ctx.fillStyle = fg; ctx.font = '10px system-ui,sans-serif';
+
+      // Time axis labels
+      ctx.textAlign = 'center';
+      for (const mins of [0, 30, 60, 90, 120, 150, 180]) {
+        if (mins <= t_max) ctx.fillText(`${mins} phút`, X(mins), cssH - padB + 14);
+      }
+
+      // Battery % labels (left)
+      ctx.textAlign = 'right';
+      for (const pct of [0, 25, 50, 75, 100]) {
+        ctx.fillText(`${pct}%`, padL - 4, Y_pct(pct) + 3);
+      }
+
+      // Current labels (right)
+      ctx.textAlign = 'left';
+      for (let curr = 0; curr <= I_A; curr += (I_A > 2 ? 1 : 0.5)) {
+        if (curr > 0.1) ctx.fillText(`${curr.toFixed(1).replace('.', ',')} A`, cssW - padR + 4, Y_curr(curr) + 3);
+      }
+
+      ctx.globalAlpha = 1;
+
+      // Draw CC phase: linear battery %, constant current
+      ctx.strokeStyle = CURVE; ctx.lineWidth = 2.5; ctx.beginPath();
+      for (let i = 0; i <= 100; i++) {
+        const s = (i / 100) * s_CV;
+        const t = timeCC(s, C_mAh, I_A);
+        const y = Y_pct(s * 100);
+        i ? ctx.lineTo(X(t), y) : ctx.moveTo(X(t), y);
+      }
+      ctx.stroke();
+
+      // Draw CV phase: exponential battery %, exponential current decay
+      ctx.beginPath();
+      for (let i = 0; i <= 100; i++) {
+        const s = s_CV + (i / 100) * (0.99 - s_CV);
+        const t = timeCC(s_CV, C_mAh, I_A) + timeCVtillState(s, C_mAh, I_A, s_CV);
+        if (t > t_max * 1.05) break; // stop if we go way over
+        const y = Y_pct(s * 100);
+        i ? ctx.lineTo(X(t), y) : ctx.moveTo(X(t), y);
+      }
+      ctx.stroke();
+
+      // Draw current curve (constant then exponential decay)
+      ctx.strokeStyle = CURRENT; ctx.lineWidth = 2;
+      ctx.beginPath();
+      for (let i = 0; i <= 200; i++) {
+        const t = (i / 200) * t_max;
+        let curr = I_A;
+        // Find state at this time
+        if (t <= t_CC_end) {
+          curr = I_A; // CC phase, constant current
+        } else {
+          // CV phase: solve for s given t
+          const t_CV = t - t_CC_end;
+          const tau_min = ((1 - s_CV) * C_mAh) / (I_A * 1000) * 60;
+          // t_CV = −τ·ln[1 − (s − s_CV)/(1 − s_CV)]
+          // exp(−t_CV/τ) = 1 − (s − s_CV)/(1 − s_CV)
+          // (s − s_CV)/(1 − s_CV) = 1 − exp(−t_CV/τ)
+          // s = s_CV + (1 − s_CV)·(1 − exp(−t_CV/τ))
+          const s = s_CV + (1 - s_CV) * (1 - Math.exp(-t_CV / tau_min));
+          curr = currentAtState(s, I_A, s_CV);
+        }
+        const y = Y_curr(curr);
+        i ? ctx.lineTo(X(t), y) : ctx.moveTo(X(t), y);
+      }
+      ctx.stroke();
+
+      // Mark key points with vertical lines
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.2; ctx.lineWidth = 1;
+      for (const [t, s] of [[t_CC_end, s_CV], [t_95, 0.95], [t_99, 0.99]]) {
+        if (t <= t_max) {
+          ctx.beginPath(); ctx.moveTo(X(t), padT); ctx.lineTo(X(t), cssH - padB); ctx.stroke();
+        }
+      }
+      ctx.globalAlpha = 1;
+
+      // Readout
+      const timeText = (t: number) => {
+        const h = Math.floor(t / 60);
+        const m = Math.round(t % 60);
+        return h > 0 ? `${h}h${m} phút` : `${m} phút`;
+      };
+
+      const lastChargePct = 99 - s_CV_pct;
+      const lastChargeTime = t_99 - t_CC_end;
+      const lastChargePctOfTotal = (lastChargeTime / t_99) * 100;
+
+      readout.innerHTML =
+        `Pin ${C_mAh.toLocaleString('vi-VN')} mAh, sạc ${I_A.toFixed(1).replace('.', ',')} A · ` +
+        `0→${s_CV_pct}%: ${timeText(t_CC_end)} · ` +
+        `${s_CV_pct}→95%: ${timeText(t_95 - t_CC_end)} · ` +
+        `<b>${lastChargePct}% cuối chiếm ${lastChargePctOfTotal.toFixed(0)}% tổng thời gian</b>`;
+    }
+
+    root.querySelectorAll('input').forEach((el) => el.addEventListener('input', draw));
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="sac-pin-cc-cv-va-cai-duoi-ham-mu"]').forEach(setup);
+</script>

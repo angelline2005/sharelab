@@ -1,0 +1,52 @@
+---
+title: "Ống bơm nóng tay: không khí bên trong vừa chạm 156 °C"
+seoTitle: "Nén đoạn nhiệt: vì sao ống bơm xe nóng lên và diesel không cần bugi"
+description: "Nén nhanh tới mức nhiệt chưa kịp thoát, toàn bộ công dồn vào chính khối khí: bơm lên 3 bar là không khí vọt lên 180 °C. Cùng một công thức cho tỉ số nén 18 của động cơ diesel ra 658 °C — thừa sức đốt dầu, nên diesel không có bugi."
+pubDate: 2026-09-02
+tags: ["vat-ly", "nhiet-hoc", "javascript"]
+translationId: "nen-doan-nhiet-bom-xe-va-dong-co-diesel"
+---
+
+import AdiabaticCompression from '../../../components/demos/AdiabaticCompression.astro';
+
+Bóp ống bơm xe đạp mấy phát rồi chạm vào, bạn cảm thấy nó sizzle — không khí
+ở lỗ ra nóng lạ, lạnh lẽo. Không ai bơm thêm lửa vào đó. Thứ làm nóng là chính
+công suất cơ bàn tay bạn, và tốc độ bóp:
+
+<AdiabaticCompression />
+
+## Công pháp biến thành khí nóng
+
+Khi bạn bóp ống bơm **nhanh** đến mức không khí chưa kịp thoát qua lỗ nhỏ, toàn bộ công cơ học không có đâu để chuyển thành công đẩy không khí ra — nó dồn hết vào chính khối khí đó. [Phương trình khí lý tưởng](/vi/posts/phuong-trinh-khi-ly-tuong-va-cai-bay-do-c) cho thấy nếu không khí không mất nhiệt (quá trình **đoạn nhiệt**, từ "adiabatic"), thì mọi công thêm vào biến thành năng lượng nội, tức là chuyển động loạn xạ của phân tử, tức là **nhiệt độ tăng**. Công thức chính xác — nó cũng là khái niệm duy nhất bạn cần nhớ:
+
+```
+T₂ = T₁ · r^(γ−1)
+```
+
+Ở đây r là tỉ số nén (áp suất cuối chia áp suất đầu), γ (gamma) là hệ số đặc trưng của khí (không khí khoảng 1,40), T là nhiệt độ tuyệt đối (kelvin). Bơm xe đạp từ khí quyển (~1 bar) lên 3 bar là r = 3, không khí 20 °C (293 K) biến thành **180 °C** — đúng cảm giác bạn bóp được. Bơm lên 3,5 bar (r = 3,5)? 210 °C, đủ nóng để khó chịu.
+
+Nhưng công thức này cũng giải thích một thứ khác lạ hơn nhiều.
+
+## Diesel không cần bugi vì công thức ấy
+
+Một động cơ diesel nén không khí từ 1 bar lên **18 bar** — đó là tỉ số nén r = 18 của diesel. Thế thì:
+
+```
+T₂ = 293 K · 18^0,4 ≈ 932 K ≈ 658 °C
+```
+
+Đó là không khí adiabatic lý tưởng — thừa sức đốt dầu diesel, dầu tự bắt lửa từ 210 °C trở lên. Xăng máy bencyl cần khoảng 500 °C mới tự cháy, nên xăng bất lực ở chế độ nén này — chúng ta cần bugi. Bạn có thể nói diesel được nén thành **bật lửa của nó**.
+
+Tỉ số nén không phải đặc trưng tùy tiện. Nó là ranh giới sinh tử của sự tác động: vừa đủ để bắt lửa dầu, nhưng không quá để bộ xi lanh nổ tung. Những chiếc diesel "mạnh" chế độ chạy hơn tỉ số nén cao hơn, 19 hay 20, để tăng công — nhưng sự đánh cân bằng giữa công tối đa và an toàn là dựa lên công thức này.
+
+## Tốc độ nén quyết định tất cả
+
+Nhưng có một chi tiết: nếu bạn bóp ống bơm **từ từ**, không khí nóng lên một chút thôi, còn lạnh lẽo. Vì sao? Khi bóp chậm, không khí có thời gian thoát qua lỗ nhỏ, tỏa nhiệt ra ngoài thành ống — quá trình trở thành **đẳng nhiệt** (nhiệt độ ngoài không đổi), và công chỉ đi vào đẩy không khí ra, chứ không đi vào nóng nó. Cùng một cú bóp: nhanh hay chậm cho hai kết quả khác hẳn nhau.
+
+Đó chính là vì sao máy nén công nghiệp phải có hệ tống khí lạnh — nó tránh chuyện khí quá nóng làm cho dầu bôi trơn bốc hơi, van bị kẹt, hoặc piston gặp mắc. Hoặc ngược lại: động cơ diesel hiện đại ráp lạnh EGR (exhaust gas recirculation) là phần khí đã cháy, được mát lại khi tái tuần hoàn vào buồng nén, để hạ nhiệt độ cuối nén và giảm khí NOx độc hại — công thức ấy lên hay xuống, chúng ta đều hiểu hậu quả.
+
+## Trường hợp biên: ống mồi lửa và thang kim loại
+
+Ở phía kia của công thức nằm một dụng cụ cổ xưa, "ống mồi lửa" (fire piston), từ Đông Nam Á. Nó chỉ là một ống dài với piston bên trong — bóp piston nhanh tính lên, tỉ số nén đạt **r = 25** trong một nhịp tay. Theo công thức, không khí chạm **789 °C**. Đặt một miệng dribs bùi nhùi bông (cotton tinder, tự cháy từ 400 °C) vào cuối ống, một cú bóp đã đốt bùi đỏ hồi hỉ. Không có lửa thực, không có tia — chỉ có công cơ học và một cái công thức hai trăm năm mươi năm tuổi. Đó là bằng chứng cổ nhất rằng khí nén **tự nóng**, không phải độc quyền của xăng hay dầu.
+
+Thứ bảo vệ piston khỏi bị khép là một vòng dầu mỏng — nó cách nhiệt dù chỉ là không khí chứa 800 độ, chứng tỏ lại rằng [không khí là cách nhiệt tuyệt vời](/vi/posts/vi-sao-kim-loai-so-vao-thay-lanh) khi nó đứng yên. Nhưng quá trình đoạn nhiệt lại là thế: nó là **cơ chế duy nhất** không cần tới bất kỳ vật liệu cách nhiệt nào. Chỉ cần nén nhanh.

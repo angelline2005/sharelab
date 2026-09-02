@@ -1,0 +1,156 @@
+---
+// Bell–CHSH inequality: E(θ) = −cos(2θ), quantum max 2√2 ≈ 2.828 vs classical 2.
+// Optimal angles: a=0°, a'=45°, b=22.5°, b'=67.5°.
+// Slider for detector efficiency to show how imperfect measurements lower S below 2.
+---
+
+<figure class="demo" data-demo="bat-dang-thuc-bell-va-con-so-2-828">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Hiệu suất máy dò (%)
+      <output data-out="eff"></output>
+      <input type="range" data-in="eff" min="60" max="100" step="1" value="100" />
+    </label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Đường xanh: tương quan lượng tử E(θ) = −cos(2θ). Đường gấp khúc: trần cổ điển từ
+    mô hình biến ẩn cục bộ. Bốn chấm chỉ góc CHSH tối ưu (a=0°, a'=45°, b=22,5°, b'=67,5°),
+    cộng bốn giá trị lại được S. Kéo thanh hiệu suất xuống, S tụt dưới 2 vì mất máy dò
+    giống như thêm không tương quan — đó là "lỗ hổng phát hiện".
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const CURVE = '#2563eb', MARK = '#dc2626', CLASSICAL = '#f59e0b';
+  const BELL_QUANTUM = 2 * Math.sqrt(2);
+  const BELL_CLASSICAL = 2;
+
+  // E(θ) = -cos(2θ) where θ is angle difference between analyzer settings
+  const E = (theta_deg: number) => -Math.cos(2 * theta_deg * Math.PI / 180);
+
+  // CHSH calculation with efficiency factor
+  const computeS = (eff: number) => {
+    const a = 0, ap = 45, b = 22.5, bp = 67.5;
+
+    // With detector efficiency η, each E value becomes η·E + (1-η)·0 = η·E
+    const Eab = E(Math.abs(a - b)) * eff;
+    const Eabp = E(Math.abs(a - bp)) * eff;
+    const Eapb = E(Math.abs(ap - b)) * eff;
+    const Eapbp = E(Math.abs(ap - bp)) * eff;
+
+    return Math.abs(Eab - Eabp + Eapb + Eapbp);
+  };
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const slider = root.querySelector('[data-in="eff"]') as HTMLInputElement;
+    const out = root.querySelector('[data-out="eff"]') as HTMLOutputElement;
+
+    function draw() {
+      const eff = Number(slider.value) / 100;
+      out.textContent = String(Number(slider.value));
+      const S = computeS(eff);
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.55);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+
+      const padL = 50, padB = 26, padT = 12, padR = 15;
+      const yLo = -1, yHi = 3;
+      const X = (deg: number) => padL + (deg / 180) * (cssW - padL - padR);
+      const Y = (val: number) => padT + ((yHi - val) / (yHi - yLo)) * (cssH - padB - padT);
+
+      // Grid and axes
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.3;
+      ctx.beginPath(); ctx.moveTo(padL, padT); ctx.lineTo(padL, cssH - padB); ctx.lineTo(cssW - padR, cssH - padB); ctx.stroke();
+      ctx.globalAlpha = 0.55; ctx.fillStyle = fg; ctx.font = '10px system-ui,sans-serif';
+      ctx.textAlign = 'center';
+      for (const d of [0, 45, 90, 135, 180]) ctx.fillText(`${d}°`, X(d), cssH - padB + 14);
+      ctx.textAlign = 'right';
+      for (const v of [-1, 0, 1, 2, 3]) ctx.fillText(String(v), padL - 4, Y(v) + 3);
+
+      // Horizontal lines at S=2 (classical) and S=2√2 (quantum)
+      ctx.globalAlpha = 0.4;
+      ctx.strokeStyle = CLASSICAL;
+      ctx.beginPath(); ctx.moveTo(padL, Y(BELL_CLASSICAL)); ctx.lineTo(cssW - padR, Y(BELL_CLASSICAL)); ctx.stroke();
+      ctx.fillStyle = CLASSICAL; ctx.textAlign = 'left'; ctx.globalAlpha = 0.5;
+      ctx.fillText('S = 2 (cổ điển)', padL + 40, Y(BELL_CLASSICAL) - 3);
+
+      ctx.strokeStyle = CURVE;
+      ctx.beginPath(); ctx.moveTo(padL, Y(BELL_QUANTUM)); ctx.lineTo(cssW - padR, Y(BELL_QUANTUM)); ctx.stroke();
+      ctx.fillStyle = CURVE; ctx.globalAlpha = 0.5;
+      ctx.fillText(`S = 2√2 = ${BELL_QUANTUM.toFixed(3)} (lượng tử)`, padL + 40, Y(BELL_QUANTUM) + 9);
+      ctx.globalAlpha = 1;
+
+      // Classical linear bound: |E| ≤ 1, so max S is 4·(1/2) = 2 at best
+      // Actually, for CHSH, the classical bound is E(θ) ∈ [-1, 1] with only special structure possible
+      // Linear approximation as upper envelope
+      ctx.strokeStyle = CLASSICAL; ctx.lineWidth = 2; ctx.globalAlpha = 0.6;
+      ctx.beginPath();
+      ctx.moveTo(X(0), Y(1));
+      ctx.lineTo(X(45), Y(1));
+      ctx.lineTo(X(90), Y(-1));
+      ctx.lineTo(X(135), Y(-1));
+      ctx.lineTo(X(180), Y(1));
+      ctx.stroke(); ctx.lineWidth = 1; ctx.globalAlpha = 1;
+
+      // Quantum curve E(θ) = -cos(2θ)
+      ctx.strokeStyle = CURVE; ctx.lineWidth = 2.5; ctx.globalAlpha = 0.8; ctx.beginPath();
+      for (let i = 0; i <= 180; i += 0.5) {
+        const val = E(i) * eff; // apply efficiency
+        i === 0 ? ctx.moveTo(X(i), Y(val)) : ctx.lineTo(X(i), Y(val));
+      }
+      ctx.stroke(); ctx.lineWidth = 1; ctx.globalAlpha = 1;
+
+      // Mark four CHSH angles
+      const angles = [0, 45, 22.5, 67.5];
+      const labels = ['a=0°', "a'=45°", 'b=22,5°', "b'=67,5°"];
+      const colors = ['#10b981', '#06b6d4', '#f59e0b', '#ec4899'];
+
+      angles.forEach((angle, idx) => {
+        const val = E(angle) * eff;
+        ctx.fillStyle = colors[idx];
+        ctx.beginPath(); ctx.arc(X(angle), Y(val), 5, 0, Math.PI * 2); ctx.fill();
+      });
+
+      // Readout with S calculation
+      const a = 0, ap = 45, b = 22.5, bp = 67.5;
+      const Eab = E(Math.abs(a - b)) * eff;
+      const Eabp = E(Math.abs(a - bp)) * eff;
+      const Eapb = E(Math.abs(ap - b)) * eff;
+      const Eapbp = E(Math.abs(ap - bp)) * eff;
+
+      const violate = S > BELL_CLASSICAL;
+      const note = violate ? ' · <b>vượt trần cổ điển</b>' : '';
+      const effNote = eff < 1 ? ` · hiệu suất ${(eff * 100).toFixed(0)}% → S = ${S.toFixed(3)}` : '';
+
+      readout.innerHTML =
+        `E(0°,22,5°) + E(0°,67,5°) + E(45°,22,5°) + E(45°,67,5°) = ` +
+        `${Eab.toFixed(3)} - ${Eabp.toFixed(3)} + ${Eapb.toFixed(3)} + ${Eapbp.toFixed(3)} = ` +
+        `<b>S = ${S.toFixed(3)}</b>${note}${effNote}`;
+    }
+
+    slider.addEventListener('input', draw);
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="bat-dang-thuc-bell-va-con-so-2-828"]').forEach(setup);
+</script>

@@ -1,0 +1,187 @@
+---
+// Dipole magnetic field lines: r = L·R_earth·cos²(λ)
+// where L is the field line parameter (distance along equator in Earth radii),
+// λ is magnetic latitude, r is distance from Earth center.
+// Field line touches ground where r = R_earth → cos(λ) = 1/√L
+// Valid for L = 1.2–12 Earth radii; aurora oval at L ≈ 6.6, latitude ≈ 67°.
+---
+
+<figure class="demo" data-demo="cuc-quang-la-ban-do-cua-duong-suc-tu">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Tham số L của đường sức: <output data-out="L"></output>
+      <input type="range" data-in="L" min="1.2" max="12" step="0.2" value="6.6" /></label>
+    <label>Vĩ độ từ của bạn: <output data-out="lat"></output>
+      <input type="range" data-in="lat" min="0" max="80" step="1" value="13" /></label>
+    <label>Độ cao phát sáng: <output data-out="alt"></output>
+      <input type="range" data-in="alt" min="90" max="400" step="10" value="100" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Đường sức từ trong không gian xung quanh Trái Đất theo hình lưỡng cực. Hạt từ gió
+    mặt trời trượt dọc các đường sức này. Kéo thanh L để xem đường sức tìm chân
+    nó ở độ cao nào; kéo vĩ độ để xem field line qua vị trí bạn chỉ cao tới đâu.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const R = 6371; // Earth radius in km
+  const CURVE = '#2563eb', MARK = '#dc2626', THIRD = '#f59e0b';
+
+  const footpointLat = (L: number): number => {
+    // cos(λ) = 1/√L → λ = acos(1/√L) in radians
+    return Math.acos(1 / Math.sqrt(L)) * 180 / Math.PI;
+  };
+
+  const maxAltitude = (L: number): number => {
+    // At equator (λ = 0): r = L·R
+    return L * R - R;
+  };
+
+  const fieldLineAtEquator = (L: number): number => {
+    return L * R;
+  };
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (k: string) => root.querySelector(`[data-in="${k}"]`) as HTMLInputElement;
+    const output = (k: string) => root.querySelector(`[data-out="${k}"]`) as HTMLOutputElement;
+
+    function draw() {
+      const L = parseFloat(input('L').value);
+      const lat = parseInt(input('lat').value);
+      const alt = parseInt(input('alt').value);
+
+      output('L').textContent = L.toFixed(1);
+      output('lat').textContent = lat.toString() + '°';
+      output('alt').textContent = alt.toString();
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32;
+      const cssH = Math.round(cssW * 0.55);
+      canvas.width = cssW * dpr;
+      canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+
+      const pad = 40;
+      const cx = cssW / 2;
+      const cy = cssH - pad - 20;
+      const scale = (cssW - 2 * pad) / 28; // 14 Earth radii across
+
+      // Draw Earth
+      ctx.fillStyle = '#1f2937';
+      ctx.beginPath();
+      ctx.arc(cx, cy, R * scale, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Draw aurora altitude band (90-400 km)
+      ctx.fillStyle = THIRD;
+      ctx.globalAlpha = 0.15;
+      ctx.beginPath();
+      ctx.arc(cx, cy, 400 * scale, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.clearRect(cx - 90 * scale, cy - 90 * scale, 180 * scale, 180 * scale);
+      ctx.beginPath();
+      ctx.arc(cx, cy, 90 * scale, 0, Math.PI * 2);
+      ctx.fill('evenodd');
+      ctx.globalAlpha = 1;
+
+      // Draw several field lines
+      const Ls = [1.2, 2.5, 4, 6.6, 8, 10];
+      Ls.forEach((LL) => {
+        const latRad = footpointLat(LL) * Math.PI / 180;
+        ctx.strokeStyle = LL === L ? CURVE : fg;
+        ctx.globalAlpha = LL === L ? 1 : 0.3;
+        ctx.lineWidth = LL === L ? 2 : 1;
+        ctx.beginPath();
+
+        for (let i = 0; i <= 100; i++) {
+          const angle = -Math.PI / 2 + (i / 100) * Math.PI; // from south pole to north pole
+          const latMag = angle * 180 / Math.PI;
+          const latMagRad = angle;
+          const r = LL * R * Math.pow(Math.cos(latMagRad), 2);
+          const x = cx + r * scale * Math.cos(latMagRad);
+          const y = cy - r * scale * Math.sin(Math.abs(latMagRad));
+          if (i === 0) ctx.moveTo(x, y);
+          else ctx.lineTo(x, y);
+        }
+        ctx.stroke();
+      });
+
+      ctx.globalAlpha = 1;
+      ctx.strokeStyle = fg;
+      ctx.lineWidth = 1;
+
+      // Draw equator line (lightly)
+      ctx.globalAlpha = 0.2;
+      ctx.beginPath();
+      ctx.moveTo(cx - 12 * R * scale, cy);
+      ctx.lineTo(cx + 12 * R * scale, cy);
+      ctx.stroke();
+      ctx.globalAlpha = 1;
+
+      // Mark footpoint of selected field line
+      const fpLat = footpointLat(L);
+      const fpLatRad = fpLat * Math.PI / 180;
+      const x_fp = cx + R * scale * Math.cos(fpLatRad);
+      const y_fp = cy - R * scale * Math.sin(fpLatRad);
+      ctx.fillStyle = MARK;
+      ctx.beginPath();
+      ctx.arc(x_fp, y_fp, 5, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Draw axes labels
+      ctx.fillStyle = fg;
+      ctx.globalAlpha = 0.5;
+      ctx.font = '10px system-ui,sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('Xích đạo', cx, cy + 18);
+      ctx.textAlign = 'right';
+      ctx.fillText('Bắc cực', cx - R * scale - 4, cy - R * scale);
+      ctx.textAlign = 'left';
+      ctx.fillText('Nam cực', cx + R * scale + 4, cy - R * scale);
+      ctx.globalAlpha = 1;
+
+      // Compute and display readout
+      const fpLatitude = footpointLat(L);
+      const maxAlt = maxAltitude(L);
+
+      // Check if field line passes through observer's latitude
+      // A field line with parameter L only goes up to latitude ±arccos(1/√L)
+      const maxLatForObs = footpointLat(L);
+      let obsNote = '';
+      if (lat <= maxLatForObs) {
+        const obsLatRad = lat * Math.PI / 180;
+        const obsR = L * R * Math.pow(Math.cos(obsLatRad), 2);
+        const obsAlt = obsR - R;
+        obsNote = ` · ở vĩ độ ${lat}° đường sức chỉ cao <b>${obsAlt.toFixed(0)} km</b>`;
+      } else {
+        obsNote = ` · ở vĩ độ ${lat}° không có đường sức L = ${L.toFixed(1)}`;
+      }
+
+      readout.innerHTML =
+        `L = ${L.toFixed(1)} (quỹ đạo địa tĩnh ≈ 6,6) → chân đường sức ở <b>${fpLatitude.toFixed(1)}°</b>, đỉnh cao <b>${maxAlt.toFixed(0)} km</b>${obsNote}`;
+    }
+
+    root.querySelectorAll('input').forEach((el) => el.addEventListener('input', draw));
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="cuc-quang-la-ban-do-cua-duong-suc-tu"]').forEach(setup);
+</script>

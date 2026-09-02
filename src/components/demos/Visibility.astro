@@ -1,0 +1,131 @@
+---
+// Visibility in fog: Koschmieder formula C(d) = C₀·e^(−σ·d), σ = 3.912/V
+// V is the meteorological visibility distance (where contrast drops to 2%)
+// Valid for all fog conditions; demonstrates contrast extinction with distance
+---
+
+<figure class="demo" data-demo="tam-nhin-trong-suong-mu-va-den-pha">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Tầm nhìn khí tượng V (m) <output data-out="v"></output>
+      <input type="range" data-in="v" min="10" max="2000" step="10" value="50" /></label>
+    <label>Khoảng cách tới vật (m) <output data-out="d"></output>
+      <input type="range" data-in="d" min="5" max="500" step="5" value="100" /></label>
+    <label>Tương phản gốc vật (%) <output data-out="c0"></output>
+      <input type="range" data-in="c0" min="10" max="100" step="5" value="100" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Công thức Koschmieder: tương phản của vật giảm theo hàm mũ với hệ số tắt
+    σ = 3,912/V. Đường cong xanh là tương phản còn lại; đường ngang 2% là ngưỡng
+    mắt. Giao điểm chính là tầm nhìn: chỗ vật vừa biến mất khỏi tầm nhìn. Tăng
+    công suất đèn nhân cả vật lẫn nền sương lên cùng một hệ số, nên nó không thêm
+    tầm nhìn.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const CURVE = '#2563eb', MARK = '#dc2626', THRESHOLD = '#f59e0b';
+
+  const visibility = (d: number, V: number): number => {
+    const sigma = 3.912 / V;
+    return Math.exp(-sigma * d);
+  };
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (k: string) => root.querySelector(`[data-in="${k}"]`) as HTMLInputElement;
+    const output = (k: string) => root.querySelector(`[data-out="${k}"]`) as HTMLOutputElement;
+
+    function draw() {
+      const V = Number(input('v').value);
+      const d = Number(input('d').value);
+      const c0 = Number(input('c0').value) / 100;
+
+      output('v').textContent = V.toLocaleString('vi-VN');
+      output('d').textContent = d.toLocaleString('vi-VN');
+      output('c0').textContent = String(Number(input('c0').value));
+
+      const contrast = visibility(d, V) * c0;
+      const sigma = 3.912 / V;
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.5);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+
+      const padL = 50, padB = 28, padT = 12, padR = 10;
+      const X = (dd: number) => padL + (dd / 500) * (cssW - padL - padR);
+      const Y = (cc: number) => cssH - padB - Math.log(cc) / Math.log(0.001) * (cssH - padB - padT) / 3;
+
+      // Set up log scale: 100% at top, 1% = 2/3 down, 0.1% = full down
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.3;
+      ctx.beginPath(); ctx.moveTo(padL, padT); ctx.lineTo(padL, cssH - padB); ctx.lineTo(cssW - padR, cssH - padB); ctx.stroke();
+      ctx.globalAlpha = 0.55; ctx.fillStyle = fg; ctx.font = '10px system-ui,sans-serif';
+      ctx.textAlign = 'center';
+      for (const dd of [50, 100, 200, 300, 400, 500]) ctx.fillText(`${dd} m`, X(dd), cssH - padB + 14);
+      ctx.textAlign = 'right';
+      for (const cc of [1, 0.1, 0.01, 0.001]) {
+        const yy = Y(cc);
+        ctx.fillText(`${(cc * 100).toFixed(2).replace('.', ',')}%`, padL - 4, yy + 3);
+      }
+      ctx.globalAlpha = 1;
+
+      // Contrast curve: C(d) = C₀·e^(−σ·d)
+      ctx.strokeStyle = CURVE; ctx.lineWidth = 2.5; ctx.beginPath();
+      for (let i = 0; i <= 200; i++) {
+        const dd = (500 * i) / 200;
+        const cc = visibility(dd, V) * c0;
+        if (cc < 0.0001) continue;
+        const y = Y(cc);
+        i ? ctx.lineTo(X(dd), y) : ctx.moveTo(X(dd), y);
+      }
+      ctx.stroke(); ctx.lineWidth = 1;
+
+      // Threshold line at 2%
+      ctx.strokeStyle = THRESHOLD; ctx.globalAlpha = 0.5; ctx.setLineDash([4, 4]);
+      const thresholdY = Y(0.02);
+      ctx.beginPath(); ctx.moveTo(padL, thresholdY); ctx.lineTo(cssW - padR, thresholdY); ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.globalAlpha = 0.7; ctx.textAlign = 'left';
+      ctx.fillStyle = THRESHOLD;
+      ctx.fillText('ngưỡng 2%', padL + 6, thresholdY - 5);
+      ctx.globalAlpha = 1;
+
+      // Mark current point
+      ctx.fillStyle = MARK;
+      ctx.beginPath(); ctx.arc(X(d), Y(contrast), 7, 0, Math.PI * 2); ctx.fill();
+
+      // Visibility distance: where contrast = 2%
+      const V_actual_distance = -(V / 3.912) * Math.log(0.02 / c0);
+      const atThreshold = contrast <= 0.02;
+      const note = atThreshold ? ' · <b>vật đã vào vùng không nhìn thấy</b>' : '';
+
+      readout.innerHTML =
+        `tầm nhìn khí tượng ${V.toLocaleString('vi-VN')} m (σ = <b>${sigma.toFixed(4)}</b> m⁻¹) · vật ở ${d.toLocaleString('vi-VN')} m` +
+        ` · tương phản gốc ${(c0*100).toFixed(0)}% → còn <b>${(contrast*100).toFixed(3).replace('.', ',')}</b>% (ngưỡng 2%)` +
+        note;
+    }
+
+    root.querySelectorAll('input').forEach((el) => el.addEventListener('input', draw));
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="tam-nhin-trong-suong-mu-va-den-pha"]').forEach(setup);
+</script>

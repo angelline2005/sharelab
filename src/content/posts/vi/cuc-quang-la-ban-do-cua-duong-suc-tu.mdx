@@ -1,0 +1,90 @@
+---
+title: "Cực quang là vòng tròn ở vĩ độ 67°, và không đường sức nào đưa nó tới Hà Nội"
+seoTitle: "Vì sao cực quang chỉ xuất hiện ở vùng cực: đường sức lưỡng cực và vĩ độ 67°"
+description: "Hạt từ gió mặt trời không rơi thẳng xuống — nó trượt theo đường sức từ. Đường sức vươn tới 6,6 bán kính Trái Đất chạm mặt đất ở đúng vĩ độ 67°, và đó là bán kính vòng cực quang. Đường sức đi qua Hà Nội chỉ vươn cao 340 km, thấp hơn cả trạm ISS."
+pubDate: 2026-09-02
+tags: ["vat-ly", "dien-tu", "thien-van", "javascript"]
+translationId: "cuc-quang-la-ban-do-cua-duong-suc-tu"
+---
+
+import AuroraFieldLines from '../../../components/demos/AuroraFieldLines.astro';
+
+Cực quang ở Iceland, Alaska, Canada — ở Hà Nội chẳng bao giờ. Không phải vì xa, mà vì không đường sức từ nào dẫn tới đó. Hạt từ gió không rơi thẳng xuống mà **trượt theo đường sức từ**, như hạt sắt trên giấy dưới nam châm:
+
+<AuroraFieldLines />
+
+## Đường sức vươn tới 6,6 bán kính Trái Đất
+
+Từ trường của Trái Đất là lưỡng cực — hai cực từ ở hai đầu. Ở
+khoảng cách xa, đường sức thoát ra khỏi đại dương ngoài không gian: chúng vươn
+ra hàng chục bán kính Trái Đất rồi uốn cong quanh quỹ đạo geostationary
+(≈42 050 km từ tâm Trái Đất, hay 6,6 bán kính Trái Đất) thành một đuôi dài chỉ tới mặt trời. Công thức của
+một đường sức lưỡng cực trong không gian lấy một tham số L — khoảng cách tính từ
+tâm Trái Đất, ở trên xích đạo, tính bằng bán kính Trái Đất:
+
+```
+r(λ) = L · R_Trái Đất · cos²(λ)
+```
+
+Ở đây λ là vĩ độ từ (mục tiêu của bạn, từ xích đạo tới cực), r là khoảng cách
+từ tâm Trái Đất. Bạn có thể nhìn đây là một "tấm bản đồ": mỗi độ cao bạn muốn tới
+tương ứng với một vĩ độ từ nhất định **nếu bạn chọn đúng L**.
+
+Hạt từ gió mặt trời trượt vào không gian Trái Đất từ hướng mặt trời. Khi nó lao
+tới đường sức với L = 6,6 (vùng quỹ đạo địa tĩnh), nó **chạm mặt đất ở đúng vĩ độ
+67,1°**. Bởi vì: nếu r = R_Trái Đất (chạm đất), thì:
+
+```
+R_Trái Đất = 6,6 · R_Trái Đất · cos²(λ)
+cos(λ) = 1/√6,6 = 0,3893
+λ = 67,1°
+```
+
+Vòng tròn này ở vĩ độ 67° quanh cực gọi là **vòng cực quang** — aurora oval.
+Iceland (66° vĩ độ), Alaska (65–70°), vùng duyên hải phía Bắc Canada, Scandinavia
+đều nằm đúng dải này. Đó là tại sao: người ở những chỗ này nhìn thấy cực quang.
+
+## Ở Hà Nội, đường sức chỉ vươn cao 340 km
+
+Hà Nội ở 13° — quá xa vòng cực quang. Nhưng nếu tìm đường sức từ qua Hà Nội, nó sẽ ra sao? Hạt từ sẽ trượt dọc
+**một đường sức khác**, với L ≈ 1,053 — nhỏ hơn nhiều. Thay L vào:
+
+```
+r(13°) = 1,053 · R_Trái Đất · cos²(13°)
+       = 1,053 · 6 371 km · 0,9494
+       = 6 371 km + 335 km
+```
+
+Đường sức đi qua Hà Nội **vươn cao tối đa 340 km ở xích đạo**. So sánh: trạm ISS
+bay ở 400 km, nên nó **cao hơn hẳn** bất kỳ hạt từ gió nào dọc đường sức Hà Nội
+tới được. Đó là lý do Hà Nội không thể thấy cực quang: hạt từ gió không bao giờ
+xuống tới tầng khí quyển mà có thể phát sáng.
+
+Mỗi đường sức có tham số L của nó — quyết định vĩ độ chạm đất và độ cao ở xích đạo. [Hạt từ gió trượt dọc những đường sức ấy](/vi/posts/hat-tich-dien-trong-tu-truong-chu-ky-khong-can-toc-do), không bao giờ rời khỏi chúng.
+
+## Bão từ ép vòng cực quang xuống tới 48°
+
+Khi [bão từ mạnh](/vi/posts/gio-dia-chuyen-vi-sao-gio-thoi-doc-duong-dang-ap) ép vòng cực quang xuống phía xích đạo, aurora có thể xuất hiện ở vĩ độ **48°**. Người ở Pháp hay Mỹ vùng giữa đôi khi nhìn thấy cực quang — hiếm nhưng có thật.
+
+## Trường hợp biên: cuộc đua đồng hồ giữa xanh và đỏ
+
+Màu của cực quang không phải hoá học mà **vật lý một cuộc đua đồng hồ**. Hạt từ
+va chạm với nguyên tử oxy ở độ cao 100–400 km: nó kích thích oxy tới trạng thái
+điện tử cao hơn. Rồi oxy giải phóng năng lượng bằng hai con đường khác nhau —
+nhưng cần thời gian:
+
+**Ánh xanh (557,7 nm)** — oxy phát từ trạng thái ¹S tới ¹D, **0,7 giây** sau khi
+kích thích. Dưới 100 km, va chạm quá dày đặc: oxy không có 0,7 giây mà bị khác
+nguyên tử khác va chạm làm mất năng lượng cảm ứng — nó không bao giờ phát xanh.
+Vậy nên phần dưới của cực quang xanh có **cạnh đáy sắc lẹm**. 
+
+**Ánh đỏ (630 nm)** — oxy phát từ trạng thái ¹D tới ³P (một bước chuyển cấm thoát
+chậm hơn, cần **110 giây**). Dưới 200 km va chạm cũng bị chặn — nguyên tử không
+sống đủ lâu. Dưới 200 km chỉ có xanh; trên 200 km thì xanh và đỏ cùng tồn tại.
+Vậy nên cực quang luôn có **màu đỏ trên lục** — không phải vì hoá học khác, mà vì
+vật lý bắt buộc nó phải chờ lâu hơn mới thay đổi màu.
+
+Cùng một từ trường, cùng một hạt từ — nhưng đồng hồ cơ học ngăn ánh đỏ cho tới
+khi cao độ đủ lớn. Đó cũng là lý do các nhà vật lý đo được một biểu đồ màu cứng
+mà cái cây họa sĩ không thể vẽ lại: nó không phải nghệ thuật của nhân, mà là
+lịch trình của tự nhiên.

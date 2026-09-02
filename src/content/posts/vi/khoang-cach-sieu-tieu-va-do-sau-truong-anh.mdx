@@ -1,0 +1,78 @@
+---
+title: "Khoảng cách siêu tiêu: vì sao điện thoại nét mọi thứ còn máy ảnh thì không"
+seoTitle: "Độ sâu trường ảnh và khoảng cách siêu tiêu (hyperfocal)"
+description: "Ống 50 mm khép f/8 có khoảng cách siêu tiêu 10,4 m: lấy nét ở đó thì nét từ 5,2 m tới vô cực. Camera điện thoại 5,7 mm f/1,8 chỉ cần 3,6 m — nét từ 1,8 m trở đi, nên nó buộc phải giả lập xoá phông bằng phần mềm chứ không có cách nào xoá thật."
+pubDate: 2026-09-02
+tags: ["vat-ly", "quang-hoc", "javascript"]
+translationId: "khoang-cach-sieu-tieu-va-do-sau-truong-anh"
+---
+
+import HyperfocalDistance from '../../../components/demos/HyperfocalDistance.astro';
+
+Bạn chụp ảnh với điện thoại: toàn bộ quanh mặt bạn nét cả, từ cánh hoa 20 cm
+tới tòa nhà 100 m phía sau — không cần lấy nét gì cả. Đổi sang máy ảnh
+chuyên nghiệp với cùng tâm sự: chọn độ mở lớn để "xoá phông", mọi bức ảnh
+phía sau lóng lánh mờ mịt. Hai máy, hai thế giới. Sự khác biệt này không nằm
+ở chất lượng cảm biến hay kỹ thuật xử lý, mà nằm trong một con số hình học:
+khoảng cách siêu tiêu.
+
+<HyperfocalDistance />
+
+## Lấy nét có phút vàng
+
+Khi bạn lấy nét máy ảnh ở một khoảng cách nào đó, vùng nét không phải một mặt
+phẳng: nó là một dải từ cận tới viễn giới hạn. "Chấp nhận được mờ" là con số
+cứng — vòng mờ c (milimét), xác định bởi cách bạn xem ảnh: soi 100% trên 4K
+cần c = 0,003 mm, in ảnh cần c = 0,033 mm, tiêu chuẩn full-frame dùng **c =
+0,030 mm**. Độ sâu trường ảnh tuân theo công thức hình học sơ khai:
+
+```
+H = f²/(N·c)
+```
+
+Đây là khoảng cách siêu tiêu. Nó nói: nếu bạn lấy nét đúng tại H, vùng nét
+sẽ trải dài từ **H/2 tới vô cực** — bạn có cả bầu trời để làm việc mà không
+phải lấy lại nét một lần nữa. f là tiêu cự ống kính (mm), N là khẩu độ
+(f-number), c là vòng mờ chấp nhận.
+
+## Vì sao ống dài có độ sâu nông hơn
+
+Phóng to tiêu cự lên gấp đôi, H tăng gấp bốn — công thức chứa f². Ống 50 mm
+f/8 có H = **10,42 m**; ống 100 mm f/8 có H = **41,7 m**. Mở khẩu độ — giảm
+N — làm H tăng. Ở f/1,4, ống 50 mm có H = **59,52 m**, gấp năm lần so với
+f/8. Nhưng điều kỳ lạ: mở khẩu độ lớn để xoá phông lại khiến H tăng — là vì
+tôi đang nói về khoảng cách *siêu tiêu*, chứ không phải độ sâu ở một khoảng
+cách bất kỳ. Ở bất cứ khoảng cách lấy nét nào, mở khẩu độ lại làm độ sâu *nông
+hơn*.
+
+## Điện thoại không thể xoá phông — nó buộc phải giả
+
+Camera điện thoại 5,7 mm f/1,8 có H = **3,6 m** (với c ≈ 0,005 mm phù hợp
+với cách bạn xem ảnh trên màn hình điện thoại). Nét từ H/2 = **1,8 m** tới vô
+cực. Bạn chụp một đứa bé gần mặt, con người phía sau, cả bức tường hàng km
+ngoài — toàn bộ nét không kén. Nếu bạn muốn xoá phông *thật* như máy ảnh, bạn
+phải tăng vòng mờ tới hàng chục milimét, và H lúc đó sẽ lớn tới hàng trăm
+mét — vô nghĩa.
+
+Vậy nên điện thoại hiện đại dùng chiêu: chụp ảnh với [hai ống kính cách nhau](/vi/posts/tui-snack-tren-may-bay-va-ham-mu-cua-bau-troi)
+(hoặc một ống kính với hai lần chụp thời gian nhanh), so sánh độ sâu ở các
+điểm khác nhau, dùng phần mềm để *đoán* chân dung
+và xoá phông bằng cách tìm ranh giới chủ thể-phông. Kỹ thuật này gọi là "portrait mode". Nó không phải
+xoá phông thực — nó là ảo thuật. Chứng cứ là: nếu chỗ ranh giới chủ thể và
+phông có chi tiết phức tạp (tóc, gần gũi một tấm lưới), xoá phông sẽ rối
+tung. Máy ảnh thực không có vấn đề này vì nó là vật lý, không phải phỏng đoán.
+
+
+## Trường hợp biên: khi công thức mất dạng
+
+Công thức H = f²/(N·c) hầu như vô dụng khi bạn vào chế độ macro — chụp sát
+vật thể gần hơn tiêu cự. Lúc đó, độ sâu chuyển sang công thức khác:
+
+```
+DOF ≈ 2Nc(1+m)/m²
+```
+
+với m là tỷ lệ phóng đại. Ở tỉ lệ 1:1 với f/8 và c = 0,030 mm, độ sâu chỉ còn
+**1 mm** — không có "vô cực" nào. Chế độ macro là chế độ tiêu cực: bạn phải
+lấy nét cực chính xác. [Ống kính của côn trùng](/vi/posts/cau-vong-42-do-va-cu-don-toa-cua-anh-sang) lần nào cũng
+lâm vào vùng này — chúng phải sống với độ sâu từng milimét.

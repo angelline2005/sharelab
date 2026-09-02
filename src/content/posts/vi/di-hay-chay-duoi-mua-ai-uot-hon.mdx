@@ -1,0 +1,94 @@
+---
+title: "Chạy dưới mưa: nhanh gấp ba chỉ giúp bạn bớt ướt 41%"
+seoTitle: "Đi hay chạy dưới mưa thì ướt ít hơn: công thức lượng nước hứng được"
+description: "Lượng nước bạn hứng gồm hai phần: phần rơi lên đầu (A_đầu = 0,20 m²), tỉ lệ với thời gian ở ngoài trời, và phần bạn tự đâm vào bằng ngực (A_ngực = 0,50 m²), hoàn toàn không phụ thuộc tốc độ. Với hạt mưa rơi 6 m/s: đi 1,4 m/s hết 500 m dưới mưa 5 mm/h là 157 ml, chạy 4 m/s còn 93 ml, chạy nhanh vô hạn cũng chỉ xuống 58 ml — trần giảm ướt là 63%, phần còn lại là cái giá của việc có bề ngang."
+pubDate: 2026-09-02
+tags: ["vat-ly", "co-hoc", "mo-phong", "javascript"]
+translationId: "di-hay-chay-duoi-mua-ai-uot-hon"
+---
+
+import RunningInRain from '../../../components/demos/RunningInRain.astro';
+
+Bạn đang mưa to, ai ai cũng bảo chạy lại để bớt ướt. Nhưng chạy gấp ba 
+lần lại chỉ bớt ướt 41% — sức mạnh của toán học là đó, nó không lợi cho 
+bạn bằng bạn tưởng. Phần ướt còn lại là cái giá cơ thể có bề ngang:
+
+<RunningInRain />
+
+## Nước rơi và nước bạn đâm vào không phải cùng một thứ
+
+Lượng nước hứng được gồm hai phần **hoàn toàn khác**. Thứ nhất: phần rơi 
+lên đầu (diện tích ~0,20 m²), tỉ lệ nghiêm ngặt với thời gian ở ngoài 
+trời. Bạn chạy gấp ba, thời gian giảm ba, lượng nước rơi vào đầu cũng 
+giảm ba — đơn giản rồi. Thứ hai: phần bạn tự **đâm vào bằng ngực** 
+(~0,50 m²), công việc khác hẳn.
+
+Khi bạn chuyển động ngang qua mưa, ngực cắt ngang một dòng hạt. 
+Số hạt cắt được không phụ thuộc tốc độ — chỉ phụ thuộc quãng đường. 
+Vật lý ở đây nói về **thông lượng** (flux), lượng hạt cắt qua mặt 
+cắt ngang, không kể bạn chạy hay đi.
+
+## Công thức: V = (I/u)·d·(A_ngực + A_đầu·u/v)
+
+Lượng nước được tính bằng:
+
+```
+V = (I/u)·d·(A_ngực + A_đầu·u/v)
+```
+
+Với:
+- **I** = cường độ mưa (mm/h)
+- **u** = tốc độ rơi hạt mưa (m/s) — thường là **6 m/s** cho mưa thông thường
+- **d** = quãng đường (m)
+- **A_ngực** = diện tích ngang ngực = **0,50 m²**
+- **A_đầu** = diện tích ngang đầu = **0,20 m²**
+- **v** = tốc độ di chuyển của bạn (m/s)
+
+Cách đọc công thức: phần đầu giảm theo 1/v (chạy nhanh gấp ba thì ướt 
+đầu còn một phần ba), còn phần ngực = (I/u)·d·0,50 là **hằng số** — không 
+phụ thuộc v. Lượng nước ngực đó bạn **buộc phải hứng**, nó không quan 
+tâm bạn chạy hay đi.
+
+## Ví dụ cụ thể: quãng 500 m dưới mưa 5 mm/h
+
+Với hạt mưa u = 6 m/s:
+
+- **Đi bộ 1,4 m/s** (bình thường): 157 ml
+- **Chạy 4 m/s** (gấp 2,9 lần nhanh): 93 ml — **bớt 41%** chứ không phải 66%
+- **Chạy nhanh vô hạn**: 58 ml — **bớt 63%**
+
+Thấy chưa? Tăng tốc từ đi bộ thành chạy gấp ba chỉ bớt ướt 41%. Tăng thêm 
+nữa, từ chạy 4 m/s lên 8 m/s, chỉ bớt thêm chút xíu. Giới hạn không thể 
+vượt là 58 ml — đúng lúc khi phần đầu biến mất (u/v → 0), chỉ còn phần 
+ngực 0,50 m². Dù bạn chạy nhanh như Usain Bolt hay như tia sáng, phần đó 
+vẫn ở đó, vì **bề ngang người là hằng số**.
+
+Sở dĩ như vậy là vì hai thành phần ứng với hai cơ chế khác nhau. Phần đầu 
+rơi từ trên: bạn chỉ tránh được bằng cách rút ngắn thời gian. Phần ngực 
+là vấn đề hình học: khi bạn cắt ngang một trường hạt nước, số hạt cắt 
+được là tích của diện tích cắt (A_ngực) và mật độ thông lượng (I/u) — hai 
+cái đó cộng lại cứng như đá.
+
+## Gió thay đổi góc, không thay đổi số học
+
+Một chi tiết thực tế: công thức này giả định [mưa rơi thẳng 
+đứng](/vi/posts/nhen-nuoc-di-tren-mat-ho-va-luat-choi-cua-kich-thuoc). 
+Nếu gió thổi ngang, mưa nghiêng, và dòng hạt cắt qua ngực bạn thay đổi — 
+nhưng chỉ thay đổi *góc*, không thay đổi *thông lượng*. Hạt nước vẫn cắt 
+qua số lượng như cũ, chỉ là đến từ phía khác. Khi gió đi cùng hướng chạy 
+(từ sau), diện tích ngực cắt được giảm (hạt không đâm vào, mà chạy 
+song song); khi gió ngược (từ trước), mọi tốc độ đều tệ, vì bạn chạy nhanh 
+hơn gió sẽ đâm vào từ phía trước. Cơ học chất lưu ở đây hoạt động theo 
+[số Reynolds](/vi/posts/so-reynolds-vi-khuan-boi-trong-mat-ong), nhưng 
+phần ngực là vấn đề *thông lượng hình học*, không phải lực cá nào.
+
+## Trường hợp biên: gió đi cùng chiều với mưa
+
+Công thức giả định mưa rơi thẳng đứng. Ngoài đời, gió hay thổi. Nếu gió 
+thổi từ **sau, đúng bằng tốc độ chạy** của bạn, từ góc độ của bạn, hạt 
+mưa lơ lửng — không rơi, không bay ngang — ngực bạn cắt không được gì, 
+chỉ còn phần đầu. Nhưng chạy nhanh hơn gió thì bạn lại bắt đầu **đâm vào 
+mưa từ phía trước**, giống như khi gió ngược, ướt cực kỳ. **Ngược lại, khi 
+gió ngược**, mọi tốc độ của bạn đều thiệt, lằn mưa sơi từ mặt — lúc đó 
+toán học đưa ra lời khuyên duy nhất mà bạn sẽ tuân theo: **tìm mái hiên**. 
+Đấy là trường hợp duy nhất mà vật lý đồng ý hết lòng với bản năng.

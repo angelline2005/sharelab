@@ -1,0 +1,82 @@
+---
+title: "Bình ắc quy 100 Ah xả nhanh chỉ còn 47 Ah — dung lượng không phải một con số"
+seoTitle: "Định luật Peukert: vì sao ắc quy xả càng nhanh càng ít dung lượng"
+description: "Ampe-giờ ghi trên bình luôn kèm một điều kiện ngầm: xả trong 20 giờ. Rút 100 A thay vì 5 A, cùng cái bình ấy chỉ trả lại 47,3 Ah và cạn sau 28 phút — mất hơn một nửa mà không hề hỏng học gì."
+pubDate: 2026-09-02
+tags: ["vat-ly", "dien-hoc", "javascript"]
+translationId: "dinh-luat-peukert-ac-quy-100ah-con-47ah"
+---
+
+import Peukert from '../../../components/demos/Peukert.astro';
+
+Nhãn trên bình ắc quy ghi 100 Ah — một con số duy nhất, vậy mà chiếc bình ấy
+chẳng bao giờ trả lại đủ 100 ampe-giờ ngoài đời thực. Rút 5 A trong 20 giờ thì
+được; rút gấp 20 lần nhanh hơn thì chỉ còn 47,3 Ah:
+
+<Peukert />
+
+## Dung lượng không phải tính chất vật liệu
+
+Nhãn "100 Ah" không kể cho bạn rằng con số ấy kèm một bộ điều kiện: xả trong
+20 giờ ở nhiệt độ 20 °C. Tăng dòng xả lên gấp đôi, ba, mười lần thì dung lượng
+**không** tăng tương ứng — nó rớt đi. Đây không phải lỗi sản xuất: nó là
+**luật của hóa học**.
+
+Phía trong bình, dòng điện chạy qua chất điện giải — muối hòa tan trong nước.
+Dòng cao là áp lực cao: các ion phải di chuyển nhanh hơn, chúng va đập vào các
+nút quanh, mất năng lượng thành [nhiệt](/vi/posts/bang-luong-kim-cong-de-ngat-dien).
+Tốc độ phản ứng hóa học cũng tính theo nồng độ tại bề mặt điện cực — rút nhanh
+là làm cạn kiệt nồng độ địa phương, phải ngừng để chất bổ sung kịp. Mà khi
+dòng cao, nó cũng vét sạch lớp chất gần bề mặt: nông không đủ để tiếp tục, nên
+hiệu suất đơn vị dòng rớt xuống. Một bình 100 Ah không có cách nào chứa **100**
+ampe-giờ ở dòng cao — dù nó là bình tốt.
+
+## Công thức dự đoán tổn hao: **t = H·(C/(H·I))^k**
+
+Định luật Peukert khắn gọn mối quan hệ: thời gian xả phụ thuộc vào tỷ lệ
+dòng-trên-định mức như một số mũ. Dài dòng, nếu xả 1C (xả hết định mức trong 1
+giờ), bạn thu về ~**47%** thay vì 100%. Vì sao không phải 50%? Vì con số ấy là
+từ thử nghiệm, từ đó tính ra công thức. Peukert phát hiện vào 1897 — ông ta đo
+nhiều dòng, rồi ghép bằng một lũy thừa `k`:
+
+Với H = 20 giờ (định mức tiêu chuẩn) và C = 100 Ah, xả ở dòng I (ampe):
+
+```
+t = 20 · (100 / (20 · I))^k
+Dung lượng thực = I · t
+```
+
+Con số k quyết định bao nhiêu: k = 1 là bình hoàn hảo (dung lượng không phụ
+dòng); k = 1,25 là ắc quy chì-axit tiêu chuẩn; k = 1,4 là ắc quy cũ hoặc
+quá tải. Thử ở ba điểm: ở C/20 (5 A), định mức chuẩn cho 100 Ah trong 20 giờ;
+ở C/5 (20 A) chỉ còn 70,7 Ah cho trong 3,5 giờ; ở 1C (100 A) còn lại 47,3 Ah
+trong 28 phút. Mất 53% chỉ vì rút nhanh gấp 20 lần.
+
+## Lithium không tổn hao như chì
+
+Hiện tượng Peukert xuất hiện vì quán tính hóa học: phản ứng trong ắc quy chì
+**chậm**, phải có thời gian để ion khuếch tán, để nồng độ cân bằng lại. Pin
+điện hoá học khác nhau rất lớn — phản ứng nhanh tới mức dòng cao gần như không ảnh hưởng: k ≈
+1,02–1,05. [Ở dòng cao](/vi/posts/so-reynolds-vi-khuan-boi-trong-mat-ong), bình lithium 50 Ah trả lại khoảng 47 Ah — tổn hao 6% thay
+vì 53%.
+
+Chính điều này giải thích vì sao "một bộ lưu điện lithium 50 Ah thay được ắc quy
+100 Ah" không phải quảng cáo bịp. Hai bình khác dung lượng định mức, nhưng ở
+dòng cao (chế độ thực tế), lithium lớn hơn chỉ vì nó gần như không tổn hao —
+nó dự trữ được gần toàn bộ năng lượng dù xả nhanh.
+
+## Trường hợp biên: khi Peukert nói quá mức
+
+Đặt k = 1 thì công thức nói rằng dung lượng không đổi, tương tự pin lithium,
+và đó chính là điều không phải (chúng vẫn tổn hao, chỉ ít hơn). Ở đầu kia của
+dải, công thức lại nói quá: xả **cực chậm** trong hàng trăm giờ, ắc quy không
+phải nằm yên — nó tự phóng điện để bổ dung các phản ứng hóa học bên trong, một
+dòng rò thường quên không tính. Dung lượng thực lại tụt xuống dưới dự đoán
+Peukert. Công thức chỉ chính xác trong dải dòng thực tế mà người dùng xả: từ
+C/20 tới 2C, tầm 100–200 giờ tới vài phút. Ngoài kia, hóa học khác quy luật
+mà Peukert viết.
+
+Vì vậy lần tới bạn đọc thông số bình ắc quy, nhớ rằng con số ấy là một dự
+tính, không phải một lịch sự. Dòng xả cao, bạn lấy được ít hơn. Dòng chậm, bạn
+lại mất phần nào cho tự phóng điện. Bình tốt xác định được mức tổn hao; nó
+không bao giờ bỏ qua hoàn toàn.

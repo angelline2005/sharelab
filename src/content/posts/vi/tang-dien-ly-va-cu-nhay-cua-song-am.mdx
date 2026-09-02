@@ -1,0 +1,80 @@
+---
+title: "Ban đêm bạn bắt được đài cách 1 600 km"
+seoTitle: "Tầng điện ly và sóng AM ban đêm: tần số tới hạn, MUF và cự ly nhảy"
+description: "Ban ngày đài AM chỉ nghe được trong tỉnh; đêm xuống, cùng chiếc radio ấy bắt được đài cách 1 600 km. Mật độ electron tầng F2 tụt năm lần, tần số phản xạ rơi từ 9,0 xuống 4,0 MHz — nhưng lớp D hấp thụ đã biến mất, và sóng bắt đầu nảy giữa tầng điện ly với mặt đất."
+pubDate: 2026-09-02
+tags: ["vat-ly", "dien-tu", "song", "javascript"]
+translationId: "tang-dien-ly-va-cu-nhay-cua-song-am"
+---
+
+import IonosphereSkip from '../../../components/demos/IonosphereSkip.astro';
+
+Chiếc radio AM cũ bắt được một đài địa phương vào ban ngày. Đêm xuống, chỉ vặn
+núm là nghe được đài khác hàng trăm kilômét ngoài kia — không phải radio bỏ đi,
+mà tầng điện ly trên đầu bạn vừa thay áo:
+
+<IonosphereSkip />
+
+## Tầng F2: từ công xưởng phát xạ thành bức tường phản xạ
+
+Bầu khí quyển cao từ 100 km trở lên không bao giờ yên tĩnh. Ánh sáng Mặt Trời
+chỉ electron, tạo ra một **khí của những hạt mang điện** — tầng điện ly. Tầng
+dày nhất là F2, lên tới 300 km cao độ, nơi điện tử lại thành **khí plasma**. Mật độ
+electron ở đây quyết định mọi thứ: sóng vô tuyến nào có thể quay lại, sóng nào
+xuyên thẳng ra không gian. Công thức liên hệ tần số phát f với mật độ electron N là:
+
+```
+f_tới hạn = 8,98 · √N  (N theo m⁻³, f theo Hz)
+```
+
+Nó nghe như một hằng số vô duyên, nhưng trên thực tế nó là **tần số chặn**: sóng
+dưới tần số này quay lại trái đất; sóng trên nó xuyên qua. Ban ngày tầng F2 
+đặc như khu công nghiệp — mật độ electron lên **10¹² m⁻³** — đầu điều khiển
+phản xạ nằm ở **8,98 MHz**. Ban đêm, không còn Mặt Trời chiếu, electron tái hợp,
+mật độ rơi xuống **2·10¹¹ m⁻³** — tần số chặn giảm xuống **4,02 MHz**.
+
+## Lớp D biến mất: cánh cửa vừa mở
+
+Nhưng thay đổi tần số chặn còn không phải toàn bộ câu chuyện. Ban ngày còn có
+một thứ gọi là **lớp D** — vùng ôn dịu giữa 60 và 85 km — nơi các sóng HF bị hút
+sâu vào (hấp thụ năng lượng, chứ không phản xạ). Sóng AM ban ngày phải vượt qua
+lớp D này để đến F2, rồi chọc xuyên lớp F2 nếu tần số quá cao — nên nó chỉ nghe
+được gần phát. Ban đêm lớp D yên nằm, không còn hấp thụ gì. **Sóng AM bắt đầu
+nảy giữa tầng F2 ở 300 km với mặt đất như quả bóng giữa vợt và sàn**, che phủ
+cả ngàn kilômét.
+
+## Một sóng phản xạ hay xuyên qua?
+
+Góc phát tia (góc ngẩng) quyết định ngưỡng tần số. Nếu bạn phát **tần số f** với
+**góc ngẩng θ**, tầng F2 sẽ cho phép nó phản xạ chỉ khi:
+
+```
+f < f_tới hạn / sin(θ)  =  MUF
+```
+
+MUF là "tần số sử dụng tối đa" — từng tầng độ cao, từng góc ngẩng đều có riêng
+một MUF. Với tầng F2 ban đêm (f_tới hạn = 4,02 MHz) và góc 20°, MUF = 4,02 /
+sin(20°) = **11,74 MHz**. Một sóng 7 MHz phát ở góc ấy sẽ **phản xạ về trái đất**
+— vì 7 < 11,74. Nhưng nếu tăng góc lên 50°, MUF rơi xuống 5,2 MHz — lúc ấy 7 MHz
+xuyên qua, tính tửu.
+
+## Cú nhảy bao xa?
+
+Một cú nhảy (một lần phản xạ) từ tầng F2 ở độ cao h = 300 km với góc ngẩng θ
+phủ **cự ly d = 2h / tan(θ)**. Với θ = 20°, d = 2 × 300 / tan(20°) = **1 648 km**.
+Chúng ta gắn tới **1 650 km** — đúng những con số ghi ở trên các [ăng-ten AM lâu
+đời](/vi/posts/ang-ten-vi-sao-dien-thoai-khong-con-can-cai-can) chỉ phạm vi phát
+vào ban đêm. Góc ngẩng nhỏ (tia nông) thì cự ly lớn hơn — nhưng tần số tới hạn sẽ
+cao hơn (MUF cao hơn), nên chỉ tần số thấp mới phản xạ được. Đó là lý do cụng
+khí hậu phát AM: tần số 0,5–1,6 MHz chỉ để ban đêm, góc nông, nhảy xa; băng
+0,5–30 MHz trên radio sở thích được dùng ban đêm với [bước sóng dài-rất dài](/vi/posts/giao-thoa-song-va-cai-bay-truong-hop-bien) để
+chạm tới những lục địa khác.
+
+## Trường hợp biên: vươn quá cao là thua
+
+Vượt MUF là mất hẳn — tia xuyên thẳng qua tầng F2 và không bao giờ quay lại.
+Đó chính là lý do bạn nghe được vệ tinh 145 MHz nhưng không nghe được đài AM từ
+vệ tinh: tần số vệ tinh quá cao. Ở chiều ngược lại, lớp D ban ngày mặc dù không
+phản xạ nhưng **hút thẳng năng lượng** — nó chính là bức rèm hất ngang toàn bộ
+đài AM 9–12 MHz vào ban ngày; chỉ những đài VLF (dưới 30 kHz) mới xuyên qua được,
+cháy một công suất khủng khiếp để truyền tin cho tàu ngầm dưới đáy biển.

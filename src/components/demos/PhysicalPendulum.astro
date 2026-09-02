@@ -1,0 +1,187 @@
+---
+// Physical pendulum (physical rod): T = 2π√((L²/12 + d²)/(g·d))
+// where L = rod length, d = distance from pivot to center
+// L_eq = (L²/12 + d²)/d = equivalent simple pendulum length
+// Valid for 0 < d < L/2 (pivot not past center)
+---
+
+<figure class="demo" data-demo="con-lac-vat-ly-cay-gay-lac-nhanh-hon">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Chiều dài thanh L (m) <output data-out="L"></output>
+      <input type="range" data-in="L" min="0.2" max="2.0" step="0.05" value="1.0" /></label>
+    <label>Khoảng cách trục-tâm d (m) <output data-out="d"></output>
+      <input type="range" data-in="d" min="0.02" max="1.0" step="0.01" value="0.5" /></label>
+    <label>Khối lượng thanh m (kg) <output data-out="m"></output>
+      <input type="range" data-in="m" min="0.1" max="5" step="0.1" value="1.0" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Mặt cắt đứng thanh: tâm là chấm tròn, chấm chỉnh dễ dàng trục treo dọc
+    thanh. Bên cạnh là bóng của con lắc đơn tương đương. Đường cong phía dưới
+    cho thấy chu kỳ T theo khoảng cách d — điểm thấp nhất là d tối ưu khoảng
+    0,289 L.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const g = 9.81;
+  const CURVE = '#2563eb', MARK = '#dc2626', EQUIV = '#f59e0b';
+
+  const T = (L: number, d: number) => 2 * Math.PI * Math.sqrt((L*L/12 + d*d) / (g * d));
+  const L_eq = (L: number, d: number) => (L*L/12 + d*d) / d;
+  const T_simple = (L: number) => 2 * Math.PI * Math.sqrt(L / g);
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (k: string) => root.querySelector(`[data-in="${k}"]`) as HTMLInputElement;
+    const output = (k: string) => root.querySelector(`[data-out="${k}"]`) as HTMLOutputElement;
+
+    function draw() {
+      const L = Number(input('L').value);
+      const d = Number(input('d').value);
+      const m = Number(input('m').value);
+
+      output('L').textContent = L.toFixed(2).replace('.', ',');
+      output('d').textContent = d.toFixed(2).replace('.', ',');
+      output('m').textContent = m.toFixed(1).replace('.', ',');
+
+      const T_rod = T(L, d);
+      const L_eq_val = L_eq(L, d);
+      const T_simple_1m = T_simple(1.0);
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32;
+      const cssH = Math.round(cssW * 0.6);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+
+      const padL = 50, padR = 10, padT = 12, padB = 40;
+      const graphH = cssH - padT - padB;
+
+      // Split canvas: left half for stick diagram, right half for curve
+      const mid = cssW / 2;
+
+      // === LEFT: Stick diagram ===
+      const stickX = mid * 0.5;
+      const stickY = padT + graphH * 0.5;
+      const stickH = graphH * 0.6; // pixels for visual
+      const stickLen = Math.min(stickH, 120);
+      const scale = stickLen / L; // pixels per meter
+
+      ctx.strokeStyle = fg; ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(stickX, stickY - stickLen / 2);
+      ctx.lineTo(stickX, stickY + stickLen / 2);
+      ctx.stroke();
+
+      // Center mark (small circle)
+      ctx.fillStyle = fg; ctx.globalAlpha = 0.5;
+      ctx.beginPath(); ctx.arc(stickX, stickY, 3, 0, Math.PI * 2); ctx.fill();
+
+      // Pivot point (at distance d from center)
+      const pivotY = stickY - d * scale;
+      ctx.fillStyle = MARK;
+      ctx.beginPath(); ctx.arc(stickX, pivotY, 4, 0, Math.PI * 2); ctx.fill();
+
+      // Label distances
+      ctx.fillStyle = fg; ctx.globalAlpha = 0.6; ctx.font = '9px system-ui,sans-serif';
+      ctx.textAlign = 'left';
+      ctx.fillText(`d = ${(d*100).toFixed(0)} cm`, stickX + 10, pivotY + 3);
+
+      // === RIGHT: T(d) curve and equivalent simple pendulum ===
+      const graphLeft = mid + 20;
+      const graphW = cssW - graphLeft - padR;
+
+      // Draw T(d) curve
+      ctx.globalAlpha = 1; ctx.strokeStyle = CURVE; ctx.lineWidth = 2;
+      ctx.beginPath();
+      const d_min = 0.02, d_max = L / 2 - 0.01;
+      for (let i = 0; i <= 100; i++) {
+        const dd = d_min + (d_max - d_min) * (i / 100);
+        const TT = T(L, dd);
+        const x = graphLeft + (dd - d_min) / (d_max - d_min) * graphW;
+        const y = padT + (2.5 - Math.min(TT, 2.5)) / 2.5 * graphH;
+        i ? ctx.lineTo(x, y) : ctx.moveTo(x, y);
+      }
+      ctx.stroke();
+
+      // Mark optimal d
+      const d_opt = L / Math.sqrt(12);
+      if (d_opt >= d_min && d_opt <= d_max) {
+        const T_opt = T(L, d_opt);
+        const xOpt = graphLeft + (d_opt - d_min) / (d_max - d_min) * graphW;
+        const yOpt = padT + (2.5 - Math.min(T_opt, 2.5)) / 2.5 * graphH;
+        ctx.fillStyle = EQUIV; ctx.globalAlpha = 0.7;
+        ctx.beginPath(); ctx.arc(xOpt, yOpt, 3, 0, Math.PI * 2); ctx.fill();
+      }
+
+      // Current position marker
+      if (d >= d_min && d <= d_max) {
+        const x = graphLeft + (d - d_min) / (d_max - d_min) * graphW;
+        const y = padT + (2.5 - Math.min(T_rod, 2.5)) / 2.5 * graphH;
+        ctx.fillStyle = MARK;
+        ctx.beginPath(); ctx.arc(x, y, 5, 0, Math.PI * 2); ctx.fill();
+      }
+
+      // Axes
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.3; ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(graphLeft, padT);
+      ctx.lineTo(graphLeft, padT + graphH);
+      ctx.lineTo(cssW - padR, padT + graphH);
+      ctx.stroke();
+
+      // Labels
+      ctx.globalAlpha = 0.5; ctx.fillStyle = fg; ctx.font = '9px system-ui,sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('d (m)', mid, cssH - 8);
+      ctx.textAlign = 'right';
+      ctx.fillText('T (s)', padL, padT - 2);
+
+      // Y-axis ticks (T values)
+      ctx.textAlign = 'right';
+      for (const tt of [0.5, 1.0, 1.5, 2.0, 2.5]) {
+        const yy = padT + (2.5 - tt) / 2.5 * graphH;
+        ctx.fillText(`${tt.toFixed(1).replace('.', ',')}`, graphLeft - 6, yy + 3);
+      }
+
+      // X-axis ticks (d values)
+      ctx.textAlign = 'center';
+      for (let i = 0; i <= 5; i++) {
+        const dd = d_min + (d_max - d_min) * (i / 5);
+        const xx = graphLeft + (dd - d_min) / (d_max - d_min) * graphW;
+        ctx.fillText(`${dd.toFixed(2).replace('.', ',')}`, xx, padT + graphH + 12);
+      }
+
+      // Readout
+      const percentDiff = ((T_simple_1m - T_rod) / T_rod * 100);
+      readout.innerHTML =
+        `Thanh <b>${L.toFixed(2).replace('.', ',')} m</b> treo cách tâm <b>${d.toFixed(2).replace('.', ',')} m</b> → T = <b>${T_rod.toFixed(3).replace('.', ',')} s</b>` +
+        ` · tương đương con lắc dây <b>${L_eq_val.toFixed(3).replace('.', ',')} m</b>` +
+        (L === 1.0 && d === 0.5 ? ` · con lắc dây 1,00 m: ${T_simple_1m.toFixed(3).replace('.', ',')} s (chậm hơn ${percentDiff.toFixed(1).replace('.', ',')}%)` : '');
+    }
+
+    root.querySelectorAll('input').forEach((el) => el.addEventListener('input', draw));
+    addEventListener('resize', draw);
+    draw();
+  }
+
+  document.querySelectorAll<HTMLElement>('[data-demo="con-lac-vat-ly-cay-gay-lac-nhanh-hon"]').forEach(setup);
+</script>

@@ -1,0 +1,130 @@
+---
+// Classroom heating: dT/dt = (N·100 - P_ac)/(ρ·c_p·V)
+// ρ·c_p ≈ 1156 J/(m³·K) for air at ~25°C, valid for 1-60 people, 20-400 m³, 0-24000 BTU/h AC
+// Each person generates ~100W (basal metabolic rate, sedentary)
+---
+
+<figure class="demo" data-demo="moi-nguoi-la-mot-bong-den-100-watt">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Số người N <output data-out="n"></output>
+      <input type="range" data-in="n" min="1" max="60" step="1" value="40" /></label>
+    <label>Thể tích phòng (m³) <output data-out="v"></output>
+      <input type="range" data-in="v" min="20" max="400" step="10" value="196" /></label>
+    <label>Máy lạnh (BTU/h) <output data-out="p"></output>
+      <input type="range" data-in="p" min="0" max="24000" step="1000" value="9000" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Mỗi cơ thể ngồi yên toả khoảng 100 W. Phòng học 40 người bơm 4 kW vào không khí;
+    máy lạnh 9 000 BTU chỉ kịp 2,6 kW nên phòng ấm lên 0,36 °C mỗi phút. Dòng đỏ là
+    tốc độ nóng lên; khi giao trục hoành (điểm 0) thì máy lạnh đã cân bằng đủ.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const RHO_CP = 1156; // J/(m³·K) - heat capacity of air
+  const HUMAN_POWER = 100; // W per person
+  const W_PER_BTU_H = 1055.06 / 3600; // Watts per BTU/h
+
+  const CURVE = '#2563eb', MARK = '#dc2626';
+
+  const dT_dt = (n: number, p_ac: number, v: number): number =>
+    (n * HUMAN_POWER - p_ac) / (RHO_CP * v); // °C/s
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (k: string) => root.querySelector(`[data-in="${k}"]`) as HTMLInputElement;
+    const output = (k: string) => root.querySelector(`[data-out="${k}"]`) as HTMLOutputElement;
+
+    function draw() {
+      const n = Number(input('n').value);
+      const v = Number(input('v').value);
+      const p_ac = Number(input('p').value);
+
+      output('n').textContent = String(n);
+      output('v').textContent = String(v);
+      output('p').textContent = p_ac.toLocaleString('vi-VN');
+
+      const p_ac_w = p_ac * W_PER_BTU_H;
+      const dt_dt_c_per_s = dT_dt(n, p_ac_w, v);
+      const dt_dt_c_per_min = dt_dt_c_per_s * 60;
+      const total_power = n * HUMAN_POWER;
+      const excess_power = total_power - p_ac_w;
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.42);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+
+      const padL = 50, padB = 26, padT = 12, padR = 10;
+      const dT_min = -2, dT_max = 1.5; // °C/min range
+      const ac_min = 0, ac_max = 24000; // BTU/h range
+
+      const X = (ac: number) => padL + ((ac - ac_min) / (ac_max - ac_min)) * (cssW - padL - padR);
+      const Y = (dt: number) => padT + ((dT_max - dt) / (dT_max - dT_min)) * (cssH - padB - padT);
+
+      // Draw axes
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.3;
+      ctx.beginPath(); ctx.moveTo(padL, padT); ctx.lineTo(padL, cssH - padB); ctx.lineTo(cssW - padR, cssH - padB); ctx.stroke();
+
+      // Draw equilibrium line (y=0)
+      ctx.beginPath(); ctx.moveTo(padL, Y(0)); ctx.lineTo(cssW - padR, Y(0)); ctx.stroke();
+
+      ctx.globalAlpha = 0.55; ctx.fillStyle = fg; ctx.font = '10px system-ui,sans-serif';
+      ctx.textAlign = 'center';
+      for (const ac of [0, 6000, 12000, 18000, 24000]) ctx.fillText(`${ac / 1000}k`, X(ac), cssH - padB + 14);
+
+      ctx.textAlign = 'right';
+      for (const dt of [-2, -1, 0, 1]) ctx.fillText(`${dt}°/min`, padL - 4, Y(dt) + 3);
+
+      ctx.textAlign = 'left';
+      ctx.globalAlpha = 0.4;
+      ctx.fillText('cân bằng', padL + 6, Y(0) - 5);
+      ctx.globalAlpha = 1;
+
+      // Draw dT/dt curve for current N and V
+      ctx.strokeStyle = CURVE; ctx.lineWidth = 2; ctx.beginPath();
+      for (let i = 0; i <= 240; i++) {
+        const ac = (ac_max * i) / 240;
+        const ac_w = ac * W_PER_BTU_H;
+        const dt = dT_dt(n, ac_w, v) * 60; // convert to °C/min
+        const y = Y(Math.max(dT_min, Math.min(dT_max, dt)));
+        i ? ctx.lineTo(X(ac), y) : ctx.moveTo(X(ac), y);
+      }
+      ctx.stroke(); ctx.lineWidth = 1;
+
+      // Mark current point
+      const current_dt_per_min = dt_dt_c_per_min;
+      ctx.fillStyle = MARK;
+      ctx.beginPath(); ctx.arc(X(p_ac), Y(Math.max(dT_min, Math.min(dT_max, current_dt_per_min))), 6, 0, Math.PI * 2); ctx.fill();
+
+      // Readout
+      const regime = excess_power > 100 ? '· phòng vẫn ấm lên' : excess_power < -100 ? '· máy lạnh vượt công suất' : '· cân bằng';
+      readout.innerHTML =
+        `${n} người · phòng ${v} m³ · máy ${p_ac.toLocaleString('vi-VN')} BTU/h (${p_ac_w.toFixed(0)} W) ` +
+        `→ dòng nhiệt <b>${current_dt_per_min.toFixed(3).replace('.', ',')} °C/phút</b> ${regime}`;
+    }
+
+    root.querySelectorAll('input').forEach((el) => el.addEventListener('input', draw));
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="moi-nguoi-la-mot-bong-den-100-watt"]').forEach(setup);
+</script>

@@ -1,0 +1,123 @@
+---
+// Adiabatic compression of ideal gas: T₂ = T₁·r^(γ−1)
+// where r is compression ratio (P₂/P₁), γ is heat capacity ratio
+// Valid for fast compression with no heat transfer. Formula source: ideal gas law + first law of thermodynamics.
+---
+
+<figure class="demo" data-demo="nen-doan-nhiet-bom-xe-va-dong-co-diesel">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Tỉ số nén r <output data-out="r"></output>
+      <input type="range" data-in="r" min="1" max="25" step="0.1" value="18" /></label>
+    <label>Nhiệt độ ban đầu T₁ (°C) <output data-out="t1"></output>
+      <input type="range" data-in="t1" min="0" max="50" step="1" value="20" /></label>
+    <label>Chỉ số đoạn nhiệt γ <output data-out="gamma"></output>
+      <input type="range" data-in="gamma" min="1.30" max="1.67" step="0.01" value="1.40" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Nén nhanh khí quyển không cho nhiệt thoát ra: toàn bộ công cơ học chuyển thành
+    năng lượng nội của khí, làm tăng nhiệt độ. Công thức T₂ = T₁·r^(γ−1) cho thấy
+    diesel (r ≈ 18) tự bắt lửa mà không cần bugi, còn pump xe đạp chạm gần tới 200°C.
+    Ba đường ngang đánh dấu điểm tự cháy của dầu diesel (210°C), điểm bén của bùi nhùi
+    (400°C), và ngưỡng kích nổ sớm của xăng (~500°C).
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const CURVE = '#2563eb', MARK = '#dc2626', THIRD = '#f59e0b';
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (k: string) => root.querySelector(`[data-in="${k}"]`) as HTMLInputElement;
+    const output = (k: string) => root.querySelector(`[data-out="${k}"]`) as HTMLOutputElement;
+
+    function draw() {
+      const r = Number(input('r').value);
+      const t1_C = Number(input('t1').value);
+      const t1_K = t1_C + 273.15;
+      const gamma = Number(input('gamma').value);
+
+      output('r').textContent = r.toFixed(2);
+      output('t1').textContent = String(t1_C);
+      output('gamma').textContent = gamma.toFixed(2);
+
+      const t2_K = t1_K * Math.pow(r, gamma - 1);
+      const t2_C = t2_K - 273.15;
+      const ratio = t2_K / t1_K;
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.52);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+
+      const padL = 48, padB = 26, padT = 12, padR = 10;
+      const rMax = 25, tMax = 800;
+      const X = (rr: number) => padL + (rr / rMax) * (cssW - padL - padR);
+      const Y = (tt: number) => cssH - padB - (tt / tMax) * (cssH - padB - padT);
+
+      // Axes
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.3;
+      ctx.beginPath(); ctx.moveTo(padL, padT); ctx.lineTo(padL, cssH - padB); ctx.lineTo(cssW - padR, cssH - padB); ctx.stroke();
+      ctx.globalAlpha = 0.55; ctx.fillStyle = fg; ctx.font = '10px system-ui,sans-serif';
+      ctx.textAlign = 'center';
+      for (const rr of [5, 10, 15, 20, 25]) ctx.fillText(`${rr}`, X(rr), cssH - padB + 14);
+      ctx.textAlign = 'right';
+      for (const tt of [0, 200, 400, 600, 800]) ctx.fillText(`${tt}°`, padL - 4, Y(tt) + 3);
+
+      // Reference lines
+      const refs = [
+        [210, 'Tự cháy dầu diesel'],
+        [400, 'Bé bùi nhùi bông'],
+        [500, 'Kích nổ sớm xăng']
+      ];
+      refs.forEach(([temp, label], idx) => {
+        ctx.globalAlpha = 0.25;
+        ctx.strokeStyle = THIRD;
+        ctx.beginPath(); ctx.moveTo(padL, Y(temp)); ctx.lineTo(cssW - padR, Y(temp)); ctx.stroke();
+      });
+
+      ctx.globalAlpha = 1;
+
+      // Curve: T₂ vs r at current T₁ and γ
+      ctx.strokeStyle = CURVE; ctx.lineWidth = 2; ctx.beginPath();
+      for (let i = 0; i <= 250; i++) {
+        const rr = 1 + (rMax - 1) * (i / 250);
+        const tt = t1_K * Math.pow(rr, gamma - 1) - 273.15;
+        const x = X(rr), y = Y(Math.min(tt, tMax));
+        i ? ctx.lineTo(x, y) : ctx.moveTo(x, y);
+      }
+      ctx.stroke(); ctx.lineWidth = 1;
+
+      // Current point
+      ctx.fillStyle = MARK;
+      ctx.beginPath(); ctx.arc(X(r), Y(Math.min(t2_C, tMax)), 6, 0, Math.PI * 2); ctx.fill();
+
+      // Readout
+      const regime = t2_C < 210 ? '' : t2_C < 400 ? ' · <b>vượt ngưỡng tự cháy diesel</b>' : ' · <b>vượt ngưỡng kích nổ xăng</b>';
+      readout.innerHTML =
+        `r = <b>${r.toFixed(2)}</b>, γ = ${gamma.toFixed(2)}, T₁ = ${t1_C}°C → T₂ = <b>${t2_C.toFixed(0)}°C</b> (gấp ${ratio.toFixed(2)}× tuyệt đối)${regime}`;
+    }
+
+    root.querySelectorAll('input').forEach((el) => el.addEventListener('input', draw));
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="nen-doan-nhiet-bom-xe-va-dong-co-diesel"]').forEach(setup);
+</script>

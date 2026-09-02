@@ -1,0 +1,141 @@
+---
+// Transformer humming at 100 Hz: F ∝ B² = B_m²·(sin ωt + b)²
+// When squared, grid frequency (f) → force frequency (2f = 100 Hz at 50 Hz grid)
+// DC component b → splits force into 2f (100 Hz) + 1f (50 Hz) parts
+// Valid for grid f 40–70 Hz, DC component 0–50%, B_max 0.5–1.8 T
+---
+
+<figure class="demo" data-demo="vi-sao-may-bien-ap-u-o-100-hz">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Tần số lưới f (Hz) <output data-out="f"></output>
+      <input type="range" data-in="f" min="40" max="70" step="1" value="50" /></label>
+    <label>Từ thông một chiều (%) <output data-out="b"></output>
+      <input type="range" data-in="b" min="0" max="50" step="1" value="0" /></label>
+    <label>Biên độ từ thông B_max (T) <output data-out="bmax"></output>
+      <input type="range" data-in="bmax" min="0.5" max="1.8" step="0.1" value="1.0" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Từ thông B(t) hình sin ở tần số lưới (đường mảnh). Lực F ∝ B² (đường đậm)
+    có hai đỉnh cho mỗi chu kỳ B — tức là dao động ở 2f = 100 Hz. Khi thêm thành
+    phần một chiều vào từ thông, F sẽ có cả một thành phần 50 Hz ẩn bên trong, khiến
+    tiếng ù gào lên kèm một nốt thêm.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const CURVE_B = '#2563eb', CURVE_F = '#dc2626', MARK = '#f59e0b';
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+
+    const input = (k: string) => root.querySelector(`[data-in="${k}"]`) as HTMLInputElement;
+    const output = (k: string) => root.querySelector(`[data-out="${k}"]`) as HTMLOutputElement;
+
+    function draw() {
+      const f = Number(input('f').value);      // grid frequency 40-70 Hz
+      const b_pct = Number(input('b').value);  // DC component 0-50%
+      const B_max = Number(input('bmax').value); // 0.5-1.8 T
+
+      output('f').textContent = String(f);
+      output('b').textContent = String(b_pct);
+      output('bmax').textContent = B_max.toFixed(1).replace('.', ',');
+
+      const b = b_pct / 100;  // normalize to 0-0.5
+      const omega = 2 * Math.PI * f;  // angular frequency
+      const t_span = 40 / 1000;  // 40 ms in seconds, span 2 cycles at 50 Hz
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.45);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+
+      const padL = 44, padB = 26, padT = 12, padR = 10;
+      const B_lo = -(B_max * 1.3), B_hi = B_max * 1.3;
+      const F_lo = 0, F_hi = B_max * B_max;  // F ∝ B², so max is B_m²
+
+      const X = (tt: number) => padL + (tt / t_span) * (cssW - padL - padR);
+      const Y_B = (bb: number) => padT + ((B_hi - bb) / (B_hi - B_lo)) * (cssH - padB - padT);
+      const Y_F = (ff: number) => padT + ((B_hi - ff) / (B_hi - B_lo)) * (cssH - padB - padT);
+
+      // Draw axes
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.3;
+      ctx.beginPath(); ctx.moveTo(padL, padT); ctx.lineTo(padL, cssH - padB); ctx.lineTo(cssW - padR, cssH - padB); ctx.stroke();
+
+      // Time axis labels (ms)
+      ctx.globalAlpha = 0.55; ctx.fillStyle = fg; ctx.font = '10px system-ui,sans-serif';
+      ctx.textAlign = 'center';
+      for (const tms of [0, 10, 20, 30, 40]) {
+        ctx.fillText(tms + ' ms', X(tms / 1000), cssH - padB + 14);
+      }
+
+      // Left axis labels for B and F
+      ctx.textAlign = 'right';
+      ctx.globalAlpha = 0.55;
+      for (const bb of [-B_max, 0, B_max]) {
+        ctx.fillText(bb.toFixed(1).replace('.', ',') + ' T', padL - 4, Y_B(bb) + 3);
+      }
+
+      ctx.globalAlpha = 1;
+
+      // Draw B(t) curve (thin line)
+      ctx.strokeStyle = CURVE_B; ctx.lineWidth = 1; ctx.beginPath();
+      for (let i = 0; i <= 200; i++) {
+        const tt = (t_span * i) / 200;
+        const B_t = B_max * (Math.sin(omega * tt) + b);
+        i ? ctx.lineTo(X(tt), Y_B(B_t)) : ctx.moveTo(X(tt), Y_B(B_t));
+      }
+      ctx.stroke();
+
+      // Draw F(t) ∝ B² curve (thick line, red)
+      ctx.strokeStyle = CURVE_F; ctx.lineWidth = 2.5; ctx.beginPath();
+      for (let i = 0; i <= 200; i++) {
+        const tt = (t_span * i) / 200;
+        const B_t = B_max * (Math.sin(omega * tt) + b);
+        const F_t = B_t * B_t;  // Force proportional to B²
+        i ? ctx.lineTo(X(tt), Y_F(F_t)) : ctx.moveTo(X(tt), Y_F(F_t));
+      }
+      ctx.stroke(); ctx.lineWidth = 1;
+
+      // Compute key frequencies in the force signal
+      // From (sin ωt + b)² = (1 + 2b²)/2 + 2b·sin ωt − (cos 2ωt)/2
+      // Main 2f component amplitude
+      const F2f_amp = 0.5 * B_max * B_max;
+      const F1f_amp = 2 * b * B_max * B_max;
+
+      const force_2f = 2 * f;  // 100 Hz at 50 Hz grid
+      const force_1f = f;       // 50 Hz at 50 Hz grid (only if b > 0)
+
+      // Generate readable output
+      let text = `Tần số lưới: ${f} Hz → lực dao động ở ${force_2f} Hz`;
+      if (b > 0) {
+        const ratio_pct = Math.round((F1f_amp / F2f_amp) * 100);
+        text += ` · từ thông một chiều ${b_pct}% → thêm thành phần ${force_1f} Hz biên độ ${ratio_pct}% của nốt chính`;
+      }
+      readout.innerHTML = text;
+    }
+
+    root.querySelectorAll('input').forEach((el) => el.addEventListener('input', draw));
+    addEventListener('resize', draw);
+    draw();
+  }
+
+  document.querySelectorAll<HTMLElement>('[data-demo="vi-sao-may-bien-ap-u-o-100-hz"]').forEach(setup);
+</script>

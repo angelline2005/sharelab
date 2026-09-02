@@ -1,0 +1,176 @@
+---
+// Siphon velocity: v = √(2g·Δh) depends only on outlet depth, not siphon-top height.
+// Pressure at top: p = p₀ − ρg·h_top. Siphon breaks when p ≤ vapor pressure of water.
+// Temperature slider adjusts saturation pressure; critical height decreases with warmth.
+---
+
+<figure class="demo" data-demo="xi-phong-nuoc-chiu-chay-len-doc">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Chiều cao đỉnh ống h (m) <output data-out="h"></output>
+      <input type="range" data-in="h" min="0.2" max="12" step="0.1" value="2" /></label>
+    <label>Chênh cao đầu ra Δh (m) <output data-out="dh"></output>
+      <input type="range" data-in="dh" min="0.1" max="3" step="0.1" value="1" /></label>
+    <label>Nhiệt độ nước T (°C) <output data-out="t"></output>
+      <input type="range" data-in="t" min="5" max="90" step="5" value="20" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Nước chảy ra từ xi-phông chỉ phụ thuộc sâu ra bao nhiêu (Δh), chứ không phụ thuộc
+    chiều cao đỉnh ống. Nhưng đỉnh ống cao quá thì áp suất tại đó rơi xuống áp hơi bão hoà,
+    nước sôi lạnh và cột nước đứt.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script lang="ts">
+  const g = 9.81, rho = 1000, p0 = 101.325; // m/s², kg/m³, kPa
+  const CURVE = '#2563eb', MARK = '#dc2626', VAPOR = '#dc2626';
+
+  // Saturation pressure of water (kPa) from steam tables
+  const saturationPressure = (T: number): number => {
+    if (T <= 5) return 0.872;
+    if (T <= 10) return 1.228;
+    if (T <= 15) return 1.706;
+    if (T <= 20) return 2.337;
+    if (T <= 25) return 3.169;
+    if (T <= 30) return 4.246;
+    if (T <= 35) return 5.628;
+    if (T <= 40) return 7.375;
+    if (T <= 50) return 12.34;
+    if (T <= 60) return 19.93;
+    if (T <= 70) return 31.176;
+    if (T <= 80) return 47.373;
+    return 70.117; // 90°C
+  };
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (k: string) => root.querySelector(`[data-in="${k}"]`) as HTMLInputElement;
+    const output = (k: string) => root.querySelector(`[data-out="${k}"]`) as HTMLOutputElement;
+
+    function draw() {
+      const h = Number(input('h').value);
+      const dh = Number(input('dh').value);
+      const T = Number(input('t').value);
+
+      output('h').textContent = h.toFixed(1).replace('.', ',');
+      output('dh').textContent = dh.toFixed(1).replace('.', ',');
+      output('t').textContent = String(T);
+
+      // Calculate velocity and pressure
+      const v = Math.sqrt(2 * g * dh);
+      const p_top = p0 - (rho * g * h) / 1000; // kPa
+      const p_sat = saturationPressure(T);
+      const isBroken = p_top <= p_sat;
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.5);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+
+      // Layout
+      const padL = 10, padR = 10, padT = 20, padB = 20;
+      const wid = cssW - padL - padR;
+      const hei = cssH - padT - padB;
+      const tankX = 20, tankW = 60, waterLevel = padT + hei * 0.4;
+      const tubeTop = waterLevel - h * (hei / 8); // Scale: 8m per hei
+      const outletY = waterLevel + dh * (hei / 8);
+      const curveX1 = tankX + tankW + 15;
+      const curveX2 = curveX1 + 80;
+
+      // Draw water tank (simplified rectangle)
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.5; ctx.lineWidth = 2;
+      ctx.strokeRect(tankX, waterLevel - 30, tankW, 40);
+      ctx.fillStyle = CURVE; ctx.globalAlpha = 0.15;
+      ctx.fillRect(tankX, waterLevel - 30, tankW, 30);
+      ctx.globalAlpha = 1;
+
+      // Draw water level line
+      ctx.strokeStyle = CURVE; ctx.lineWidth = 1.5; ctx.globalAlpha = 0.6;
+      ctx.beginPath(); ctx.moveTo(tankX, waterLevel); ctx.lineTo(curveX2 + 40, waterLevel); ctx.stroke();
+      ctx.globalAlpha = 1;
+
+      // Draw siphon tube as a path
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.6; ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(tankX + tankW, waterLevel); // Start from tank exit
+      ctx.quadraticCurveTo(curveX1, tubeTop - 5, curveX1, tubeTop); // Curve up
+      ctx.lineTo(curveX2, tubeTop); // Across top
+      ctx.quadraticCurveTo(curveX2, outletY + 5, curveX2 + 20, outletY); // Curve down
+      ctx.stroke();
+      ctx.globalAlpha = 1;
+
+      // Mark key heights
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.3; ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(curveX1 - 8, waterLevel); ctx.lineTo(curveX1 - 8, tubeTop); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(curveX2 + 35, waterLevel); ctx.lineTo(curveX2 + 35, outletY); ctx.stroke();
+
+      // Labels for heights
+      ctx.fillStyle = fg; ctx.globalAlpha = 0.5; ctx.font = '9px system-ui,sans-serif'; ctx.textAlign = 'right';
+      ctx.fillText(`h = ${h.toFixed(1)} m`, curveX1 - 12, (waterLevel + tubeTop) / 2);
+      ctx.fillText(`Δh = ${dh.toFixed(1)} m`, curveX2 + 38, (waterLevel + outletY) / 2);
+
+      // Outlet marker and velocity arrow
+      ctx.fillStyle = MARK; ctx.globalAlpha = 1;
+      ctx.beginPath(); ctx.arc(curveX2 + 20, outletY, 4, 0, Math.PI * 2); ctx.fill();
+      // Velocity arrow
+      ctx.strokeStyle = MARK; ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(curveX2 + 20, outletY); ctx.lineTo(curveX2 + 40, outletY);
+      ctx.stroke();
+      ctx.fillText(`v = ${v.toFixed(2)} m/s`, curveX2 + 42, outletY + 3);
+
+      // Pressure indicator at top
+      ctx.fillStyle = isBroken ? '#dc2626' : '#2563eb';
+      ctx.globalAlpha = 0.7;
+      ctx.beginPath(); ctx.arc(curveX1, tubeTop, 5, 0, Math.PI * 2); ctx.fill();
+      ctx.globalAlpha = 0.6; ctx.font = '8px system-ui,sans-serif'; ctx.textAlign = 'center';
+      if (p_top >= 0) {
+        ctx.fillText(`p = ${p_top.toFixed(0)} kPa`, curveX1, tubeTop - 12);
+      } else {
+        ctx.fillText(`p < 0 (vô lý!)`, curveX1, tubeTop - 12);
+      }
+
+      // Status text
+      ctx.fillStyle = fg; ctx.globalAlpha = isBroken ? 1 : 0.5;
+      ctx.font = 'bold 11px system-ui,sans-serif'; ctx.textAlign = 'center';
+      if (isBroken) {
+        ctx.fillStyle = '#dc2626';
+        ctx.fillText('ĐỈnh vượt giới hạn: xi-phông đã đứt', cssW / 2, padT + 10);
+      } else {
+        ctx.fillStyle = CURVE;
+        ctx.fillText('Xi-phông hoạt động bình thường', cssW / 2, padT + 10);
+      }
+
+      // Readout
+      const note = isBroken
+        ? ` · <b style="color:#dc2626">xi-phông đã đứt</b>`
+        : '';
+      readout.innerHTML =
+        `Δh = <b>${dh.toFixed(2).replace('.', ',')}</b> m → v = <b>${v.toFixed(2).replace('.', ',')} m/s</b>` +
+        ` · đỉnh ${h.toFixed(1).replace('.', ',')} m: p = ${p_top.toFixed(1).replace('.', ',')} kPa ` +
+        `(áp hơi bão hoà ${T}°C = ${p_sat.toFixed(2).replace('.', ',')} kPa)${note}`;
+    }
+
+    root.querySelectorAll('input').forEach((el) => el.addEventListener('input', draw));
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="xi-phong-nuoc-chiu-chay-len-doc"]').forEach(setup);
+</script>

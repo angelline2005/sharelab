@@ -1,0 +1,38 @@
+---
+title: "Ổ cắm chống sét: tăng điện áp 10% thì dòng qua nó tăng 17 lần"
+seoTitle: "Varistor MOV chống sét lan truyền: đặc tuyến phi tuyến và cách nó hỏng"
+description: "Varistor tuân theo I = k·V^α với α cỡ 25–30, dốc gấp mấy chục lần định luật Ohm: ở 220 V nó rò vài micro-ampe, ở 700 V nó nuốt hàng trăm ampe. Chính độ dốc ấy làm nó không hỏng đột ngột mà già đi từng cú sét."
+pubDate: 2026-09-02
+tags: ["vat-ly", "dien-tu", "javascript"]
+translationId: "varistor-chong-set-va-so-mu-ba-muoi"
+---
+
+import VaristorClamp from '../../../components/demos/VaristorClamp.astro';
+
+Ổ cắm chống sét tưởng chừng vô hại — chỉ là cái hộp nhỏ nào cũng nhận diện được. Nhưng bên trong nó nằm một chiếc linh kiện phi tuyến một cách cực đoan, nên độ dốc của nó gợi lên câu hỏi: một sự gia tăng 10% điện áp làm sao mà gây được dòng điện tăng **gấp 17 lần**?
+
+<VaristorClamp />
+
+## Công thức mũ 30 của bầu trời điện
+
+Varistor — hay chính xác hơn là MOV (Metal-Oxide Varistor) — tuân theo một định luật lũy thừa đơn giản: **I = k·V^α**, trong đó α ≈ 25–30 (thường là 28–30 cho các MOV kẽm oxit). Ấy là gấp **mười lần** độ dốc của các định luật thường thấy. Để so sánh, [điện trở tiếp xúc trong ổ cắm lỏng](/vi/posts/dien-tro-tiep-xuc-o-cam-long-gay-chay) tuân theo I = V/R — công thức tuyến tính. Với nó, tăng V gấp đôi là tăng I gấp đôi. Với varistor α = 30, tăng V gấp 1,1 lần là tăng I gấp **1,1^30 = 17,4 lần**.
+
+Độ dốc cực đoan ấy không phải hạn chế thiết kế — nó chính là lý do lựa chọn nó. Khi áp suất mặc định 220 V (hoặc 275 V danh định của MOV), thiết bị chạy an toàn với dòng rò chỉ vài micro-ampe, hầu như không mất năng lượng. Nhưng đến 700 V — điểm ghim tiêu chuẩn tại dòng 100 A — nó chuyển từ "bề mặt" thành "máy bơm": nuốt hàng trăm ampe, cắt ngọn xung sét, bảo vệ mạch phía sau.
+
+## Tại sao lại chính độ dốc ấy cứu bạn
+
+Con số 17,4 không phải sự cờ lợi của quân thiết kế — nó là **kết quả tích lũy** của hàng trăm triệu hạt kẽm oxit siêu nhỏ mắn, mỗi hạt đóng vai trò là rào cản nhỏ. [Như NTC thermistor cũng phi tuyến](/vi/posts/nhiet-dien-tro-ntc-nhay-gap-muoi-mot-lan), varistor dựa vào sự tổ hợp của cơ chế lượng tử — khoảng cách năng lượng thay đổi theo hiệu điện thế, làm tăng mật độ carrier thông qua các ranh giới hạt. Cơ chế ấy tự động mà không cần "quyết định" lúc nào thì hoạt động.
+
+Chính vì thế **không có thứ gọi là "quá tải"** kiểu lò xo bị đẩy quá mạnh. Xung sét tấn công, điện áp vọt lên — varistor tự động mở to từng nước, dòng điện của nó gia tăng để "hồi đáp" cái xung, vặn xuống điện áp ở đầu ranh giới của nó. Nó không phun lửa hay nổ chưng — chỉ hấp thụ năng lượng, biến nó thành nhiệt. Xung sét 24 J ở mức cắt ngọn 690 V / 100 A mất **0,35 millisecond**, không đủ làm nó bốc cháy trong một lần duy nhất.
+
+## Nhưng mỗi cú sét là một vết sẹo
+
+Ở đây câu chuyện rẽ nhánh. Chính số mũ 30 ấy quyết định cách nó **chết**. Mỗi cú sét đốt cháy một ít biên hạt kẽm oxit — bề mặt ranh giới bị tổn thương, lớp vô hình "rào cản" bị mỏng đi. Kỳ lân sau, đường đặc tuyến I–V dịch chuyển nhẹ nhàng xuống dưới — cùng điện áp 220 V, dòng rò lại nhích lên từ vài micro-ampe thành chục micro-ampe, rồi mili-ampe.
+
+Sau trăm xung hay vài trăm (tùy mức năng lượng mỗi lần), con MOV đã dẫn chục mili-ampe thẳng ở điện áp lưới. **Mỗi mili-ampe rò là mỗi mili-watt đốt từng lúc từng giây**, không thể tắt được. Nhiệt độ của nó tăng, điện trở rò tăng thêm do [hiệu ứng nhiệt](/vi/posts/chu-ky-ban-ra-khong-hat-nao-biet-tuoi-minh), dòng gia tăng nữa — khiếp vía kỳ lạ gọi là "runaway" hay mất điều khiển cảm nhiệt. Sau vài giờ hoặc vài ngày, nó tự nung nóng tới hơn 200 °C, và chất bọc nhựa xung quanh nó tan chảy. Nó bốc cháy hoặc phát nổ nhỏ.
+
+## Trường hợp biên: bom hẹn giờ trong ổ cắm
+
+Ổ cắm chống sét — cái hộp 3 hay 4 lỗ với dòng xanh lá chạy qua — **không có đèn báo**, không có cầu chì nhiệt, không có cách nào để bạn biết rằng nó đã hết hạn sử dụng. Đèn "live" trên ổ vẫn bật, bạn vẫn cắm iPhone vào nó ngây thơ. Nhưng bên trong, nó đang rò chục mili-ampe, nung nóng nhẹ từng phút. Cơn sét thứ 200 nó bắt được, nó bốc cháy — lưa bắt vào dây chiếu trên tường hay tờ rơi cạnh ổ. Người trong nhà ở tầng 2 không chú ý tới cơn cháy nhỏ này cho tới khi khói dầy lên.
+
+Nếu một cái ổ cắm chống sét đã cứu bạn — và một cái nào cũng cứu bạn, bạn chỉ không nhận ra — thì **nó xứng đáng được thay** trước khi thả quả bom ấy. Cách duy nhất là tuần hoàn: mua mới mỗi 3–5 năm tùy vùng nhiều sét hay không. Hoặc nói cách khác, ổ cắm chống sét không phải bộ phận "mua một lần suốt đời" — nó như quần áo bảo vệ: cái nó cứu mình phải hy sinh.

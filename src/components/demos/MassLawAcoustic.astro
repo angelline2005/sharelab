@@ -1,0 +1,146 @@
+---
+// Mass law of sound insulation: TL = 20·log₁₀(m·f) − 47 (dB).
+// m = surface mass density (kg/m²), f = frequency (Hz). Valid above critical
+// frequency; here we show three materials (gypsum, glass, brick) and how
+// karaoke frequencies punch through differently. Slider for mass; curve vs frequency.
+---
+
+<figure class="demo" data-demo="cach-am-theo-khoi-luong-va-tieng-bass">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Khối lượng mặt m (kg/m²) <output data-out="m"></output>
+      <input type="range" data-in="m" min="5" max="500" step="5" value="200" /></label>
+    <label>Mức nguồn âm (dB SPL) <output data-out="l"></output>
+      <input type="range" data-in="l" min="60" max="110" step="5" value="100" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Định luật khối lượng: tường nặng hơn gấp đôi chặn được thêm 6 dB — đúng
+    ở mọi tần số, nhưng với tần số, tường gấp 40 lần khác nhau ở 100 Hz so
+    với 4 kHz (32 dB). Ba đường thể hiện ba vật liệu; dòng lưới mỏng là ba
+    dải tần số karaoke tiêu biểu (bass, giọng, cymbal). Đọc chiều cao từ
+    trục tung để biết bao nhiêu dB chặn ở tần số nào.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const CURVE = '#2563eb', THIRD = '#f59e0b', MARK = '#dc2626';
+  const MATERIALS: Array<[number, string]> = [[10, 'thạch cao'], [25, 'kính 10mm'], [200, 'gạch']];
+  const KARAOKEFREQS: Array<[number, string]> = [[100, 'bass'], [500, 'giọng'], [4000, 'cymbal']];
+  const vn = (x: number, d = 1) => x.toFixed(d).replace('.', ',');
+
+  const TL = (m: number, f: number) => 20 * Math.log10(m * f) - 47;
+  const received = (sourceLevel: number, tl: number) => Math.max(0, sourceLevel - tl);
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (k: string) => root.querySelector(`[data-in="${k}"]`) as HTMLInputElement;
+    const output = (k: string) => root.querySelector(`[data-out="${k}"]`) as HTMLOutputElement;
+
+    function draw() {
+      const m = Number(input('m').value);
+      const sourceLevel = Number(input('l').value);
+      output('m').textContent = String(m);
+      output('l').textContent = String(sourceLevel);
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.54);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+
+      const padL = 50, padR = 14, padT = 16, padB = 28;
+      const fMin = 50, fMax = 5000;
+      const X = (f: number) => padL + (Math.log10(f) - Math.log10(fMin)) / (Math.log10(fMax) - Math.log10(fMin)) * (cssW - padL - padR);
+      const Y = (tl: number) => cssH - padB - Math.max(0, Math.min(tl, 90)) / 90 * (cssH - padB - padT);
+
+      // Axes
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.3;
+      ctx.beginPath(); ctx.moveTo(padL, padT); ctx.lineTo(padL, cssH - padB); ctx.lineTo(cssW - padR, cssH - padB); ctx.stroke();
+      ctx.globalAlpha = 0.55; ctx.fillStyle = fg; ctx.font = '10px system-ui,sans-serif';
+
+      // Y-axis ticks (dB)
+      ctx.textAlign = 'right';
+      for (const db of [0, 20, 40, 60, 80]) {
+        ctx.fillText(`${db}`, padL - 4, Y(db) + 3);
+        ctx.globalAlpha = 0.15; ctx.strokeStyle = fg;
+        ctx.beginPath(); ctx.moveTo(padL + 2, Y(db)); ctx.lineTo(cssW - padR, Y(db)); ctx.stroke();
+        ctx.globalAlpha = 0.55;
+      }
+
+      // X-axis ticks (log frequency)
+      ctx.textAlign = 'center';
+      for (const [f, label] of [[100, '100 Hz'], [500, '500'], [1000, '1 kHz'], [5000, '5 kHz']] as Array<[number, string]>) {
+        ctx.fillText(label, X(f), cssH - padB + 14);
+      }
+      ctx.globalAlpha = 1;
+
+      // Three material curves
+      for (const [matMass, matLabel] of MATERIALS) {
+        const opacity = matMass === m ? 0.9 : 0.3;
+        ctx.strokeStyle = CURVE; ctx.globalAlpha = opacity; ctx.lineWidth = matMass === m ? 2.5 : 1.5;
+        ctx.beginPath();
+        for (let i = 0; i <= 140; i++) {
+          const f = fMin * Math.pow(fMax / fMin, i / 140);
+          const tl = TL(matMass, f);
+          if (i === 0) ctx.moveTo(X(f), Y(tl)); else ctx.lineTo(X(f), Y(tl));
+        }
+        ctx.stroke();
+        ctx.lineWidth = 1;
+      }
+
+      // Karaoke frequency markers with spectrum bars
+      ctx.globalAlpha = 0.35;
+      for (const [f, label] of KARAOKEFREQS) {
+        const tl = TL(m, f);
+        const rec = received(sourceLevel, tl);
+        ctx.strokeStyle = THIRD; ctx.lineWidth = 1;
+        ctx.beginPath(); ctx.moveTo(X(f), padT); ctx.lineTo(X(f), cssH - padB); ctx.stroke();
+      }
+
+      // Marker for selected mass
+      ctx.globalAlpha = 1;
+      for (let i = 0; i < KARAOKEFREQS.length; i++) {
+        const [f, label] = KARAOKEFREQS[i];
+        const tl = TL(m, f);
+        ctx.fillStyle = THIRD;
+        ctx.beginPath(); ctx.arc(X(f), Y(tl), 4, 0, Math.PI * 2); ctx.fill();
+        ctx.globalAlpha = 0.7; ctx.fillStyle = fg; ctx.textAlign = 'center';
+        ctx.fillText(label, X(f), Y(tl) - 8);
+        ctx.globalAlpha = 1;
+      }
+
+      // Readout with key numbers
+      const tl100 = TL(m, 100), tl500 = TL(m, 500), tl4000 = TL(m, 4000);
+      const rec100 = received(sourceLevel, tl100);
+      const rec500 = received(sourceLevel, tl500);
+      const rec4000 = received(sourceLevel, tl4000);
+
+      readout.innerHTML =
+        `m = <b>${m} kg/m²</b> · 100 Hz → <b>${vn(tl100, 1)} dB</b> (${vn(rec100)} dB qua) · ` +
+        `500 Hz → <b>${vn(tl500, 1)} dB</b> (${vn(rec500)} dB) · ` +
+        `4 kHz → <b>${vn(tl4000, 1)} dB</b> (${vn(rec4000)} dB) · ` +
+        `chênh <b>${vn(tl4000 - tl100, 1)} dB</b>`;
+    }
+
+    root.querySelectorAll('input').forEach((el) => el.addEventListener('input', draw));
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="cach-am-theo-khoi-luong-va-tieng-bass"]').forEach(setup);
+</script>

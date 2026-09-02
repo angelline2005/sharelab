@@ -1,0 +1,140 @@
+---
+// Peukert's Law: t = H·(C/(H·I))^k, where H=20h, actual capacity = I·t
+// Discharge time and capacity vs current; k from 1.0 to 1.4 (lead-acid ~1.25, lithium ~1.02-1.05)
+---
+
+<figure class="demo" data-demo="dinh-luat-peukert-ac-quy-100ah-con-47ah">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Dòng xả I (A) <output data-out="i"></output>
+      <input type="range" data-in="i" min="0" max="200" step="1" value="100" /></label>
+    <label>Dung lượng danh định C (Ah) <output data-out="c"></output>
+      <input type="range" data-in="c" min="20" max="200" step="5" value="100" /></label>
+    <label>Số mũ Peukert k <output data-out="k"></output>
+      <input type="range" data-in="k" min="1" max="1.4" step="0.01" value="1.25" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Ắc quy không phải dùng hết được toàn bộ năng lượng ghi trên nhãn. Rút nhanh
+    (dòng cao), nó chịu tổn hao nhiệt và phản ứng hóa học chậm, dung lượng thực
+    tụt xuống. Số mũ k quyết định mức tổn: k ≈ 1,25 cho ắc quy chì, k ≈ 1,02
+    cho pin lithium (gần như không mất).
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const H = 20; // reference time (hours)
+  const CURVE = '#2563eb', MARK = '#dc2626', LM = '#f59e0b';
+  const LANDMARKS: Array<[number, string]> = [
+    [5, 'C/20'], [20, 'C/5'], [100, '1C'],
+  ];
+
+  const peukert = (C: number, I: number, k: number): { t: number; cap: number } => {
+    if (I < 1) I = 1;
+    const t = H * Math.pow(C / (H * I), k);
+    return { t, cap: I * t };
+  };
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const slider = (s: string) => root.querySelector(`[data-in="${s}"]`) as HTMLInputElement;
+    const output = (s: string) => root.querySelector(`[data-out="${s}"]`) as HTMLOutputElement;
+
+    function draw() {
+      const I = Number(slider('i').value);
+      const C = Number(slider('c').value);
+      const k = Number(slider('k').value);
+
+      output('i').textContent = String(I);
+      output('c').textContent = String(C);
+      output('k').textContent = k.toFixed(2).replace('.', ',');
+
+      const { t, cap } = peukert(C, I, k);
+      const timeMin = Math.round(t * 60);
+      const standard = peukert(C, C/H, k);
+      const ratio = (100 * cap / standard.cap).toFixed(0);
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.42);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+
+      const padL = 48, padB = 26, padT = 12, padR = 10;
+      const capMin = 0, capMax = Math.max(C, 120);
+      const currMin = 1, currMax = 200;
+
+      // Log scale for current axis
+      const X = (I: number) => padL + (Math.log(I) - Math.log(currMin)) / (Math.log(currMax) - Math.log(currMin)) * (cssW - padL - padR);
+      const Y = (cap: number) => cssH - padB - (cap / capMax) * (cssH - padB - padT);
+
+      // Axes
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.3;
+      ctx.beginPath(); ctx.moveTo(padL, padT); ctx.lineTo(padL, cssH - padB); ctx.lineTo(cssW - padR, cssH - padB); ctx.stroke();
+      ctx.globalAlpha = 0.55; ctx.fillStyle = fg; ctx.font = '10px system-ui,sans-serif';
+
+      // Capacity axis labels
+      ctx.textAlign = 'right';
+      for (let cap = 0; cap <= capMax; cap += Math.ceil(capMax / 5 / 10) * 10) {
+        ctx.fillText(`${cap} Ah`, padL - 4, Y(cap) + 3);
+      }
+
+      // Current axis labels (log scale)
+      ctx.textAlign = 'center';
+      for (const II of [1, 5, 10, 20, 50, 100, 200]) {
+        if (II >= currMin && II <= currMax) {
+          ctx.fillText(`${II} A`, X(II), cssH - padB + 14);
+        }
+      }
+      ctx.globalAlpha = 1;
+
+      // Peukert curve
+      ctx.strokeStyle = CURVE; ctx.lineWidth = 2; ctx.beginPath();
+      for (let i = 0; i <= 200; i++) {
+        const II = currMin * Math.exp((i / 200) * (Math.log(currMax) - Math.log(currMin)));
+        const { cap: cc } = peukert(C, II, k);
+        i ? ctx.lineTo(X(II), Y(cc)) : ctx.moveTo(X(II), Y(cc));
+      }
+      ctx.stroke(); ctx.lineWidth = 1;
+
+      // Landmark points
+      LANDMARKS.forEach(([II, lab]) => {
+        const { cap: cc } = peukert(C, II, k);
+        ctx.fillStyle = LM;
+        ctx.beginPath(); ctx.arc(X(II), Y(cc), 4, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = fg; ctx.globalAlpha = 0.7; ctx.textAlign = 'center';
+        ctx.fillText(lab, X(II), Y(cc) - 8);
+        ctx.globalAlpha = 1;
+      });
+
+      // Current point
+      ctx.fillStyle = MARK;
+      ctx.beginPath(); ctx.arc(X(I), Y(cap), 6, 0, Math.PI * 2); ctx.fill();
+
+      const regime = I <= 5 ? ' · chế độ tiêu chuẩn C/20' : I >= 100 ? ' · xả nhanh 1C' : '';
+      readout.innerHTML =
+        `I = <b>${I} A</b>, k = ${k.toFixed(2)} → chỉ lấy được <b>${cap.toFixed(1).replace('.', ',')} Ah</b> ` +
+        `· chạy được <b>${timeMin} phút</b> · so với dự đoán ngây thơ ${Math.round(C/I)} phút${regime}`;
+    }
+
+    root.querySelectorAll('input').forEach((el) => el.addEventListener('input', draw));
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="dinh-luat-peukert-ac-quy-100ah-con-47ah"]').forEach(setup);
+</script>

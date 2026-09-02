@@ -1,0 +1,95 @@
+---
+title: "Biển báo phản quang sáng gấp 926 lần sơn trắng — nhưng chỉ cho tài xế"
+seoTitle: "Gương phản xạ ngược (retroreflector) hoạt động thế nào"
+description: "Hai gương ghép vuông góc trả tia sáng về đúng hướng nó tới, với mọi góc tới. Nhờ đó màng phản quang đạt 250 cd/(lx·m²) so với 0,27 của sơn trắng khuếch tán — sáng gấp 926 lần, nhưng chỉ về phía ngọn đèn, nên người đi bộ đứng lệch trục không hưởng chút nào."
+pubDate: 2026-09-02
+tags: ["vat-ly", "quang-hoc", "javascript"]
+translationId: "bien-bao-phan-quang-va-guong-goc-vuong"
+---
+
+import Retroreflector from '../../../components/demos/Retroreflector.astro';
+
+Biển báo giao thông dạo đêm tỏa sáng lóng lẫy dù chỉ được đèn pha chữa — còn
+sơn trắng lân cận tối om. Không phải vì chất liệu chứa phốt pho (đó là mẹo
+cổ đã chết): **hai gương ghép vuông góc gửi ánh sáng về đúng hướng nó tới**,
+với mọi góc đến, chỉ cần các lỗ nhỏ lên tới 2°:
+
+<Retroreflector />
+
+## Tia sáng về ngược không cần góc chính xác
+
+Khi tia sáng đập vào gương, nó tuân luật phản xạ: góc tới = góc phản xạ.
+Một gương đơn: tia xoay 1° thì tia phản xạ xoay 2° — bạn bắt tia lệch chóng mặt.
+Nhưng ghép hai gương vuông góc (gọi là **gương góc vuông** hay retroreflector),
+rồi bắn tia tới từ mọi hướng: tia nào cũng bật thẳng lại — cách tia tới
+**chính xác 180°**, như bắn vào một bức tường ma tìm được chính điểm lỏng để bật
+về. Điều kì diệu: góc này **đúng với mọi góc tới**, từ 0° tới 90°.
+
+Lý do nằm ở hình học. Hai lần phản xạ liên tiếp tại hai bề mặt vuông góc là
+như quay tia 180° — bất luận tia từ đâu đến, nó cũng bật lại từ chính hướng
+nó tới. Vệ tinh nhân tạo trên mặt trăng mang những hộp gương góc vuông để địa
+chất gia bắn laser từ Trái Đất: ba tia gương bắt lại chuyên nghiệp, không cần
+căn chỉnh sau khi đặt 50 năm.
+
+## Biển báo: 250 so với 0,27, gấp 926 lần
+
+Sơn trắng khuếch tán khắp hướng (Lambertian): độ chói của nó (R_A) đạt
+**0,27 cd/(lx·m²)** — chữ này nói: mỗi lux ánh sáng chiếu tới, nó trả lại
+0,27 candela trên mét vuông. Màng phản quang đặt công nghệ retroreflector
+thành hạt nhỏ, bắt lại tia về phía đèn pha: **250 cd/(lx·m²)**.
+
+Tỉ số: 250 ÷ 0,27 = **926 lần** — số này cắt ngang báo chí ngành giao thông,
+khẳng định rằng biển báo phản quang sáng gấp 900 lần sơn trắng. Nhưng "926 lần"
+chỉ đúng ở một chỗ: tại tài xế ngồi đúng phía sau đèn pha. Ở góc khác?
+Nó tối om như tờ giấy bình thường.
+
+Ở 100 m từ xe, khoảng cách thường thấy biển báo:
+- Màng phản quang: **25 cd/m²** (sáng như sao).
+- Sơn trắng: **0,027 cd/m²** (tối như đêm).
+
+Người đi bộ đứng lệch 20° khỏi trục đèn pha nhìn thấy biển báo gần hết bóng,
+vì **gương góc vuông chỉ phản xạ lại đèn pha, không phải ánh sáng mặt trời hay
+đèn đường**. Đó là cái giá của độ chuyên tâm: sáng gấp 926 lần, nhưng cho đúng
+một hướng duy nhất.
+
+## Lệch góc, chùm sáng trượt khỏi mắt
+
+[Cầu vồng ở 42°](/vi/posts/cau-vong-42-do-va-cu-don-toa-cua-anh-sang)
+vì cực trị hình học — đó là một bài học: khi cái gì cấu thành bằng vô vàn
+tia chồng lên nhau, chúng ta thường tìm thấy chúng ở vị trí cực trị. Gương
+góc vuông cũng thế, nhưng theo chiều ngược. Nó hoạt động mộc mạc: hai lần
+phản xạ = quay 180°. Lệch góc của hệ gương khỏi 90° đúng một độ thì
+**tia ra lệch 2 độ**.
+
+Tại 100 m xa, chùm sáng trở rộng. Nếu gương lệch góc thì chùm bắt đầu
+xoè ra:
+- Lệch 0°: tia về trực diện, chùm hội tụ.
+- Lệch 1°: tia lệch 2°, chùm ở 100 m rộng khoảng 3,5 m.
+- Lệch 2°: chùm rộng 7 m, người ngồi trong ghế lái có thể không còn nhìn thấy.
+
+Chính vì đó [gương xe máy có những chế độ căn chỉnh tinh xảo](/vi/posts/guong-xe-may-mo-o-mot-tua-may).
+Sai một độ, chùm trượt khỏi mắt. Biển báo được làm công nghiệp phải check
+góc cạnh vô số lần — độ chính xác góc mới là thứ đắt tiền.
+
+## Trường hợp biên: có lỗ ở góc vuông là chết chóc
+
+Công thức chỉ đúng ở **80–100 độ**: lệch ra khỏi vùng này, retroreflector
+chuyển thành tấm gương thường — tia tới từ một hướng bất kỳ không còn về
+đúng hướng tới. Hai gương cắt từ lá kính tròn, để lâu, chỉ cần co dãn nhẹ
+của vật liệu hoặc va chạm nhỏ là góc lệch dần — biển báo từ từ tối dần.
+Thử bấm một chiếc khung gương góc vuông vào tường: không cần dò, chỉ cần
+1 mm lệch ở cạnh thì chùm sáng trượt ra ngoài cánh tay. Để ý tới sự chính
+xác này là phần lớn kỹ thuật của biển báo phản quang.
+
+Không có bữa chỉnh lại góc hoàn hảo. Các nhà sản xuất chấp nhận điều đó và
+làm **một chút chủ ý sai góc** để chùm sáng xoè ra một chút, vừa đủ tới mắt
+tài xế ngồi lệch khỏi trục đèn pha (thường cách 0,6 m). Vân qua vợi lại —
+sai khỏi 90° là bao nhiêu để chùm lòng tròn vừa đủ? Ba phần mười độ? Bạn
+thấy vào những năm 1980, khi công nghệ bị tập trung vào chiết suất cao,
+hơn bao giờ hết.
+
+Một biển báo 926 lần ấy dán khắp nơi ở đêm hôm, nhưng quay nó sang góc
+50° (vẫn trong tầm nhìn con người), nó tối om như một mảnh dán giấy trắng
+bình thường. Biển báo không phải cho bất kỳ ai nhìn — nó là cuộc đàm phán
+vô lời giữa chiếc xe và cạnh đường: bạn phải đối mặt ánh đèn trực diện
+thì mới "thấy" được mình. Người đi bộ không được tiếc yêu.

@@ -1,0 +1,75 @@
+---
+title: "Xi-phông: đỉnh ống cao 0,5 m hay 5 m thì nước chảy nhanh y hệt nhau"
+seoTitle: "Nghịch lý xi-phông: vì sao chiều cao đỉnh ống không có mặt trong công thức"
+description: "Nước leo lên dốc rồi chảy xuống, và tốc độ ra chỉ phụ thuộc đúng một thứ: đầu ra thấp hơn mặt bể bao nhiêu. Nâng đỉnh ống từ 0,5 m lên 5 m — gấp mười — thì tốc độ ra không đổi một phần trăm nào, vì chiều cao ấy không xuất hiện trong v = √(2gΔh). Nó chỉ quay lại ở đúng một chỗ: khi đỉnh vượt ~10 m thì cột nước đứt."
+pubDate: 2026-09-02
+tags: ["vat-ly", "chat-luu", "javascript"]
+translationId: "xi-phong-nuoc-chiu-chay-len-doc"
+---
+
+import SiphonVelocity from '../../../components/demos/SiphonVelocity.astro';
+
+Bơm nước từ bể này sang bể kia bằng một chiếc ống vắt qua một hàng rào cao
+vài mét, rồi thõng xuống bể nhận: nước leo lên dốc từ trọng lực của cột nước ở
+một bên, chảy qua đỉnh, rồi **chảy xuống bên kia**. Thế nhưng nếu bạn cầm
+chiếc ống đó lên cao hơn — đỉnh từ 50 cm thành 5 mét — tốc độ chảy từng giọt
+không thay đổi một chút nào. Điều đó không thể:
+
+<SiphonVelocity />
+
+## Công thức: chiều cao nào xuất hiện, chiều cao nào không
+
+Xi-phông hoạt động vì [định luật Torricelli](/vi/posts/torricelli-thoi-gian-can-cua-mot-be-nuoc): nước phun ra
+từ một lỗ thủng với tốc độ `v = √(2g·Δh)`, trong đó **Δh là sâu của lỗ dưới
+mặt nước** — chứ không phải sâu của bể hay chiều cao khác gì cả. Cho siphon:
+chiếc ống chảy ra ở độ sâu Δh dưới mặt bể — **miệng ra thấp hơn mặt bể bao
+nhiêu**. Với Δh = 1 mét, công thức nói v = √(2 × 9,81 × 1) = **4,43 m/s**.
+Nâng đỉnh từ 0,5 m lên 5 m không đổi Δh tí nào, nên v vẫn 4,43 m/s — không
+phải vì ống nặng hay nhẹ, mà vì **chiều cao đỉnh không có trong công thức**.
+
+Điều kỳ lạ nằm ở chỗ: tại sao lại không cần chìm xuống mặt bể mới khởi động
+được cái siphon? Là vì **áp suất tại đỉnh ống** — chỗ khó nhất để nước leo lên.
+Áp suất ở đó là `p = p₀ − ρg·h_top`, trong đó h_top là chiều cao đỉnh trên mặt
+nước. Với h_top = 2 m, áp suất tại đỉnh là **81,7 kPa** — vẫn còn khí quyển
+bình thường gần như. Nhưng chiều cao đỉnh này chỉ ảnh hưởng đến **khả năng
+khởi động** siphon, không ảnh hưởng đến tốc độ chảy khi nó hoạt động.
+
+## Tại sao bạn phải "hút" để bắt đầu
+
+Lý thuyết nói siphon nên khởi động được với bất cứ chiều cao đỉnh nào — miễn
+áp suất tại đó không âm. Thực tế, tất cả nước trong ống phải là **chất lỏng
+liên tục** chứ không phải khí. Khi bạn hút một phát, bạn đang [hạ áp suất tại
+chỗ hút](/vi/posts/ap-suat-khi-quyen-va-tran-10-met-cua-moi-may-bom) để
+nước leo lên theo; khi miệng hút tới độ cao, bạn nhả ra và siphon tự chạy.
+Khí quyển **đẩy** nước từ bể này lên đỉnh cao tương đương như khí quyển đẩy
+nước vào một máy bơm hút — nhưng siphon còn lợi thế: nước ở bên kia là một
+**cân nặng kéo** xuống, giúp siphon tự duy trì.
+
+## Giới hạn của siphon: khi nước sôi lạnh lùng
+
+Nâng đỉnh lên cao, áp suất tại đó sẽ rơi xuống theo `p = p₀ − ρg·h`. Ở độ cao
+10 mét, áp suất chỉ còn **3,2 kPa** — cách xa áp suất khí quyển bình thường
+101,3 kPa. Nhưng có một ngưỡng tuyệt đối: **áp hơi bão hoà** của nước — nước
+không thể bị nén xuống áp suất nào thấp hơn áp hơi của nó ở cùng nhiệt độ
+nước mà không sôi. Ở 20°C, áp hơi bão hoà là 2,3 kPa. Khi áp suất tại đỉnh ống
+rơi xuống 2,3 kPa, nước bắt đầu sôi — không phải vì nóng, mà vì **áp suất quá
+thấp** để nước tồn tại ở trạng thái lỏng. Một khoảng trống hơi nước nhỏ xuất
+hiện, **cột nước đứt**, và siphon chết tắt. Chiều cao tới hạn ở 20°C là **10,1
+mét** — đó chính là giới hạn Torricelli tổng quát hoá ra cho siphon.
+
+Nếu nước ấm hơn — ví dụ 50°C — áp hơi lên thành 12,3 kPa, nên chiều cao tới
+hạn giảm xuống **9,1 mét**. Ở 90°C, chỉ **3,2 mét** — siphon trong mùa hè
+không chạy được nếu đỉnh cao hơn 3 mét.
+
+## Trường hợp biên: câu hỏi "ai đẩy nước lên"
+
+Thí nghiệm kinh điển: lấy một ống đã được chất lỏng lấp đầy hoàn toàn, không
+khí nào cả, rồi ngâm vào nước và cầm cao hơn bộn nước — siphon vẫn hoạt động
+dù không có khí quyển để "đẩy". Điều này chứng minh rằng không chỉ có áp suất
+không khí đóng vai trò: **lực kéo giữa các phân tử nước** (cohesion) cũng kéo
+nước lên qua đỉnh cao. Cơ chế này gọi là capillarity hoặc van der Waals forces
+ở chuỗi nước dài — những lực giữ nước liên kết mà ngay cả trong chân không
+cũng hoạt động. Siphon thật sự là cuộc chiến giữa ba tác nhân: áp suất
+khí quyển từ bên dưới, trọng lượng nước kéo xuống, và lực kép giữa các phân
+tử. Ở mỗi độ cao, tỷ trọng ba lực ấy thay đổi — và tại **h ≈ 10 m**, lực
+kép không đủ để chống lại sự uốn của cột nước nữa.

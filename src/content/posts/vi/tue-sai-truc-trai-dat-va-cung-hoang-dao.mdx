@@ -1,0 +1,70 @@
+---
+title: "Cung hoàng đạo của bạn đã lệch gần trọn một cung"
+seoTitle: "Tuế sai trục Trái Đất: chu kỳ 25 772 năm và sự trôi của điểm xuân phân"
+description: "Trục Trái Đất là một con quay khổng lồ đang tiến động: nó vẽ hết một vòng nón rộng 46,9° trong 25 772 năm. Trong 2 000 năm kể từ khi người ta lập bảng hoàng đạo, mọi mốc đã trôi 27,9° — gần trọn một cung 30°. Mất 71,6 năm cho mỗi độ."
+pubDate: 2026-09-02
+tags: ["vat-ly", "thien-van", "co-hoc", "javascript"]
+translationId: "tue-sai-truc-trai-dat-va-cung-hoang-dao"
+---
+
+import CelestialPole from '../../../components/demos/CelestialPole.astro';
+
+Sinh năm tháng Một nên bạn "là người Bạch Dương". Rồi nghe đâu đó rằng "cung hoàng đạo
+đã trôi", lại nghe lâu lâu những người chuyên nói về sao thú nhận công ty của bạn không
+còn là Bạch Dương nữa mà lại thuộc cung nào khác gần hơn. Không có gì bí bí: trục Trái Đất
+vẽ vòng nón như một con quay tiến động, phần trăm của nó vẽ được hết một hình nón có góc 46,9°:
+
+<CelestialPole />
+
+## Trục quay không im — nó "nhún nhảy" theo một vòng tròn
+
+Khi bạn quay một đỉnh hoặc bánh xe, nếu nó hơi bị nghiêng so với phương thẳng đứng, [mô-men
+của trọng lực tạo ra một chuyển động khác — gọi là hồi chuyển](/vi/posts/con-quay-hoi-chuyen-vi-sao-khong-chiu-do).
+Trái Đất cũng thế: trục của nó **không thẳng đứng với mặt phẳng quỹ đạo** — nó nghiêng đi **23,44°**,
+tạo ra các mùa (bán cầu bắc thì hè khi dốc về Mặt Trời, đông khi dốc ra). Nhưng trục ấy cũng đang
+quay: mặt trăng và mặt trời kéo xéo trên xích đạo lệch ấy, gây mô-men, buộc phương của trục
+phải quay ra. Không phải trục tự xoay (Trái Đất vẫn quay một vòng mỗi ngày), mà phương chiếu
+của nó quay dần trên bầu trời — hiện tượng gọi là **tuế sai**, hay **precession**.
+
+Vòng quay ấy lớn: **25 772 năm** để phương chiếu trục quay lại chỗ cũ. Cấp độ chậm đến nỗi thế hệ
+thế hệ người loài chẳng bao giờ nhận ra, nhưng nó đủ để đổi toàn bộ bản đồ sao. Ngôi sao "cực"
+(sao ở đúng phía trên đầu khi đứng ở cực bắc) thay đổi theo chu kỳ ấy: cách đây 5 000 năm,
+**Thuban** trong chòm Rồng là sao cực; ngày hôm nay là **Polaris** trong chòm Gấu Bé; trong
+12 000 năm nữa sẽ là **Vega** trong chòm Lira. Năm năm mà điểm cực tuế sai — nơi quỹ đạo
+của cực bắc tiếp xúc mặt trời — lại trôi tiếp một khoảng.
+
+## 2 000 năm, 27,9°: luật bậc 1 của trôi dạo
+
+Người Hy Lạp cổ đại lập ra bảng hoàng đạo (những cung sao xung quanh Trái Đất trong quỹ đạo
+của Mặt Trời) khoảng 2 000 năm trước. Lúc đó, **điểm xuân phân** (ngày bằng đêm, Mặt Trời
+trên xích đạo) nằm ở đầu cung Bạch Dương. Giờ đây nó đã trôi sang cung Cá — lệch đi **27,9°**.
+
+Tỷ lệ này quá đều đặn để là ngẫu nhiên: 27,9° ÷ 2 000 năm = 0,01396° mỗi năm, hay **71,6 năm**
+cho mỗi độ. Con số này không phải lạ: nó chính là 25 772 ÷ 360. [Khi cái gì tỷ lệ với chu kỳ
+của nó](/vi/posts/chu-ky-ban-ra-khong-hat-nao-biet-tuoi-minh), tốc độ thay đổi là hằng số.
+Trí thế hay — nó có nghĩa là bạn có thể dự đoán: sau thêm 2 000 năm nữa, điểm xuân phân sẽ
+lại trôi thêm 27,9°, bây giờ nó ở cung Cá + 28° = gần cung Ma Kết. Không cần tính toán phức
+tạp; chỉ cần chia.
+
+## Tuế sai phụ thuộc vào góc nghiêng — và tốc độ tự quay
+
+Công thức tính tốc độ tuế sai từ cơ học Trái Đất là: nó tỷ lệ với **cos(ε)**, với ε là độ
+nghiêng của trục. Nếu ε = 0 — tức là trục **thẳng đứng** với mặt phẳng quỹ đạo — thì cos(0°) = 1,
+nhưng mô-men gây tuế sai cũng bằng không (không có lực kéo xéo nữa), và công thức lại tỷ lệ
+**1/ω**, với ω là tốc độ quay. Một hành tinh quay nhanh hơn (ngày ngắn hơn) sẽ tiến động chậm hơn.
+
+Đó là lý do tuế sai của Trái Đất chậm đến vậy: nó quay **một vòng mỗi 24 giờ** — trong thế giới
+hành tinh [quay khác nhau giữa vài giờ tới vài mươi ngày](/vi/posts/can-bang-nhiet-trai-dat-va-tam-chan-33-do),
+Trái Đất là cái nhanh chuyển động. Nếu Trái Đất quay một vòng trong **6 giờ** thay vì 24 (quay nhanh
+gấp bốn lần), tuế sai sẽ chậm gấp bốn lần, chu kỳ dài gấp bốn lần, ~**103 000 năm**. Nếu quay trong
+**48 giờ** (quay chậm hơn nửa), chu kỳ tuế sai lại ngắn gấp đôi, chỉ còn **~13 000 năm**.
+
+## Trường hợp biên: chính cái ε cũng dao động
+
+Công thức coi độ nghiêng ε = 23,44° là hằng số, nhưng thực tế nó **dao động** từ 22,1° tới 24,5°
+theo chu kỳ **41 000 năm** — gọi là chu kỳ Milankovitch, định hình biến đổi khí hậu trên các
+triệu năm. Nó là nguyên nhân xa xôi của các kỷ băng tuần hoàn. Chồng lên tuế sai còn một cái
+lắc nhỏ hơn nữa: **chương động** do Mặt Trăng, chu kỳ 18,6 năm, biên độ 9 giây cung (nhỏ tới
+chừng nào mà nó chỉ thấy rõ nếu bạn dùng kính thiên văn). Ở giới hạn kia: nếu ε = 0°, công thức
+nói mô-men tuế sai triệt tiêu hoàn toàn — trục sẽ **đứng yên vĩnh viễn**, không quay tít nữa.
+Khi ấy cung hoàng đạo trong thiên văn sẽ cố định theo thể kỷ — nhưng Trái Đất không mất mùa.

@@ -1,0 +1,202 @@
+---
+// Earth's axial precession: the celestial north pole traces a circle (~23.44° radius)
+// around the ecliptic pole with a period of ~25,772 years at ε=23.44° and 24-h rotation.
+// Angular velocity of precession: Ω_p ~ (3/2)(GM/r³)(C−A)/C · cos(ε)/ω
+// Normalized to standard Earth at 23.44° obliquity; scales with cos(ε)/ω_rotation.
+// Sliders: obliquity ε (0–45°), day length (6–48 h), years elapsed (0–30,000).
+---
+
+<figure class="demo" data-demo="tue-sai-truc-trai-dat-va-cung-hoang-dao">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Độ nghiêng trục ε (°) <output data-out="eps"></output>
+      <input type="range" data-in="eps" min="0" max="45" step="0.1" value="23.44" /></label>
+    <label>Chu kỳ tự quay (h/ngày) <output data-out="day"></output>
+      <input type="range" data-in="day" min="6" max="48" step="1" value="24" /></label>
+    <label>Năm trôi qua <output data-out="years"></output>
+      <input type="range" data-in="years" min="0" max="30000" step="100" value="2000" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Vòm trời nhìn từ trên cực bắc: điểm sáng nhỏ là sao Polaris (hiện tại), các sao khác
+    (Thuban 3000 năm trước, Vega 12000 năm tới) đánh dấu vị trí cực quá khứ và tương lai.
+    Kim mỏng chỉ vị trí cực ở năm đã chọn. Dưới đó: dải hoàng đạo 12 cung với mốc điểm
+    xuân phân trôi dần theo thời gian.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const CURVE = '#2563eb', MARK = '#dc2626', LM = '#f59e0b';
+  const STANDARD_EPS = 23.44; // degrees, standard Earth obliquity
+  const STANDARD_DAY = 24; // hours, standard Earth day
+  const STANDARD_CYCLE = 25772; // years, standard precession cycle
+
+  // Precession period scales with cos(eps) / omega_rotation
+  const precessionCycle = (eps: number, dayHours: number) => {
+    const cosRatio = Math.cos(eps * Math.PI / 180) / Math.cos(STANDARD_EPS * Math.PI / 180);
+    const dayRatio = dayHours / STANDARD_DAY;
+    return STANDARD_CYCLE / (cosRatio * dayRatio);
+  };
+
+  // Get polar star name at given year
+  const getPolarStar = (yearOffset: number) => {
+    const year = 2000 + yearOffset;
+    if (year < 500) return 'Thuban';
+    if (year < 14000) return 'Polaris';
+    return 'Vega';
+  };
+
+  // Compute vernal equinox drift: angle in zodiac belt (0-360° around zodiac)
+  const vernalEquinoxDrift = (eps: number, dayHours: number, yearOffset: number) => {
+    const cycle = precessionCycle(eps, dayHours);
+    const angle = (yearOffset / cycle) * 360;
+    return angle % 360;
+  };
+
+  // Position of pole star in the precession circle
+  // Polaris is near year 2000; we compute precession from there
+  const poleAngle = (eps: number, dayHours: number, yearOffset: number) => {
+    const cycle = precessionCycle(eps, dayHours);
+    const angle = (yearOffset / cycle) * 360 * Math.PI / 180;
+    return angle;
+  };
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (k: string) => root.querySelector(`[data-in="${k}"]`) as HTMLInputElement;
+    const output = (k: string) => root.querySelector(`[data-out="${k}"]`) as HTMLOutputElement;
+
+    function draw() {
+      const eps = Number(input('eps').value);
+      const day = Number(input('day').value);
+      const years = Number(input('years').value);
+
+      output('eps').textContent = eps.toFixed(2).replace('.', ',');
+      output('day').textContent = String(day);
+      output('years').textContent = years.toLocaleString('vi-VN');
+
+      const cycle = precessionCycle(eps, day);
+      const drift = vernalEquinoxDrift(eps, day, years);
+      const angle = poleAngle(eps, day, years);
+      const polarStar = getPolarStar(years);
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.65);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+
+      // ===== Upper half: celestial pole view =====
+      const topH = cssH * 0.55;
+      const ctrX = cssW / 2, ctrY = topH * 0.5;
+      const radius = Math.min(ctrX - 20, topH * 0.4);
+
+      // Draw celestial sphere border and grid
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.2;
+      ctx.beginPath(); ctx.arc(ctrX, ctrY, radius, 0, Math.PI * 2); ctx.stroke();
+      ctx.globalAlpha = 0.1;
+      for (let r = 0.25; r < 1; r += 0.25) {
+        ctx.beginPath(); ctx.arc(ctrX, ctrY, radius * r, 0, Math.PI * 2); ctx.stroke();
+      }
+
+      // Draw precession circle (radius = obliquity)
+      ctx.globalAlpha = 0.3; ctx.strokeStyle = CURVE;
+      const precRadius = radius * eps / 90;
+      ctx.beginPath(); ctx.arc(ctrX, ctrY, precRadius, 0, Math.PI * 2); ctx.stroke();
+
+      // Draw stars
+      ctx.globalAlpha = 1; ctx.fillStyle = LM; ctx.font = 'bold 11px system-ui,sans-serif';
+      const starData: Array<[string, number]> = [
+        ['Thuban', -2000 / cycle * 2 * Math.PI],
+        ['Polaris', 0],
+        ['Vega', 12000 / cycle * 2 * Math.PI],
+      ];
+      starData.forEach(([name, starAngle]) => {
+        const sx = ctrX + precRadius * Math.cos(starAngle);
+        const sy = ctrY + precRadius * Math.sin(starAngle);
+        ctx.beginPath(); ctx.arc(sx, sy, 3.5, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = fg; ctx.globalAlpha = 0.6; ctx.textAlign = 'center';
+        ctx.fillText(name, sx, sy - 10);
+        ctx.fillStyle = LM; ctx.globalAlpha = 1;
+      });
+
+      // Draw current pole position (arrow)
+      ctx.strokeStyle = MARK; ctx.lineWidth = 2.5;
+      const px = ctrX + precRadius * Math.cos(angle);
+      const py = ctrY + precRadius * Math.sin(angle);
+      const arrowLen = 20;
+      ctx.beginPath(); ctx.moveTo(ctrX, ctrY); ctx.lineTo(px, py); ctx.stroke();
+      // Arrowhead
+      const arrowAng = Math.atan2(py - ctrY, px - ctrX);
+      ctx.beginPath();
+      ctx.moveTo(px, py);
+      ctx.lineTo(px - arrowLen * Math.cos(arrowAng - 0.3), py - arrowLen * Math.sin(arrowAng - 0.3));
+      ctx.moveTo(px, py);
+      ctx.lineTo(px - arrowLen * Math.cos(arrowAng + 0.3), py - arrowLen * Math.sin(arrowAng + 0.3));
+      ctx.stroke();
+
+      // Ecliptic pole label
+      ctx.fillStyle = fg; ctx.globalAlpha = 0.5; ctx.font = '9px system-ui,sans-serif';
+      ctx.textAlign = 'center'; ctx.fillText('cực hoàng đạo', ctrX, ctrY + radius + 15);
+
+      // ===== Lower half: zodiac belt =====
+      const botY = topH + 25;
+      const botH = cssH - botY - 10;
+      const zodiacR = Math.min(ctrX - 15, botH * 0.35);
+
+      ctx.globalAlpha = 0.15; ctx.strokeStyle = fg;
+      ctx.beginPath(); ctx.arc(ctrX, botY + botH * 0.5, zodiacR, 0, Math.PI * 2); ctx.stroke();
+
+      // Draw zodiac signs (12 sections)
+      const signs = ['Bạch Dương', 'Kim Ngưu', 'Song Tử', 'Cự Giải', 'Sư Tử', 'Xử Nữ',
+                     'Thiên Bình', 'Bò Cạp', 'Nhân Mã', 'Ma Kết', 'Bảo Bình', 'Song Ngư'];
+      ctx.globalAlpha = 0.4; ctx.fillStyle = fg; ctx.font = '8px system-ui,sans-serif';
+      ctx.textAlign = 'center';
+      for (let i = 0; i < 12; i++) {
+        const signAngle = (i * 30 + 15) * Math.PI / 180;
+        const lx = ctrX + zodiacR * 1.2 * Math.cos(signAngle);
+        const ly = botY + botH * 0.5 + zodiacR * 1.2 * Math.sin(signAngle);
+        ctx.fillText(signs[i], lx, ly + 3);
+      }
+
+      // Vernal equinox position (drift)
+      ctx.globalAlpha = 1; ctx.fillStyle = MARK; ctx.lineWidth = 2;
+      const eqAngle = (drift - 90) * Math.PI / 180; // Adjust so 0° is at start
+      const eqX = ctrX + zodiacR * Math.cos(eqAngle);
+      const eqY = botY + botH * 0.5 + zodiacR * Math.sin(eqAngle);
+      ctx.beginPath(); ctx.arc(eqX, eqY, 5, 0, Math.PI * 2); ctx.fill();
+
+      // Vernal equinox label
+      ctx.fillStyle = fg; ctx.globalAlpha = 0.7; ctx.font = '9px system-ui,sans-serif';
+      ctx.textAlign = 'center'; ctx.fillText('điểm xuân phân', ctrX, botY + 10);
+
+      // Readout
+      const driftDegrees = drift.toFixed(2).replace('.', ',');
+      const cycleYears = Math.round(cycle).toLocaleString('vi-VN');
+      readout.innerHTML =
+        `ε = <b>${eps.toFixed(2).replace('.', ',')}</b>° · ngày = ${day} h → chu kỳ tuế sai <b>${cycleYears}</b> năm · ` +
+        `sau ${years.toLocaleString('vi-VN')} năm: trôi <b>${driftDegrees}°</b> · sao cực: <b>${polarStar}</b>`;
+    }
+
+    root.querySelectorAll('input').forEach((el) => el.addEventListener('input', draw));
+    addEventListener('resize', draw);
+    draw();
+  }
+
+  document.querySelectorAll<HTMLElement>('[data-demo="tue-sai-truc-trai-dat-va-cung-hoang-dao"]').forEach(setup);
+</script>

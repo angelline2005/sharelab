@@ -1,0 +1,181 @@
+---
+// Solar panel I-V and P-V curves with MPPT loss demonstration
+// Built from nameplate: V_oc, I_sc, V_mp, I_mp
+// Shows power loss when forced to work below MPP by battery charging voltage
+// Temperature coefficient: −0.35%/K on both V and I
+---
+
+<figure class="demo" data-demo="mppt-va-diem-cong-suat-cuc-dai-tam-pin">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Cường độ nắng (W/m²) <output data-out="irradiance"></output>
+      <input type="range" data-in="irradiance" min="100" max="1000" step="50" value="1000" /></label>
+    <label>Nhiệt độ tấm (°C) <output data-out="temp"></output>
+      <input type="range" data-in="temp" min="10" max="70" step="1" value="25" /></label>
+    <label>Điện áp ắc quy (V) <output data-out="voltage"></output>
+      <input type="range" data-in="voltage" min="5" max="22" step="0.1" value="13.8" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Đặc tuyến công suất của tấm pin theo điện áp (sử dụng tấm 36 cell có nhãn V_oc 22,5 V, I_sc 5,86 A, V_mp 18,5 V, I_mp 5,71 A).
+    Chấm đỏ là điểm công suất cực đại; đường dọc xanh là điện áp bị ép bởi ắc quy. Khi ắc quy kéo điện áp xuống dưới V_mp,
+    tấm pin mất công suất dù nắng không đổi.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  // Panel nameplate at reference conditions (25°C, 1000 W/m²)
+  const V_oc_ref = 22.5;
+  const I_sc_ref = 5.86;
+  const V_mp_ref = 18.5;
+  const I_mp_ref = 5.71;
+  const T_ref = 25;
+  const G_ref = 1000;
+  const tempCoeff = -0.0035;
+
+  // Calculate current on I-V curve using piecewise linear model
+  function calcCurrent(V: number, V_oc: number, I_sc: number, V_mp: number, I_mp: number): number {
+    if (V <= 0) return I_sc;
+    if (V >= V_oc) return 0;
+
+    if (V <= V_mp) {
+      // Region 1: I drops linearly from I_sc to I_mp
+      return I_sc - (I_sc - I_mp) * (V / V_mp);
+    } else {
+      // Region 2: I drops linearly from I_mp to 0
+      return I_mp * (1 - (V - V_mp) / (V_oc - V_mp));
+    }
+  }
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (k: string) => root.querySelector(`[data-in="${k}"]`) as HTMLInputElement;
+    const output = (k: string) => root.querySelector(`[data-out="${k}"]`) as HTMLOutputElement;
+
+    function draw() {
+      const G = Number(input('irradiance').value);
+      const T = Number(input('temp').value);
+      const V_bat = Number(input('voltage').value);
+
+      output('irradiance').textContent = String(G);
+      output('temp').textContent = String(T);
+      output('voltage').textContent = V_bat.toFixed(1).replace('.', ',');
+
+      // Calculate panel parameters at current conditions
+      const dT = T - T_ref;
+      const dG = G / G_ref;
+      const V_oc = V_oc_ref * (1 + tempCoeff * dT);
+      const I_sc = I_sc_ref * dG * (1 + tempCoeff * dT);
+      const V_mp = V_mp_ref * (1 + tempCoeff * dT);
+      const I_mp = I_mp_ref * dG * (1 + tempCoeff * dT);
+      const P_mp = V_mp * I_mp;
+
+      // Calculate current and power at forced voltage
+      const I_bat = calcCurrent(V_bat, V_oc, I_sc, V_mp, I_mp);
+      const P_bat = V_bat * I_bat;
+      const loss = P_mp > 0 ? (1 - P_bat / P_mp) * 100 : 0;
+
+      // Canvas setup
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.5);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+
+      const padL = 48, padB = 28, padT = 12, padR = 10;
+      const P_max = Math.max(P_mp * 1.1, 120);
+      const X = (v: number) => padL + (v / 25) * (cssW - padL - padR);
+      const Y = (p: number) => cssH - padB - (p / P_max) * (cssH - padB - padT);
+
+      // Draw axes
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.3;
+      ctx.beginPath(); ctx.moveTo(padL, padT); ctx.lineTo(padL, cssH - padB); ctx.lineTo(cssW - padR, cssH - padB); ctx.stroke();
+      ctx.globalAlpha = 0.55; ctx.fillStyle = fg; ctx.font = '10px system-ui,sans-serif';
+
+      // Voltage labels
+      ctx.textAlign = 'center';
+      for (const v of [5, 10, 15, 20, 25]) {
+        ctx.fillText(`${v} V`, X(v), cssH - padB + 14);
+      }
+
+      // Power labels
+      ctx.textAlign = 'right';
+      for (const p of [0, 25, 50, 75, 100, 125]) {
+        if (p <= P_max) {
+          ctx.fillText(`${p} W`, padL - 4, Y(p) + 3);
+        }
+      }
+      ctx.globalAlpha = 1;
+
+      // Draw P-V curve
+      ctx.strokeStyle = '#2563eb'; ctx.lineWidth = 2.5; ctx.beginPath();
+      for (let i = 0; i <= 200; i++) {
+        const v = (25 * i) / 200;
+        const i_curve = calcCurrent(v, V_oc, I_sc, V_mp, I_mp);
+        const p_curve = v * i_curve;
+        i ? ctx.lineTo(X(v), Y(p_curve)) : ctx.moveTo(X(v), Y(p_curve));
+      }
+      ctx.stroke(); ctx.lineWidth = 1;
+
+      // Shade loss region if forced below MPP
+      if (V_bat < V_mp) {
+        ctx.fillStyle = 'rgba(220, 38, 38, 0.15)';
+        ctx.beginPath();
+        ctx.moveTo(X(V_bat), Y(P_bat));
+        ctx.lineTo(X(V_bat), Y(0));
+        for (let i = 0; i <= 100; i++) {
+          const v = V_bat + ((V_mp - V_bat) * i) / 100;
+          const i_curve = calcCurrent(v, V_oc, I_sc, V_mp, I_mp);
+          const p_curve = v * i_curve;
+          ctx.lineTo(X(v), Y(p_curve));
+        }
+        ctx.lineTo(X(V_bat), Y(0));
+        ctx.fill();
+      }
+
+      // Draw MPP marker
+      ctx.fillStyle = '#dc2626';
+      ctx.beginPath(); ctx.arc(X(V_mp), Y(P_mp), 5.5, 0, Math.PI * 2); ctx.fill();
+
+      // Draw forced voltage line
+      ctx.strokeStyle = '#2563eb'; ctx.globalAlpha = 0.5; ctx.lineWidth = 1;
+      ctx.setLineDash([4, 3]);
+      ctx.beginPath(); ctx.moveTo(X(V_bat), padT); ctx.lineTo(X(V_bat), cssH - padB); ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.globalAlpha = 1;
+
+      // Draw current marker at forced voltage
+      ctx.fillStyle = '#f59e0b';
+      ctx.beginPath(); ctx.arc(X(V_bat), Y(P_bat), 4, 0, Math.PI * 2); ctx.fill();
+
+      // Readout
+      readout.innerHTML =
+        `Nhãn 22,5 V / 5,86 A / 18,5 V / 5,71 A · ` +
+        `Nắng ${G} W/m², ${T} °C → MPP: ${V_mp.toFixed(1).replace('.', ',')} V × ${I_mp.toFixed(2).replace('.', ',')} A = ` +
+        `<b>${P_mp.toFixed(1).replace('.', ',')} W</b> · ` +
+        `ép ở ${V_bat.toFixed(1).replace('.', ',')} V: ${V_bat.toFixed(1).replace('.', ',')} V × ${I_bat.toFixed(2).replace('.', ',')} A = ` +
+        `<b>${P_bat.toFixed(1).replace('.', ',')} W</b> · ` +
+        `mất <b>${loss.toFixed(1).replace('.', ',')}%</b>`;
+    }
+
+    root.querySelectorAll('input').forEach((el) => el.addEventListener('input', draw));
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="mppt-va-diem-cong-suat-cuc-dai-tam-pin"]').forEach(setup);
+</script>

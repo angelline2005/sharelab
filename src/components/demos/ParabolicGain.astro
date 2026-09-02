@@ -1,0 +1,202 @@
+---
+// Parabolic dish antenna gain: G = η·(π·D/λ)²
+// 3dB beamwidth: θ₃dB ≈ 70·λ/D (degrees)
+// Source: antenna theory (Balanis, Kraus & Marhefka)
+// Valid for D ≥ 0.3 m, f ≤ 30 GHz
+---
+
+<figure class="demo" data-demo="do-loi-chao-ve-tinh-va-goc-mo">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Đường kính chảo D (m) <output data-out="d"></output>
+      <input type="range" data-in="d" min="0.3" max="3.0" step="0.1" value="0.6" /></label>
+    <label>Tần số f (GHz) <output data-out="f"></output>
+      <input type="range" data-in="f" min="1" max="30" step="0.5" value="12.5" /></label>
+    <label>Góc lệch chỉnh hướng (°) <output data-out="offset"></output>
+      <input type="range" data-in="offset" min="0" max="10" step="0.5" value="0" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Biểu đồ bức xạ (polar) của một ăng-ten chảo parabol. Trục ngang chỉ độ lợi
+    tương đối (dB), vòng tròn là 0 dB (peak), mỗi vòng kẽ −3 dB. Góc thực tế
+    dạng cực. Búp chính hình giọt nước; chiều rộng nửa công suất (θ₃dB) được
+    tô màu vàng. Vạch đỏ chỉ hướng lệch từ peak.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const c = 299792458;  // m/s
+  const eta = 0.65;     // efficiency factor
+  const CURVE = '#2563eb', MARK = '#dc2626', LM = '#f59e0b';
+
+  function viNum(n: number, decimals: number = 1): string {
+    return n.toFixed(decimals).replace('.', ',');
+  }
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (k: string) => root.querySelector(`[data-in="${k}"]`) as HTMLInputElement;
+    const output = (k: string) => root.querySelector(`[data-out="${k}"]`) as HTMLOutputElement;
+
+    // Antenna radiation pattern: Gaussian approximation
+    // at θ offset from peak, normalized power = exp(-ln(2)·(θ/θ₃dB)²)
+    // This ensures G(θ₃dB) = 0.5 (−3 dB by definition of 3dB beamwidth)
+    function pattern(theta_deg: number, theta_3dB_deg: number): number {
+      const norm = theta_deg / theta_3dB_deg;
+      return Math.exp(-Math.LN2 * norm * norm);
+    }
+
+    function draw() {
+      const D = Number(input('d').value);
+      const f_GHz = Number(input('f').value);
+      const f = f_GHz * 1e9;
+      const offset_deg = Number(input('offset').value);
+
+      const lambda = c / f;
+      const G_linear = eta * Math.pow(Math.PI * D / lambda, 2);
+      const G_dBi = 10 * Math.log10(G_linear);
+      const theta_3dB = 70 * lambda / D;
+
+      // Update outputs
+      output('d').textContent = viNum(D, 1);
+      output('f').textContent = viNum(f_GHz, 1);
+      output('offset').textContent = viNum(offset_deg, 1);
+
+      // Canvas size
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32;
+      const cssH = cssW;  // square canvas for polar plot
+      canvas.width = cssW * dpr;
+      canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+
+      const fg = getComputedStyle(root).color;
+      const cx = cssW / 2, cy = cssH / 2;
+      const radius = Math.min(cssW, cssH) / 2 - 20;
+
+      // Helper: convert polar (angle in degrees, normalized gain 0-1) to Cartesian
+      const polarToCart = (angle_deg: number, gain: number) => {
+        const angle_rad = angle_deg * Math.PI / 180;
+        const r = radius * gain;
+        return [cx + r * Math.cos(angle_rad), cy + r * Math.sin(angle_rad)];
+      };
+
+      // Draw concentric circles for dB scale (0, -3, -6, -9, -12 dB)
+      ctx.strokeStyle = fg;
+      ctx.globalAlpha = 0.2;
+      ctx.font = '8px system-ui,sans-serif';
+      ctx.textAlign = 'right';
+      ctx.fillStyle = fg;
+      for (const dB of [0, -3, -6, -9, -12]) {
+        const gain = Math.pow(10, dB / 10);
+        const r = radius * gain;
+        ctx.beginPath();
+        ctx.arc(cx, cy, r, 0, Math.PI * 2);
+        ctx.stroke();
+        if (dB <= 0) {
+          ctx.globalAlpha = 0.4;
+          ctx.fillText(dB + ' dB', cx - 5, cy - r + 8);
+          ctx.globalAlpha = 0.2;
+        }
+      }
+
+      // Draw radial lines for angle markers
+      ctx.globalAlpha = 0.15;
+      for (const angle of [0, 30, 60, 90, 120, 150, 180, 210, 240, 270, 300, 330]) {
+        const angle_rad = angle * Math.PI / 180;
+        const x1 = cx + radius * Math.cos(angle_rad);
+        const y1 = cy + radius * Math.sin(angle_rad);
+        ctx.beginPath();
+        ctx.moveTo(cx, cy);
+        ctx.lineTo(x1, y1);
+        ctx.stroke();
+      }
+
+      // Draw the main lobe (peak direction with ±θ₃dB region highlighted in yellow)
+      ctx.strokeStyle = CURVE;
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      const points = 180;
+      for (let i = 0; i <= points; i++) {
+        const angle = (360 * i) / points;
+        const pat = pattern(angle, theta_3dB);
+        const [x, y] = polarToCart(angle, pat);
+        i ? ctx.lineTo(x, y) : ctx.moveTo(x, y);
+      }
+      ctx.stroke();
+
+      // Shade the 3dB beamwidth region
+      ctx.fillStyle = LM;
+      ctx.globalAlpha = 0.15;
+      ctx.beginPath();
+      const angles = [];
+      for (let i = 0; i <= 90; i++) {
+        angles.push((360 * i) / 90);
+      }
+      angles.forEach((angle) => {
+        const pat = pattern(angle, theta_3dB);
+        const [x, y] = polarToCart(angle, pat);
+        angles.indexOf(angle) ? ctx.lineTo(x, y) : ctx.moveTo(x, y);
+      });
+      // Draw the mirror on the other side
+      for (let i = 90; i >= 0; i--) {
+        const angle = 360 - (360 * i) / 90;
+        const pat = pattern(angle, theta_3dB);
+        const [x, y] = polarToCart(angle, pat);
+        ctx.lineTo(x, y);
+      }
+      ctx.closePath();
+      ctx.fill();
+
+      // Draw offset direction marker (red radial line)
+      ctx.globalAlpha = 1;
+      ctx.strokeStyle = MARK;
+      ctx.lineWidth = 2.5;
+      const offset_rad = offset_deg * Math.PI / 180;
+      const x_end = cx + radius * 0.85 * Math.cos(offset_rad);
+      const y_end = cy + radius * 0.85 * Math.sin(offset_rad);
+      ctx.beginPath();
+      ctx.moveTo(cx, cy);
+      ctx.lineTo(x_end, y_end);
+      ctx.stroke();
+
+      // Mark the current pointing angle on the pattern
+      const pat_at_offset = pattern(offset_deg, theta_3dB);
+      const [x_mark, y_mark] = polarToCart(offset_deg, pat_at_offset);
+      ctx.fillStyle = MARK;
+      ctx.beginPath();
+      ctx.arc(x_mark, y_mark, 5, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Readout
+      const loss_dB = -10 * Math.log10(pattern(offset_deg, theta_3dB));
+      const gain_at_offset = G_linear * pattern(offset_deg, theta_3dB);
+
+      readout.innerHTML =
+        `D = ${viNum(D, 2)} m · f = ${viNum(f_GHz, 1)} GHz (λ = ${viNum(lambda * 100, 2)} cm) → ` +
+        `G = <b>${viNum(G_dBi, 1)} dBi</b> (${Math.round(G_linear)} lần) · ` +
+        `góc mở 3 dB = <b>${viNum(theta_3dB, 2)}°</b>` +
+        (offset_deg > 0 ? ` · lệch ${viNum(offset_deg, 1)}° → mất <b>${viNum(loss_dB, 1)} dB</b>` : '');
+    }
+
+    root.querySelectorAll('input').forEach((el) => el.addEventListener('input', draw));
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="do-loi-chao-ve-tinh-va-goc-mo"]').forEach(setup);
+</script>

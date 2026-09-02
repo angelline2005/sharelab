@@ -1,0 +1,56 @@
+---
+title: "Đồng hồ chỉ 66 vôn trên sợi dây đã cắt điện: điện áp ma"
+seoTitle: "Điện áp ma (ghost voltage) là gì: vì sao đồng hồ đo được điện trên dây đã ngắt"
+description: "Hai sợi dây chạy song song trong ống tạo ra 100 pF điện dung ghép — trở kháng 32 MΩ ở 50 Hz. Với đồng hồ số 10 MΩ, phép chia áp cho ra 66 V trên sợi dây đã ngắt điện; cắm thêm một bóng đèn nhỏ, con số về 0,7 V."
+pubDate: 2026-09-02
+tags: ["vat-ly", "dien-tu", "javascript"]
+translationId: "dien-ap-ma-tren-day-da-cat-dien"
+---
+
+import GhostVoltage from '../../../components/demos/GhostVoltage.astro';
+
+Đồng hồ đo điện bừng lên 66 vôn khi bạn chạm một dây trong ống. Cầu dao đóng, cắt điện, dây chết cứng — vậy 66 vôn ấy từ đâu ra?
+
+<GhostVoltage />
+
+## Một tụ điện vô hình tạo mạch chia áp
+
+Hai sợi dây chạy song song trong ống tạo ra điện dung ghép bất đắc dĩ: **100 pF**. Ở 50 Hz, điều này cho phản kháng dung X_C = 1/(2πfC) = **31,8 MΩ**.
+
+Tụ này nối giữa dây nóng 220 V và dây đã cắt, tạo thành một **mạch chia áp**. Dây cắt là một điểm trên mạch — nằm trên phần trở kháng vào của đồng hồ bạn đang cắm.
+
+## Phân áp giữa một trở kháng khổng lồ và một trở kháng bé
+
+Tương đương đơn giản của mạch: điện áp lưới 220 V AC chia giữa phản kháng 32 MΩ và trở kháng vào của đồng hồ. Đồng hồ số thường có trở kháng vào cao, 10 MΩ là con số tiêu biểu.
+
+```
+V_đo = V_lưới · R / √(R² + X_C²)
+```
+
+Thay vào: V_đo = 220 × 10 / √(10² + 31,8²) = 220 × 10 / 33,4 = **65,9 vôn** — con số 66 vôn trên màn hình.
+
+Bí mật nằm trong mẫu số: căn bậc hai của bình phương hai trở kháng. Vì phản kháng 31,8 MΩ lớn hơn, tổng trở kháng Z không phải 10 + 31,8 = 41,8 MΩ (như nếu chúng nối tiếp thuần túy) mà là 33,4 MΩ — vừa lớn hơn số hạng lớn. Đây là bản chất của phép chia áp: khi hai trở kháng cách biệt nhau, điểm nối chia áp theo tỉ lệ.
+
+Dòng điện thực tế chảy qua mạch bé tí: I = 220 / 33,4 = **6,6 micro-ampe**. Năng lượng ở mức vi mô này, nhưng điện áp nhìn thấy trên đồng hồ là thật — vì đồng hồ số không lấy dòng.
+
+## Thêm tải: điện áp sụp ngay từ 66 V về 0,7 V
+
+Cắm một bóng đèn nhỏ vào sợi dây "chết": bóng là trở kháng khoảng **100 kΩ**. Nó mắc song song với trở kháng vào đồng hồ, hạ xuống 99,9 kΩ.
+
+V_đo = 220 × 100.000 / √(100.000² + 31.800.000²) ≈ **0,69 vôn**
+
+Đèn sáng mờ — dòng chỉ **6,6 micro-ampe** — nhưng nó cắn ngang phần lớn điện áp. Hạ trở kháng vào từ 10 MΩ xuống 1 MΩ, [điện áp tụt từ 66 V xuống dưới 7 V](/vi/posts/dien-tro-song-song-nho-hon-ca-nhanh-nho-nhat) — điều này là mạch chia áp, hoàn toàn phụ vào tỉ lệ trở kháng.
+
+## Ghép nối phụ vào chiều dài dây và lớp bảo vệ
+
+Sợi dây 30 mét tạo ra 3 000 pF thay vì 100 pF — phản kháng giảm xuống 1,06 MΩ, và V_đo lên tới 200 V. Nhưng dây trong ống **kim loại**, dây **bọc giáp**, hoặc bạn **cách điện với đất** đều [giảm điều kiện ghép nối](/vi/posts/coc-tiep-dia-va-dien-tro-lan-truyen-dat) — ngã rơi điện áp ma về con số vô hại.
+
+## Trường hợp biên: vì sao bút thử điện câm đúng là nguy hiểm
+
+Điện áp ma này vô hại vì trở kháng **32 MΩ** của nó — bạn không thể lấy năng lượng từ nguồn 6,6 micro-ampe để tổn thương ai. Nhưng đây là nơi mà suy luận ngược lại sẽ giết người.
+
+Bút thử điện không tiếp xúc (kiểu thử từ xa) sẽ giữ yên. Nó không phản ứng vì trở kháng vào của nó cao — đúng là cao, cũng cao như đồng hồ số, và nó không "đo" được, chỉ phát hiện dòng thực. Không dòng nào, không sáng.
+
+Nhưng sợi dây này có thể nằm trong ống kim loại nối đất, hoặc dây bọc giáp, hoặc bạn đơn giản là đứng cách điện với đất — tất cả những điều này làm điện áp ma **biến mất** trên bút thử của bạn mà dây vẫn mang **220 vôn thực**.
+
+Quy tắc thực dụng duy nhất đáng tin: **thử ba bước**. Một: thử bút trên một nguồn bạn biết chắc là nóng — bút phải sáng. Hai: thử bút trên dây cần kiểm tra — đó là lúc bạn cứ cho phép nó im lặng vẫn coi là dây vẫn mang điện. Ba: quay lại thử bút trên nguồn đã biết nóng lần nữa — bút phải sáng lại. Nếu một bước bất kỳ không lặp lại, bút của bạn bị hỏng, không phải dây đã chết.

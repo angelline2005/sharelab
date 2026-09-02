@@ -1,0 +1,219 @@
+---
+// Bike chain stress under load (ứng suất trong má xích xe đạp)
+// Formula: T = F·L_crank / r_chainring; σ = T / (n·t·h)
+// T = chain tension (N), r = (teeth × 12.7mm) / 2π
+// σ = stress (MPa), n = 4 plates, t = plate thickness (mm), h = effective height (2.5 mm)
+// Valid for typical bike chain dimensions and loads up to breaking point.
+---
+
+<figure class="demo" data-demo="luc-cang-xich-xe-dap-125-kg">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Lực đạp F (N) <output data-out="f"></output>
+      <input type="range" data-in="f" min="200" max="1200" step="50" value="700" /></label>
+    <label>Số răng đĩa <output data-out="teeth"></output>
+      <input type="range" data-in="teeth" min="28" max="56" step="1" value="34" /></label>
+    <label>Bề dày má xích (mm) <output data-out="thick"></output>
+      <input type="range" data-in="thick" min="0.6" max="1.2" step="0.1" value="0.8" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Cú đạp 700 N trên tay quay 170 mm kéo xích với lực hơn 1,7 kN ở đĩa 34 răng.
+    Toàn bộ lực ấy chịu bởi bốn má xích dày 0,8 mm — một ứng suất 217 MPa tương
+    đương 36% giới hạn chảy của thép. Đạp mạnh hơn hay chọn tỉ số nhỏ hơn sẽ gần
+    giới hạn bền.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const CURVE = '#2563eb', MARK = '#dc2626', SAFE = '#10b981';
+  const PITCH = 12.7; // mm per tooth
+  const CRANK_LENGTH = 170; // mm
+  const HEIGHT_EFFECTIVE = 2.5; // mm
+  const NUM_PLATES = 4;
+  const YIELD_STRENGTH = 600; // MPa
+
+  function computeStress(force: number, teeth: number, thickness: number): {tension: number, stress: number, percentYield: number} {
+    // Chainring radius: r = (teeth * pitch) / (2π)
+    const r_chainring = (teeth * PITCH) / (2 * Math.PI);
+
+    // Torque: T = F × L
+    const torque = force * CRANK_LENGTH;
+
+    // Chain tension: T_chain = torque / r (in N)
+    const t_chain = torque / r_chainring;
+
+    // Cross-section area: A = n × t × h (mm²)
+    const area = NUM_PLATES * thickness * HEIGHT_EFFECTIVE;
+
+    // Stress: σ = T / A (in N/mm² = MPa)
+    const stress = t_chain / area;
+
+    // Percentage of yield
+    const percent = (stress / YIELD_STRENGTH) * 100;
+
+    return { tension: t_chain, stress, percentYield: percent };
+  }
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (k: string) => root.querySelector(`[data-in="${k}"]`) as HTMLInputElement;
+    const output = (k: string) => root.querySelector(`[data-out="${k}"]`) as HTMLOutputElement;
+
+    function draw() {
+      const F = Number(input('f').value);
+      const teeth = Number(input('teeth').value);
+      const thickness = parseFloat(input('thick').value);
+
+      output('f').textContent = String(F);
+      output('teeth').textContent = String(teeth);
+      output('thick').textContent = thickness.toFixed(1).replace('.', ',');
+
+      const { tension, stress, percentYield } = computeStress(F, teeth, thickness);
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.5);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+
+      // Left side: crank and chainring with chain tension
+      const crank_x = 50, crank_y = cssH * 0.6;
+      const chainring_r = 35;
+      const chain_top_y = crank_y - chainring_r - 15;
+      const chain_bot_y = crank_y + chainring_r + 15;
+
+      // Draw crank
+      ctx.strokeStyle = fg;
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(crank_x, crank_y);
+      const crank_angle = Math.PI * 0.3; // 3 o'clock position
+      ctx.lineTo(crank_x + CRANK_LENGTH * 0.3 * Math.cos(crank_angle), crank_y - CRANK_LENGTH * 0.3 * Math.sin(crank_angle));
+      ctx.stroke();
+
+      // Draw force arrow
+      ctx.fillStyle = MARK;
+      ctx.beginPath();
+      const arrow_end_x = crank_x + CRANK_LENGTH * 0.35 * Math.cos(crank_angle);
+      const arrow_end_y = crank_y - CRANK_LENGTH * 0.35 * Math.sin(crank_angle);
+      ctx.arc(arrow_end_x, arrow_end_y, 5, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Draw chainring
+      ctx.strokeStyle = fg;
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(crank_x, crank_y, chainring_r, 0, Math.PI * 2);
+      ctx.stroke();
+
+      // Draw chain on top and bottom
+      const chainTensionColor = percentYield > 50 ? '#ef4444' : (percentYield > 33 ? MARK : SAFE);
+      ctx.strokeStyle = chainTensionColor;
+      ctx.lineWidth = 3;
+      ctx.globalAlpha = 0.8;
+
+      // Top run
+      ctx.beginPath();
+      ctx.moveTo(crank_x - chainring_r, crank_y);
+      ctx.lineTo(cssW * 0.7, chain_top_y);
+      ctx.stroke();
+
+      // Bottom run (slack)
+      ctx.globalAlpha = 0.4;
+      ctx.beginPath();
+      ctx.moveTo(crank_x - chainring_r, crank_y);
+      ctx.lineTo(cssW * 0.7, chain_bot_y);
+      ctx.stroke();
+      ctx.globalAlpha = 1;
+
+      // Right side: chain link cross-section stress diagram
+      const section_x = cssW * 0.65;
+      const section_y = cssH * 0.5;
+      const section_w = 50;
+      const section_h = 40;
+
+      // Draw stressed plates
+      const stress_color_intensity = Math.min(percentYield / 100, 1);
+      const r = Math.round(220 + stress_color_intensity * 35);
+      const g = Math.round(38 - stress_color_intensity * 30);
+      const b = Math.round(98 - stress_color_intensity * 80);
+      const stressColor = `rgb(${r},${g},${b})`;
+
+      ctx.fillStyle = stressColor;
+      ctx.fillRect(section_x - section_w/2, section_y - section_h/2, section_w, section_h);
+      ctx.strokeStyle = fg;
+      ctx.lineWidth = 1;
+      ctx.strokeRect(section_x - section_w/2, section_y - section_h/2, section_w, section_h);
+
+      // Draw text labels
+      ctx.fillStyle = fg;
+      ctx.font = 'bold 11px system-ui,sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('Má xích', section_x, section_y - section_h/2 - 8);
+
+      // Draw stress scale bar
+      const bar_x = section_x + section_w/2 + 20;
+      const bar_y = section_y - section_h/2;
+      const bar_h = section_h;
+
+      // Gradient from safe to danger
+      for (let i = 0; i < bar_h; i++) {
+        const frac = i / bar_h;
+        const rr = Math.round(34 + frac * 186);
+        const gg = Math.round(197 - frac * 159);
+        const bb = Math.round(94 - frac * 72);
+        ctx.fillStyle = `rgb(${rr},${gg},${bb})`;
+        ctx.fillRect(bar_x, bar_y + i, 6, 1);
+      }
+      ctx.strokeStyle = fg;
+      ctx.strokeRect(bar_x, bar_y, 6, bar_h);
+
+      // Mark current stress on scale
+      const mark_y = bar_y + (percentYield / 100) * bar_h;
+      ctx.fillStyle = MARK;
+      ctx.beginPath();
+      ctx.moveTo(bar_x - 4, mark_y);
+      ctx.lineTo(bar_x + 10, mark_y);
+      ctx.stroke();
+
+      // Labels
+      ctx.font = '9px system-ui,sans-serif';
+      ctx.textAlign = 'left';
+      ctx.fillStyle = fg;
+      ctx.fillText('600 MPa', bar_x + 10, bar_y + 3);
+      ctx.fillText('0 MPa', bar_x + 10, bar_y + bar_h - 2);
+      ctx.fillText('Giới hạn', bar_x + 10, bar_y - 8);
+
+      // Readout text
+      const area = NUM_PLATES * thickness * HEIGHT_EFFECTIVE;
+      const note = percentYield > 90 ? ' · <b>gần giới hạn bền</b>' :
+                   (percentYield > 60 ? ' · <b>tải trung bình cao</b>' : '');
+
+      readout.innerHTML =
+        `F = ${F} N · tay quay 170 mm · ${teeth} răng → xích căng <b>${tension.toFixed(0)} N</b> ` +
+        `· tiết diện ${area.toFixed(1)} mm² → <b>σ = ${stress.toFixed(1)} MPa</b> ` +
+        `(<b>${percentYield.toFixed(0)}%</b> giới hạn chảy 600 MPa)${note}`;
+    }
+
+    root.querySelectorAll('input').forEach((el) => el.addEventListener('input', draw));
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="luc-cang-xich-xe-dap-125-kg"]').forEach(setup);
+</script>

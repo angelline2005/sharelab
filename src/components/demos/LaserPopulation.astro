@@ -1,0 +1,204 @@
+---
+// Boltzmann distribution for energy levels: N₂/N₁ = exp(−hc/λkT)
+// No thermal population inversion: N₂/N₁ = 1 requires T < 0 (negative absolute temperature)
+// Slider range: λ 400–1500 nm, T 200–6000 K, V 1–100 m³
+---
+
+<figure class="demo" data-demo="vi-sao-bong-den-khong-bao-gio-thanh-laser">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Bước sóng λ (nm) <output data-out="lambda"></output>
+      <input type="range" data-in="lambda" min="400" max="1500" step="1" value="632.8" /></label>
+    <label>Nhiệt độ T (K) <output data-out="T"></output>
+      <input type="range" data-in="T" min="200" max="6000" step="10" value="300" /></label>
+    <label>Thể tích khí (m³) <output data-out="V"></output>
+      <input type="range" data-in="V" min="1" max="100" step="1" value="50" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Phân bố Boltzmann: cỡ mật độ nguyên tử ở mức cao vs mức thấp là hàm mũ của năng lượng
+    fototon. Ở bất kỳ nhiệt độ dương nào, lũy thừa âm ấy cho mật độ ở mức cao nhỏ vô tận —
+    không bao giờ nhiều hơn mức dưới (điều kiện của laser). Lấy nước mắm: 4 937 K với bước
+    sóng 632,8 nm chỉ mới đạt 1% tỷ lệ, và con số này tăng từ từ khi nhiệt độ cao lên.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const h = 6.62607015e-34;  // J·s
+  const c = 299792458;       // m/s
+  const k = 1.380649e-23;    // J/K
+  const NA = 6.02214076e23;  // Avogadro
+  const CURVE = '#2563eb', MARK = '#dc2626', THIRD = '#f59e0b';
+
+  // Air: density 1.225 kg/m³, molar mass 29 g/mol → ~2.54e25 molecules/m³
+  const AIR_DENSITY = 1.225;
+  const AIR_MOLAR_MASS = 0.029;
+  const AIR_MOLECULES_PER_M3 = (AIR_DENSITY / AIR_MOLAR_MASS) * NA;
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (k: string) => root.querySelector(`[data-in="${k}"]`) as HTMLInputElement;
+    const output = (k: string) => root.querySelector(`[data-out="${k}"]`) as HTMLOutputElement;
+
+    function N2_N1(lambda_nm: number, T: number): number {
+      const lambda_m = lambda_nm * 1e-9;
+      const hc = h * c;
+      const exponent = hc / (lambda_m * k * T);
+      return Math.exp(-exponent);
+    }
+
+    function T_for_percent(lambda_nm: number, percent: number): number {
+      const lambda_m = lambda_nm * 1e-9;
+      const hc = h * c;
+      const target_ratio = percent / 100;
+      return -hc / (lambda_m * k * Math.log(target_ratio));
+    }
+
+    function draw() {
+      const lambda_nm = Number(input('lambda').value);
+      const T = Number(input('T').value);
+      const V = Number(input('V').value);
+
+      output('lambda').textContent = lambda_nm.toFixed(1).replace('.', ',');
+      output('T').textContent = String(T);
+      output('V').textContent = String(V);
+
+      const ratio = N2_N1(lambda_nm, T);
+      const expected = ratio * AIR_MOLECULES_PER_M3 * V;
+      const T_1percent = T_for_percent(lambda_nm, 1);
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.5);
+      canvas.width = cssW * dpr;
+      canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+
+      // Left side: two-level population bars (log scale)
+      const barX = 40, barW = 60, barSpacing = 100;
+      const logScale = 35;  // pixels per order of magnitude
+      const Y_axis = cssH - 40;
+
+      // Draw axis labels
+      ctx.fillStyle = fg;
+      ctx.font = '10px system-ui,sans-serif';
+      ctx.textAlign = 'center';
+      ctx.globalAlpha = 0.7;
+      ctx.fillText('log(dân số)', barX + barW/2, Y_axis + 20);
+      ctx.fillText('mức 1', barX + barW/2, Y_axis - 5);
+      ctx.fillText('mức 2', barX + barSpacing + barW/2, Y_axis - 5);
+
+      // Two bars: N1 always at reference level (e.g., 10^25), N2 depends on T
+      const N1 = 1e25;  // reference population
+      const N2 = ratio * N1;
+
+      ctx.globalAlpha = 1;
+      // Bar 1
+      ctx.fillStyle = MARK;
+      const h1 = Math.min(logScale * Math.log10(N1), cssH - 50);
+      ctx.fillRect(barX, Y_axis - h1, barW, h1);
+      ctx.strokeStyle = fg; ctx.lineWidth = 0.5; ctx.globalAlpha = 0.5;
+      ctx.strokeRect(barX, Y_axis - h1, barW, h1);
+      ctx.fillStyle = fg; ctx.globalAlpha = 0.7; ctx.textAlign = 'center';
+      ctx.fillText('10²⁵', barX + barW/2, Y_axis - h1 - 4);
+
+      // Bar 2
+      ctx.globalAlpha = 1;
+      ctx.fillStyle = CURVE;
+      const h2 = Math.max(2, logScale * (Math.log10(N2) - Math.log10(1)));
+      ctx.fillRect(barX + barSpacing, Y_axis - h2, barW, h2);
+      ctx.strokeStyle = fg; ctx.lineWidth = 0.5; ctx.globalAlpha = 0.5;
+      ctx.strokeRect(barX + barSpacing, Y_axis - h2, barW, h2);
+      ctx.fillStyle = fg; ctx.globalAlpha = 0.7;
+      ctx.fillText(ratio < 1e-30 ? '< 10⁻³⁰' : '10^' + Math.log10(N2).toFixed(0),
+                   barX + barSpacing + barW/2, Y_axis - Math.max(h2, 20) - 4);
+
+      // Right side: curve of log(N2/N1) vs T
+      const curveX0 = 200, curveW = cssW - 230, curveY0 = 20, curveH = cssH - 60;
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.3; ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(curveX0, curveY0);
+      ctx.lineTo(curveX0, curveY0 + curveH);
+      ctx.lineTo(curveX0 + curveW, curveY0 + curveH);
+      ctx.stroke();
+
+      // Axis labels
+      ctx.fillStyle = fg; ctx.globalAlpha = 0.55; ctx.textAlign = 'center';
+      for (const t of [200, 2000, 4000, 6000]) {
+        const xx = curveX0 + (t - 200) / 5800 * curveW;
+        ctx.fillText(String(t) + ' K', xx, curveY0 + curveH + 14);
+      }
+      ctx.textAlign = 'right'; ctx.globalAlpha = 0.55;
+      for (const logN of [-30, -20, -10, 0]) {
+        const yy = curveY0 + curveH - (logN + 30) / 30 * curveH;
+        ctx.fillText('10^' + logN, curveX0 - 8, yy + 3);
+      }
+
+      // Plot curve N2/N1 vs T at this wavelength
+      ctx.strokeStyle = CURVE; ctx.lineWidth = 2; ctx.globalAlpha = 1;
+      ctx.beginPath();
+      for (let i = 0; i <= 200; i++) {
+        const Tt = 200 + (5800 * i) / 200;
+        const ratio_t = N2_N1(lambda_nm, Tt);
+        const logRatio = Math.log10(ratio_t);
+        const xx = curveX0 + (Tt - 200) / 5800 * curveW;
+        const yy = curveY0 + curveH - (logRatio + 30) / 30 * curveH;
+        i ? ctx.lineTo(xx, yy) : ctx.moveTo(xx, yy);
+      }
+      ctx.stroke(); ctx.lineWidth = 1;
+
+      // Mark current temperature
+      const logRatioCurrent = Math.log10(ratio);
+      const Tx = curveX0 + (T - 200) / 5800 * curveW;
+      const Ty = curveY0 + curveH - (logRatioCurrent + 30) / 30 * curveH;
+      ctx.fillStyle = MARK; ctx.globalAlpha = 1;
+      ctx.beginPath(); ctx.arc(Tx, Ty, 5, 0, Math.PI * 2); ctx.fill();
+
+      // Mark T=300K reference
+      if (Math.abs(T - 300) > 50) {
+        const ratio300 = N2_N1(lambda_nm, 300);
+        const log300 = Math.log10(ratio300);
+        const x300 = curveX0 + (300 - 200) / 5800 * curveW;
+        const y300 = curveY0 + curveH - (log300 + 30) / 30 * curveH;
+        ctx.fillStyle = THIRD; ctx.globalAlpha = 0.5;
+        ctx.beginPath(); ctx.arc(x300, y300, 3, 0, Math.PI * 2); ctx.fill();
+      }
+
+      // Shading for impossible region (N2/N1 > 1, i.e., logN > 0)
+      ctx.fillStyle = '#ff0000'; ctx.globalAlpha = 0.05;
+      const yInversion = curveY0 + curveH - (0 + 30) / 30 * curveH;
+      ctx.fillRect(curveX0, curveY0, curveW, yInversion - curveY0);
+
+      // Readout text
+      const ratioStr = ratio < 1e-30 ? '< 1×10⁻³⁰' :
+                       ratio < 1e-6 ? (ratio.toExponential(1).replace('e-', '×10⁻')) :
+                       ratio.toFixed(6);
+
+      readout.innerHTML =
+        `λ = <b>${lambda_nm.toFixed(1).replace('.', ',')} nm</b> · T = <b>${T.toLocaleString('vi-VN')} K</b>` +
+        ` → N₂/N₁ = <b>${ratioStr}</b><br/>` +
+        `Trong ${V} m³ không khí: ~<b>${expected.toExponential(1).replace('.', ',').replace('e-', '×10⁻')} nguyên tử</b> kích thích · ` +
+        `cần <b>${T_1percent.toLocaleString('vi-VN')} K</b> để đạt 1%`;
+    }
+
+    root.querySelectorAll('input').forEach((el) => el.addEventListener('input', draw));
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="vi-sao-bong-den-khong-bao-gio-thanh-laser"]').forEach(setup);
+</script>

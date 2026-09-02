@@ -1,0 +1,91 @@
+---
+title: "Gương soi toàn thân: treo mép dưới ở đúng 80 cm, sai chỗ đó là mất bàn chân"
+seoTitle: "Treo gương soi toàn thân ở độ cao nào: mép dưới bằng nửa chiều cao mắt"
+description: "Ai cũng nhớ \"gương cao bằng nửa người\", nhưng thứ thợ lắp gương làm sai là ĐỘ CAO TREO: mép dưới phải ở đúng một nửa chiều cao mắt. Người cao 1,70 m có mắt ở 1,60 m, nên mép dưới đặt ở 0,80 m và mép trên ở 1,65 m. Treo lệch lên 10 cm là cụt bàn chân, và lùi xa bao nhiêu cũng không lấy lại được — khoảng cách bị triệt tiêu hoàn toàn khỏi phép tính."
+pubDate: 2026-09-02
+tags: ["vat-ly", "quang-hoc", "javascript"]
+translationId: "guong-phang-cao-bang-nua-nguoi-la-du"
+---
+
+import FullBodyMirror from '../../../components/demos/FullBodyMirror.astro';
+
+Bạn đứng trước gương nhà để ăn mặc. Muốn soi trọn mình từ đầu tới chân, không
+cần một tấm gương cao bằng bạn — theo kinh nghiệm, cao bằng nửa người là được.
+Nhưng "nửa người" ở chỗ nào? Thợ lắp gương thường treo sai: họ tính cỡ gương mà
+quên cái chính — **độ cao của mép dưới**.
+
+<FullBodyMirror />
+
+## Luật phản xạ: mép gương nằm ở giữa đường
+
+Khi tia sáng từ chân bạn dấy lên gương rồi phản xạ vào mắt, nó tuân đúng luật:
+**góc tới bằng góc phản xạ**. Vẽ đường thẳng từ chân bạn tới một điểm trên gương,
+rồi từ điểm đó tới mắt bạn — nếu hai góc bên trái và phải đường pháp tuyến bằng
+nhau, tia sáng sẽ đi đúng đường ấy.
+
+Hình học cơ bản cho ta: **nếu bạn cách gương khoảng cách d, và chân bạn cách mắt
+bạn chiều cao h_eye, thì tia này chạm gương ở độ cao chính xác bằng nửa h_eye**.
+Độ cao đó không phụ thuộc vào d — bạn đứng gần hay xa, điểm chạm vẫn ở một chỗ.
+Đây là cái hay của gương phẳng.
+
+## Công thức gương toàn thân: h_eye/2 ở dưới, (h_eye + h_body)/2 ở trên
+
+Để soi được trọn từ đầu tới chân:
+
+- Tia từ **chân** phải chạm gương ở độ cao `h_eye / 2`
+- Tia từ **đỉnh đầu** phải chạm gương ở độ cao `(h_eye + h_body) / 2`
+
+Chiều cao gương cần dùng là hiệu hai số:
+
+```
+h_gương = (h_eye + h_body) / 2 − h_eye / 2 = h_body / 2
+```
+
+Cho người cao **1,70 m** với mắt ở **1,60 m** (tỉ lệ thường gặp):
+
+- Mép dưới: `1,60 / 2 = 0,80 m` (đúng 80 cm)
+- Mép trên: `(1,60 + 1,70) / 2 = 1,65 m`
+- Gương cần: `1,70 / 2 = 0,85 m` (85 cm cao)
+
+Treo lệch lên **10 cm** (mép dưới ở 0,90 m)? Dùng công thức ngược `h_body = 2 × mirror_point − h_eye`:
+điểm thấp nhất bạn soi được là `2 × 0,90 − 1,60 = 0,20 m` — tức là **mất 20 cm bàn chân**.
+Treo lệch xuống 5 cm thì mất 10 cm đầu. Mỗi centimet giáp lệch một góc nhất định tương ứng.
+
+## Khoảng cách tới gương biến mất hoàn toàn
+
+Thử di chuyển thêm, bạn sẽ phát hiện: đứng cách gương 30 cm hay 5 m, công thức trên
+vẫn đúng. **Khoảng cách không xuất hiện trong đáp số**. Nhiều người đó không tin —
+họ cứ ngỡ lùi xa rồi soi sẽ bị mất thêm gì. Thực ra [như khi nhìn dưới nước và thấy
+đáy nông hơn thật](/vi/posts/do-sau-bieu-kien-ho-boi-noi-doi-25-phan-tram), cơ học tia
+sáng tỏ ra gấp gáp hơn trực giác.
+
+Điểm chạm tia trên gương duy nhất phụ thuộc vào **hình dạng cơ thể bạn** (chân ở đâu,
+mắt ở đâu) chứ không phụ thuộc vào vị trí khác nhau trong phòng. Gương phẳng có tính chất
+thần kỳ này: nó thay [biến chiều dài thành tỉ số](/vi/posts/bien-bao-phan-quang-va-guong-goc-vuong)
+— ở đây, chiều cao bạn biến thành hai tỉ số độ cao gương không cần biết bạn đứng ở đâu.
+
+## Vì sao người cao và người thấp cần hai gương khác nhau
+
+Công thức `h_body / 2` chứa cái tinh tế: hai người cùng chiều cao mắt nhưng chiều cao
+cơ thể khác thì cần hai gương khác nhau. Người cao 2 m cần gương `2 / 2 = 1 m`; người
+cao 1,50 m chỉ cần 0,75 m. Nhưng cái bất di bất dịch là **mép dưới luôn ở `h_eye / 2`**.
+
+Thế nên lắp gương chung cho cả nhà? Thỏa hiệp là chọn gương chiều cao hợp lý (chẳng
+hạn 0,90 m), rồi mà treo mép dưới phù hợp người cao nhất trong nhà — người khác sẽ mất
+một phần đầu hay chân tùy vào chiều cao. Hay cách kinh tế: treo một gương nhỏ ở độ cao
+chính xác dành cho mình, chứ không chọn cỡ rồi mới tính vị trí.
+
+## Trường hợp biên: gương không thẳng đứng, hoặc cần soi người khác
+
+Luật `h_eye / 2` gãy ngay khi gương không thẳng đứng. Nghiêng gương ra phía trước
+một góc θ, và **khoảng cách quay lại phương trình** — mép dưới cần dịch đi khoảng
+`khoảng_cách × tan(θ)`. Đó là mẹo của gương trong tiệm quần áo: nó nghiêng nhẹ
+ra phía khách hàng để tăng trường nhìn — không phải do chuyên môn cao, mà do
+hiểu được ranh giới vật lý.
+
+Trường hợp khác: bạn muốn soi trọn bản thân **và cả người đứng phía sau** — chẳng hạn
+có người từ từ bước lại. Lúc bấy giờ mắt bạn và mắt người kia không nằm trên một
+đường thẳng đứng nữa; gương cần cao hơn con số `h_body / 2` mới bắt được. Hay cách
+khác: thay gương phẳng bằng [gương lồi](/vi/posts/bien-bao-phan-quang-va-guong-goc-vuong)
+— một tấm 30 cm soi được cả người. Nó không soi đúng chiều cao (hình ảnh loe ra),
+nhưng nó soi toàn cảnh.

@@ -1,0 +1,91 @@
+---
+title: "Chảo 60 cm gom sóng mạnh gấp 4 000 lần — nếu bạn chỉnh đúng 3 độ"
+seoTitle: "Độ lợi ăng-ten parabol: công thức G = (πD/λ)² và góc mở nửa công suất"
+description: "Chiếc chảo 60 cm trên nóc nhà có độ lợi 36 dBi, tức gom sóng mạnh gấp 4 000 lần một ăng-ten toả đều. Cái giá là góc mở chỉ 2,8 độ: lệch 1,4 độ đã mất một nửa tín hiệu, lệch 3 độ là màn hình đứng hình. Độ lợi và góc mở là hai mặt của cùng một tờ giấy."
+pubDate: 2026-09-02
+tags: ["vat-ly", "dien-tu", "song", "javascript"]
+translationId: "do-loi-chao-ve-tinh-va-goc-mo"
+---
+
+import ParabolicGain from '../../../components/demos/ParabolicGain.astro';
+
+Chiếc chảo vệ tinh **60 cm trên mái nhà** toàn bộ sức mạnh của nó nằm ở
+việc chỉnh hướng chính xác — lệch 2 độ và bạn mất một nửa tín hiệu, lệch 3
+độ là màn hình đứng hình. Nhưng tại sao phải chặt chẽ như thế? Vì chính diện
+tích ăng-ten khiến nó gom sóng mạnh mẽ:
+
+<ParabolicGain />
+
+## Diện tích là tiền mặt
+
+Một ăng-ten toả đều (không có chảo) nhận **1 đơn vị** năng lượng sóng từ bất
+kỳ hướng nào. Chiếc chảo parabol **60 cm ở tần 12,5 GHz** nhận được **4 015
+lần** năng lượng hơn — không phải từ phép màu mà từ [toán học sóng](/vi/posts/khe-doi-young-do-buoc-song-bang-thuoc-ke): độ lợi của ăng-ten là
+
+```
+G = η · (π·D/λ)²
+```
+
+với η ≈ 0,65 (hiệu suất do mất phản xạ), D là đường kính chảo, λ là bước sóng.
+Ở đây λ = c/f = 2,40 cm, nên G = 0,65 · (π · 0,6/0,024)² ≈ **4 015 lần**,
+tức **36,0 dBi** trong ngôn ngữ của radio. Công thức nói rõ ràng: độ lợi tỉ
+lệ với *bình phương* đường kính — gấp đôi chảo là **4 lần** mạnh hơn.
+
+Nhưng sức mạnh ấy đi kèm một cái giá khắc nghiệt.
+
+## Khi bạn chỉnh hướng, bạn vừa làm hai chuyện
+
+Chảo parabol giống một **kính viễn vọng radio**: nó thu tập sóng từ một hướng
+và hội tụ chúng vào một điểm. Hình dạng parabol đảm bảo tất cả các tia sóng
+song song (từ xa xôi vũ trụ) đều đến vị trí tiêu điểm cùng một lúc.
+Nhưng — và đây là bẫy — phạm vi góc của nó **cực hẹp**. Góc mở nửa công suất
+(3 dB) được tính từ:
+
+```
+θ₃dB ≈ 70·λ/D  (độ)
+```
+
+với chảo 60 cm ở 12,5 GHz: θ₃dB = 70 · 0,024 / 0,6 = **2,80 độ**. Con số
+này có nghĩa là nếu bạn lệch khỏi hướng chính 2,8 độ, độ lợi sụt xuống **một
+nửa** (−3 dB trong công suất). Lệch 3 độ: mất thêm **nửa độ** nữa — độ lợi
+xuống **khoảng 45% công suất**. Lệch 5 độ là quên đi — chảo nhìn thẳng vào
+chân trời, máy thu có tín hiệu nhưng yếu ớt.
+
+Đây là [trade-off](/vi/posts/ang-ten-vi-sao-dien-thoai-khong-con-can-cai-can) cơ bản của ăng-ten:
+lợi cao thì góc mở hẹp, góc rộng thì lợi thấp.
+
+## Vệ tinh nằm yên, đất chuyển động
+
+Ở trên mặt đất, những **2,8 độ** ấy tương ứng bao nhiêu khoảng cách? Một vệ
+tinh địa tĩnh ở 36 000 km độ cao nhìn xuống sao cho góc 2,8 độ phủ một khoảng
+đất tính từ tiếp tuyến ≈ **1 750 km**. Chính bằng khoảng cách Hà Nội — Sài
+Gòn. Điều đó có nghĩa nếu một chảo ở Hà Nội chỉnh góc lên vệ tinh với góc ngẩng
+30 độ, thì chảo ở Sài Gòn phải chỉnh góc **khác 5 độ trở lên** để mục tiêu cùng
+một vệ tinh — nằm ngoài khoảng "thấy" của nó.
+
+Vì vậy mạng vệ tinh toàn cầu không thể chỉ dùng **một** vệ tinh địa tĩnh để
+phủ sóng — điều hành viên phải phát quảng bá từ nhiều vệ tinh ở vị trí khác
+nhau, và người dùng chọn vệ tinh tốt nhất lúc ấy. Nó giải thích luôn tại sao
+các dich vụ như Starlink lắp **hàng ngàn** vệ tinh ở quỹ đạo thấp hơn (1 200
+km thay 36 000 km): ở quỹ đạo thấp, chảo địa mặt có thể dùng góc mở rộng hơn
+để bắt được vệ tinh khi nó chuyển động trên trời.
+
+## Độ chính xác bề mặt — nỗi ám ảnh của kỹ sư
+
+Công thức G = η·(π·D/λ)² ngụ ý một điều hiểm: **η phụ thuộc vào độ chính xác**
+**bề mặt chảo**. Nếu chảo méo cong hoặc chứa bụi, phần lợi mất đi. Luật ứng dụng
+là bề mặt phải phẳng tới độ **λ/16**. Ở **60 GHz** (bước sóng 5,0 mm), điều đó
+có nghĩa chảo phải chính xác trong **0,31 mm** trên toàn bề mặt. Một chút móp
+méo, một lớp bụi mỏng — đã hủy hoại phần lợi. Các kỹ sư uydu liên lạc đơn tìm
+ngủ vì lo chảo bị gió lạnh làm co ngót, hoặc bụi mùa khô bám lên.
+
+## Trường hợp biên: khi công thức sập
+
+Ở đầu nhỏ: một chảo **nhỏ hơn bước sóng** (D < λ) công thức cho G < 1, vô
+nghĩa. Cái "chảo" đó chỉ là một mẩu kim loại — nó không còn là một ăng-ten
+parabol, mà là một ăng-ten điểm, chỉ toả hay nhận tùy theo thiết kế. Tại
+một tần số cụ thể, có một kích cỡ tối thiểu dưới đó "chảo" đơn giản không
+còn là chảo. Ở đầu lớn: bề mặt phải phẳng tới λ/16, nên ở tần số cao (λ
+nhỏ), chảo cần mô đun hóa với độ chính xác siêu cao để không mất lợi — một
+chiếc chảo 60 GHz có bề mặt màng nylon dẻo sẽ *không* hoạt động; nó phải
+là kim loại cứng, hoặc composite cơ khí.

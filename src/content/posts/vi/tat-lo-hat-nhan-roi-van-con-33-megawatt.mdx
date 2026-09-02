@@ -1,0 +1,81 @@
+---
+title: "Rút hết thanh điều khiển rồi, lò 3 000 MW vẫn toả 33 megawatt suốt một giờ sau"
+seoTitle: "Nhiệt dư sau khi dừng lò hạt nhân: công thức Wigner–Way"
+description: "Ngay sau khi dừng phản ứng dây chuyền, lò vẫn phát 6,4% công suất từ phân rã của mảnh vỡ phân hạch. Một giờ sau vẫn còn 1,1% — với lò 3 000 MW nhiệt là 33 MW, đủ làm bay hơi 53 tấn nước mỗi giờ nếu không ai bơm nước vào."
+pubDate: 2026-09-02
+tags: ["vat-ly", "hat-nhan", "nhiet-hoc", "javascript"]
+translationId: "tat-lo-hat-nhan-roi-van-con-33-megawatt"
+---
+
+import DecayHeat from '../../../components/demos/DecayHeat.astro';
+
+Toán tử lò hạt nhân rút hết thanh điều khiển ngừng phản ứng dây chuyền — lò
+lập tức tĩnh lặng, không còn phân hạch nào xảy ra. Nhưng các mảnh vỡ phân hạch
+vừa sinh ra không biết điều đó. Chúng tiếp tục phân rã, toả từng quô này đến
+quô khác, và công suất của lò không phải rơi xuống tức thì mà **rơi theo hàm
+luỹ thừa vô cùng đặc biệt**:
+
+<DecayHeat />
+
+## Tại sao 6,4% khi thanh điều khiển mới vừa rút?
+
+Phân hạch khôi một ra mảnh vỡ nặng nhưng rồi từng cái trong chúng lại
+phân rã tiếp — hạnh nhân, argon, iodin, xê-nôn, từ từ quy về trạng thái ổn
+định. Mỗi lần phân rã tỏa năng lượng, dùng để làm nóng. Ngay khi lò dừng,
+**mảnh vỡ tuổi trẻ** — những cái vừa sinh ra lúc cuối cùng vẫn sống — chúng
+chiếm cả khối lượng của xác bộ phân hạch lẫn tốc độ phân rã cao. Đó là lý do
+tại sao phần trăm nhiệt còn lại tương đối cao ngay lập tức (đâu đó 6,4% của
+công suất toàn bộ lò), dù [năng lượng không có chỗ đi ngoài chuyển đổi
+nucleon](/vi/posts/nhiet-an-hai-quang-nhiet-ke-dung-im).
+
+## Hàm luỹ thừa t^(-0,2) là sáng tác của thời gian
+
+Công thức Wigner–Way mô tả quá trình này:
+
+```
+P/P₀ = 0,066·[t^(−0,2) − (t+t₀)^(−0,2)]
+```
+
+Con số 0,066 chứa gọn lịch sử vận hành của lò (thời gian t₀ nó đã chạy), còn
+hàm luỹ thừa t^(-0,2) — số mũ cực kỳ lạ này — sinh ra từ **phương trình Master
+của chuỗi phân rã**. Mảnh vỡ này phân rã thành mảnh khác, rồi cái khác nữa, và
+chuỗi gồm hàng chục nucleon. Khi bạn cộng gộp năng lượng từ toàn bộ chuỗi phân
+rã song song, thay vì hàm mũ đơn lẻ e^(-t/τ), bạn lại nhận được [hàm
+luỹ thừa](/vi/posts/chu-ky-ban-ra-khong-hat-nao-biet-tuoi-minh) — một định luật
+lũy thừa nhẹ nhàng vô cùng, vì số mũ chỉ −0,2. Vì thế nó không bao giờ chạm
+tới không, mà chỉ lao dần xuống như một cái lò xo ngả — chậm chạp.
+
+## Một giờ sau: 33 MW vẫn chưa xong
+
+Tại **t = 3 600 giây** (một giờ sau khi rút thanh), tỉ lệ công suất còn lại là
+**1,1%**. Với lò tổng công suất 3 000 MW, đó là **33 megawatt** vẫn toả liên
+tục từ thân lò. Con số ấy nghe thần kỳ bé nhưng nó bằng 33 triệu joule mỗi
+giây — hay **52,6 tấn nước sôi bay hơi mỗi giờ** nếu dòng nước làm mát bị cắt
+đứt. Đó chính là thảm kịch Fukushima Daiichi: lò đã tự dừng an toàn, nhưng sóng
+[tsunami xé vỡ hệ thống bơm](/vi/posts/may-lanh-khong-tao-lanh-no-chuyen-nha-cho-nhiet),
+và 33 MW của đêm ấy biến thành 53 tấn nước hơi chứa trong 30 giờ trước khi
+stack quenching bắt đầu.
+
+## Biên độ luỹ thừa 0,2 là việc cứu bình luận
+
+Lưu ý điểm toàn vẹn này: hàm luỹ thừa **không bao giờ chạm tới không**. Sau
+một năm, còn **1,2 MW** — chỉ 0,04% của công suất ban đầu nhưng vẫn đủ để bể
+nhiên liệu cảm ứng lên 60 °C nếu ngoài không khí. Một thập kỷ sau: vẫn còn 0,1
+MW. Đó là lý do bề nhiên liệu cùng những cái đốc nhiệt không bao giờ "hết
+làm mát" ngay lập tức — chúng tiếp tục toả nhiệt mãi, được cộng gộp từ hàng
+triệu loại nucleon phân rã, mỗi cái sống ba-phố khác nhau. Sóng xung kích
+không bao giờ cắt ngang được cái đuôi dài, dục vạn năm của đường cong này.
+
+## Trường hợp biên: công thức phân kỳ khi t → 0
+
+Ở đầu tiên của hàm này, khi t cực nhỏ (vài phút đầu), công thức Wigner–Way
+phân kỳ — tỉ lệ công suất không bị **từ chối** tại t = 0 mà vô cùng lớn.
+Thực tế, con số "6,5%" hay "6,4%" ngay khi dừng là trung bình qua vài giây đầu
+tiên, chứ không phải giá trị tức thì; công thức chỉ có giá trị từ một giây trở
+đi khi quá trình đã ổn định. Mảnh vỡ trẻ nhất — beta-radioactive — chứa hầu
+hết năng lượng đầu kia, nhưng chuỗi độ tuổi của chúng phức tạp quá để viết
+thành một phương trình dạng đóng từ t = 0.001s. Nhưng khi bạn chấp nhận dạng
+luỹ thừa **từ một giây trở đi**, hệ thống yên tĩnh: nó là đúng cơ bản nhất để
+thiết kế từng cái bơm nước, từng cái tản nhiệt bãi đó ngoài [biên độ
+Carnot](/vi/posts/hieu-suat-carnot-loai-thue-khong-ai-tron-duoc) mà không sự
+can thiệp bên ngoài.

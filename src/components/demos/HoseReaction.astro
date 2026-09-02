@@ -1,0 +1,170 @@
+---
+// Hose reaction force: F = ρ·A·v² = 2·A·Δp (with v = √(2Δp/ρ)).
+// The factor of 2 comes from acceleration of water in the nozzle.
+// Diameter: 8–40 mm, Pressure: 1–12 bar, Narrowing factor: 1–2.
+---
+
+<figure class="demo" data-demo="voi-cuu-hoa-day-nguoc-bang-mot-nguoi">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Đường kính đầu vòi (mm) <output data-out="d"></output>
+      <input type="range" data-in="d" min="8" max="40" step="1" value="25" /></label>
+    <label>Áp suất (bar) <output data-out="p"></output>
+      <input type="range" data-in="p" min="1" max="12" step="0.5" value="6" /></label>
+    <label>Hệ số thu hẹp k <output data-out="k"></output>
+      <input type="range" data-in="k" min="1" max="2" step="0.1" value="2" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Phản lực tia nước gấp đúng hai lần số (áp suất × tiết diện). Hệ số 2 đến từ
+    việc nước được tăng tốc trong đoạn thu hẹp từ ống chính vào nòng phun —
+    nó không chỉ bị đẩy bởi chênh áp, nó còn đạt vận tốc v = √(2Δp/ρ). Đường cong
+    xanh (2·A·Δp) luôn cao gấp đôi đường cong cam (A·Δp), và vùng giữa hai
+    đường tô đậm minh họa sự chênh lệch là bao nhiêu.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const INTUITIVE = '#f59e0b', ACTUAL = '#2563eb', MARK = '#dc2626';
+  const rho = 1000; // kg/m³
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (k: string) => root.querySelector(`[data-in="${k}"]`) as HTMLInputElement;
+    const output = (k: string) => root.querySelector(`[data-out="${k}"]`) as HTMLOutputElement;
+
+    function draw() {
+      const D_mm = Number(input('d').value); // diameter in mm
+      const P_bar = Number(input('p').value); // pressure in bar
+      const k_narrow = Number(input('k').value); // narrowing factor
+
+      output('d').textContent = String(D_mm);
+      output('p').textContent = P_bar.toFixed(1).replace('.', ',');
+      output('k').textContent = k_narrow.toFixed(1).replace('.', ',');
+
+      // Calculate for current values
+      const D = D_mm / 1000; // to meters
+      const P = P_bar * 1e5; // to Pa
+      const A = Math.PI * (D / 2) ** 2;
+      const v = Math.sqrt(2 * P / rho);
+      const F_intuitive = A * P; // A·Δp
+      const F_actual = 2 * A * P * k_narrow; // accounting for narrowing factor
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32;
+      const cssH = Math.round(cssW * 0.44);
+      canvas.width = cssW * dpr;
+      canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+
+      const padL = 48, padB = 26, padT = 12, padR = 10;
+      const X = (dd: number) => padL + ((dd - 8) / 32) * (cssW - padL - padR);
+      const Y = (ff: number) => cssH - padB - (ff / 3200) * (cssH - padB - padT);
+
+      // Draw axes
+      ctx.strokeStyle = fg;
+      ctx.globalAlpha = 0.3;
+      ctx.beginPath();
+      ctx.moveTo(padL, padT);
+      ctx.lineTo(padL, cssH - padB);
+      ctx.lineTo(cssW - padR, cssH - padB);
+      ctx.stroke();
+      ctx.globalAlpha = 0.55;
+      ctx.fillStyle = fg;
+      ctx.font = '10px system-ui,sans-serif';
+
+      // Horizontal grid and labels (diameter)
+      ctx.textAlign = 'center';
+      for (const dd of [8, 16, 24, 32, 40]) {
+        ctx.fillText(`${dd} mm`, X(dd), cssH - padB + 14);
+      }
+
+      // Vertical axis labels (force)
+      ctx.textAlign = 'right';
+      for (const ff of [0, 500, 1000, 1500, 2000, 2500, 3000]) {
+        ctx.fillText(`${ff}`, padL - 4, Y(ff) + 3);
+      }
+      ctx.globalAlpha = 1;
+
+      // Draw intuitive curve (A·Δp)
+      ctx.strokeStyle = INTUITIVE;
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      for (let i = 0; i <= 200; i++) {
+        const dd = 8 + (32 * i) / 200;
+        const D_local = dd / 1000;
+        const A_local = Math.PI * (D_local / 2) ** 2;
+        const F = A_local * P; // Always at current pressure
+        i ? ctx.lineTo(X(dd), Y(F)) : ctx.moveTo(X(dd), Y(F));
+      }
+      ctx.stroke();
+
+      // Draw actual curve (2·A·Δp with narrowing)
+      ctx.strokeStyle = ACTUAL;
+      ctx.beginPath();
+      for (let i = 0; i <= 200; i++) {
+        const dd = 8 + (32 * i) / 200;
+        const D_local = dd / 1000;
+        const A_local = Math.PI * (D_local / 2) ** 2;
+        const F = 2 * A_local * P * k_narrow; // 2·A·Δp with narrowing factor
+        i ? ctx.lineTo(X(dd), Y(F)) : ctx.moveTo(X(dd), Y(F));
+      }
+      ctx.stroke();
+      ctx.lineWidth = 1;
+
+      // Shade area between curves
+      ctx.fillStyle = ACTUAL;
+      ctx.globalAlpha = 0.1;
+      ctx.beginPath();
+      ctx.moveTo(X(8), Y(Math.PI * (8/1000/2)**2 * P));
+      for (let i = 0; i <= 200; i++) {
+        const dd = 8 + (32 * i) / 200;
+        const D_local = dd / 1000;
+        const A_local = Math.PI * (D_local / 2) ** 2;
+        ctx.lineTo(X(dd), Y(2 * A_local * P * k_narrow));
+      }
+      for (let i = 200; i >= 0; i--) {
+        const dd = 8 + (32 * i) / 200;
+        const D_local = dd / 1000;
+        const A_local = Math.PI * (D_local / 2) ** 2;
+        ctx.lineTo(X(dd), Y(A_local * P));
+      }
+      ctx.fill();
+      ctx.globalAlpha = 1;
+
+      // Mark current position
+      ctx.fillStyle = MARK;
+      ctx.beginPath();
+      ctx.arc(X(D_mm), Y(F_actual), 6, 0, Math.PI * 2);
+      ctx.fill();
+
+      const speedNote = v > 45 ? ' · <b>vận tốc đã vượt 45 m/s</b>' : '';
+      readout.innerHTML =
+        `⌀${D_mm} mm · ${P_bar.toFixed(1).replace('.', ',')} bar → v = <b>${v.toFixed(1).replace('.', ',')} m/s</b> ·` +
+        ` A·Δp = ${F_intuitive.toFixed(1).replace('.', ',')} N ·` +
+        ` thật = <b>${F_actual.toFixed(1).replace('.', ',')} N</b> ·` +
+        ` tỉ số ${(F_actual / F_intuitive).toFixed(2).replace('.', ',')}${speedNote}`;
+    }
+
+    root.querySelectorAll('input').forEach((el) => el.addEventListener('input', draw));
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="voi-cuu-hoa-day-nguoc-bang-mot-nguoi"]').forEach(setup);
+</script>

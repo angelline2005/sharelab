@@ -1,0 +1,90 @@
+---
+title: "Tia nước từ vòi rơi 20 cm đã thon còn nửa đường kính"
+seoTitle: "Vì sao tia nước chảy xuống lại nhỏ dần: liên tục cộng Torricelli"
+description: "Nước rời vòi ở 0,5 m/s, rơi 20 cm là đã nhanh gấp bốn — nên tiết diện phải co bốn lần và đường kính còn đúng 49,5%. Cái cổ thon bạn nhìn thấy mỗi ngày trong bồn rửa là hai định luật lồng vào nhau, với số mũ một phần tư."
+pubDate: 2026-09-02
+tags: ["vat-ly", "chat-luu", "javascript"]
+translationId: "tia-nuoc-tu-voi-thon-lai-con-mot-nua"
+---
+
+import WaterJet from '../../../components/demos/WaterJet.astro';
+
+Vặn vòi nhà bạn thật yếu rồi nhìn kỹ dòng nước: ngay dưới miệng vòi trong
+suốt như thủy tinh, nhưng rơi xuống 20, 30 centimet là đã mảnh như sợi dậu.
+Không ai bóp cổ tia — chính [lực hấp dẫn](/vi/posts/nguyen-ly-bernoulli-nhanh-hon-la-loang-ap-hon) vừa tăng tốc nước, vừa buộc tiết
+diện co lại:
+
+<WaterJet />
+
+## Phương trình liên tục: lưu lượng không đổi, đường kính phải thay
+
+Nước rời vòi chảy xuống không mất hành. Lưu lượng ở miệng vòi phải bằng lưu
+lượng ở bất kỳ độ sâu nào, hay **Q = A·v = hằng số** — đây chính là bảo toàn
+khối lượng, vì nước không mất hoặc có thêm ở đâu. Tiết diện A với vận tốc v
+tại mỗi độ cao, nên nếu vận tốc tăng gấp bốn thì tiết diện phải giảm còn
+một phần tư: `A = A₀·(v₀/v)`.
+
+Vì tiết diện tròn tỉ lệ với bình phương đường kính (A ∝ d²), nên:
+
+```
+d = d₀ · (v₀/v)^(1/2)
+```
+
+Con số một phần hai ở đây là "căn bậc hai", vì diện tích phải giảm gấp bốn
+còn đường kính chỉ giảm gấp hai. Nói cách khác, nếu bạn vặn vòi sao cho nước
+chảy nhanh gấp đôi, tia nước sẽ mảnh đi khoảng 29% (vì √(1/2) ≈ 0,707). Ở
+tầng một của nhà, nước chảy yếu hơn tầng ba — dòng nước sẽ để lại cổ thon ít
+hơn.
+
+## Torricelli: từ từ rơi nước tăng tốc theo căn bậc hai
+
+Nước rơi tự do dưới trọng lực g. Sau khi rơi quãng đường z từ vòi, vận tốc
+tăng thành `v = √(v₀² + 2g·z)` — công thức Torricelli, mà bạn cũng gặp khi
+[tính độ cao lũ mở bể nước](/vi/posts/nhen-nuoc-di-tren-mat-ho-va-luat-choi-cua-kich-thuoc) hay tốc độ bắn súng nước. Chú ý ở đây: vận tốc bình
+phương tỉ lệ với độ cao (v² ∝ z), không phải vận tốc tuyến tính. Với v₀ = 0,5
+m/s rơi 20 cm thôi (z = 0,2 m), nước đã tăng tốc từ 0,5 lên 2,04 m/s —
+**gấp bốn lần**. Điều này có nghĩa vận tốc bình phương tăng gấp 16 lần, trong
+khi toàn bộ quãng rơi chỉ một mẫu ba metre — tức là lực hấp dẫn rất hiệu quả
+ngay cả với quãng đường nhỏ.
+
+## Hai định luật lồng vào nhau: mũ một phần tư
+
+Kết hợp continuity và Torricelli:
+
+```
+d(z) = d₀ · [v₀² / (v₀² + 2g·z)]^(1/4)
+```
+
+Con số **1/4** không phải xẻ ngẫu nhiên: nó xuất hiện từ phép chia. Continuity
+nói d ∝ (v₀/v)^(1/2), Torricelli nói v ∝ √(v₀² + 2gz), khi kết hợp vào nhau
+thì một bình phương chia một bình phương lại được bốn lần, và [căn bậc hai
+của căn bậc hai](/vi/posts/tui-snack-tren-may-bay-va-ham-mu-cua-bau-troi)
+là căn bậc bốn. Toán học đã nói: hai lũy thừa phân số nhân vào nhau thì mũ
+cộng (1/2 + 1/2 = 1), nhưng ở đây ta chia (1/2 ÷ 1/2 = 1), lại còn một căn
+bậc hai ngoài cùng nữa, nên ra 1/4.
+
+Với v₀ = 0,5 m/s rơi đúng 20 cm, đường kính còn lại là **49,5%** — gần như
+một nửa chính xác. Rơi đến 38 cm (z = 0,38 m), đường kính còn 42,5%; rơi 1
+mét thì còn 33,5% — tia nước thon rất nhanh lúc đầu, rồi tốc độ mảnh dần
+chậm lại vì v₀² + 2gz luôn lớn hơn trong mẫu số.
+
+## Tại sao con số 1/4 lại quan trọng
+
+Nó quyết định tốc độ mảnh. Nếu tia nước giảm tuyến tính (d ∝ z), nó sẽ gần
+như không đổi nhờ lực hấp dẫn yếu. Nhưng lũy thừa 1/4 chạy đủ mạnh để tia
+nước trở nên rất mảnh sau quãng đặc biệt nào đó. [Sức căng bề mặt
+nước](/vi/posts/nhen-nuoc-di-tren-mat-ho-va-luat-choi-cua-kich-thuoc) không
+phải là đối thủ của lực hấp dẫn, nhưng nó quyết định thứ xảy ra tiếp theo:
+không tia mảnh nào tồn tại vô hạn.
+
+## Trường hợp biên: sợi nước thắt lại rồi đứt thành giọt
+
+Công thức cho d → 0 khi z tiến tới vô cùng, nhưng nước không chảy thành sợi
+mảnh dần mãi. Sau một quãng đặc biệt (tùy vào v₀ và d₀), [sợi nước bắt đầu
+gợn sóng và bất ổn định](/vi/posts/vi-sao-khong-co-tia-nuoc-dai-vo-han)
+— đó là bất ổn định Plateau–Rayleigh, nơi sức căng bề mặt chọn một bước sóng
+đặc biệt để khiến tiết diện mỏng dần theo hàm mũ, rồi từng chỗ thắt lại thành
+chuỗi giọt. Không tia nước nào lách được định luật ấy: quá mạnh và gợn nhanh
+chóng nổi bật; quá yếu thì tầng sóng khác phát triển. Bất ổn định thắng cuộc
+dù chiều cao rơi bao nhiêu — bạn chỉ nhìn thấy sự khác nhau ở độ dài đoạn
+"trong suốt" trước khi tia vỡ thành những giọt rời lẻ tẻ.

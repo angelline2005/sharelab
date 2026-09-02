@@ -1,0 +1,189 @@
+---
+// Maekawa diffraction formula: IL = 10·log10(3 + 20·N)
+// where N = 2·δ/λ is the Fresnel number
+// δ = (diffracted path) − (direct path) is path difference
+// Source at fixed ~15 m from wall, listener distance variable.
+// Valid for N > 0. Practical max ~24 dB due to flanking paths.
+---
+
+<figure class="demo" data-demo="tuong-chan-on-cao-toc-va-so-fresnel">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Chiều cao tường (m) <output data-out="h"></output>
+      <input type="range" data-in="h" min="1" max="8" step="0.1" value="4" /></label>
+    <label>Khoảng cách nghe sau tường (m) <output data-out="d"></output>
+      <input type="range" data-in="d" min="5" max="200" step="1" value="20" /></label>
+    <label>Tần số (Hz) <output data-out="f"></output>
+      <input type="range" data-in="f" min="50" max="5000" step="50" value="1000" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Âm không dừng ở mép tường: sóng nhiễu xạ vòng qua và đến tai bạn trễ hơn
+    đường thẳng một khoảng δ. Mức chắn IL phụ thuộc vào tỉ số δ/λ qua số
+    Fresnel N — bass luôn có N nhỏ nên IL thấp, cao âm có N lớn nên IL cao,
+    nhưng công thức Maekawa dừng ở ~24 dB vì âm còn truyền qua hai đầu tường.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const c = 343, r_src = 15;  // sound speed (m/s), fixed source distance (m)
+  const CURVE = '#2563eb', MARK = '#dc2626', DELTA = '#f59e0b';
+
+  const IL = (N: number) => Math.min(10 * Math.log10(3 + 20 * N), 24);  // Maekawa capped at ~24 dB
+  const pathDiff = (h: number, r_listen: number) => {
+    const dirPath = r_src + r_listen;  // blocked straight line distance
+    const diffPath = Math.sqrt(r_src*r_src + h*h) + Math.sqrt(r_listen*r_listen + h*h);
+    return diffPath - dirPath;
+  };
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (k: string) => root.querySelector(`[data-in="${k}"]`) as HTMLInputElement;
+    const output = (k: string) => root.querySelector(`[data-out="${k}"]`) as HTMLOutputElement;
+
+    function draw() {
+      const h = Number(input('h').value);
+      const d = Number(input('d').value);
+      const f = Number(input('f').value);
+
+      output('h').textContent = h.toFixed(1).replace('.', ',');
+      output('d').textContent = String(Math.round(d));
+      output('f').textContent = String(f);
+
+      const delta = pathDiff(h, d);
+      const lambda = c / f;
+      const N = 2 * delta / lambda;
+      const il = IL(N);
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.48);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+
+      // LEFT side: geometry diagram (scaled cross-section)
+      const leftW = Math.floor(cssW * 0.55);
+      const padL = 30, padR = 10, padB = 20, padT = 10;
+      const geomW = leftW - padL - padR;
+      const geomH = cssH - padT - padB;
+
+      // Scale: 1 m in real = some pixels
+      const scale = Math.min(geomW / (r_src + d + 5), geomH / (h + 3));
+      const groundY = padT + geomH - scale * 1;  // 1 m ground clearance
+      const srcX = padL + scale * r_src;
+      const wallX = padL + scale * r_src;
+      const listenX = padL + scale * r_src + scale * d;
+
+      // Ground line
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.2; ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(padL, groundY); ctx.lineTo(leftW - padR, groundY); ctx.stroke();
+
+      // Wall
+      ctx.globalAlpha = 0.4; ctx.fillStyle = fg;
+      ctx.fillRect(wallX - 3, groundY - scale * h, 6, scale * h);
+
+      // Source point
+      ctx.globalAlpha = 1; ctx.fillStyle = MARK;
+      ctx.beginPath(); ctx.arc(padL + scale * 1, groundY, 4, 0, Math.PI * 2); ctx.fill();
+      ctx.globalAlpha = 0.55; ctx.fillStyle = fg; ctx.font = '9px system-ui,sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('xe tải', padL + scale * 1, groundY + 12);
+
+      // Listener point
+      ctx.globalAlpha = 1; ctx.fillStyle = MARK;
+      ctx.beginPath(); ctx.arc(listenX, groundY, 4, 0, Math.PI * 2); ctx.fill();
+      ctx.globalAlpha = 0.55; ctx.fillStyle = fg;
+      ctx.textAlign = 'center';
+      ctx.fillText('nghe', listenX, groundY + 12);
+
+      // Direct path (blocked, dashed)
+      ctx.globalAlpha = 0.4; ctx.strokeStyle = fg; ctx.lineWidth = 1.5;
+      ctx.setLineDash([3, 3]);
+      ctx.beginPath(); ctx.moveTo(padL + scale * 1, groundY);
+      ctx.lineTo(listenX, groundY); ctx.stroke();
+
+      // Diffracted path (over wall, solid)
+      ctx.globalAlpha = 1; ctx.strokeStyle = CURVE; ctx.lineWidth = 2;
+      ctx.setLineDash([]);
+      ctx.beginPath(); ctx.moveTo(padL + scale * 1, groundY);
+      ctx.lineTo(wallX, groundY - scale * h);
+      ctx.lineTo(listenX, groundY);
+      ctx.stroke();
+
+      // Highlight δ segment
+      const midX = (wallX + listenX) / 2;
+      const midY = (groundY - scale * h + groundY) / 2;
+      ctx.fillStyle = DELTA; ctx.globalAlpha = 0.3;
+      ctx.beginPath(); ctx.arc(midX, midY, 2, 0, Math.PI * 2); ctx.fill();
+
+      // RIGHT side: IL vs frequency curve
+      const rightX = leftW + 5;
+      const rightW = cssW - leftW - padR - 5;
+      const graphL = rightX + 35, graphR = cssW - padR;
+      const graphT = padT, graphB = cssH - padB;
+
+      // Axes
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.3; ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(graphL, graphT); ctx.lineTo(graphL, graphB);
+      ctx.lineTo(graphR, graphB); ctx.stroke();
+
+      // Frequency ticks and labels
+      ctx.globalAlpha = 0.55; ctx.fillStyle = fg; ctx.font = '8px system-ui,sans-serif';
+      ctx.textAlign = 'center';
+      for (const fk of [100, 500, 1000, 2000, 5000]) {
+        const xx = graphL + (Math.log10(fk) - Math.log10(50)) / (Math.log10(5000) - Math.log10(50)) * (graphR - graphL);
+        ctx.fillText(String(fk), xx, graphB + 11);
+      }
+      ctx.textAlign = 'right';
+      for (const ilk of [0, 5, 10, 15, 20, 24]) {
+        const yy = graphB - (ilk / 24) * (graphB - graphT);
+        ctx.fillText(ilk.toString(), graphL - 5, yy + 3);
+      }
+
+      // IL curve for this geometry vs frequency
+      ctx.strokeStyle = CURVE; ctx.lineWidth = 2; ctx.globalAlpha = 1;
+      ctx.beginPath();
+      for (let i = 0; i <= 200; i++) {
+        const fk = Math.pow(10, Math.log10(50) + (i/200) * (Math.log10(5000) - Math.log10(50)));
+        const lam = c / fk;
+        const Nk = 2 * delta / lam;
+        const ilk = IL(Nk);
+        const xx = graphL + (Math.log10(fk) - Math.log10(50)) / (Math.log10(5000) - Math.log10(50)) * (graphR - graphL);
+        const yy = graphB - (ilk / 24) * (graphB - graphT);
+        i ? ctx.lineTo(xx, yy) : ctx.moveTo(xx, yy);
+      }
+      ctx.stroke();
+
+      // Mark current frequency
+      const fx = graphL + (Math.log10(f) - Math.log10(50)) / (Math.log10(5000) - Math.log10(50)) * (graphR - graphL);
+      const fy = graphB - (il / 24) * (graphB - graphT);
+      ctx.fillStyle = MARK;
+      ctx.beginPath(); ctx.arc(fx, fy, 5, 0, Math.PI * 2); ctx.fill();
+
+      // Readout
+      readout.innerHTML =
+        `tường ${h.toFixed(1).replace('.', ',')} m · δ = ${delta.toFixed(3).replace('.', ',')} m · ` +
+        `${f} Hz: <b>${il.toFixed(1).replace('.', ',')} dB</b> · N = ${N.toFixed(2).replace('.', ',')}`;
+    }
+
+    root.querySelectorAll('input').forEach((el) => el.addEventListener('input', draw));
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="tuong-chan-on-cao-toc-va-so-fresnel"]').forEach(setup);
+</script>

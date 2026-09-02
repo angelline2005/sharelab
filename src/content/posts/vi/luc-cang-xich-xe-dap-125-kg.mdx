@@ -1,0 +1,83 @@
+---
+title: "Má xích xe đạp dày 0,8 mm chịu 217 MPa mỗi lần bạn đứng lên đạp"
+seoTitle: "Ứng suất trong má xích xe đạp: 217 MPa so với giới hạn chảy của thép"
+description: "Cú đạp 700 N trên tay quay 170 mm kéo xích căng 1 732 N ở đĩa 34 răng. Toàn bộ lực ấy đi qua bốn má xích dày 0,8 mm, tiết diện hữu ích cộng lại 8,0 mm² — tức 217 MPa, bằng 36% giới hạn chảy 600 MPa của thép má xích. Đứng lên đạp lúc chéo xích thì thêm thành phần ngang mà tiết diện ấy không được thiết kế để chịu."
+pubDate: 2026-09-02
+tags: ["vat-ly", "co-hoc", "javascript"]
+translationId: "luc-cang-xich-xe-dap-125-kg"
+---
+
+import ChainStress from '../../../components/demos/ChainStress.astro';
+
+Đặt tay lên sườn xe đạp: bạn cảm thấy xích kéo chặt dưới các ngón tay. 
+Cảm giác nhẹ ấy che giấu sự thật — **toàn bộ trọng lượng bạn tác dụng được truyền 
+qua những sợi thép mỏng như lá mưa**, trong một ứng suất gần giới hạn bền:
+
+<ChainStress />
+
+## Một cú đạp 700 N bắt xích phải chịu hơn 1,7 kN
+
+Đứng lên bàn đạp với **700 N** trên tay quay 170 mm tạo momen **119 N⋅m** quanh tâm đĩa. 
+Đĩa 34 răng có bán kính 68,7 mm: lực xích = 119 ÷ 0,0687 = **1 732 N** — gấp 2,47 lần lực bàn đạp.
+Đó là [lợi thế cơ học của cái tay quay](/vi/posts/phanh-dau-xe-may-hai-ngon-tay-170-kg) — nó đổi lực nhỏ, quãng đường lớn 
+thành lực lớn, quãng đường nhỏ.
+
+Nhưng xích không phải ống dầu phanh. Toàn bộ 1 732 N này chịu bởi **bốn má xích mỏng** — 
+bốn lá thép side plate cỡ lá mưa, nối liền quanh vòng xích.
+
+## Bốn mảnh thép dày 0,8 mm, tiết diện gộp lại 8 mm²
+
+Máy xích xe đạp tiêu chuẩn có:
+- **Bốn má xích** (two inner, two outer plates)
+- Mỗi plate dày **0,8 mm**
+- Tiết diện hữu ích (phần chịu kéo) cao **2,5 mm**
+
+Diện tích chịu lực gộp lại: 4 × 0,8 × 2,5 = **8,0 mm²** — nhỏ hơn một li bé.
+
+Ứng suất bây giờ rất dễ tính: σ = Lực ÷ Diện tích = 1 732 N ÷ 8,0 mm² = **216,5 MPa**. 
+Giới hạn chảy của thép xích (độ căng tối đa trước khi bị dàn ra không quay lại) là 600 MPa 
+cho hợp kim thép tiêu chuẩn. Số 216 MPa ấy chiếm **36%** giới hạn — tức là bạn vẫn còn dư an toàn, 
+nhưng không dư nhiều.
+
+## Đạp 1 200 N thì 371 MPa — lâm nguy rồi
+
+Vừa dấu mạnh lên cao độ — 1 200 N, cỡ tích cực mạnh mẻ — ứng suất vọt lên **371 MPa**, 
+hay **62%** giới hạn chảy. Ở ngưỡng này, xích bắt đầu thường xuyên giãn dần, mất độ chính xác 
+hộp số, rồi cà khổ các lần. Đạp 1 500 N — cột quân nước rút — là 463 MPa: hơn 77%, 
+nguy hiểm sự cố.
+
+Nhưng con số thực sự gắt gao nằm ở chỗ khác: công thức ứng suất ấy được viết cho **kéo dọc 
+toàn xích**. Thực tế, khi bạn **đạp mạnh trong tư thế chéo xích** — đĩa nhỏ cộng líp nhỏ, hay 
+đơi khi chỉ một người không chú ý quỳ lên bàn đạp lúc cơm tạ chưa thẳng — xích gặp 
+**thành phần lực ngang** từ góc hợp không hoàn hảo giữa tay quay và xích. Lực ngang đó không 
+được ma moi xích tính toán để chịu: tiết diện ấy thiết kế theo chiều kéo dọc, không chiều 
+cắt ngang. Đó chính là **cách phổ biến nhất xích bị đứt trong trường hợp ngoài tiêu chuẩn**.
+
+```
+σ = T / (n · t · h)
+với T = xích căng (N), n = số má (4), t = dày má (mm), h = tiết diện (mm)
+T = F_đạp · L_tay quay / r_đĩa
+r_đĩa = (số răng × 12.7 mm) / 2π
+```
+
+## Tỉ số dàn không chỉ ảnh hưởng tốc độ
+
+Chuyển từ 34 sang 42 răng — ứng suất tụt từ 217 xuống 175 MPa. Hạ xuống 28 răng, 
+nó tăng lên 263 MPa. Đĩa lớn phân tán lực trên xích; đĩa nhỏ tập trung lực.
+
+Người thiết kế hộp số xe đạp biết điều này. Xe đua dùng tỉ số cao để xích sống lâu, 
+nhưng yêu cầu lực chân nhiều. Xe leo dốc dùng tỉ số thấp, xích còn sống hơn vì ứng suất xuống, 
+nhưng mỗi cú đạp chịu lực 30% thêm.
+
+[Công suất tới hạn của người đạp là một hằng số riêng](/vi/posts/cong-suat-toi-han-va-binh-xang-phu) — khoảng 4–6 watt/kg ở đối tượng 
+thường, 6–8 W/kg ở vận động viên. Nhưng cách bạn phân phối công suất qua tỉ số 
+sẽ quyết định xích sống được bao lâu: tỉ số thấp + công suất cao = ứng suất xích cao.
+
+## Trường hợp biên: ma sát tay quay quyết định lực thực
+
+Công thức ứng suất giả định tay quay truyền được 100% lực bàn đạp xuống xích. 
+Thực tế, ma sát (giữa chân và bàn đạp) chỉ truyền ~80% lực — 20% mất vì chân trơn 
+hay dây buộc không khít. Ở chế độ rửa xe kỹ quá, mất ma sát, bàn đạp bắt đầu trơn 
+dưới chân, bạn không kéo xích được nữa dù lực chân bao nhiêu. Rửa xích nhưng quên 
+quét nhớn tay quay là lỗi phổ biến — [moment quay](/vi/posts/bao-toan-momen-dong-luong-cu-xoay-khong-mien-phi) 
+không truyền được, chiếc xe sẽ thấy bị "kéo lại" thay vì chuyển tốc.
