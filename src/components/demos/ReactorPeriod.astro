@@ -1,0 +1,157 @@
+---
+// Point-kinetics reactor period, one delayed group (Lamarsh, "Introduction to
+// Nuclear Engineering", ch. 7). Inhour equation ρ = ωΛ + βω/(ω+λ) solved
+// exactly: Λω² + (λΛ + β − ρ)ω − ρλ = 0. Effective one-group precursor
+// constant λ = 0,0767 s⁻¹ (six U-235 groups collapsed to one).
+// Asymptotic small-ρ form: T = 1/ω ≈ (β − ρ)/(λρ).
+// Counterfactual "no delayed neutrons" branch: T = ℓ/ρ.
+// Valid for thermal reactors, ℓ = 10⁻⁵…10⁻³ s, step insertion of reactivity,
+// no temperature feedback (which is exactly what takes over past ρ = β).
+---
+
+<figure class="demo" data-demo="notron-tre-giu-lo-hat-nhan-dieu-khien-duoc">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Độ phản ứng ρ (% Δk/k) <output data-out="r"></output>
+      <input type="range" data-in="r" min="0" max="800" step="10" value="100" /></label>
+    <label>Tỉ lệ neutron trễ β (%) <output data-out="b"></output>
+      <input type="range" data-in="b" min="200" max="800" step="10" value="650" /></label>
+    <label>Tuổi thọ neutron tức thời ℓ <output data-out="l"></output>
+      <input type="range" data-in="l" min="-50" max="-30" step="1" value="-40" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Đường xanh: công suất lò tăng thế nào sau khi rút thanh điều khiển một
+    nấc, khi 0,65% neutron đến muộn vài giây. Đường cam: chính lò ấy nếu mọi
+    neutron đều tức thì — nó vọt khỏi khung hình trước khi bạn kịp chớp mắt.
+    Chấm đỏ là lúc công suất nhân đôi. Kéo ρ chạm β là vượt "tới hạn tức
+    thời": phần trễ mất quyền, chu kỳ sập về phần giây.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const CURVE = '#2563eb', MARK = '#dc2626', ALT = '#f59e0b';
+  const LAM = 0.0767;          // s^-1, effective one-group precursor constant
+  const TMAX = 300, YMAX = 10; // window: 300 s, power up to 10x initial
+  const vi = (x: number, d: number) => x.toFixed(d).replace('.', ',');
+
+  // Exact root of Λω² + (λΛ + β − ρ)ω − ρλ = 0, stable in both branches.
+  function omega(rho: number, beta: number, l: number) {
+    if (rho <= 0) return 0;
+    const b = LAM * l + beta - rho, c = rho * LAM;
+    const d = Math.sqrt(b * b + 4 * l * c);
+    return b > 0 ? (2 * c) / (b + d) : (d - b) / (2 * l);
+  }
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (k: string) => root.querySelector(`[data-in="${k}"]`) as HTMLInputElement;
+    const output = (k: string) => root.querySelector(`[data-out="${k}"]`) as HTMLOutputElement;
+
+    function draw() {
+      const rho = Number(input('r').value) / 1e5;
+      const beta = Number(input('b').value) / 1e5;
+      const l = Math.pow(10, Number(input('l').value) / 10);
+      output('r').textContent = `${vi(rho * 100, 3)} %`;
+      output('b').textContent = `${vi(beta * 100, 2)} %`;
+      output('l').textContent = `${vi(l * 1000, 2)} ms`;
+
+      const w = omega(rho, beta, l);
+      const tD = w > 0 ? Math.LN2 / w : Infinity;      // doubling time, delayed
+      const tP = rho > 0 ? (l * Math.LN2) / rho : Infinity; // doubling, prompt-only
+      const tExit = rho > 0 ? (l * Math.log(YMAX)) / rho : Infinity;
+      const hot = rho >= beta;
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.46);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+
+      const padL = 46, padB = 26, padT = 14, padR = 12;
+      const X = (t: number) => padL + (t / TMAX) * (cssW - padL - padR);
+      const Y = (p: number) => cssH - padB - ((p - 1) / (YMAX - 1)) * (cssH - padB - padT);
+
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.3; ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(padL, padT); ctx.lineTo(padL, cssH - padB); ctx.lineTo(cssW - padR, cssH - padB);
+      ctx.stroke();
+      ctx.globalAlpha = 0.55; ctx.fillStyle = fg; ctx.font = '10px system-ui,sans-serif';
+      ctx.textAlign = 'center';
+      for (const t of [60, 120, 180, 240, 300]) ctx.fillText(`${t} s`, X(t), cssH - padB + 14);
+      ctx.textAlign = 'right';
+      for (const p of [1, 2, 4, 6, 8, 10]) ctx.fillText(`${p}×`, padL - 5, Y(p) + 3);
+      ctx.globalAlpha = 1;
+
+      // Doubling line.
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.25; ctx.setLineDash([4, 4]);
+      ctx.beginPath(); ctx.moveTo(padL, Y(2)); ctx.lineTo(cssW - padR, Y(2)); ctx.stroke();
+      ctx.setLineDash([]); ctx.globalAlpha = 1;
+
+      // Counterfactual: every neutron prompt, P = e^(ρt/ℓ).
+      ctx.strokeStyle = ALT; ctx.lineWidth = 2; ctx.beginPath();
+      ctx.moveTo(X(0), Y(1));
+      if (rho > 0) {
+        for (let i = 1; i <= 400; i++) {
+          const t = (Math.min(tExit, TMAX) * i) / 400;
+          ctx.lineTo(X(t), Y(Math.min(YMAX, Math.exp((rho * t) / l))));
+        }
+      } else ctx.lineTo(X(TMAX), Y(1));
+      ctx.stroke();
+
+      // Real reactor: delayed neutrons included.
+      ctx.strokeStyle = hot ? MARK : CURVE; ctx.beginPath();
+      for (let i = 0; i <= 400; i++) {
+        const t = (TMAX * i) / 400, p = Math.exp(w * t);
+        if (p > YMAX) break;
+        i ? ctx.lineTo(X(t), Y(p)) : ctx.moveTo(X(t), Y(p));
+      }
+      ctx.stroke(); ctx.lineWidth = 1;
+
+      ctx.font = '10px system-ui,sans-serif'; ctx.textAlign = 'left';
+      ctx.fillStyle = ALT;
+      if (rho > 0) ctx.fillText(`không neutron trễ: khỏi khung tại ${vi(tExit, 2)} s`, X(0) + 8, padT + 22);
+      ctx.fillStyle = hot ? MARK : CURVE;
+      ctx.fillText('có neutron trễ', X(0) + 8, padT + 8);
+
+      if (tD < TMAX) {
+        ctx.fillStyle = MARK;
+        ctx.beginPath(); ctx.arc(X(tD), Y(2), 6, 0, Math.PI * 2); ctx.fill();
+        ctx.textAlign = tD > TMAX * 0.7 ? 'right' : 'left';
+        ctx.fillText(`nhân đôi: ${vi(tD, 1)} s`, X(tD) + (tD > TMAX * 0.7 ? -10 : 10), Y(2) + 4);
+      }
+
+      const money = beta > 0 ? rho / beta : 0;
+      let s = `ρ = ${vi(rho * 100, 3)} % ($${vi(money, 2)}) · β = ${vi(beta * 100, 2)} % → `;
+      if (rho <= 0) {
+        s += '<b>lò tới hạn đúng mức</b>: công suất đứng yên, chu kỳ vô hạn.';
+      } else {
+        s += `chu kỳ ${vi(1 / w, 1)} s, nhân đôi sau <b>${vi(tD, 1)} s</b>`;
+        s += ` · nếu không có neutron trễ: nhân đôi sau <b>${vi(tP, 3)} s</b>`;
+        s += ` (nhanh gấp ${Math.round(tD / tP).toLocaleString('vi-VN')} lần)`;
+        if (hot) s += ' · <b>ρ ≥ β: TỚI HẠN TỨC THỜI — phần trễ mất quyền, không ai lái kịp</b>';
+      }
+      readout.innerHTML = s;
+    }
+
+    root.querySelectorAll('input').forEach((el) => el.addEventListener('input', draw));
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="notron-tre-giu-lo-hat-nhan-dieu-khien-duoc"]').forEach(setup);
+</script>

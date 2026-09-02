@@ -1,0 +1,150 @@
+---
+// Cưỡng bức bức xạ của CO₂ (Myhre et al. 1998, biểu thức rút gọn IPCC):
+//   ΔF = 5,35 · ln(C/C₀)  [W/m²];  ΔT_cân bằng = ΔF · S / (5,35·ln2)
+// Hiệu chuẩn cho C trong khoảng ~280–1 000 ppm; dưới ~30 ppm quan hệ ngả về
+// tuyến tính, trên ~1 500 ppm cong nhanh hơn logarit. Trục ngang để tuyến
+// tính (không log) để thấy rõ độ cong; các dải vàng là những bậc cưỡng bức
+// BẰNG NHAU, mỗi bậc đáng 5,35·ln((C₀+100)/C₀) W/m².
+---
+
+<figure class="demo" data-demo="logarit-cua-co2-moi-lan-nhan-doi-them-ba-phay-bay-watt">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Nồng độ CO₂ hiện tại C (ppm) <output data-out="c"></output>
+      <input type="range" data-in="c" min="280" max="1200" step="1" value="420" /></label>
+    <label>Mốc so sánh C₀ (ppm) <output data-out="c0"></output>
+      <input type="range" data-in="c0" min="180" max="420" step="1" value="280" /></label>
+    <label>Độ nhạy khí hậu S (°C mỗi lần nhân đôi) <output data-out="s"></output>
+      <input type="range" data-in="s" min="1" max="5" step="0.1" value="3" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Đường cong xanh là lượng nhiệt CO₂ giữ thêm lại, tính từ mốc C₀ (chỗ
+    đường cắt trục 0). Nó cong xuống vì tác động đi theo logarit của nồng
+    độ, không theo lượng. Các dải vàng là những bậc <em>cưỡng bức bằng
+    nhau</em>: bậc đầu rộng đúng 100 ppm, các bậc sau rộng dần — cùng một
+    hiệu ứng nhưng mỗi lần lại đòi nhiều khí hơn. Chấm đỏ là điểm bạn đang
+    chọn.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const ALPHA = 5.35, SOLAR = 240;
+  const CURVE = '#2563eb', MARK = '#dc2626', BAND = '#f59e0b';
+  const XLO = 150, XHI = 1250, YLO = -3, YHI = 11;
+  const vi = (x: number, d: number) => x.toFixed(d).replace('.', ',');
+  const dF = (C: number, C0: number) => ALPHA * Math.log(C / C0);
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (k: string) => root.querySelector(`[data-in="${k}"]`) as HTMLInputElement;
+    const output = (k: string) => root.querySelector(`[data-out="${k}"]`) as HTMLOutputElement;
+
+    function draw() {
+      const C = Number(input('c').value);
+      const C0 = Number(input('c0').value);
+      const S = Number(input('s').value);
+      output('c').textContent = C.toLocaleString('vi-VN');
+      output('c0').textContent = C0.toLocaleString('vi-VN');
+      output('s').textContent = vi(S, 1);
+
+      const F = dF(C, C0);
+      const Fdouble = ALPHA * Math.LN2;
+      const T = (F * S) / Fdouble;
+      const rho = (C0 + 100) / C0;
+      const Frung = ALPHA * Math.log(rho);
+      const nextStep = C * (rho - 1);
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.46);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+
+      const padL = 48, padB = 28, padT = 12, padR = 12;
+      const X = (c: number) => padL + ((c - XLO) / (XHI - XLO)) * (cssW - padL - padR);
+      const Y = (f: number) => padT + ((YHI - f) / (YHI - YLO)) * (cssH - padB - padT);
+
+      // Dải cưỡng bức bằng nhau, rộng dần.
+      let edge = C0;
+      for (let k = 0; k < 8 && edge < XHI; k++) {
+        const next = edge * rho;
+        const x0 = X(edge), x1 = X(Math.min(next, XHI));
+        if (k % 2 === 0) {
+          ctx.fillStyle = BAND; ctx.globalAlpha = 0.14;
+          ctx.fillRect(x0, padT, x1 - x0, cssH - padB - padT);
+          ctx.globalAlpha = 1;
+        }
+        if (x1 - x0 > 30 && next <= XHI) {
+          ctx.fillStyle = BAND; ctx.globalAlpha = 0.95;
+          ctx.font = '10px system-ui,sans-serif'; ctx.textAlign = 'center';
+          ctx.fillText(`${Math.round(next - edge)}`, (x0 + x1) / 2, padT + 12);
+          ctx.globalAlpha = 1;
+        }
+        edge = next;
+      }
+      ctx.fillStyle = BAND; ctx.globalAlpha = 0.95;
+      ctx.font = '10px system-ui,sans-serif'; ctx.textAlign = 'left';
+      ctx.fillText(`ppm cho mỗi bậc ${vi(Frung, 2)} W/m²`, padL + 4, padT + 26);
+      ctx.globalAlpha = 1;
+
+      // Trục và vạch chia.
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.3;
+      ctx.beginPath(); ctx.moveTo(padL, padT); ctx.lineTo(padL, cssH - padB); ctx.lineTo(cssW - padR, cssH - padB); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(padL, Y(0)); ctx.lineTo(cssW - padR, Y(0)); ctx.stroke();
+      ctx.globalAlpha = 0.55; ctx.fillStyle = fg; ctx.font = '10px system-ui,sans-serif';
+      ctx.textAlign = 'center';
+      for (const c of [280, 420, 560, 840, 1120]) ctx.fillText(String(c), X(c), cssH - padB + 14);
+      ctx.textAlign = 'right';
+      for (const f of [-2, 0, 2, 4, 6, 8, 10]) ctx.fillText(`${f}`, padL - 4, Y(f) + 3);
+      ctx.textAlign = 'left';
+      ctx.fillText('W/m²', padL - 44, padT + 8);
+      ctx.textAlign = 'right';
+      ctx.fillText('ppm', cssW - padR, cssH - padB + 24);
+      ctx.globalAlpha = 1;
+
+      // Đường cong cưỡng bức.
+      ctx.strokeStyle = CURVE; ctx.lineWidth = 2; ctx.beginPath();
+      for (let i = 0; i <= 240; i++) {
+        const c = XLO + ((XHI - XLO) * i) / 240;
+        const y = Y(dF(c, C0));
+        i ? ctx.lineTo(X(c), y) : ctx.moveTo(X(c), y);
+      }
+      ctx.stroke(); ctx.lineWidth = 1;
+
+      // Điểm đang chọn.
+      ctx.fillStyle = MARK;
+      ctx.beginPath(); ctx.arc(X(C), Y(F), 6, 0, Math.PI * 2); ctx.fill();
+
+      const flag = C > 1000
+        ? ' · <b>ngoài vùng hiệu chuẩn 280–1 000 ppm của công thức</b>'
+        : '';
+      readout.innerHTML =
+        `C = ${C.toLocaleString('vi-VN')} ppm so với mốc ${C0.toLocaleString('vi-VN')} ppm → ` +
+        `ΔF = <b>${vi(F, 2)} W/m²</b>, tức ${vi((100 * F) / SOLAR, 2)}% của ${SOLAR} W/m² Trái Đất hấp thụ` +
+        ` · ấm <b>${vi(T, 2)} °C</b> ở cân bằng với độ nhạy ${vi(S, 1)} °C mỗi lần nhân đôi` +
+        ` · bậc 100 ppm đầu tiên đáng ${vi(Frung, 2)} W/m², lặp lại nó từ đây cần thêm ` +
+        `<b>${Math.round(nextStep)} ppm</b>${flag}`;
+    }
+
+    root.querySelectorAll('input').forEach((el) => el.addEventListener('input', draw));
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="logarit-cua-co2-moi-lan-nhan-doi-them-ba-phay-bay-watt"]').forEach(setup);
+</script>

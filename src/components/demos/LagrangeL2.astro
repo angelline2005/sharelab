@@ -1,0 +1,212 @@
+---
+// Collinear Lagrange points of the circular restricted three-body problem.
+// First-order (Hill) approximation:  r ≈ R·(α/3)^(1/3),  α = m/(M+m).
+// Exact collinear roots, normalised G(M+m)=1, R=1, ω=1, barycentre at origin
+// (m1 = 1−α at x = −α, m2 = α at x = 1−α):
+//   L2 (beyond m2, distance r):   (1−α)/(1+r)² + α/r²  =  (1−α) + r
+//   L1 (inward from m2, dist r):  (1−α)/(1−r)² − α/r²  =  (1−α) − r
+// Both are monotone on their bracket, so plain bisection is safe.
+// L4/L5 linear stability (Routh): stable iff 27·m1·m2 < (m1+m2)², i.e. M/m > 24,9599.
+// Valid for the circular, coplanar, restricted problem. Sliders cover
+// m/M = 10^−7 … 10^−1,3 and R = 10^−2,7 … 10^1,5 AU.
+---
+
+<figure class="demo" data-demo="diem-lagrange-l2-va-cho-dau-cua-kinh-webb">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Tỉ số khối lượng m/M <output data-out="q"></output>
+      <input type="range" data-in="q" min="-7" max="-1.3" step="0.0002" value="-5.5224" /></label>
+    <label>Khoảng cách R giữa hai thiên thể <output data-out="r"></output>
+      <input type="range" data-in="r" min="-2.7" max="1.5" step="0.0002" value="0" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Trên: khoảng cách từ thiên thể nhỏ tới L1 và L2, tính theo phần trăm của R,
+    vẽ trên trục log–log. Đường xanh là nghiệm đúng (nét liền L2, nét đứt L1),
+    đường cam là công thức căn bậc ba — một đường thẳng độ dốc 1/3.
+    Dưới: cùng những con số ấy vẽ đúng tỉ lệ quanh thiên thể nhỏ, kèm vạch quỹ
+    đạo Mặt Trăng làm thước so sánh khi nó lọt vào khung.
+    Kéo tỉ số khối lượng lên cao để thấy đường cam tách dần khỏi hai đường xanh.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const CURVE = '#2563eb', MARK = '#dc2626', APPROX = '#f59e0b';
+  const AU = 1.495979e8, DMOON = 384400, MCRIT = 24.9599;
+
+  const l2Of = (a: number) => {
+    const f = (r: number) => (1 - a) / ((1 + r) * (1 + r)) + a / (r * r) - ((1 - a) + r);
+    let lo = 1e-12, hi = 0.999;
+    for (let i = 0; i < 90; i++) { const m = (lo + hi) / 2; if (f(m) > 0) lo = m; else hi = m; }
+    return (lo + hi) / 2;
+  };
+  const l1Of = (a: number) => {
+    const f = (r: number) => (1 - a) / ((1 - r) * (1 - r)) - a / (r * r) - ((1 - a) - r);
+    let lo = 1e-12, hi = 0.9999;
+    for (let i = 0; i < 90; i++) { const m = (lo + hi) / 2; if (f(m) > 0) hi = m; else lo = m; }
+    return (lo + hi) / 2;
+  };
+  const hillOf = (a: number) => Math.cbrt(a / 3);
+
+  const vn = (x: number, d: number) => x.toFixed(d).replace('.', ',');
+  const grp = (x: number) => Math.round(x).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+  const SUP: Record<string, string> = {
+    '-': '⁻', '0': '⁰', '1': '¹', '2': '²', '3': '³',
+    '4': '⁴', '5': '⁵', '6': '⁶', '7': '⁷', '8': '⁸', '9': '⁹',
+  };
+  const pow10 = (e: number) => '10' + String(e).split('').map((c) => SUP[c]).join('');
+  const sci = (x: number) => {
+    const e = Math.floor(Math.log10(x));
+    return vn(x / Math.pow(10, e), 2) + '×' + pow10(e);
+  };
+  const dist = (km: number) => {
+    if (km < 1e6) return `${grp(km)} km`;
+    const M = km / 1e6;
+    return `${vn(M, M >= 100 ? 1 : M >= 10 ? 2 : 4)} triệu km`;
+  };
+  // 1/2/5 × 10^k step just below the target spacing.
+  const niceStep = (t: number) => {
+    const k = Math.pow(10, Math.floor(Math.log10(t))), m = t / k;
+    return (m >= 5 ? 5 : m >= 2 ? 2 : 1) * k;
+  };
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (k: string) => root.querySelector(`[data-in="${k}"]`) as HTMLInputElement;
+    const output = (k: string) => root.querySelector(`[data-out="${k}"]`) as HTMLOutputElement;
+
+    function draw() {
+      const lq = Number(input('q').value), lr = Number(input('r').value);
+      const mM = Math.pow(10, lq), alpha = mM / (1 + mM);
+      const Rau = Math.pow(10, lr), R = Rau * AU;
+      const r1 = l1Of(alpha), r2 = l2Of(alpha), rh = hillOf(alpha);
+
+      output('q').textContent = sci(mM);
+      output('r').textContent =
+        Rau >= 0.01 ? `${vn(Rau, 3)} AU` : `${vn(Rau, 5)} AU = ${grp(R)} km`;
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.66);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+      ctx.font = '10px system-ui,sans-serif';
+
+      // ---- panel A: the cube-root law on log-log axes ----
+      const aT = 12, aB = Math.round(cssH * 0.60), padL = 46, padR = 12;
+      const xLo = -7, xHi = -1.3, yLo = -2.58, yHi = -0.5;
+      const X = (l: number) => padL + ((l - xLo) / (xHi - xLo)) * (cssW - padL - padR);
+      const Y = (l: number) => aT + ((yHi - l) / (yHi - yLo)) * (aB - aT);
+
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.3;
+      ctx.beginPath(); ctx.moveTo(padL, aT); ctx.lineTo(padL, aB); ctx.lineTo(cssW - padR, aB); ctx.stroke();
+      ctx.fillStyle = fg; ctx.globalAlpha = 0.55; ctx.textAlign = 'center';
+      for (const e of [-7, -6, -5, -4, -3, -2]) ctx.fillText(pow10(e), X(e), aB + 14);
+      ctx.textAlign = 'right';
+      for (const p of [0.5, 1, 2, 5, 10, 20]) {
+        const yy = Y(Math.log10(p / 100));
+        ctx.globalAlpha = 0.55; ctx.fillText(`${vn(p, p < 1 ? 1 : 0)}%`, padL - 4, yy + 3);
+        ctx.globalAlpha = 0.12;
+        ctx.beginPath(); ctx.moveTo(padL, yy); ctx.lineTo(cssW - padR, yy); ctx.stroke();
+      }
+      ctx.globalAlpha = 1;
+
+      const line = (fn: (a: number) => number, colour: string, dash: number[]) => {
+        ctx.strokeStyle = colour; ctx.lineWidth = 2; ctx.setLineDash(dash); ctx.beginPath();
+        for (let i = 0; i <= 150; i++) {
+          const l = xLo + ((xHi - xLo) * i) / 150, q = Math.pow(10, l);
+          const y = Y(Math.log10(fn(q / (1 + q))));
+          i ? ctx.lineTo(X(l), y) : ctx.moveTo(X(l), y);
+        }
+        ctx.stroke(); ctx.setLineDash([]); ctx.lineWidth = 1;
+      };
+      line(hillOf, APPROX, []);
+      line(l1Of, CURVE, [4, 3]);
+      line(l2Of, CURVE, []);
+
+      ctx.fillStyle = MARK;
+      ctx.beginPath(); ctx.arc(X(lq), Y(Math.log10(r2)), 6, 0, Math.PI * 2); ctx.fill();
+
+      ctx.textAlign = 'left'; ctx.globalAlpha = 0.9;
+      ctx.fillStyle = CURVE; ctx.fillText('L2 đúng (nét đứt: L1)', padL + 8, aT + 11);
+      ctx.fillStyle = APPROX; ctx.fillText('công thức căn bậc ba', padL + 8, aT + 24);
+      ctx.fillStyle = fg; ctx.globalAlpha = 0.55; ctx.textAlign = 'right';
+      ctx.fillText('m/M', cssW - padR, aB + 14);
+      ctx.globalAlpha = 1;
+
+      // ---- panel B: the same two numbers drawn to true scale ----
+      const bY = Math.round(cssH * 0.84), span = 1.35 * Math.max(r1, r2) * R;
+      const P = (km: number) => padL + ((km + span) / (2 * span)) * (cssW - padL - padR);
+      const tick = niceStep(span / 2.6);
+      const big = span >= 1e6;
+      const tickLab = (km: number) =>
+        big ? `${vn(km / 1e6, tick >= 1e7 ? 0 : 1)} triệu km` : `${grp(km)} km`;
+
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.3;
+      ctx.beginPath(); ctx.moveTo(padL, bY); ctx.lineTo(cssW - padR, bY); ctx.stroke();
+      ctx.fillStyle = fg; ctx.globalAlpha = 0.55; ctx.textAlign = 'center';
+      for (let k = -3; k <= 3; k++) {
+        const v = k * tick;
+        if (Math.abs(v) > 0.88 * span) continue;
+        ctx.beginPath(); ctx.moveTo(P(v), bY); ctx.lineTo(P(v), bY + 4); ctx.stroke();
+        ctx.fillText(v === 0 ? '0' : tickLab(Math.abs(v)), P(v), bY + 16);
+      }
+      ctx.textAlign = 'left';
+      ctx.fillText('← về phía thiên thể lớn', padL + 2, bY - 28);
+      ctx.globalAlpha = 1;
+
+      if (DMOON < span) {
+        ctx.strokeStyle = APPROX;
+        for (const s of [-1, 1]) {
+          ctx.beginPath(); ctx.moveTo(P(s * DMOON), bY - 11); ctx.lineTo(P(s * DMOON), bY + 5); ctx.stroke();
+        }
+        ctx.fillStyle = APPROX; ctx.textAlign = 'center';
+        ctx.fillText('quỹ đạo Mặt Trăng', P(DMOON), bY - 15);
+      }
+
+      ctx.fillStyle = fg;
+      ctx.beginPath(); ctx.arc(P(0), bY, 5, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = CURVE;
+      ctx.beginPath(); ctx.arc(P(-r1 * R), bY, 5, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = MARK;
+      ctx.beginPath(); ctx.arc(P(r2 * R), bY, 5, 0, Math.PI * 2); ctx.fill();
+      ctx.textAlign = 'center';
+      ctx.fillStyle = CURVE; ctx.fillText('L1', P(-r1 * R), bY - 10);
+      ctx.fillStyle = MARK; ctx.fillText('L2', P(r2 * R), bY - 10);
+
+      const Mm = 1 / mM, stable = Mm > MCRIT;
+      const err = (100 * (rh - r2)) / r2;
+      const moons = (r2 * R) / DMOON;
+      // 3 decimals below 100 so the razor-thin band around 24,96 never prints "24,96 < 24,96".
+      const mmTxt = Mm > 1000 ? grp(Mm) : vn(Mm, 3);
+      readout.innerHTML =
+        `m/M = ${sci(mM)} · R = ${vn(Rau, Rau >= 0.01 ? 3 : 5)} AU → ` +
+        `L1 ở <b>${dist(r1 * R)}</b> (${vn(100 * r1, 3)}% của R) · L2 ở <b>${dist(r2 * R)}</b> (${vn(100 * r2, 3)}% của R)` +
+        `<br>Căn bậc ba cho ${dist(rh * R)} — lệch ${vn(Math.abs(err), 2)}% so với L2 · ` +
+        `L2 xa gấp <b>${vn(moons, moons >= 100 ? 0 : moons >= 1 ? 2 : 3)} lần</b> khoảng cách Mặt Trăng · ` +
+        (stable
+          ? `L4/L5 <b>ổn định</b> (M/m = ${mmTxt} > 24,96)`
+          : `L4/L5 <b>mất ổn định</b> (M/m = ${mmTxt} < 24,96)`);
+    }
+
+    root.querySelectorAll('input').forEach((el) => el.addEventListener('input', draw));
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="diem-lagrange-l2-va-cho-dau-cua-kinh-webb"]').forEach(setup);
+</script>

@@ -1,0 +1,209 @@
+---
+// Tuned mass damper (TMD), 2 bậc tự do, lực điều hoà tác dụng lên toà nhà.
+// Chuẩn hoá m1 = 1, ω1 = 1, k1 = 1; m2 = μ, k2 = μf², c2 = 2ζ₂μf, c1 = 2ζ₁.
+// Độ khuếch đại M(g) = |X1·k1/F0| tính trực tiếp bằng số phức (không xấp xỉ):
+//   X1 = F0 / [ (1 − g² + i·2ζ₁g + Z) − Z²/(−μg² + Z) ],  Z = k2 + i·g·c2
+// Cản sẵn có của khung thép cố định ζ₁ = 1% → đỉnh của nhà trần = 1/(2ζ₁) ≈ 50.
+// Tối ưu Den Hartog (1947, đúng chính xác khi ζ₁ = 0):
+//   f_opt = 1/(1+μ);  ζ₂_opt = √(3μ/(8(1+μ)));  đỉnh còn lại = √(1 + 2/μ)
+// Miền hợp lệ: μ ≤ 5% (trên mức đó TMD nặng tới mức mô hình 2 bậc tự do của
+// mode đầu tiên không còn tách khỏi các mode cao), g ∈ [0,70; 1,30].
+---
+
+<figure class="demo" data-demo="bo-giam-chan-khoi-luong-660-tan-taipei-101">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Tỉ số khối lượng μ (%) <output data-out="mu"></output>
+      <input type="range" data-in="mu" min="0.2" max="5" step="0.1" value="1" /></label>
+    <label>Chỉnh tần số f = f<sub>TMD</sub>/f<sub>nhà</sub> <output data-out="f"></output>
+      <input type="range" data-in="f" min="0.85" max="1.15" step="0.001" value="0.99" /></label>
+    <label>Cản của TMD ζ₂ (%) <output data-out="z"></output>
+      <input type="range" data-in="z" min="0" max="20" step="0.05" value="6.1" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Đường cam là toà nhà để trần: một đỉnh nhọn cao 50 lần đúng tần số riêng.
+    Đường xanh là khi treo thêm khối TMD — đỉnh nhọn tách làm đôi và tụt hẳn
+    xuống. Kéo cản ζ₂ về 0: hai đỉnh mọc cao hơn cả nhà trần, dù đáy giữa
+    chúng sâu hoắm — TMD không cản chỉ dời chỗ tai hoạ. Kéo ζ₂ lên 20%: quả
+    cầu bị khoá cứng vào nhà, thành khối chết vô dụng. Điểm tối ưu Den Hartog
+    nằm đúng giữa, nơi hai đỉnh cao bằng nhau và thấp nhất có thể.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const CURVE = '#2563eb', MARK = '#dc2626', BARE = '#f59e0b';
+  const Z1 = 0.01;                      // cản sẵn có của khung thép
+  const GLO = 0.7, GHI = 1.3;
+  const YLO = 0.7, YHI = 65;
+  const vi = (x: number, d: number) => x.toFixed(d).replace('.', ',');
+
+  // Nhà trần: |1/(1 − g² + i·2ζ₁g)|
+  const bare = (g: number) => 1 / Math.hypot(1 - g * g, 2 * Z1 * g);
+
+  // Nhà + TMD, nghiệm chính xác của hệ 2 bậc tự do.
+  function mag(g: number, mu: number, f: number, z2: number) {
+    const k2 = mu * f * f, c2 = 2 * z2 * mu * f;
+    const Zr = k2, Zi = g * c2;
+    const D2r = -mu * g * g + Zr, D2i = Zi;
+    const Ar = 1 - g * g + Zr, Ai = 2 * Z1 * g + Zi;
+    const Z2r = Zr * Zr - Zi * Zi, Z2i = 2 * Zr * Zi;
+    const den = D2r * D2r + D2i * D2i;
+    // ζ₂ = 0 tại đúng g = f cho D2 = 0: trở kháng nhánh TMD hoá vô hạn, toà
+    // nhà đứng im tuyệt đối. Trả 0 thay vì để 0/0 thành NaN làm đứt đường vẽ.
+    if (den < 1e-18) return 0;
+    const Qr = (Z2r * D2r + Z2i * D2i) / den, Qi = (Z2i * D2r - Z2r * D2i) / den;
+    return 1 / Math.hypot(Ar - Qr, Ai - Qi);
+  }
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (k: string) => root.querySelector(`[data-in="${k}"]`) as HTMLInputElement;
+    const output = (k: string) => root.querySelector(`[data-out="${k}"]`) as HTMLOutputElement;
+
+    function draw() {
+      const mu = Number(input('mu').value) / 100;
+      const f = Number(input('f').value);
+      const z2 = Number(input('z').value) / 100;
+      output('mu').textContent = vi(mu * 100, 1) + ' %';
+      output('f').textContent = vi(f, 3);
+      output('z').textContent = vi(z2 * 100, 2) + ' %';
+
+      // Quét đỉnh: thô rồi tinh quanh cực đại.
+      const N = 1200;
+      let pk = 0, pg = GLO;
+      for (let i = 0; i <= N; i++) {
+        const g = GLO + ((GHI - GLO) * i) / N;
+        const m = mag(g, mu, f, z2);
+        if (m > pk) { pk = m; pg = g; }
+      }
+      const h = (GHI - GLO) / N;
+      for (let i = -60; i <= 60; i++) {
+        const g = pg + (i * h) / 60;
+        if (g <= GLO || g >= GHI) continue;
+        const m = mag(g, mu, f, z2);
+        if (m > pk) { pk = m; pg = g; }
+      }
+      const pkBare = 1 / (2 * Z1 * Math.sqrt(1 - Z1 * Z1));
+      const cut = 100 * (1 - pk / pkBare);
+      const fOpt = 1 / (1 + mu), zOpt = Math.sqrt((3 * mu) / (8 * (1 + mu)));
+      const dh = Math.sqrt(1 + 2 / mu);
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.5);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+      ctx.font = '10px system-ui,sans-serif';
+
+      const padL = 112, padR = 10, padT = 14, padB = 26;
+      const X = (g: number) => padL + ((g - GLO) / (GHI - GLO)) * (cssW - padL - padR);
+      const lo = Math.log(YLO), hi = Math.log(YHI);
+      const Y = (m: number) =>
+        padT + ((hi - Math.log(Math.min(Math.max(m, YLO), YHI))) / (hi - lo)) * (cssH - padB - padT);
+
+      // ---- Bảng trái: mặt cắt toà nhà với quả cầu treo ----
+      const bx = 8, bw = 62, byT = padT + 6, byB = cssH - padB;
+      const leanBare = 26, leanTmd = 26 * Math.min(pk / pkBare, 1.6);
+      const tower = (lean: number, color: string, alpha: number) => {
+        ctx.strokeStyle = color; ctx.globalAlpha = alpha; ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        for (let s = 0; s <= 1; s += 0.05) {
+          const y = byB - s * (byB - byT), dx = lean * s * s;
+          s ? ctx.lineTo(bx + dx, y) : ctx.moveTo(bx, y);
+        }
+        for (let s = 1; s >= 0; s -= 0.05) {
+          const y = byB - s * (byB - byT), dx = lean * s * s;
+          ctx.lineTo(bx + bw + dx, y);
+        }
+        ctx.closePath(); ctx.stroke();
+        ctx.globalAlpha = 1; ctx.lineWidth = 1;
+      };
+      tower(leanBare, BARE, 0.45);
+      tower(leanTmd, CURVE, 0.95);
+      // Quả cầu: bán kính theo μ^(1/3), treo ở ~88% chiều cao.
+      const s0 = 0.88, dx0 = leanTmd * s0 * s0;
+      const cxs = bx + bw / 2 + dx0, cys = byB - s0 * (byB - byT);
+      const rad = 6 + 12 * Math.cbrt(mu / 0.05);
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.4;
+      ctx.beginPath(); ctx.moveTo(cxs, cys - rad - 16); ctx.lineTo(cxs, cys - rad); ctx.stroke();
+      ctx.globalAlpha = 1;
+      ctx.fillStyle = MARK;
+      ctx.beginPath(); ctx.arc(cxs, cys, rad, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = fg; ctx.globalAlpha = 0.6; ctx.textAlign = 'center';
+      ctx.fillText(`${vi(mu * 100, 1)} %`, bx + bw / 2 + 8, byB + 14);
+      ctx.globalAlpha = 1;
+
+      // ---- Trục ----
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.3;
+      ctx.beginPath(); ctx.moveTo(padL, padT); ctx.lineTo(padL, cssH - padB);
+      ctx.lineTo(cssW - padR, cssH - padB); ctx.stroke();
+      ctx.setLineDash([2, 3]);
+      ctx.beginPath(); ctx.moveTo(X(1), padT); ctx.lineTo(X(1), cssH - padB); ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.globalAlpha = 0.55; ctx.fillStyle = fg;
+      ctx.textAlign = 'center';
+      for (const g of [0.8, 0.9, 1.0, 1.1, 1.2]) ctx.fillText(vi(g, 1), X(g), cssH - padB + 14);
+      ctx.textAlign = 'right';
+      for (const m of [1, 2, 5, 10, 20, 50]) ctx.fillText(`${m}×`, padL - 4, Y(m) + 3);
+      ctx.textAlign = 'left';
+      ctx.fillText('trục ngang: tần số gió / tần số riêng của nhà', padL + 6, padT + 10);
+      ctx.globalAlpha = 1;
+
+      // ---- Đường cong ----
+      ctx.strokeStyle = BARE; ctx.lineWidth = 1.5; ctx.beginPath();
+      for (let i = 0; i <= 600; i++) {
+        const g = GLO + ((GHI - GLO) * i) / 600;
+        const y = Y(bare(g));
+        i ? ctx.lineTo(X(g), y) : ctx.moveTo(X(g), y);
+      }
+      ctx.stroke();
+      ctx.strokeStyle = CURVE; ctx.lineWidth = 2; ctx.beginPath();
+      for (let i = 0; i <= 600; i++) {
+        const g = GLO + ((GHI - GLO) * i) / 600;
+        const y = Y(mag(g, mu, f, z2));
+        i ? ctx.lineTo(X(g), y) : ctx.moveTo(X(g), y);
+      }
+      ctx.stroke(); ctx.lineWidth = 1;
+
+      ctx.fillStyle = BARE; ctx.globalAlpha = 0.85; ctx.textAlign = 'left';
+      ctx.fillText('nhà trần', X(1) + 6, Y(pkBare) + 3);
+      ctx.globalAlpha = 1;
+      ctx.fillStyle = MARK;
+      ctx.beginPath(); ctx.arc(X(pg), Y(pk), 5, 0, Math.PI * 2); ctx.fill();
+      ctx.textAlign = 'center';
+      ctx.fillText(`đỉnh ${vi(pk, 1)}×`, X(pg), Y(pk) + 18);
+
+      // ---- Readout ----
+      const tuned = Math.abs(f - fOpt) < 0.0015 && Math.abs(z2 - zOpt) < 0.0008;
+      let note: string;
+      if (pk >= pkBare) note = ' — <b>TMD đang làm hại: đỉnh cao hơn cả nhà trần</b>';
+      else if (tuned) note = ` — <b>đúng điểm tối ưu Den Hartog</b> (công thức √(1+2/μ) cho ${vi(dh, 1)}× khi bỏ qua cản sẵn có của nhà)`;
+      else note = ` — tối ưu nằm ở f = ${vi(fOpt, 3)} và ζ₂ = ${vi(zOpt * 100, 2)} %`;
+      readout.innerHTML =
+        `μ = ${vi(mu * 100, 1)} % · chỉnh tần số ${vi(f, 3)} · cản TMD ${vi(z2 * 100, 2)} % → ` +
+        `đỉnh cộng hưởng còn <b>${vi(pk, 1)} lần</b> (nhà trần: ${vi(pkBare, 1)} lần) — ` +
+        `<b>giảm ${vi(cut, 0)} %</b>${note}`;
+    }
+
+    root.querySelectorAll('input').forEach((el) => el.addEventListener('input', draw));
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="bo-giam-chan-khoi-luong-660-tan-taipei-101"]').forEach(setup);
+</script>

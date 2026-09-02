@@ -1,0 +1,93 @@
+---
+title: "Cho sữa vào cà phê ngay hay đợi mười phút? Chênh nhau 2,8 °C"
+seoTitle: "Định luật nguội Newton: nên cho sữa vào cà phê lúc nào để còn nóng lâu nhất"
+description: "Tốc độ nguội tỉ lệ với độ chênh nhiệt, nên cốc nguội rò nhiệt chậm hơn cốc nóng. Cốc 200 g cà phê 85 °C, hằng số nguội 22 phút, phòng 22 °C: rót 30 g sữa lạnh ngay từ đầu cho 57,4 °C ở phút thứ 10, đợi rồi mới rót chỉ được 54,6 °C. Và Newton chỉ giải thích được 0,8 trong 2,8 độ ấy."
+pubDate: 2026-09-02
+tags: ["vat-ly", "nhiet-hoc", "javascript"]
+translationId: "cho-sua-vao-ca-phe-truoc-hay-sau"
+---
+
+import CoffeeCooling from '../../../components/demos/CoffeeCooling.astro';
+
+Rót xong cốc cà phê thì điện thoại reo. Mười phút nữa bạn mới chạm được
+tới nó. Cho sữa vào ngay, hay để nguyên rồi rót lúc uống cho cà phê "đỡ
+nguội sớm"? Trực giác chọn vế sau, và trực giác thua đúng **2,8 °C**:
+
+<CoffeeCooling />
+
+## Cốc nguội rò nhiệt chậm hơn cốc nóng — mẹo nằm gọn ở đó
+
+Newton công bố định luật này năm 1701 sau khi đo một thanh sắt nung nguội
+dần: tốc độ mất nhiệt tỉ lệ với **độ chênh** giữa vật và môi trường, chứ
+không phải với nhiệt độ của riêng vật.
+
+```
+dT/dt = −(T − T_phòng)/τ   →   T(t) = T_phòng + (T₀ − T_phòng)·e^(−t/τ)
+```
+
+Lại là kiểu [rơi hàm mũ](/vi/posts/chu-ky-ban-ra-khong-hat-nao-biet-tuoi-minh)
+quen mặt, với τ là hằng số nguội — cốc sứ 200 g để trần trong phòng 22 °C
+có τ cỡ 22 phút.
+
+Giờ so hai cốc ngay ở phút số 0. Cốc cà phê trần 85 °C chênh phòng 63 °C.
+Cốc vừa nhận 30 g sữa tủ lạnh 5 °C chỉ còn 74,6 °C, chênh 52,6 °C. Cùng
+chiếc cốc ấy, cùng mặt thoáng ấy, nên dòng nhiệt chảy ra tỉ lệ thẳng với
+hai con số kia: **39,9 W so với 33,3 W** — cốc chưa pha sữa rò nhanh hơn
+20%, và suốt mười phút nó ném thêm **2 738 J** vào không khí căn bếp mà
+không có cửa nào đòi lại. Lúc bạn cầm cốc lên: rót ngay được **57,4 °C**,
+rót sau chỉ **54,6 °C**.
+
+## Cho sữa vào là mua trước bốn phút nguội
+
+30 g sữa lạnh kéo cốc từ 85 xuống 74,6 °C — tụt **10,4 °C** trong một
+giây. Cốc để tự nguội thì mất bao lâu mới đi hết quãng ấy? Đúng
+**4,0 phút**.
+
+Nên đừng nghĩ "cho sữa vào là cà phê nguội mất". Cú tụt đó bạn phải trả
+dù sớm dù muộn; câu hỏi duy nhất là trả trước hay trả sau quãng mười phút
+rò rỉ. Trả sau nghĩa là để cốc đứng ở mức chênh cao nhất đúng lúc mỗi độ
+chênh đắt nhất.
+
+## Nhưng Newton chỉ trả lời được 0,8 trong 2,8 độ
+
+Đây là chỗ dễ nói ẩu. Khoá cứng τ = 22 phút cho cả hai cốc — giả vờ rằng
+thêm sữa không làm cốc nặng thêm — thì thứ tự vẫn còn ăn nhau, nhưng chỉ
+**0,81 °C**, theo một công thức gọn: (1 − e^(−t/τ))·m_sữa·(T_phòng −
+T_sữa)/M. Để ý nó tắt ngóm nếu sữa để sẵn ở nhiệt độ phòng.
+
+**Hai độ còn lại đến từ khối lượng.** Hằng số nguội không phải đặc tính
+của chiếc cốc mà của cả [khối nhiệt nằm trong
+nó](/vi/posts/tuong-day-22-cm-va-buoi-trua-den-cham): τ = m·c/(h·A). Thêm
+30 g là tăng m thêm 15%, trong khi h·A gần như đứng yên — cốc mở miệng
+mất phần lớn nhiệt qua mặt thoáng phía trên, mà diện tích mặt thoáng
+không nở ra khi bạn rót thêm. τ nhảy từ 22 lên **25,3 phút**. Cốc đầy hơn
+là cốc dày da hơn, và đó mới là phần lớn của 2,8 độ.
+
+## Cốc càng tệ, thứ tự càng đáng tiền
+
+Đẩy thanh trượt thì quy luật lộ ra: đợi tới phút 20, khoảng cách nới
+thành **4,0 °C**; rót 80 g sữa thay vì 30 g, thành **5,3 °C**; đổi cốc sứ
+lấy ly giấy mỏng τ = 10 phút, thì ngay ở phút thứ 10 đã là **4,1 °C**.
+Chiều ngược lại, bình giữ nhiệt τ = 45 phút kéo con số xuống 1,7 °C — giữ
+nhiệt càng giỏi, thứ tự càng vô nghĩa.
+
+Và hai đường cong không bao giờ cắt lại nhau. Sau lúc rót, cả hai cốc
+chạy cùng một τ, nên hiệu số chỉ co theo hàm mũ chứ không đổi dấu: ở phút
+thứ 60 vẫn còn 0,4 °C. Cốc rót muộn thua vĩnh viễn, chỉ là thua ngày càng
+ít.
+
+## Trường hợp biên: khi bay hơi giành lấy tay lái
+
+Tất cả đứng trên một giả định: nhiệt thoát ra tuyến tính theo ΔT. Cốc mở
+nắp ở 85 °C làm giả định ấy lung lay, vì phần lớn nhiệt đi ra dưới dạng
+[hơi nước bốc lên](/vi/posts/nhiet-an-hai-quang-nhiet-ke-dung-im) — mỗi
+gram nước hoá hơi mang theo 2 300 J, và tốc độ bay hơi bám theo áp suất
+hơi bão hoà, thứ **tăng gấp rưỡi sau mỗi 10 °C**. Hạ cốc từ 85 xuống
+55 °C: vế Newton yếu đi 1,9 lần, còn vế bay hơi yếu đi **3,9 lần**.
+
+Cốc thật vì thế nguội dốc hơn đường cong trong demo ở đoạn đầu rồi mới
+hãm lại — τ không phải hằng số mà là hàm của chính nhiệt độ, và khoảng
+cách 2,8 °C nở ra chứ không co lại. Đậy nắp thì kênh phi tuyến ấy bị bịt,
+mô hình tuyến tính đúng trở lại, và **τ = 22 phút mới thật sự là một hằng
+số**. Trớ trêu vừa đủ: bài toán chỉ sạch sẽ khi bạn làm đúng cái việc
+khiến nó bớt quan trọng.

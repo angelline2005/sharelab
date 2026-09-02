@@ -1,0 +1,92 @@
+---
+title: "Ba vòng dây quanh cọc: bàn tay ghì 50 kg giữ lại 14 tấn"
+seoTitle: "Công thức capstan: vì sao dây quấn quanh cọc nhân lực theo hàm mũ"
+description: "Mỗi radian ôm cọc nhân lực giữ lên theo e^(μβ): một vòng đã 6,6 lần, ba vòng 286 lần. Ghì 50 kgf ở đuôi dây là chặn được 14,3 tấn ở đầu kia — và đường kính cọc không hề có mặt trong công thức."
+pubDate: 2026-09-02
+tags: ["vat-ly", "co-hoc", "javascript"]
+translationId: "day-quan-coc-mot-nguoi-giu-con-tau"
+---
+
+import CapstanFriction from '../../../components/demos/CapstanFriction.astro';
+
+Thuỷ thủ cập bến không thắt nút nào cả: vòng dây vài lượt quanh cọc bích rồi
+giữ đuôi dây bằng một tay, con tàu nằm im. Trò ấy bạn thử được ngay hôm nay —
+vắt dây qua thanh lan can, quấn hai vòng, treo can nước 20 lít vào một đầu:
+đầu còn lại giữ bằng hai ngón tay.
+
+<CapstanFriction />
+
+## Mỗi radian ôm cọc ăn mất một phần sức căng
+
+Cắt sợi dây thành những mẩu nhỏ, mỗi mẩu ôm cọc đúng một góc `dθ`. Mẩu ấy
+đang chịu sức căng T, và chính T ép nó vào mặt cọc với lực pháp tuyến `T·dθ`.
+Ma sát nghỉ mà nó góp được, nhiều nhất, là `μ·T·dθ` — đúng bằng phần sức
+căng bị ăn hụt khi đi hết mẩu dây đó:
+
+```
+dT = μ·T·dθ   →   T_tải = T_giữ · e^(μ·β)
+```
+
+Chữ T bên vế phải là chỗ hiểm: **phần ma sát mỗi mẩu góp được lại tỉ lệ với
+chính sức căng nó đang chịu**. Càng về phía đầu tải dây càng căng, càng căng
+thì ép cọc càng mạnh, ép càng mạnh thì ăn hụt càng nhiều. Cái gì lớn theo tỉ
+lệ chính mình thì [lớn kiểu hàm
+mũ](/vi/posts/tui-snack-tren-may-bay-va-ham-mu-cua-bau-troi) — và ở đây hàm
+mũ chạy rất gấp. Với μ = 0,30: nửa vòng đã nhân 2,57 lần, một vòng 6,59, hai
+vòng 43,4, **ba vòng nhân 286 lần**. Ghì 50 kgf ở đuôi dây thì đầu kia chịu
+được **14,3 tấn**. Muốn ghì lại một tấn, hai vòng với 23 kgf là xong — tức
+là một bàn tay.
+
+## Đường kính cọc không có mặt trong công thức
+
+Đọc lại vế phải: chỉ có μ và β. Không bán kính, không chiều dài đoạn dây
+tiếp xúc, không khối lượng. Cọc thép phi 60 hay trụ bê tông phi 600, quấn đủ
+ba vòng thì hệ số nhân vẫn đúng 286. Cọc to cho dây tiếp xúc dài hơn thật —
+nhưng lực ép trên mỗi centimét dây loãng đi đúng chừng ấy, và tích của hai
+thứ chỉ còn phụ thuộc góc ôm.
+
+Đặt cạnh [ròng rọc](/vi/posts/rong-roc-chia-nho-trong-luc-thanh-tung-nhanh-day)
+mới thấy khoảng cách giữa hai họ máy: ròng rọc chia lực bằng phép chia — bốn
+nhánh dây thì mỗi nhánh gánh một phần tư, muốn nhẹ đi 286 lần phải dựng 286
+nhánh. Cái cọc thì không có bộ phận chuyển động nào, không ổ bi, không bảo
+dưỡng, và cứ thêm một vòng là **nhân thêm 6,6 lần nữa**.
+
+## μ nằm trên số mũ, nên nó là biến đáng sợ nhất
+
+Kéo thanh trượt μ và nhìn đường cong nhấc bổng cả thang logarit. Hệ số ma sát
+không cộng vào kết quả, nó nhân vào số mũ — **giảm μ một nửa thì phải gấp đôi
+số vòng mới về chỗ cũ**. Dây sợi khô trên thép cho μ ≈ 0,30; ướt nước biển
+tụt còn khoảng 0,15, ba vòng chỉ còn nhân 16,9, và phải quấn đủ **sáu vòng**
+mới lấy lại 286. Thuỷ thủ quấn thêm vòng lúc trời mưa không phải vì cẩn thận
+quá mức, đó là số học.
+
+Cùng công thức ấy đặt trần cho mọi đai truyền động: đai dẹt ôm bánh đà đúng
+180° — β = π — với μ = 0,3 chỉ chịu nổi chênh sức căng **2,57 lần** giữa hai
+nhánh; vượt qua là đai trượt trên puly và mô-men không sang được trục bên
+kia, như máy tuốt lúa gặp bó lúa ướt. Còn bản thân μ thì đo được trong năm
+phút, bằng [một tấm ván nghiêng dần tới lúc vật
+trượt](/vi/posts/mat-phang-nghieng-va-goc-bat-dau-truot).
+
+## Cái cọc ấy nấp trong mọi nghề có dây
+
+Thiết bị hãm của dân leo núi thực chất là hai lần bẻ gập sợi dây quanh một
+thanh kim loại — góc ôm cộng lại đủ để bàn tay bóp nhẹ chặn được cú rơi. Ngay sợi dây phơi bạn buộc quanh cột hiên: nút thắt cuối
+cùng phần lớn chỉ để dây khỏi tuột dọc, còn lực thì mấy vòng quấn đã nuốt gần
+hết trước khi đến lượt nút.
+
+## Trường hợp biên: khoảnh khắc sợi dây bắt đầu nhích
+
+Công thức chỉ đúng ở **ngưỡng sắp trượt** — nó cho mức trần, không cho một
+trạng thái bền. Vừa qua ngưỡng, ma sát nghỉ nhường chỗ cho ma sát động,
+thường nhỏ hơn chừng một phần tư. Chỉ cần μ tụt từ 0,30 xuống 0,22, hệ số
+nhân của ba vòng rơi từ 286 xuống **63,2**: mất 4,5 lần trong một khoảnh
+khắc, mà tải thì không hề nhẹ đi. Vì thế tuột dây không bao giờ tuột từ từ —
+đó là vực chứ không phải dốc; và toàn bộ phần chênh lệch hoá nhiệt ngay tại
+mặt cọc, đủ làm dây nylon chảy nhựa sau vài mét trượt.
+
+Biên còn lại nằm ở chỗ công thức im lặng: nó không có bán kính vì nó coi dây
+mềm tuyệt đối. Cọc càng nhỏ so với dây, phần lực phải bỏ ra để bẻ cong chính
+sợi dây càng lấn át phần ma sát — quy tắc nghề với cáp thép là trống tời hay
+puly phải rộng ít nhất 20 lần đường kính cáp. Dưới ngưỡng đó, sợi cáp không
+ôm lấy cọc mà chống lại nó, và đấy cũng là lý do bạn không thắt nổi một nút
+chặt bằng cáp thép.

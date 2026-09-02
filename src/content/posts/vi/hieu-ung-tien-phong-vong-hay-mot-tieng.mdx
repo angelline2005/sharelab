@@ -1,0 +1,85 @@
+---
+title: "Tiếng dội to gấp mười lần vẫn không lừa nổi tai bạn: luật của người đến trước"
+seoTitle: "Hiệu ứng Haas: vì sao bạn nghe thấy hướng của loa gần chứ không phải loa to"
+description: "Trong khoảng 1–35 ms đầu, não giao toàn bộ thông tin hướng cho âm đến TRƯỚC và lờ âm phản xạ đi — kể cả khi âm phản xạ to hơn gấp mười lần công suất. Vượt ngưỡng 10 dB ấy thì hiệu ứng sụp: bạn quay đầu về phía bức tường thay vì về phía người nói."
+pubDate: 2026-09-02
+tags: ["vat-ly", "song", "am-thanh", "javascript"]
+translationId: "hieu-ung-tien-phong-vong-hay-mot-tieng"
+---
+
+import HaasEffect from '../../../components/demos/HaasEffect.astro';
+
+Giảng đường 300 chỗ, bạn ngồi giữa. Giọng thầy vào tai bạn chủ yếu từ chiếc
+loa treo trên cột cách vài mét, to hơn hẳn tiếng thật vọng từ bục cách 20 m.
+Vậy mà bạn không hề nhìn lên cột: tai chỉ về phía bục, và nó đúng. Não bạn
+vừa bỏ qua nguồn âm to nhất trong phòng:
+
+<HaasEffect />
+
+## Phiếu bầu thuộc về âm đến trước, không thuộc âm to nhất
+
+Mọi âm trong phòng đều đến tai bạn nhiều lần: một lần theo đường thẳng, rồi
+hàng chục lần nữa sau khi nảy khỏi tường, trần, mặt bàn. Nếu tai xử lý từng
+lần đến như một nguồn riêng, bạn sẽ nghe thấy người nói ở khắp nơi cùng lúc.
+Hệ thính giác cắt phăng vấn đề bằng một luật thô bạo mà hiệu quả: **trong
+cửa sổ khoảng 1 đến 35 mili giây sau âm đầu tiên, mọi âm đến sau đều bị tước
+quyền chỉ hướng.** Chúng vẫn được nghe — góp độ to, góp âm sắc — nhưng địa
+chỉ thì lấy trọn của người đến trước: tiếng gõ và tiếng dội gộp thành **một
+tiếng duy nhất**, đặt đúng chỗ người nói đứng.
+
+Quy cửa sổ ấy ra khoảng cách thì rất dễ hình dung, vì âm thanh đi 343 m mỗi
+giây: 1 ms là đường phản xạ dài hơn đường thẳng **34,3 cm**, còn 35 ms là dài
+hơn **12,0 m**. Gần như mọi bức tường quanh bạn đều nằm gọn giữa hai mốc ấy.
+
+## Vì sao ranh giới dưới rơi đúng vào một mili giây
+
+1 ms không phải con số làm tròn cho đẹp. Đó là mép trên của thứ mà
+[hình học cái đầu bạn tự tạo ra được](/vi/posts/hai-tai-va-muoi-micro-giay-nghe-ra-huong):
+âm từ đúng bên hông đến tai xa chậm hơn tai gần nhiều nhất **656 µs**, và mọi
+hướng bạn từng nghe ra đều nằm trong dải ấy. Một độ trễ 0,3 ms vì thế là tin
+tức thật về hướng, phải dùng; còn 1 ms thì **không cái đầu nào tạo ra nổi** —
+nó chỉ có thể là hình học của căn phòng, và bị vứt.
+
+## Mười decibel tín dụng, và cả ngành tăng âm sống trên đó
+
+Luật người đến trước không vô điều kiện. Haas đo năm 1951 và tìm ra hạn mức:
+âm đến sau được phép to hơn âm trực tiếp tới **khoảng 10 dB** mà vẫn không
+giành được quyền chỉ hướng — [mười decibel](/vi/posts/thang-decibel-vi-sao-tai-nguoi-dem-bang-logarit)
+là **gấp 10 lần công suất âm**, một khoản tín dụng rộng đến khó tin.
+
+Sân vận động phải rải loa phụ dọc khán đài, nếu không hàng ghế cuối chẳng
+nghe ra chữ nào. Loa phụ cách sân khấu 30 m thì tiếng thật mất **87,5 ms**
+mới bò tới nơi — nên kỹ sư nạp vào loa ấy độ trễ điện tử khoảng **100 ms**,
+tức chậm hơn tiếng sân khấu **12,5 ms**. Khán giả ngồi ngay dưới loa vẫn nghe
+giọng ca sĩ phát ra từ sân khấu, dù ở sát mức trần ấy thì **91%** năng lượng
+âm vào tai họ đến từ cái thùng trên đầu. Điều kiện duy nhất: đừng vặn quá
+10 dB.
+
+## Trong phòng thật, hình học đã trả gần hết khoản đó
+
+Vì sao phòng thường chẳng làm bạn lẫn? Vì âm phản xạ đi xa hơn nên đã yếu
+sẵn, hiếm khi to hơn nổi. Ở tình huống mặc định của demo, bạn cách người nói
+8 m và tường bên cách cả hai 4 m: đường phản xạ dài **11,31 m**, đến chậm
+**9,66 ms**, và riêng luật nghịch đảo bình phương đã làm nó **nhỏ hơn 3,0 dB**
+— chưa tính phần tường nuốt mất.
+
+Phản xạ tự nhiên vì thế ngồi ở −3 dB trong khi trần sụp đổ nằm ở +10 dB: dư
+ra **13 dB** an toàn. Đó là lý do cả cái [đuôi vang dài hàng giây](/vi/posts/thoi-gian-vang-sabine-va-tam-rem-phong-tam)
+của một khán phòng làm giọng hát dày lên mà không kéo nó đi đâu.
+
+## Trường hợp biên: dưới một mili giây, và trên mười decibel
+
+Kéo mặt phản xạ lại gần đến khi đường về chỉ dư 34,3 cm — tường **cách 17,2
+cm** ngay trước mặt, sóng đi ra rồi vòng lại — thì luật người đến trước ngừng
+hoạt động. Dưới 1 ms, não không gộp theo kiểu tiền phong nữa mà **cộng vector
+hai sóng**, và hướng nghe được bị kéo lệch về giữa. Đây không phải hỏng hóc
+mà là nền móng của một ngành: mọi hệ stereo đều sống trong vùng dưới 1 ms ấy
+— hai loa phát cùng tín hiệu lệch nhau vài trăm micro giây là dựng lên một
+nhạc cụ "ảo" ở chỗ chẳng có loa nào.
+
+Đẩy đầu kia thì hiệu ứng không nhòe dần mà **lật**. Vặn ΔL trong demo từ 6
+lên 11 dB, giữ nguyên mọi thứ khác: chấm đỏ vượt trần, và tai bạn đổi phe —
+bạn quay đầu về phía bức tường, nói chuyện với một mặt phẳng trống. Đó chính
+là hội trường có loa phụ vặn quá tay hoặc quên nạp trễ: giọng người phát biểu
+rời khỏi thân thể họ và treo đâu đó trên trần nhà. Tai bạn không hỏng — nó
+vẫn thi hành đúng luật, chỉ là ai đó vừa mua đứt phiếu bầu.

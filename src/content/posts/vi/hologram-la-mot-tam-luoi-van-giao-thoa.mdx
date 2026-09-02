@@ -1,0 +1,89 @@
+---
+title: "Hologram phải đợi 14 năm vì chưa có phim nào ghi nổi 2 658 vạch mỗi milimét"
+seoTitle: "Vì sao hologram cần nhũ tương đặc biệt: giới hạn vạch/mm của vật liệu ghi"
+description: "Hai chùm laser gặp nhau ở 90° đẻ ra hệ vân cách nhau 376 nm — 2 658 vạch mỗi milimét. Phim ảnh thường ghi nổi 100 vạch/mm. Rào cản của hologram chưa bao giờ là giao thoa mà là vật liệu: hạt bạc dưới 38 nm, và một cái bàn không nhúc nhích quá 133 nm."
+pubDate: 2026-09-02
+tags: ["vat-ly", "quang-hoc", "song", "javascript"]
+translationId: "hologram-la-mot-tam-luoi-van-giao-thoa"
+---
+
+import HologramFringes from '../../../components/demos/HologramFringes.astro';
+
+Tấm hologram trên thẻ ngân hàng nghiêng qua nghiêng lại thì nổi khối, nhưng
+soi kính lúp vào thì chẳng thấy hình gì. Không có bức ảnh nào được vẽ ở đó —
+chỉ có một tấm lưới vân sáng tối dày tới mức kính lúp bó tay. Chính độ dày
+ấy, chứ không phải nguyên lý, đã giam hologram trong ngăn kéo 14 năm:
+
+<HologramFringes />
+
+## Hai chùm sáng gặp nhau thì đẻ ra một cái thước
+
+Hologram không ghi ảnh, nó ghi *giao thoa*. Chùm laser rọi thẳng vào phim gặp
+chùm phản xạ từ vật: chỗ hai sóng cùng pha thì sáng, ngược pha thì tối —
+[đúng trò khe đôi của Young](/vi/posts/khe-doi-young-do-buoc-song-bang-thuoc-ke),
+chỉ khác là tấm phim phải *nhớ* trọn vẹn hệ vân chứ không chỉ hứng nó. Khoảng
+cách hai vân liên tiếp chỉ phụ thuộc bước sóng và góc giữa hai chùm:
+
+```
+d = λ / (2·sin(θ/2))
+```
+
+Laser lục 532 nm, hai chùm lệch nhau 90°: d = **376 nm**, tức **2 658 vạch
+mỗi milimét** theo đơn vị ngành phim ảnh dùng để đo độ nét. Một vạch nhoè
+không làm ảnh mờ như ảnh chụp — nó xoá sạch thông tin về pha, thứ duy nhất
+chứa chiều sâu.
+
+## Phim ảnh của bạn dừng ở 100 vạch — và đó là toàn bộ câu chuyện
+
+Phim chụp phổ thông phân giải khoảng **100 vạch/mm**, phim điện ảnh 35 mm
+chừng 60, phim kỹ thuật hạt siêu mịn cố lắm tới 300. So với 2 658 thì thiếu
+**27 lần**, loại tốt nhất vẫn thiếu 9 lần. Kéo slider góc cho tới khi đường
+cong chui xuống dưới vạch 100: chỉ ở **θ dưới 3°**.
+
+Thủ phạm là hạt bạc. Hạt halogenua bạc trong phim thường cỡ 0,2–2 µm; một hạt
+1 µm nằm vắt qua **2,7 chu kỳ vân**, không thể vừa đen vừa trắng nên nó chọn
+xám — tấm phim ra lò là mảng xám mịn, không còn gì để nhiễu xạ ánh sáng trở
+lại. Muốn ghi thật, hạt phải nhỏ cỡ một phần mười chu kỳ vân: **dưới 38 nm**,
+đúng cỡ hạt của Kodak 649-F thời 1960 và Slavich PFG-01 ngày nay. Giá phải
+trả rất sòng phẳng: hạt nhỏ thì bắt được ít photon, độ nhạy tụt hàng nghìn
+lần, phơi sáng vài chục giây thay vì 1/125 giây.
+
+Đường cong còn giấu một con số đẹp: vì sin(θ/2) không vượt quá 1, mật độ vân
+không bao giờ vượt quá 2/λ — ở đầu tím của quang phổ, 400 nm, trần ấy đúng
+bằng **5 000 vạch/mm**. Rào cản chưa bao giờ là vô hạn; nó chỉ nằm cao hơn
+phim ảnh đúng một bậc rưỡi thang log.
+
+## Cái bàn không được nhúc nhích quá 133 nanomét
+
+Có nhũ tương rồi vẫn chưa xong, vì hệ vân phải *đứng yên* suốt thời gian phơi.
+Một chùm đi dài thêm nửa bước sóng là cả hệ vân trượt trọn một chu kỳ, chỗ
+đang sáng thành tối, cộng lại thì tương phản về không. Quy tắc của nghề: giữ
+mọi xê dịch tương đối dưới λ/4 = **133 nm**, khoảng một phần năm trăm đường
+kính sợi tóc, liên tục trong mấy chục giây.
+
+Vì thế phòng hologram nào cũng có một cái bàn kỳ quặc: tấm đá granit nặng đặt
+trên ruột xe bơm hơi, hoặc một thùng cát. Bộ cách ly rung động ấy phải đẩy tần
+số riêng xuống thật thấp mới ăn thua — [dưới ngưỡng đó đệm mềm còn khuếch đại
+rung lên](/vi/posts/de-cao-su-chong-rung-va-nguong-can-hai). Rồi tắt điều hoà,
+đợi hai chục phút cho bàn lắng mới mở màn chắn: một luồng gió ấm thổi qua giữa
+hai chùm cũng đủ đổi chiết suất không khí và làm phim thành xám.
+
+## Trường hợp biên: kéo góc về 0 rồi về 180
+
+Kéo θ về 1° và khó khăn tan biến: vân giãn ra 30 µm, còn 33 vạch/mm — phim
+điện ảnh cũng ghi ngon lành. Đó chính là hologram Dennis Gabor làm năm 1948
+bằng đèn thuỷ ngân lọc, hai chùm trùng trục, trước khi có laser mười hai năm.
+Cái giá của góc gần 0: ảnh thật và ảnh ảo chồng lên nhau trên cùng một trục,
+nhìn cái này thì cái kia loè ra như sương. Leith và Upatnieks gỡ nút năm 1962
+bằng động tác đơn giản đến bực mình — **tách góc hai chùm ra** — rồi lập tức
+đâm vào bức tường 2 658 vạch/mm, chỉ vượt được vì đã có laser lẫn 649-F.
+
+Đầu kia của slider, θ = 180°, hai chùm đi ngược chiều: d = λ/2 = 266 nm, các
+mặt vân nằm **song song mặt phim** thay vì cắt ngang nó — hologram phản xạ của
+Denisyuk, xem được dưới đèn bàn thường vì chồng mặt vân ấy lọc màu đúng kiểu
+[màng xà phòng](/vi/posts/mang-mong-giao-thoa-mau-cua-bong-xa-phong). Con số
+thật còn nghiệt hơn demo vẽ: bên trong lớp nhũ tương chiết suất 1,5 bước sóng
+co lại, các mặt vân chỉ cách nhau **177 nm** — 5 639 mặt mỗi milimét, xếp chồng
+qua bề dày lớp keo chứ không trải trên mặt. Cùng một công thức, đổi mỗi một
+góc: đầu này là thứ làm được từ 1948 mà nhìn không ra, đầu kia đẹp nhất nghề
+và đòi lớp nhũ tương mịn nhất loài người pha nổi.

@@ -1,0 +1,96 @@
+---
+title: "Nhân đôi CO₂ chỉ thêm 3,7 watt mỗi mét vuông — bằng một bóng đèn ngủ trên mỗi ô gạch sân nhà"
+seoTitle: "Cưỡng bức bức xạ của CO₂: công thức 5,35·ln(C/C₀) và ý nghĩa của logarit"
+description: "Tác động của CO₂ đi theo logarit chứ không theo lượng: mỗi lần nhân đôi nồng độ thêm đúng 3,71 W/m². Từ 280 lên 420 ppm là 2,17 W/m², chưa tới 1% của 240 W/m² Trái Đất hấp thụ — và chừng ấy đủ nghiêng cả khí hậu."
+pubDate: 2026-09-02
+tags: ["vat-ly", "khi-hau", "nhiet-hoc", "javascript"]
+translationId: "logarit-cua-co2-moi-lan-nhan-doi-them-ba-phay-bay-watt"
+---
+
+import CarbonForcing from '../../../components/demos/CarbonForcing.astro';
+
+CO₂ trong khí quyển đã đi từ 280 lên 420 ppm — tăng một nửa. Lượng nhiệt
+nó giữ lại thêm: **2,17 W/m²**. Trải lên nền gạch sân nhà, mỗi viên
+60 × 60 cm được thêm 0,78 watt, chưa bằng một bóng đèn ngủ. Chừng ấy đang
+làm nghiêng cả khí hậu:
+
+<CarbonForcing />
+
+## Cả một cuộc cách mạng công nghiệp đáng chưa tới một phần trăm
+
+Trái Đất hấp thụ 240 W/m² nắng và phải thải đúng ngần ấy hồng ngoại ra vũ
+trụ mới giữ được nhiệt độ ([cân bằng nhiệt của hành
+tinh](/vi/posts/can-bang-nhiet-trai-dat-va-tam-chan-33-do)). CO₂ tăng thêm
+bịt bớt lối ra ấy: 2,17 W/m² đúng là **0,90%** của 240. Nhân đôi nồng độ —
+280 lên 560 ppm — cũng chỉ thêm **3,71 W/m²**, tức 1,5%.
+
+Con số bé ấy không bé, vì nó phủ **toàn bộ 510 triệu km²** bề mặt — cộng
+lại thành 1,1 triệu tỉ watt, gấp khoảng **56 lần** năng lượng sơ cấp loài
+người đốt — và vì nó không tắt: bóng đèn ngủ ấy sáng suốt ngày đêm hàng
+thế kỷ, cho tới khi biển và đất ấm lên đủ để bức xạ bù lại.
+
+## Vạch 15 micromet đã no từ lâu — và đó chính là nguồn gốc của logarit
+
+CO₂ chỉ chặn hồng ngoại khoẻ quanh một vạch: dao động uốn của phân tử,
+667 cm⁻¹ tức **15,0 µm**, đúng vùng mặt đất 288 K phát mạnh ([mỗi nhiệt độ
+có màu riêng](/vi/posts/dinh-luat-wien-mau-cua-nhiet-do)). Ngay tâm vạch,
+khí quyển đã đục hoàn toàn từ trước khi có nhà máy nào — đổ thêm CO₂ vào
+đấy chẳng đổi gì.
+
+Chỗ đổi là **hai sườn vạch**. Độ hấp thụ tụt gần như theo hàm mũ khi rời
+tâm, nên bề rộng khoảng bị bịt chỉ nới theo **logarit** của nồng độ: nhân
+đôi lượng khí, sườn lấn thêm đúng một khoảng bằng nhau và giữ lại đúng một
+lượng nhiệt bằng nhau. Biểu thức chuẩn (Myhre 1998) chỉ có thế:
+
+```
+ΔF = 5,35 · ln(C/C₀)   [W/m²]
+```
+
+Thay C = 2C₀ thì 5,35 · ln 2 = **3,71 W/m²**, bất kể bạn nhân đôi từ 280
+hay từ 2 800.
+
+## Bậc thang mỗi lúc một dài
+
+Vì thế các dải vàng trong demo rộng dần. Một trăm ppm đầu tiên, 280 lên
+380, đáng **1,63 W/m²**; thêm ngần ấy lần nữa phải bơm **136 ppm**, lần
+sau **184**, lần sau nữa **250**. Cùng kiểu thang logarit như [độ
+Richter](/vi/posts/thang-do-dong-dat-moi-bac-la-31-lan-nang-luong), chỉ
+đọc ngược chiều.
+
+Nghe như tin vui, và đúng là tin vui nếu nhịp leo không đổi. Từ mốc 420
+ppm hôm nay, lặp lại bậc "100 ppm đầu tiên" cần thêm 150 ppm — với 2,5 ppm
+mỗi năm là sáu chục năm. Nhưng **69% lượng cưỡng bức tích luỹ từ 1750 mới
+xuất hiện sau 1960**: đường cong dẹt dần, chân lại bước nhanh hơn thế
+nhiều. Và 2,17 W/m² kia đã bằng **92%** khoảng cách CO₂ giữa kỷ băng hà
+cuối (180 ppm) với thời tiền công nghiệp — cái chênh từng dỡ bỏ những tảng
+băng ba cây số trên Bắc Mỹ — trong 270 năm thay vì mười nghìn.
+
+## Từ watt sang độ: chỗ CO₂ trao quyền cho hơi nước
+
+Watt chưa phải nhiệt độ. Nếu hành tinh chỉ nóng lên rồi bức xạ mạnh hơn,
+không phản hồi nào khác, thì 2,17 W/m² chỉ đáng **0,70 °C**. Thực đo đã ấm
+khoảng 1,3 °C; còn ở cân bằng, với độ nhạy 3 °C mỗi lần nhân đôi (ước
+lượng trung tâm của IPCC AR6), là **1,75 °C**.
+
+Phần chênh là công của những gì CO₂ khởi động: không khí ấm ngậm được
+nhiều hơi nước hơn, mà hơi nước mới là khí nhà kính mạnh nhất; băng tan để
+lộ mặt biển sẫm màu hút nắng. CO₂ là cái van chứ không phải cái bơm. Kéo
+thanh độ nhạy từ 1,0 lên 5,0 mà xem: con số độ C nhảy gấp năm trong khi
+3,71 nằm im — khoảng bất định của khoa học khí hậu nằm ở phản hồi chứ gần
+như không nằm ở chính CO₂.
+
+## Trường hợp biên: khi logarit thôi còn là logarit
+
+Hàm logarit hay bị đọc ngược thành "CO₂ bão hoà rồi, thêm nữa cũng vô
+ích". Bão hoà có thật — nhưng ở **tâm** vạch 15 µm, còn hai sườn thì chưa,
+và chính hai sườn ấy đẻ ra hàm logarit: lấy nó làm phản chứng là dùng tiền
+đề của công thức để bác bỏ công thức.
+
+Công thức thì có biên thật. Dưới ~30 ppm, sườn vạch mỏng tới mức quan hệ
+ngả về gần tuyến tính — chế độ của Trái Đất tuyết cầu, nơi mỗi ppm đáng
+giá hơn hẳn hôm nay. Trên ~1 500 ppm, các dải hấp thụ phụ quanh 10 µm mở
+ra và đường cong vống lên nhanh hơn logarit. Ngay hằng số 5,35 cũng không
+đứng yên: các tính toán truyền bức xạ gần đây, tính đủ điều chỉnh tầng
+bình lưu, đề nghị nâng nó lên ~5,6 — mỗi lần nhân đôi nhích từ 3,71 lên
+gần **3,9 W/m²**. Bóng đèn ngủ trên mỗi ô gạch vừa được thay bóng sáng
+hơn.

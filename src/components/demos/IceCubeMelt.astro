@@ -1,0 +1,171 @@
+---
+// Stefan-type surface-limited melting of ice in a well-stirred drink.
+// Heat flux q = h·ΔT reaches the 0 °C ice face; melting a layer dR costs
+// ρ·L_f·dR joules per m², so the face recedes at a size-independent speed
+//   dR/dt = h·ΔT/(ρ·L_f),  ρ = 917 kg/m³, L_f = 334 kJ/kg
+// and a piece of half-thickness R lives t = ρ·L_f·R/(h·ΔT).
+// Valid while: the ice is already at 0 °C (no sensible heat left), the drink
+// holds its temperature (large, stirred reservoir), and h is treated as a
+// fixed dial. h = 50–600 W/m²K spans a still glass to a hard-shaken one.
+// Sliders: block edge 1–60 mm, h, drink temperature 5–35 °C.
+---
+
+<figure class="demo" data-demo="vien-da-to-tan-lau-gap-doi">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Cạnh khối đá a (mm) <output data-out="a"></output>
+      <input type="range" data-in="a" min="1" max="60" step="1" value="48" /></label>
+    <label>Hệ số truyền nhiệt h (W/m²K) <output data-out="h"></output>
+      <input type="range" data-in="h" min="50" max="600" step="10" value="300" /></label>
+    <label>Nhiệt độ đồ uống (°C) <output data-out="t"></output>
+      <input type="range" data-in="t" min="5" max="35" step="1" value="25" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Cùng một khối đá, chia ba cách: nguyên viên, cắt tám, cắt sáu mươi tư —
+    khối lượng không đổi, chỉ bề dày đổi. Mặt đá lùi vào với tốc độ như nhau
+    ở cả ba, nên thời gian sống tỉ lệ thẳng với nửa bề dày: mỗi lần chia đôi
+    cạnh là mất một nửa tuổi thọ. Ba đường thẳng dưới là ba luật ấy; chấm
+    tròn là vị trí bạn đang chọn.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const RHO = 917, LF = 334000, RL = RHO * LF;
+  const ONE = '#2563eb', EIGHT = '#f59e0b', MANY = '#dc2626';
+  // [số mảnh, số ô trên một cạnh mặt cắt, màu, nhãn]
+  const WAYS: Array<[number, number, string, string]> = [
+    [1, 1, ONE, '1 viên'], [8, 2, EIGHT, '8 viên'], [64, 4, MANY, '64 viên'],
+  ];
+
+  const vn = (x: number, d: number) => x.toFixed(d).replace('.', ',');
+  // Tốc độ lùi của mặt đá, m/s.
+  const rate = (h: number, dT: number) => (h * dT) / RL;
+  // Tuổi thọ (giây) của mảnh cạnh aMm chia thành n phần trên mỗi chiều.
+  const life = (aMm: number, n: number, h: number, dT: number) =>
+    (aMm / n / 2 / 1000) / rate(h, dT);
+  const fmtT = (s: number) => (s < 90 ? `${vn(s, 0)} giây` : `${vn(s / 60, 1)} phút`);
+  const fmtM = (g: number) =>
+    g < 1 ? `${vn(g * 1000, 0)} mg` : g < 10 ? `${vn(g, 1)} g` : `${vn(g, 0)} g`;
+
+  function niceStep(max: number) {
+    for (const c of [0.2, 0.5, 1, 2, 5, 10, 15, 20, 30, 60, 120, 200, 300]) {
+      if (max / c <= 4.5) return c;
+    }
+    return 600;
+  }
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (k: string) => root.querySelector(`[data-in="${k}"]`) as HTMLInputElement;
+    const output = (k: string) => root.querySelector(`[data-out="${k}"]`) as HTMLOutputElement;
+
+    function draw() {
+      const a = Number(input('a').value);
+      const h = Number(input('h').value);
+      const dT = Number(input('t').value);
+      output('a').textContent = String(a);
+      output('h').textContent = String(h);
+      output('t').textContent = String(dT);
+
+      const v = rate(h, dT);                       // m/s
+      const mass = RHO * Math.pow(a / 1000, 3) * 1000;  // g
+      const lives = WAYS.map(([, n]) => life(a, n, h, dT));
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.62);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+      ctx.font = '10px system-ui,sans-serif';
+
+      // ---- Dải trên: mặt cắt cùng một khối đá chia ba cách ----
+      const bandH = Math.round(cssH * 0.42);
+      ctx.fillStyle = fg; ctx.globalAlpha = 0.6; ctx.textAlign = 'left';
+      ctx.fillText(`Cùng ${fmtM(mass)} đá (khối cạnh ${a} mm), chia ba cách:`, 4, 12);
+      ctx.globalAlpha = 1;
+
+      const cellW = cssW / 3;
+      const boxMax = Math.min(cellW * 0.52, bandH - 44);
+      const side = Math.max(8, (boxMax * a) / 60);
+      WAYS.forEach(([, n, col, lab], i) => {
+        const cx = cellW * (i + 0.5), cy = 20 + (bandH - 44) / 2;
+        const x0 = cx - side / 2, y0 = cy - side / 2;
+        const gap = n > 1 ? 1.5 : 0, s = (side - gap * (n - 1)) / n;
+        ctx.strokeStyle = col; ctx.fillStyle = col;
+        for (let r = 0; r < n; r++) {
+          for (let c = 0; c < n; c++) {
+            const x = x0 + c * (s + gap), y = y0 + r * (s + gap);
+            ctx.globalAlpha = 0.22; ctx.fillRect(x, y, s, s);
+            ctx.globalAlpha = 1; ctx.strokeRect(x, y, s, s);
+          }
+        }
+        ctx.fillStyle = fg; ctx.globalAlpha = 0.75; ctx.textAlign = 'center';
+        ctx.fillText(`${lab} · cạnh ${vn(a / n, a / n < 10 ? 1 : 0)} mm`, cx, cy + side / 2 + 14);
+        ctx.fillStyle = col; ctx.globalAlpha = 1;
+        ctx.fillText(fmtT(lives[i]), cx, cy + side / 2 + 27);
+      });
+
+      // ---- Đồ thị dưới: tuổi thọ theo cạnh khối đá ----
+      const padL = 44, padR = 10, padB = 24, top = bandH + 10;
+      const yMax = niceStep(life(60, 1, h, dT) / 60) * 4.5;
+      const X = (mm: number) => padL + (mm / 60) * (cssW - padL - padR);
+      const Y = (min: number) => cssH - padB - (min / yMax) * (cssH - padB - top);
+
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.3;
+      ctx.beginPath(); ctx.moveTo(padL, top); ctx.lineTo(padL, cssH - padB);
+      ctx.lineTo(cssW - padR, cssH - padB); ctx.stroke();
+      ctx.globalAlpha = 0.55; ctx.fillStyle = fg; ctx.textAlign = 'center';
+      for (const mm of [12, 24, 36, 48, 60]) ctx.fillText(`${mm} mm`, X(mm), cssH - padB + 14);
+      ctx.textAlign = 'right';
+      const step = niceStep(yMax / 1.05);
+      for (let t = step; t <= yMax * 1.001; t += step) {
+        ctx.fillText(vn(t, step < 1 ? 1 : 0), padL - 4, Y(t) + 3);
+      }
+      ctx.textAlign = 'left';
+      ctx.fillText('thời gian sống (phút)', 4, top + 8);
+      ctx.globalAlpha = 1;
+
+      WAYS.forEach(([, n, col], i) => {
+        ctx.strokeStyle = col; ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.moveTo(X(0), Y(0));
+        ctx.lineTo(X(60), Y(life(60, n, h, dT) / 60)); ctx.stroke();
+        ctx.lineWidth = 1;
+        ctx.fillStyle = col;
+        ctx.beginPath(); ctx.arc(X(a), Y(lives[i] / 60), 5, 0, Math.PI * 2); ctx.fill();
+      });
+
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.35; ctx.setLineDash([3, 3]);
+      ctx.beginPath(); ctx.moveTo(X(a), top); ctx.lineTo(X(a), cssH - padB); ctx.stroke();
+      ctx.setLineDash([]); ctx.globalAlpha = 1;
+
+      const regime = h <= 100 ? 'ly để yên' : h >= 400 ? 'lắc/khuấy mạnh' : 'khuấy đều';
+      const rSphere = Math.pow((3 * Math.pow(a / 1000, 3)) / (4 * Math.PI), 1 / 3);
+      readout.innerHTML =
+        `Mặt đá lùi <b>${vn(v * 1e6, 1)} µm/s</b> (${vn(v * 6e4, 2)} mm mỗi phút) — như nhau ở mọi cỡ viên · ${regime}<br />` +
+        `1 viên ${a} mm: <b>${fmtT(lives[0])}</b> · 8 viên ${vn(a / 2, a / 2 < 10 ? 1 : 0)} mm: ${fmtT(lives[1])}` +
+        ` · 64 viên ${vn(a / 4, a / 4 < 10 ? 1 : 0)} mm: ${fmtT(lives[2])}` +
+        ` · viên cầu cùng khối lượng: <b>${fmtT(rSphere / v)}</b>`;
+    }
+
+    root.querySelectorAll('input').forEach((el) => el.addEventListener('input', draw));
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="vien-da-to-tan-lau-gap-doi"]').forEach(setup);
+</script>

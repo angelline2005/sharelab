@@ -1,0 +1,95 @@
+---
+title: "Đập trúng điểm này, cú va 500 newton để lại đúng 0 newton ở tay bạn"
+seoTitle: "Tâm va đập (center of percussion): điểm ngọt của vợt và gậy bóng chày"
+description: "Trên cây gậy đều 80 cm, tâm va đập nằm ở 53,3 cm tính từ tay. Trúng đó, cú va 500 N truyền vào tay đúng 0 N. Lệch vào trong 5,3 cm: tay nhận 50 N. Đập ở 64 cm: 100 N, và giật ngược chiều."
+pubDate: 2026-09-02
+tags: ["vat-ly", "co-hoc", "javascript"]
+translationId: "diem-dap-ngot-cua-vot-va-gay-bong"
+---
+
+import CenterOfPercussion from '../../../components/demos/CenterOfPercussion.astro';
+
+Ai từng cầm gậy bóng chày đều biết hai cảm giác này. Một cú đập êm ru, bóng
+bay mà tay không hay biết gì. Và một cú lệch vài centimét, cùng lực ấy,
+làm cổ tay tê buốt tới khuỷu. Cây gậy không đổi, cú va không đổi:
+
+<CenterOfPercussion />
+
+## Hai chuyển động triệt tiêu nhau tại đúng một chỗ
+
+Khi bóng đập vào gậy, cây gậy làm hai việc cùng lúc. Nó **bị đẩy lùi cả
+khối** — trọng tâm gia tốc a = F/m — và nó **quay quanh trọng tâm**, vì lực
+không đi qua trọng tâm. Ở phía tay cầm, hai chuyển động ấy ngược nhau: tịnh
+tiến kéo tay lùi về sau, quay hất tay ra trước.
+
+Với cây gậy đều dài 0,80 m nặng 300 g, cú va 500 N ở mốc 53,3 cm cho a =
+1 667 m/s² và gia tốc góc 4 167 rad/s². Điểm tay cầm cách trọng tâm 0,40 m,
+nên phần quay đóng góp đúng 4 167 × 0,40 = 1 667 m/s² — **triệt tiêu sạch**.
+Tay cầm không gia tốc, nên không cần lực nào giữ nó lại: **0 N**. Chỗ ấy gọi
+là *tâm va đập*, và nó đứng ở
+
+```
+b_COP = I / (m·d)
+```
+
+với I là momen quán tính quanh tay cầm, d là khoảng cách tay–trọng tâm. Gậy
+đều: I = mL²/3, d = L/2, nên b_COP = 2L/3. Đây chính là công thức Huygens
+dùng cho con lắc vật lý: tâm va đập trùng khít [tâm dao động, tức chiều dài
+con lắc đơn tương
+đương](/vi/posts/chu-ky-con-lac-don-co-that-su-khong-phu-thuoc-bien-do).
+
+## 5,3 centimét là khác biệt giữa 0 và 50 newton
+
+Lực truyền vào tay là một hàm bậc nhất, thẳng băng:
+
+```
+R = F · (1 − b/b_COP)
+```
+
+Đập tại 0,48 m — lệch vào trong **5,3 cm** — tay nhận 50 N, đúng một phần
+mười cú va. Đập tại 0,20 m, kiểu chặn bóng sát tay: **312 N**, gần hai phần
+ba cú va dồn thẳng vào cổ tay. Còn vượt qua tâm va đập thì dấu đổi: ở 0,64 m
+tay nhận **100 N nhưng giật theo chiều ngược lại**, và ở đúng đầu mút 0,80 m
+là **250 N ngược chiều** — một nửa cú va, hất cán gậy khỏi lòng bàn tay.
+
+Công thức còn lặng lẽ nói một điều: **R không phụ thuộc khối lượng gậy**,
+chỉ phụ thuộc *cách khối lượng được xếp đặt*. Gậy 300 g hay 900 g, cùng hình
+dáng thì cùng b_COP và cùng tỉ lệ truyền lực — đúng cái luật đã quyết định
+[cuộc đua vật lăn](/vi/posts/dua-vat-lan-hinh-dang-thang-khoi-luong), nơi
+hình dáng thắng còn khối lượng bị loại khỏi cuộc chơi. Con số 500 N cũng chỉ
+là cái thang: cú bóng chày thật có lực trung bình **17,6 kN** (banh 145 g
+đảo chiều 85 m/s trong 0,7 ms), và vì R tỉ lệ thuận với F, mọi tỉ lệ phần
+trăm ở trên giữ nguyên.
+
+## Dán chì lên đầu vợt là dời cả điểm ngọt
+
+Bây giờ kéo thanh trượt thứ hai. Thêm **100 g ở đầu gậy** đẩy tâm va đập từ
+53,3 cm ra **64,0 cm** — dịch 10,7 cm, chỉ vì 100 g rơi vào đúng chỗ có tay
+đòn dài nhất. Dân chơi tennis dán băng chì lên vành vợt
+chính là làm việc này: dời điểm ngọt lên vùng dây mà họ thực sự đánh trúng.
+Nhưng ai dán chì rồi vẫn đánh ở giữa mặt vợt thì đã tự đẩy mình vào phía
+*trong* tâm va đập — và cú giật đổi chiều.
+
+## Trường hợp biên: "điểm ngọt" là ba điểm, và chúng không chịu gặp nhau
+
+Tâm va đập chỉ trị được cú *giật*. Cái tê buốt ở tay còn có nguồn thứ hai:
+cây gậy **rung như một thanh dầm**. Dao động uốn bậc một của thanh tự do hai
+đầu có hai nút đứng yên ở 22,4% và 77,6% chiều dài — với gậy 0,80 m là
+17,9 cm và **62,1 cm**. Đập trúng nút đó thì mode một không được kích thích,
+tay không rung. Nhưng 62,1 cm không phải 53,3 cm: hai "điểm ngọt" **cách
+nhau 8,7 cm**, và bạn không thể trúng cả hai.
+
+Dán chì vào đầu gậy cũng không hoà giải được chúng: 100 g ở đầu kéo nút rung
+từ 62,1 ra 71,6 cm trong khi kéo tâm va đập từ 53,3 ra 64,0 — cả hai cùng
+chạy ra ngoài, khoảng hở chỉ khép từ 8,7 xuống 7,6 cm. Còn điểm ngọt thứ ba,
+chỗ bóng bay xa nhất, thì tệ hơn nữa: nó **không phải đặc tính của cây gậy**.
+Khối lượng hiệu dụng tại điểm đập tụt từ 225 g ở tâm va đập xuống 75 g ở đầu
+mút, đúng ba lần, trong khi tốc độ đầu gậy lại tăng dần ra ngoài — chỗ tích
+của hai thứ đạt cực đại phụ thuộc cả banh lẫn cú vung. Với thông số bóng
+chày nó nằm ở 45,7 cm; với thông số tennis, 54,5 cm. Đổi quả bóng là đổi
+điểm ngọt. Vậy nên khi một tay vợt bảo "cây này ngọt hơn", đó không phải
+lời khen mơ hồ: anh ta đang nói ba điểm trên cây vợt của mình tình cờ nằm đủ
+gần nhau. Phần lệch còn lại thì đành phó cho [nghệ thuật tắt
+dần](/vi/posts/dao-dong-tat-dan-diem-vang-cua-giam-xoc) — mà miếng cao su ai
+cũng gài vào dây vợt chỉ dập được tiếng kêu của dây, không chạm tới mode uốn
+của khung.

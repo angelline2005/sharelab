@@ -1,0 +1,204 @@
+---
+// Hagen–Poiseuille (chảy tầng): Q = π·Δp·r⁴/(8·η·L) — chính xác khi Re < 2300.
+// Chảy rối (ống trơn): Darcy–Weisbach với hệ số ma sát Blasius f = 0,3164·Re^(−1/4)
+//   → Δp = 0,1582·ρ·ν^0,25·L·v^1,75·D^(−1,25) → Q ∝ Δp^(4/7)·D^(19/7), mũ 2,714.
+// Nước 20 °C: ρ = 998 kg/m³, η = 1,002 mPa·s, ν = 1,004·10⁻⁶ m²/s.
+// Chọn nhánh: tính Q chảy tầng trước; nếu Re suy ra ≥ 2300 thì nhánh đó tự mâu
+// thuẫn, chuyển sang Blasius. Blasius chuẩn cho 4·10³ < Re < 10⁵; ở đầu trên của
+// dải trượt (Re ≈ 4,6·10⁵) nó cho lưu lượng cao hơn Colebrook khoảng 4–5%.
+// Ống trần, chưa tính co, cút, van và vòi — nên số lớn hơn vòi nhà thật.
+---
+
+<figure class="demo" data-demo="hep-ong-20-phan-tram-mat-59-luu-luong">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Đường kính lòng ống (mm) <output data-out="d"></output>
+      <input type="range" data-in="d" min="4" max="40" step="1" value="21" /></label>
+    <label>Chiều dài ống (m) <output data-out="l"></output>
+      <input type="range" data-in="l" min="10" max="50" step="1" value="20" /></label>
+    <label>Chênh áp hai đầu (bar) <output data-out="p"></output>
+      <input type="range" data-in="p" min="0.2" max="2" step="0.1" value="1" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Trái: mặt cắt dọc lòng ống. Bề ngang hình tô đậm là đường kính, chiều cao
+    mỗi lớp là vận tốc lớp đó — sát thành nước đứng yên, giữa trục chảy nhanh
+    nhất. Nới ống ra là vừa mở rộng vừa nâng cao cùng lúc, nên lưu lượng tăng
+    theo luỹ thừa chứ không theo tỉ lệ. Phải: trục loga hai chiều, nên mỗi luật
+    luỹ thừa là một đường thẳng — độ dốc chính là số mũ. Xanh là Hagen–Poiseuille
+    (mũ 4), cam là lưu lượng thật khi dòng đã rối (mũ 2,71). Hai đường chỉ trùng
+    nhau ở góc dưới trái, nơi ống đủ hẹp và áp đủ thấp để nước còn chảy tầng.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const LAM = '#2563eb', MARK = '#dc2626', TURB = '#f59e0b';
+  const RHO = 998, ETA = 1.002e-3, NU = ETA / RHO;
+  const D_LO = 4, D_HI = 40;          // mm
+  const Q_LO = 0.1, Q_HI = 2000;      // L/phút, trục loga
+  const V_FULL = 12;                  // m/s ứng với toàn bề ngang khung trái
+
+  const area = (D: number) => (Math.PI * D * D) / 4;
+  // Chảy tầng: Q = π·Δp·r⁴/(8·η·L)
+  const qLam = (D: number, L: number, dp: number) =>
+    (Math.PI * dp * Math.pow(D / 2, 4)) / (8 * ETA * L);
+  // Chảy rối, ma sát Blasius: Q ∝ Δp^(4/7)·D^(19/7)
+  const qTurb = (D: number, L: number, dp: number) =>
+    Math.pow((dp * Math.pow(D, 1.25)) / (0.1582 * RHO * Math.pow(NU, 0.25) * L), 4 / 7) * area(D);
+
+  // Trả về lưu lượng của nhánh vật lý đúng, kèm số Reynolds.
+  function solve(D: number, L: number, dp: number) {
+    const ql = qLam(D, L, dp);
+    const reL = (ql / area(D)) * D / NU;
+    if (reL < 2300) return { Q: ql, Re: reL, lam: true, qHP: ql };
+    const qt = qTurb(D, L, dp);
+    return { Q: qt, Re: (qt / area(D)) * D / NU, lam: false, qHP: ql };
+  }
+
+  const vi = (x: number, d = 1) =>
+    x.toFixed(d).replace('.', ',').replace(/\B(?=(\d{3})+(?!\d)(?=[^,]*(,|$)))/g, ' ');
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (k: string) => root.querySelector(`[data-in="${k}"]`) as HTMLInputElement;
+    const output = (k: string) => root.querySelector(`[data-out="${k}"]`) as HTMLOutputElement;
+
+    function draw() {
+      const Dmm = Number(input('d').value);
+      const L = Number(input('l').value);
+      const bar = Number(input('p').value);
+      output('d').textContent = String(Dmm);
+      output('l').textContent = String(L);
+      output('p').textContent = bar.toFixed(1).replace('.', ',');
+
+      const D = Dmm / 1000, dp = bar * 1e5;
+      const s = solve(D, L, dp);
+      const Lmin = s.Q * 60000, v = s.Q / area(D);
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.42);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+      ctx.font = '10px system-ui,sans-serif';
+
+      // ---------- Khung trái: mặt cắt dọc + biên dạng vận tốc ----------
+      const gap = 26;
+      const panW = Math.max(112, Math.min(190, cssW * 0.31));
+      const px0 = 8, pTop = 16, pBot = cssH - 26;
+      const pcy = (pTop + pBot) / 2, halfMax = (pBot - pTop) / 2;
+      const R = (Dmm / D_HI) * halfMax;                 // nửa lòng ống, px
+      const profW = panW - 14;
+
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.45; ctx.lineWidth = 1.5;
+      ctx.beginPath();                                   // hai thành ống
+      ctx.moveTo(px0, pcy - R); ctx.lineTo(px0 + panW, pcy - R);
+      ctx.moveTo(px0, pcy + R); ctx.lineTo(px0 + panW, pcy + R);
+      ctx.stroke(); ctx.lineWidth = 1;
+      ctx.globalAlpha = 0.18;                            // trục ống
+      ctx.setLineDash([3, 3]);
+      ctx.beginPath(); ctx.moveTo(px0, pcy); ctx.lineTo(px0 + panW, pcy); ctx.stroke();
+      ctx.setLineDash([]); ctx.globalAlpha = 1;
+
+      // Biên dạng: parabol khi chảy tầng, "1/7 mũ" bẹt khi chảy rối.
+      const vmax = s.lam ? 2 * v : v * (60 / 49);
+      const prof = (t: number) => (s.lam ? vmax * (1 - t * t) : vmax * Math.pow(1 - t, 1 / 7));
+      const col = s.lam ? LAM : TURB;
+      ctx.beginPath(); ctx.moveTo(px0, pcy - R);
+      for (let i = 0; i <= 120; i++) {
+        const t = -1 + (2 * i) / 120;
+        const x = px0 + Math.min(1, prof(Math.abs(t)) / V_FULL) * profW;
+        ctx.lineTo(x, pcy + t * R);
+      }
+      ctx.lineTo(px0, pcy + R); ctx.closePath();
+      ctx.fillStyle = col; ctx.globalAlpha = 0.22; ctx.fill();
+      ctx.globalAlpha = 1; ctx.strokeStyle = col; ctx.lineWidth = 1.6; ctx.stroke();
+      ctx.lineWidth = 1;
+
+      ctx.fillStyle = fg; ctx.globalAlpha = 0.6; ctx.textAlign = 'left';
+      ctx.fillText(`⌀${Dmm} mm · ${s.lam ? 'parabol (tầng)' : 'bẹt (rối)'}`, px0, pBot + 14);
+      ctx.textAlign = 'center';
+      ctx.fillText('vận tốc từng lớp →', px0 + panW / 2, pTop - 5);
+      ctx.globalAlpha = 1;
+
+      // ---------- Khung phải: Q theo đường kính, loga hai chiều ----------
+      const padL = px0 + panW + gap + 20, padR = 8, padT = 16, padB = 26;
+      const plotW = cssW - padL - padR, plotH = cssH - padT - padB;
+      const X = (dd: number) => padL + (Math.log10(dd / D_LO) / Math.log10(D_HI / D_LO)) * plotW;
+      const Y = (q: number) =>
+        cssH - padB - (Math.log10(Math.max(q, Q_LO) / Q_LO) / Math.log10(Q_HI / Q_LO)) * plotH;
+
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.3;
+      ctx.beginPath();
+      ctx.moveTo(padL, padT); ctx.lineTo(padL, cssH - padB); ctx.lineTo(cssW - padR, cssH - padB);
+      ctx.stroke();
+      ctx.globalAlpha = 0.55; ctx.fillStyle = fg;
+      ctx.textAlign = 'center';
+      for (const dd of [4, 10, 21, 27, 40]) ctx.fillText(String(dd), X(dd), cssH - padB + 14);
+      ctx.textAlign = 'right';
+      for (const q of [0.1, 1, 10, 100, 1000]) ctx.fillText(vi(q, q < 1 ? 1 : 0), padL - 4, Y(q) + 3);
+      ctx.textAlign = 'left';
+      ctx.fillText('L/phút', padL + 2, padT - 5);
+      ctx.textAlign = 'center';
+      ctx.fillText('đường kính (mm)', padL + plotW / 2, cssH - 3);
+      ctx.globalAlpha = 1;
+
+      // Hai đường cong: mũ 4 lý tưởng, và lưu lượng thật.
+      const curve = (fn: (dd: number) => number, color: string, dash: number[]) => {
+        ctx.strokeStyle = color; ctx.lineWidth = 2; ctx.setLineDash(dash);
+        ctx.beginPath();
+        let started = false;
+        for (let i = 0; i <= 160; i++) {
+          const dd = D_LO * Math.pow(D_HI / D_LO, i / 160);
+          const q = fn(dd) * 60000;
+          if (q < Q_LO) { started = false; continue; }
+          const y = Y(Math.min(q, Q_HI));
+          started ? ctx.lineTo(X(dd), y) : ctx.moveTo(X(dd), y);
+          started = true;
+        }
+        ctx.stroke(); ctx.setLineDash([]); ctx.lineWidth = 1;
+      };
+      curve((dd) => qLam(dd / 1000, L, dp), LAM, [5, 4]);
+      curve((dd) => solve(dd / 1000, L, dp).Q, TURB, []);
+
+      ctx.fillStyle = MARK;
+      ctx.beginPath(); ctx.arc(X(Dmm), Y(Math.min(Lmin, Q_HI)), 6, 0, Math.PI * 2); ctx.fill();
+
+      ctx.globalAlpha = 0.75; ctx.textAlign = 'left';
+      ctx.fillStyle = LAM; ctx.fillText('mũ 4 (chảy tầng)', padL + 6, padT + 22);
+      ctx.fillStyle = TURB; ctx.fillText('lưu lượng thật', padL + 6, padT + 35);
+      ctx.globalAlpha = 1;
+
+      // ---------- Dòng số ----------
+      const reTxt = vi(s.Re, 0);
+      const regime = s.lam
+        ? `<b>chảy tầng</b> — luật mũ 4 đúng ở đây`
+        : `<b>chảy rối</b> (Re > 2 300) — số mũ tụt còn 2,71`;
+      const gap4 = s.lam ? '' :
+        ` · công thức mũ 4 sẽ hứa ${vi(s.qHP * 60000, 0)} L/phút, <b>cao gấp ${vi(s.qHP / s.Q, 0)} lần</b>`;
+      readout.innerHTML =
+        `⌀${Dmm} mm · ${L} m · ${vi(bar, 1)} bar → <b>${vi(Lmin, 1)} L/phút</b>` +
+        ` · ${vi(v, 2)} m/s · Re = ${reTxt} → ${regime}${gap4}`;
+    }
+
+    root.querySelectorAll('input').forEach((el) => el.addEventListener('input', draw));
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="hep-ong-20-phan-tram-mat-59-luu-luong"]').forEach(setup);
+</script>

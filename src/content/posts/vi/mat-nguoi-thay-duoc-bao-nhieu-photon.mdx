@@ -1,0 +1,92 @@
+---
+title: "Mắt người thấy được 6 photon — và cách đo ra con số đó mà không đếm photon nào"
+seoTitle: "Ngưỡng thị giác: mắt người nhìn thấy được bao nhiêu photon"
+description: "Hecht và cộng sự không đếm photon. Họ đo tỉ lệ 'thấy' theo cường độ chớp rồi đọc ngưỡng ra từ ĐỘ DỐC của đường cong, vì thống kê Poisson để lại dấu vân tay của con số ngưỡng. Kết quả: khoảng 6 photon hấp thụ, tương ứng chừng 90 photon tới giác mạc."
+pubDate: 2026-09-02
+tags: ["vat-ly", "quang-hoc", "luong-tu", "javascript"]
+translationId: "mat-nguoi-thay-duoc-bao-nhieu-photon"
+---
+
+import PhotonThreshold from '../../../components/demos/PhotonThreshold.astro';
+
+Ngồi trong phòng tối bốn mươi phút cho mắt quen tối, rồi có người bấm một
+chớp sáng cực yếu ở rìa tầm nhìn. Bạn thấy. Bấm lại y hệt — không thấy gì.
+Không phải bạn lơ đãng: chính sự ngập ngừng ấy **là** phép đo.
+
+<PhotonThreshold />
+
+## Không ai đếm được photon, nhưng độ dốc thì đếm được
+
+Năm 1942 chưa có máy đếm từng photon, nên Selig Hecht, Simon Shlaer và
+Maurice Pirenne làm việc duy nhất họ làm được: chỉnh đèn phát ra một số
+photon **trung bình** đã biết, bấm hàng trăm lần ở mỗi mức, ghi lại tỉ lệ
+người quan sát báo "thấy".
+
+Mấu chốt nằm ở chữ *trung bình*. Đèn chỉnh ở mức 6,3 photon không phát ra
+6,3 photon mỗi lần — photon rời nguồn độc lập nhau, đúng kiểu [những hạt
+nhân không hạt nào biết tuổi của
+mình](/vi/posts/chu-ky-ban-ra-khong-hat-nao-biet-tuoi-minh) — nên số photon
+mỗi chớp là biến Poisson, độ lệch chuẩn √6,3 = **2,51 hạt, gần 40%**. Chớp
+này mang 4 hạt, chớp sau mang 9. Ánh sáng đến không đủ đều, và [nó chỉ trả
+theo gói nguyên chứ không có tiền
+lẻ](/vi/posts/hieu-ung-quang-dien-anh-sang-tra-tien-le). Vậy nên ngay cả
+một con mắt hoàn hảo, đặt ngưỡng cứng ở n photon, cũng chỉ thấy được một
+phần số chớp:
+
+```
+P(thấy) = 1 − Σ e^(−m)·m^k/k!   (cộng k từ 0 tới n−1)
+```
+
+## Ngưỡng càng cao thì đường cong càng dốc
+
+Đó là chỗ con số ngưỡng lộ ra. Kéo thanh trượt n và nhìn khoảng cách giữa
+hai vạch đứt 10% và 90%. Nếu **một** photon là đủ, phải tăng cường độ
+**21,9 lần** mới đưa người ta từ "thấy một trên mười lần" lên "thấy chín
+trên mười" — con dốc dài lê thê. Với ngưỡng 6, khoảng ấy co còn **2,9
+lần**; ngưỡng 12 còn 2,1 lần.
+
+Độ dốc là dấu vân tay của n, và nó không cần bạn biết trước hiệu suất của
+mắt — đó là lý do phép đo đứng vững tám mươi năm. Dữ liệu ba người quan sát
+khớp với **n = 5, 6 và 7** (ba người ấy chính là ba tác giả). Ở mức 6,3
+photon hấp thụ với ngưỡng 6, mô hình cho **60,1% số lần thấy**.
+
+## Từ 6 photon hấp thụ lùi ngược về 90 photon tới giác mạc
+
+Ngưỡng đếm photon **được hấp thụ**, không phải photon đến. Giữa hai con số
+là chuỗi thất thoát: giác mạc phản xạ, thuỷ tinh thể và dịch kính hấp thụ,
+và phần lớn nhất — photon xuyên thẳng qua tế bào que mà không gặp phân tử
+rhodopsin nào. Tổng hiệu suất còn **5–15%**; lấy 7%, con số 6,3 photon hấp
+thụ ứng với khoảng **90 photon chạm giác mạc**, mỗi hạt 510 nm mang [1240
+chia 510, tức 2,43 eV](/vi/posts/mau-cua-led-va-hang-so-1240). Cả chớp sáng
+ngưỡng: **3,5 × 10⁻¹⁷ J**.
+
+## Sáu photon rơi vào sáu tế bào khác nhau
+
+Vùng võng mạc bị chiếu rộng 10 phút cung, cách hố trung tâm 20°, chứa
+khoảng **500 tế bào que**. Rải 6 photon vào 500 ô: xác suất cả sáu rơi vào
+sáu ô riêng biệt là **97%**.
+
+Chi tiết ấy đắt hơn vẻ ngoài của nó. Không tế bào que nào phải phân biệt
+"một photon" với "hai" — mỗi tế bào chỉ giơ tay một lần, và một mạch thần
+kinh phía sau *đếm phiếu tới sáu*. Tức là tế bào que phải đáp ứng được với
+**một photon đơn lẻ**. Suy đoán gan lì ấy chờ 37 năm mới có bằng chứng
+trực tiếp: năm 1979 Baylor cùng cộng sự cắm điện cực vào một tế bào que
+duy nhất và ghi được cú giật điện của từng photon một.
+
+## Trường hợp biên: vì sao mắt không hạ ngưỡng xuống một
+
+Nếu tế bào que nhạy tới từng photon, sao tiến hoá không đặt ngưỡng ở 1?
+Vì rhodopsin tự lật cấu hình vì nhiệt, không cần ánh sáng. Mỗi phân tử chỉ
+lật nhầm khoảng **một lần mỗi 528 năm** — nhưng một tế bào que chứa cỡ 10⁸
+phân tử, nên cứ **2,8 phút** nó lại phát một tín hiệu ma. Gộp 500 tế bào
+trong cửa sổ tích hợp 0,2 giây của thị giác: **0,6 sự kiện giả mỗi cửa sổ**.
+
+Giờ thử ngưỡng 1: 45% số cửa sổ sẽ vượt ngưỡng — **2,3 chớp sáng ảo mỗi
+giây**, phòng tối thành màn pháo hoa vĩnh cửu. Ngưỡng 6 kéo con số ấy
+xuống 0,004%: một chớp ma mỗi **86 phút**. Ngưỡng 5–7 không phải giới hạn
+độ nhạy của mắt, nó là **cái van chặn nhiễu**.
+
+Và ở đúng vạch ấy, "thấy" thôi không còn là sự kiện mà thành xác suất:
+cùng một chớp y hệt, sáu lần thấy trên mười lần bấm. Sự ngập ngừng của bạn
+trong phòng tối không phải nhiễu tâm lý cần loại bỏ — nó là số liệu, và độ
+dốc của nó chính là con số sáu.

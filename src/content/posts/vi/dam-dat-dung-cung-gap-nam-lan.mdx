@@ -1,0 +1,101 @@
+---
+title: "Cùng một thanh gỗ, dựng đứng cứng gấp 5,5 lần đặt nằm"
+seoTitle: "Mô-men quán tính tiết diện: vì sao dầm chữ I và ống rỗng cứng hơn"
+description: "Độ cứng uốn tỉ lệ với b·h³/12 — chiều cao vào luỹ thừa ba. Thanh 38×89 mm dựng đứng cứng gấp 5,49 lần khi đặt nằm, cùng một khối lượng gỗ. Và cùng lượng thép ấy, cuộn thành ống Ø40 cứng gấp đúng 7 lần thanh đặc Ø20."
+pubDate: 2026-09-02
+tags: ["vat-ly", "co-hoc", "javascript"]
+translationId: "dam-dat-dung-cung-gap-nam-lan"
+---
+
+import BeamOnEdge from '../../../components/demos/BeamOnEdge.astro';
+
+Bắc một thanh gỗ 38×89 mm qua hai chồng gạch rồi đứng lên giữa: nó võng
+xuống thấy rõ. Xoay thanh 90 độ cho cạnh dài dựng đứng, đứng lại — gần như
+không nhúc nhích. Cùng thanh gỗ ấy, không thêm bớt một gram nào:
+
+<BeamOnEdge />
+
+## Chiều cao vào luỹ thừa ba, bề rộng vào luỹ thừa một
+
+Khả năng chống uốn của một dầm nằm gọn trong một con số hình học của mặt
+cắt — mô-men quán tính tiết diện:
+
+```
+I = b·h³/12
+```
+
+b là bề rộng, h là chiều cao **đo theo phương của tải**. Xoay thanh 38×89
+đứng lên chỉ là hoán vị hai con số ấy, nhưng chúng ở hai bậc luỹ thừa
+khác nhau nên I nhảy từ 406 967 mm⁴ lên 2 232 402 mm⁴ — đúng
+**(89/38)² = 5,49 lần**.
+
+Độ võng giữa nhịp của dầm kê hai đầu, tải đặt chính giữa, là
+`δ = F·L³/(48·E·I)`. I nằm dưới mẫu, nên cứng gấp 5,49 cũng là bớt võng
+5,49. Nhịp 2,0 m, người 100 kg đứng giữa, gỗ thông E ≈ 10 GPa: đặt nằm
+võng **40,2 mm**, dựng đứng chỉ **7,3 mm**. Muốn ván đặt nằm đuổi kịp phải
+xếp chồng rời **sáu tấm** — năm tấm vẫn thua một tấm dựng đứng. (Chồng rời
+thôi — dán keo thành một khối thì h cộng lại, và luỹ thừa ba đổi phe.)
+
+Vì sao bậc ba? Uốn dầm là kéo giãn nửa trên, nén nửa dưới, quanh một đường
+trung hoà chạy giữa. Thớ gỗ cách trục đoạn y bị biến dạng tỉ lệ với y nên
+sinh ứng suất tỉ lệ với y — rồi ứng suất ấy lại tác dụng qua tay đòn y lần
+nữa. Mỗi thớ đóng góp theo **y²**, cộng dọc chiều cao ra h³: đúng logic
+[đòn bẩy](/vi/posts/don-bay-cho-toi-mot-diem-tua), chỉ khác ở chỗ tay đòn
+được đếm hai lần.
+
+## Nửa giữa thân dầm gần như ngồi chơi
+
+Hệ quả của y² gay gắt hơn vẻ ngoài. Trong tiết diện chữ nhật, **nửa giữa
+của chiều cao** — đúng một nửa toàn bộ vật liệu — chỉ gánh **12,5%** độ
+cứng. Hai dải mỏng trên cùng và dưới cùng, gộp lại vỏn vẹn 20% chiều cao,
+gánh **48,8%**.
+
+Vậy thì vứt phần giữa đi — đó chính xác là dầm chữ I: hai bản cánh xa trục
+làm gần hết việc, bản bụng mỏng chỉ giữ khoảng cách giữa chúng và truyền
+lực cắt. Thép IPE 200 tiết diện 28,5 cm² có I = 1 943 cm⁴; cán đúng lượng
+thép ấy thành thanh vuông đặc cạnh 53,4 mm thì I rơi xuống 67,7 cm⁴ —
+**kém 28,7 lần**.
+
+Ống tròn chơi cùng bài. Lấy thanh thép đặc Ø20 mm rồi cán đúng lượng thép
+ấy thành ống Ø40 (thành dày 2,68 mm): I tăng **đúng 7,0 lần**. Cán tiếp
+thành ống Ø60, thành 1,72 mm: **17 lần**. Khung
+xe đạp, cột giàn giáo, xương cánh chim đều rỗng — không phải để tiết kiệm
+vật liệu, mà vì vật liệu đặt xa trục thì đáng giá hơn hẳn.
+
+## Bạn đã dùng mẹo này mà chưa gọi tên nó
+
+Miếng pizza mềm oặt rủ xuống, gập ngang một cái là chống đầu lên được: cú
+gập chỉ tạo chừng 2 cm chiều cao tiết diện, mà h vào bậc ba là đã đủ.
+Thước cuộn thợ mộc có lưỡi cong lòng máng nên vươn ngang hơn hai mét mới
+gục — bóp dẹt lưỡi bằng ngón tay là nó gục ngay.
+
+Cùng ý tưởng ấy đã định đoạt
+[cuộc đua vật lăn](/vi/posts/dua-vat-lan-hinh-dang-thang-khoi-luong) — ở đó
+khối lượng đếm theo r², ở đây diện tích đếm theo y² — và cả hai quy về
+[độ cứng k của Hooke](/vi/posts/dinh-luat-hooke-so-mot-phan-hai-tu-dau-ra):
+dầm kê hai đầu chính là chiếc lò xo có k = 48EI/L³.
+
+## Trường hợp biên: đẩy h lên mãi thì dầm bỏ cuộc theo hướng khác
+
+Nếu h³ là tất cả, hãy dựng đứng tấm ván 10 × 300 mm trên nhịp 2 m. Công
+thức reo mừng: I = 22,5 triệu mm⁴, cứng gấp **900 lần** chính nó đặt nằm,
+người 100 kg đứng giữa chỉ làm nó võng **0,73 mm**.
+
+Làm thật thì nó đổ nghiêng. Dầm hẹp và cao không thua bằng cách võng
+xuống — nó **oằn lật ngang**: tới một tải nào đó, vênh sang bên kèm vặn
+quanh trục dọc hoá ra "rẻ" hơn uốn tiếp trong mặt phẳng tải. Tải tới hạn:
+
+```
+P_th = 16,94 · √(E·I_y·G·J) / L²
+```
+
+I_y là mô-men quán tính theo phương yếu — đúng cái phương bạn vừa bóp
+xuống còn 10 mm. Với tấm ván ấy, P_th ≈ **524 N, tức 53 kg**: nó lật trước
+khi bạn kịp đứng hẳn lên. Thanh 38×89 trên nhịp đó phải tới 7 400 N
+(751 kg) mới lật, nên bạn chưa gặp chuyện này với nó.
+
+Vì thế dầm chữ I không bao giờ đi một mình: sườn tăng cứng, giằng ngang
+giữa các dầm sàn, cánh trên neo vào bản sàn. Và vì thế ống Ø60 thành 1,72
+mm là chỗ nên dừng — mỏng thêm thì thành ống nhăn cục bộ, đúng kiểu vỏ lon
+nước ngọt móp dưới ngón tay. Luỹ thừa ba là món quà hào phóng, nhưng chỉ
+trao cho ai giữ nổi tiết diện đứng thẳng.

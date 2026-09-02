@@ -1,0 +1,93 @@
+---
+title: "Vẩy tay 39 km/h, đầu roi da vượt tường âm thanh"
+seoTitle: "Vì sao roi da kêu chát: đầu roi vượt tốc độ âm thanh thế nào"
+description: "Khúc quặt chạy dọc roi giữ nguyên động năng nhưng khối lượng nó phải kéo cứ teo dần, nên tốc độ tăng theo căn bậc hai: đầu roi nhẹ hơn gốc 1 000 lần thì nhanh gấp 31,6 lần. Chỉ cần bàn tay 10,85 m/s — 39 km/h, tốc độ xe máy trong phố — là đầu roi chạm 343 m/s và nổ."
+pubDate: 2026-09-02
+tags: ["vat-ly", "song", "co-hoc", "javascript"]
+translationId: "tieng-chat-cua-roi-da-va-tuong-am-thanh"
+---
+
+import WhipCrack from '../../../components/demos/WhipCrack.astro';
+
+Chiếc roi da không đập vào gì cả, thế mà tiếng nổ đanh như súng. Bàn tay
+người vẩy roi đi chậm hơn một cú ném bóng — vậy mà đầu roi, cách đó hai
+mét, vượt tốc độ âm thanh. Không có động cơ nào nằm giữa:
+
+<WhipCrack />
+
+## Một sợi dây thon là cỗ máy nhân tốc độ
+
+Cú vẩy tay tạo ra một **khúc quặt** — chỗ roi gập đôi lại — rồi thả cho nó
+chạy về phía ngọn. Trong vài phần trăm giây khúc quặt tồn tại, không ai
+bơm thêm năng lượng cho nó mà nó cũng chẳng mất bao nhiêu; nhưng khối
+lượng nó phải kéo thì teo dần, vì roi thon. Giữ nguyên ½mv² trong khi m
+nhỏ đi thì v phải bù lại bằng căn bậc hai:
+
+```
+v(x) = v₀ · √( μ₀ / μ(x) )
+```
+
+μ là khối lượng trên mỗi mét dây — đúng đại lượng quyết định [sóng chạy
+nhanh chậm ra sao trên dây đàn](/vi/posts/song-dung-tren-day-dan). Mỗi lần
+μ giảm 4 lần, tốc độ nhân đôi; giảm **1 000 lần thì nhân 31,6**.
+
+Cùng một loại da thì μ tỉ lệ với bình phương đường kính, nên √μ chính là
+bề dày, và công thức rút gọn lại thành: **tốc độ tại mỗi điểm tỉ lệ nghịch
+với độ dày roi tại điểm đó**. Cái bóng thon vẽ phía trên demo không phải
+hình minh hoạ cho vui — nó *là* đồ thị tốc độ, lộn ngược.
+
+## Ngưỡng nổ: 10,85 m/s ở bàn tay
+
+Một chiếc bullwhip thật dày chừng 25 mm ở tay cầm và kết thúc bằng sợi
+cracker nylon cỡ 0,8 mm: đường kính chênh 31 lần, μ chênh 31² ≈ **1 000
+lần** — vừa vặn hệ số nhân 31,6. Ngưỡng vì thế rơi vào 343 : 31,6 =
+**10,85 m/s ở bàn tay**, tức 39 km/h, tốc độ một chiếc xe máy bò trong
+phố. Vẩy 12 m/s thôi, đầu roi đã đạt 379 m/s (Mach 1,11) và vượt tường ở
+mét thứ 1,94 của chiếc roi 2 m: gia tốc dồn hết vào đoạn cuối.
+
+Đọc ngược lại thì rõ vì sao **dây phơi đồ không bao giờ kêu**: nó không
+thon, tỉ số bằng 1, hệ số nhân bằng 1. Sợi thừng thon được 100 lần cũng
+gần như vô vọng: hệ số còn 10, đòi bàn tay 34,3 m/s tức 123 km/h —
+trong demo phải kéo thanh trượt gần kịch mới thấy đường cong chạm vạch
+vàng, đúng ở mũi roi. Còn thứ công thức **không** chứa là chiều dài: roi
+6 m cùng tỉ số thon cho đúng cùng tốc độ đầu như roi 2 m, kéo dài chỉ
+dời chỗ nổ ra xa tay hơn.
+
+## Tiếng "chát" là một cú nổ siêu thanh cỡ hạt đậu
+
+Qua 343 m/s, đầu roi không còn kịp báo trước cho không khí: các mặt sóng
+nó phát ra chồng lên nhau thành một nón áp suất — sóng xung kích, y hệt
+máy bay siêu thanh, chỉ khác cỡ. Cơ chế ấy chỉ đòi một điều kiện, nguồn
+nhanh hơn sóng do chính nó phát ra: hạt tích điện chạy nhanh hơn ánh sáng
+trong nước cũng để lại [một nón sáng xanh đúng kiểu
+đó](/vi/posts/anh-sang-cherenkov-va-goc-41-do). Mà vạch 343 m/s cũng
+không thiêng — âm thanh là tin nhắn truyền tay giữa các phân tử nên bị
+neo vào [tốc độ nhiệt của
+chúng](/vi/posts/phan-bo-maxwell-khong-khi-nhanh-hon-am-thanh), 476 m/s
+với nitơ; sáng lạnh 10 °C nó tụt còn 337 m/s, roi nổ dễ hơn.
+
+Cú nổ rẻ đến mức khó tin. Trên chiếc roi 2 m nặng 500 g thon 1 000 lần,
+mười centimet cuối chỉ cân **0,21 g**; ở 348 m/s nó mang 12,5 J. Viên đạn
+9 mm bay xấp xỉ cùng tốc độ (8 g, 360 m/s) mang 518 J — **gấp 41 lần**.
+Roi da mượn đúng tốc độ của viên đạn với một phần bốn mươi vốn liếng: vừa
+đủ để làm ồn.
+
+## Trường hợp biên: thon quá gấp thì sóng dội ngược tay
+
+Vậy sao không thon 10 000 lần cho nhẹ tay? Vì mỗi chỗ tiết diện đổi đột
+ngột là một chỗ **lệch trở kháng**, hệt đầu cáp nối sai: đấu thẳng khúc
+gốc vào sợi nhẹ hơn 1 000 lần thì mặt tiếp giáp hắt **88% năng lượng**
+ngược về phía tay, khúc quặt không bao giờ tới được ngọn. Chiếc roi thoát
+bẫy bằng cách trải 1 000 lần ấy đều ra suốt 2 m: mỗi 10 cm μ chỉ giảm
+1,41 lần, mỗi bậc dội lại 0,74% — gần như trong suốt. Nhẹ hơn không tự
+động là nhanh hơn; phải nhẹ dần đủ **êm**.
+
+Ở đầu kia, mô hình năng lượng lại quá dè dặt. Thử thay bằng bảo toàn động
+lượng — mv thay cho ½mv² — hệ số nhân thành 1 000, đầu roi phải đi
+11 000 m/s, Mach 32: vô lý, vì sợi roi không phải hệ kín, sức căng và
+thân roi liên tục nuốt bớt động lượng. Sự thật nằm giữa hai bờ và lệch về
+phía nhanh: ảnh tốc độ cao cho thấy khúc quặt còn tự co lại khi tới ngọn,
+dồn thêm động lượng vào đoạn cuối, và đầu roi thật đo được xấp xỉ **gấp
+đôi tốc độ âm thanh**. Đường cong xanh trong demo vì thế là **sàn chứ
+không phải trần** — tiếng chát tới sớm hơn, từ một bàn tay chậm hơn, so
+với những gì căn bậc hai dám hứa.

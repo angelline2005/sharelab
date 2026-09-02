@@ -1,0 +1,195 @@
+---
+// Ghyben-Herzberg (Badon Ghyben 1888 / Herzberg 1901):
+//   z = rho_f/(rho_s - rho_f) * h   -> z = 40h for 1000 / 1025 kg/m3.
+// Water-table shape along the section is the Glover (1959) steady coastal
+// solution, h(x) ∝ sqrt(x) from the shoreline; drawdown cone is Thiem's
+// logarithmic form; the 1/3 upconing stability threshold is Dagan & Bear
+// (1968). Valid only for a sharp interface, an unconfined homogeneous
+// aquifer, and hydrostatic (Dupuit) vertical equilibrium — i.e. it says
+// nothing about the tens-of-metres mixing zone that tides actually build.
+---
+
+<figure class="demo" data-demo="hut-mot-met-nuoc-ngot-man-dang-len-bon-muoi-met">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Mực nước ngầm cao hơn mực biển h (m) <output data-out="h"></output>
+      <input type="range" data-in="h" min="0.1" max="4" step="0.1" value="1.5" /></label>
+    <label>Khối lượng riêng nước biển (kg/m³) <output data-out="r"></output>
+      <input type="range" data-in="r" min="1010" max="1035" step="1" value="1025" /></label>
+    <label>Độ hạ mực nước do bơm (m) <output data-out="s"></output>
+      <input type="range" data-in="s" min="0" max="2" step="0.1" value="0.7" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Mặt cắt từ bờ biển (trái) vào đất liền. Nước ngọt nhẹ hơn nên nổi trên
+    nước mặn: mỗi mét nhô lên trên mực biển phải có 40 mét cắm xuống dưới
+    để cân áp suất. Đường liền đỏ là mặt phân cách khi đang bơm, đường đứt
+    xanh là khi để yên; giếng vẽ ở 1 200 m, ống lọc sâu 20 m dưới mực biển.
+    Dải phía trên mực biển được phóng to riêng — đúng tỉ lệ thì nó mảnh
+    bằng 1/40 phần chìm, và đó chính là điều đáng nói.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const FRESH = '#2563eb', SALT = '#dc2626', WELL = '#f59e0b';
+  const L = 2000, XW = 1200, WELL_D = 20, R0 = 500, RW = 0.2, BAND = 6;
+
+  const vn = (x: number, d = 1) => x.toFixed(d).replace('.', ',');
+  const ratioText = (R: number) =>
+    Math.abs(R - Math.round(R)) < 0.05 ? String(Math.round(R)) : vn(R);
+
+  const niceStep = (zmax: number) => {
+    const raw = zmax / 4;
+    const pow = Math.pow(10, Math.floor(Math.log10(raw)));
+    for (const m of [1, 2, 2.5, 5]) if (raw <= m * pow) return m * pow;
+    return 10 * pow;
+  };
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (k: string) => root.querySelector(`[data-in="${k}"]`) as HTMLInputElement;
+    const output = (k: string) => root.querySelector(`[data-out="${k}"]`) as HTMLOutputElement;
+
+    function draw() {
+      const h = Number(input('h').value);
+      const rho = Number(input('r').value);
+      const s = Number(input('s').value);
+      output('h').textContent = vn(h);
+      output('r').textContent = String(rho);
+      output('s').textContent = vn(s);
+
+      const R = 1000 / (rho - 1000);
+      // Natural water table (Glover): rises as sqrt(distance from shore).
+      const h0 = (x: number) => h * Math.sqrt(Math.max(x, 0) / XW);
+      // Thiem drawdown cone centred on the well.
+      const dd = (x: number) => {
+        const r = Math.max(Math.abs(x - XW), RW);
+        if (r >= R0) return 0;
+        return s * (Math.log(R0 / r) / Math.log(R0 / RW));
+      };
+      const h1 = (x: number) => Math.max(0, h0(x) - dd(x));
+      const z0 = (x: number) => R * h0(x);
+      const z1 = (x: number) => R * h1(x);
+
+      const zWell0 = z0(XW), zWell1 = z1(XW), rise = zWell0 - zWell1;
+      const gap0 = zWell0 - WELL_D;
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.52);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+      ctx.font = '10px system-ui,sans-serif';
+
+      const padL = 46, padR = 12, padT = 12, padB = 26;
+      const step = niceStep(z0(L));
+      const zTop = Math.max(step, Math.ceil(z0(L) / step) * step);
+      const ySea = padT + (cssH - padT - padB) * 0.3;
+      const X = (x: number) => padL + (x / L) * (cssW - padL - padR);
+      const YA = (a: number) => ySea - (a / BAND) * (ySea - padT);       // above sea level
+      const YB = (z: number) => ySea + (z / zTop) * (cssH - padB - ySea); // depth below
+
+      const N = 240;
+      const px = (i: number) => (L * i) / N;
+
+      // Fresh-water body (above and below sea level), under the pumped table.
+      ctx.fillStyle = FRESH; ctx.globalAlpha = 0.13;
+      ctx.beginPath(); ctx.moveTo(X(0), ySea);
+      for (let i = 0; i <= N; i++) ctx.lineTo(X(px(i)), YA(h1(px(i))));
+      for (let i = N; i >= 0; i--) ctx.lineTo(X(px(i)), YB(z1(px(i))));
+      ctx.closePath(); ctx.fill();
+
+      // Salt water below the interface.
+      ctx.fillStyle = SALT; ctx.globalAlpha = 0.09;
+      ctx.beginPath(); ctx.moveTo(X(0), ySea);
+      for (let i = 0; i <= N; i++) ctx.lineTo(X(px(i)), YB(z1(px(i))));
+      ctx.lineTo(X(L), cssH - padB); ctx.lineTo(X(0), cssH - padB);
+      ctx.closePath(); ctx.fill();
+      ctx.globalAlpha = 1;
+
+      // Frame, sea level, ticks.
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.3;
+      ctx.beginPath(); ctx.moveTo(padL, padT); ctx.lineTo(padL, cssH - padB);
+      ctx.lineTo(cssW - padR, cssH - padB); ctx.stroke();
+      ctx.globalAlpha = 0.45;
+      ctx.beginPath(); ctx.moveTo(padL, ySea); ctx.lineTo(cssW - padR, ySea); ctx.stroke();
+
+      ctx.globalAlpha = 0.55; ctx.fillStyle = fg;
+      ctx.textAlign = 'center';
+      for (const x of [0, 500, 1000, 1500, 2000]) {
+        const lab = x === 0 ? 'bờ' : x >= 1000 ? `${vn(x / 1000)} km` : `${x} m`;
+        ctx.fillText(lab, X(x), cssH - padB + 14);
+      }
+      ctx.textAlign = 'right';
+      for (const a of [2, 4, 6]) ctx.fillText(`+${a} m`, padL - 4, YA(a) + 3);
+      for (let k = 1; k * step <= zTop + 1e-9; k++)
+        ctx.fillText(`−${vn(k * step, k * step % 1 ? 1 : 0)} m`, padL - 4, YB(k * step) + 3);
+      ctx.textAlign = 'left';
+      ctx.fillText('mực nước biển', padL + 6, ySea - 4);
+      ctx.globalAlpha = 1;
+
+      // Undisturbed profile (dashed) vs pumped profile (solid).
+      const trace = (f: (x: number) => number, Y: (v: number) => number) => {
+        ctx.beginPath();
+        for (let i = 0; i <= N; i++) {
+          const x = px(i), y = Y(f(x));
+          i ? ctx.lineTo(X(x), y) : ctx.moveTo(X(x), y);
+        }
+        ctx.stroke();
+      };
+      ctx.lineWidth = 1.5; ctx.setLineDash([4, 3]); ctx.globalAlpha = 0.75;
+      ctx.strokeStyle = FRESH; trace(h0, YA); trace(z0, YB);
+      ctx.setLineDash([]); ctx.globalAlpha = 1; ctx.lineWidth = 2;
+      ctx.strokeStyle = FRESH; trace(h1, YA);
+      ctx.strokeStyle = SALT; trace(z1, YB);
+      ctx.lineWidth = 1;
+
+      // The well.
+      ctx.strokeStyle = WELL; ctx.lineWidth = 3;
+      ctx.beginPath(); ctx.moveTo(X(XW), padT + 2); ctx.lineTo(X(XW), YB(WELL_D)); ctx.stroke();
+      ctx.fillStyle = WELL;
+      ctx.beginPath(); ctx.arc(X(XW), YB(WELL_D), 4, 0, Math.PI * 2); ctx.fill();
+      ctx.lineWidth = 1;
+      ctx.fillStyle = fg; ctx.globalAlpha = 0.7; ctx.textAlign = 'center';
+      ctx.fillText('giếng', X(XW), padT + 0);
+      ctx.globalAlpha = 1;
+
+      // Marker on the interface directly under the well.
+      ctx.fillStyle = SALT;
+      ctx.beginPath(); ctx.arc(X(XW), YB(zWell1), 5, 0, Math.PI * 2); ctx.fill();
+
+      let note = '';
+      if (zWell0 <= WELL_D)
+        note = ' · <b>tầng ngọt vốn đã mỏng hơn 20 m: ống lọc nằm sẵn trong nước mặn</b>';
+      else if (zWell1 <= WELL_D)
+        note = ' · <b>chóp mặn đã nuốt ống lọc — giếng nhiễm mặn</b>';
+      else if (rise > gap0 / 3)
+        note = ` · <b>vượt ngưỡng 1/3 (${vn(gap0 / 3)} m): chóp mặn mất ổn định</b>`;
+
+      readout.innerHTML =
+        `Nước biển ${rho} kg/m³ → tỉ số <b>${ratioText(R)}:1</b>. ` +
+        `h = ${vn(h)} m tại giếng → đáy tầng ngọt sâu <b>${vn(zWell1 + rise)} m</b>. ` +
+        `Bơm hạ ${vn(s)} m → còn <b>${vn(zWell1)} m</b>: mặt mặn dâng <b>${vn(rise)} m</b>${note}`;
+    }
+
+    root.querySelectorAll('input').forEach((el) => el.addEventListener('input', draw));
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="hut-mot-met-nuoc-ngot-man-dang-len-bon-muoi-met"]').forEach(setup);
+</script>

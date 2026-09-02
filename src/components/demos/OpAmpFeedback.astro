@@ -1,0 +1,182 @@
+---
+// Hồi tiếp âm ở op-amp: độ lợi kín G = A/(1 + A·β), β = R₁/(R₁+R_f) = 1/(độ lợi mong muốn).
+// Nguồn: Sedra & Smith, "Microelectronic Circuits", chương hồi tiếp; datasheet µA741 / LM358
+// (A₀ ≈ 100 000, tích độ lợi–băng thông GBW = 1 MHz).
+// Độ lợi hở hữu dụng ở tần số f lấy theo xấp xỉ Bode một cực: A(f) = min(A₀, GBW/f).
+// Xấp xỉ này lệch tối đa 3 dB ngay tại tần số cực f_c = GBW/A₀ và hội tụ về đúng giá trị
+// ở hai phía. Chỉ hợp lệ cho op-amp bù trong một cực (dải trượt: A₀ 10–10⁷, f 0,1 Hz–1 MHz).
+---
+
+<figure class="demo" data-demo="op-amp-do-loi-mot-tram-nghin-lan">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Độ lợi hở A₀ (một chiều) <output data-out="a"></output>
+      <input type="range" data-in="a" min="10" max="70" step="1" value="50" /></label>
+    <label>Độ lợi mong muốn 1/β <output data-out="g"></output>
+      <input type="range" data-in="g" min="0" max="9" step="1" value="3" /></label>
+    <label>Tần số làm việc <output data-out="f"></output>
+      <input type="range" data-in="f" min="-10" max="60" step="1" value="10" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Trục ngang là độ lợi hở A của con op-amp (thang log), trục đứng là độ lợi
+    thực tế của mạch sau khi khép hồi tiếp. Đường cong bám sát mức 1/β và
+    phẳng lì: chấm đỏ là điểm làm việc, chấm cam là cùng con op-amp ấy khi độ
+    lợi hở tụt còn một nửa. Hai chấm gần như chồng lên nhau — số phần trăm ghi
+    kèm là toàn bộ khoảng cách giữa chúng. Kéo thanh tần số để xem A rơi theo
+    tích độ lợi–băng thông 1 MHz, và phép màu tan dần.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const CURVE = '#2563eb', MARK = '#dc2626', HALF = '#f59e0b';
+  const GBW = 1e6;
+  const GAINS = [1, 2, 5, 10, 20, 50, 100, 200, 500, 1000];
+  const XLO = 0, XHI = 7;
+
+  const Gcl = (A: number, b: number) => A / (1 + A * b);
+
+  function num(v: number): string {
+    if (v === 0) return '0';
+    if (Math.abs(v) >= 100) return Math.round(v).toLocaleString('vi-VN');
+    return String(Number(v.toFixed(2))).replace('.', ',');
+  }
+  function freqLabel(f: number): string {
+    if (f >= 1e6) return `${Number((f / 1e6).toPrecision(3))} MHz`.replace('.', ',');
+    if (f >= 1e3) return `${Number((f / 1e3).toPrecision(3))} kHz`.replace('.', ',');
+    return `${Number(f.toPrecision(3))} Hz`.replace('.', ',');
+  }
+  function pct(p: number): string {
+    if (p > 0 && p < 1e-4) return 'dưới 0,0001';
+    return Number(p.toPrecision(3)).toString().replace('.', ',');
+  }
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (k: string) => root.querySelector(`[data-in="${k}"]`) as HTMLInputElement;
+    const output = (k: string) => root.querySelector(`[data-out="${k}"]`) as HTMLOutputElement;
+
+    function draw() {
+      const A0 = Math.pow(10, Number(input('a').value) / 10);
+      const target = GAINS[Number(input('g').value)];
+      const f = Math.pow(10, Number(input('f').value) / 10);
+      const beta = 1 / target;
+
+      // Độ lợi hở còn lại ở tần số làm việc (xấp xỉ Bode một cực).
+      const A = Math.min(A0, GBW / f);
+      const g1 = Gcl(A, beta), g2 = Gcl(A / 2, beta);
+      const loop = A * beta;
+      const errIdeal = (100 * (target - g1)) / target;
+      const errHalf = (100 * (g1 - g2)) / g1;
+
+      const dec = Math.max(0, 6 - (Math.floor(Math.log10(target)) + 1));
+      const gStr = (x: number) => x.toFixed(dec).replace('.', ',');
+
+      output('a').textContent = Math.round(A0).toLocaleString('vi-VN');
+      output('g').textContent = `${target} lần`;
+      output('f').textContent = freqLabel(f);
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.46);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+
+      const padL = 52, padB = 28, padT = 30, padR = 12;
+      const yHi = target * 1.18;
+      const X = (a: number) => padL + ((Math.log10(a) - XLO) / (XHI - XLO)) * (cssW - padL - padR);
+      const Y = (g: number) => cssH - padB - (g / yHi) * (cssH - padB - padT);
+      const clampX = (x: number) => Math.max(padL, Math.min(cssW - padR, x));
+
+      // Khung trục.
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.3; ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(padL, padT); ctx.lineTo(padL, cssH - padB); ctx.lineTo(cssW - padR, cssH - padB);
+      ctx.stroke();
+
+      // Lưới mờ mỗi thập phân trên trục log.
+      ctx.globalAlpha = 0.12;
+      for (let e = 1; e <= 7; e++) {
+        ctx.beginPath(); ctx.moveTo(X(Math.pow(10, e)), padT); ctx.lineTo(X(Math.pow(10, e)), cssH - padB); ctx.stroke();
+      }
+
+      // Tiệm cận lý tưởng 1/β.
+      ctx.globalAlpha = 0.6; ctx.strokeStyle = fg; ctx.setLineDash([5, 4]);
+      ctx.beginPath(); ctx.moveTo(padL, Y(target)); ctx.lineTo(cssW - padR, Y(target)); ctx.stroke();
+      ctx.setLineDash([]);
+
+      ctx.globalAlpha = 0.55; ctx.fillStyle = fg; ctx.font = '10px system-ui,sans-serif';
+      ctx.textAlign = 'left';
+      ctx.fillText(`1/β = ${target} — giá trị lý tưởng, chỉ do hai điện trở quyết định`, padL + 6, Y(target) - 5);
+      ctx.textAlign = 'center';
+      const ticks: Array<[number, string]> = [[10, '10'], [1e3, '1 k'], [1e5, '100 k'], [1e7, '10 M']];
+      for (const [a, lab] of ticks) ctx.fillText(lab, X(a), cssH - padB + 14);
+      ctx.fillText('độ lợi hở A', (padL + cssW - padR) / 2, cssH - 3);
+      ctx.textAlign = 'right';
+      for (const k of [0, 0.25, 0.5, 0.75, 1]) ctx.fillText(num(target * k), padL - 5, Y(target * k) + 3);
+      ctx.globalAlpha = 1;
+
+      // Đường cong độ lợi kín theo A.
+      ctx.strokeStyle = CURVE; ctx.lineWidth = 2; ctx.beginPath();
+      for (let i = 0; i <= 240; i++) {
+        const a = Math.pow(10, XLO + ((XHI - XLO) * i) / 240);
+        const y = Y(Gcl(a, beta));
+        i ? ctx.lineTo(X(a), y) : ctx.moveTo(X(a), y);
+      }
+      ctx.stroke(); ctx.lineWidth = 1;
+
+      // Hai điểm làm việc: A và A/2.
+      const x1 = clampX(X(A)), x2 = clampX(X(A / 2));
+      ctx.fillStyle = HALF;
+      ctx.beginPath(); ctx.arc(x2, Y(g2), 5, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = MARK;
+      ctx.beginPath(); ctx.arc(x1, Y(g1), 6, 0, Math.PI * 2); ctx.fill();
+
+      // Mũi tên phóng to khoảng cách giữa hai chấm.
+      const yTop = Math.max(padT - 16, Y(g1) - 46);
+      ctx.strokeStyle = MARK; ctx.globalAlpha = 0.65;
+      ctx.beginPath();
+      ctx.moveTo(x1, Y(g1) - 9); ctx.lineTo(x1, yTop + 12);
+      ctx.stroke();
+      ctx.globalAlpha = 1;
+      ctx.fillStyle = MARK; ctx.font = '11px system-ui,sans-serif';
+      const right = x1 > (padL + cssW - padR) / 2;
+      ctx.textAlign = right ? 'right' : 'left';
+      const anchor = right ? x1 - 6 : x1 + 6;
+      ctx.fillText(`A giảm một nửa`, anchor, yTop);
+      ctx.fillText(`→ đầu ra lệch ${pct(errHalf)}%`, anchor, yTop + 12);
+
+      const flag = loop < 1
+        ? ' · <b>hồi tiếp đã sập: Aβ dưới 1, mạch không còn là bộ khuếch đại ' + target + ' lần</b>'
+        : loop < 100
+          ? ` · <b>vùng mất chính xác: Aβ chỉ còn ${num(loop)}</b>`
+          : '';
+
+      readout.innerHTML =
+        `A = <b>${Math.round(A).toLocaleString('vi-VN')}</b> ở ${freqLabel(f)}` +
+        ` · muốn khuếch đại ${target} lần → thực tế <b>${gStr(g1)}</b> (thấp hơn ${pct(errIdeal)}%)` +
+        ` · A tụt còn ${Math.round(A / 2).toLocaleString('vi-VN')} → ${gStr(g2)}` +
+        ` · đầu ra chỉ lệch <b>${pct(errHalf)}%</b>${flag}`;
+    }
+
+    root.querySelectorAll('input').forEach((el) => el.addEventListener('input', draw));
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="op-amp-do-loi-mot-tram-nghin-lan"]').forEach(setup);
+</script>

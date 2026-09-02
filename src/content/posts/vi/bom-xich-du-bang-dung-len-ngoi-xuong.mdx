@@ -1,0 +1,96 @@
+---
+title: "Xích đu: mỗi lần đứng lên ở đáy, động năng nhân 1,29 lần"
+seoTitle: "Cộng hưởng tham số: bơm xích đu bằng cách đứng lên ngồi xuống"
+description: "Đứng lên ở điểm thấp nhất, ngồi xuống ở hai đầu — không ai đẩy bạn cả, vậy năng lượng vào bằng cửa nào? Nâng trọng tâm 30 cm trên xích 2,5 m nhân động năng lên 1,291 lần; tính trọn một nhịp thì hệ số là (l₁/l₂)³ = 1,467, và 10 nhịp đưa xích đu từ 5° lên 30°."
+pubDate: 2026-09-02
+tags: ["vat-ly", "dao-dong", "co-hoc", "javascript"]
+translationId: "bom-xich-du-bang-dung-len-ngoi-xuong"
+---
+
+import SwingPumping from '../../../components/demos/SwingPumping.astro';
+
+Sân chơi vắng, không ai đứng sau lưng bạn. Bạn đứng lên ở điểm thấp nhất,
+ngồi xuống ở hai đầu vòng cung — và xích đu cứ cao dần. Không bàn tay nào
+chạm vào bạn, trục trên xà không có động cơ. Năng lượng vào bằng cửa nào?
+
+<SwingPumping />
+
+## Đứng lên ở đáy: xích ngắn lại, và bạn không được phép chậm đi
+
+Vận động viên trượt băng thu tay vào thì [xoay nhanh
+hơn](/vi/posts/bao-toan-momen-dong-luong-cu-xoay-khong-mien-phi); bạn đang
+làm y hệt, chỉ khác trục quay nằm trên xà sắt. Đứng lên ở đáy là kéo trọng
+tâm vào gần trục **dọc theo dây** — lực kéo trùng phương bán kính nên không
+sinh mômen lực, và mômen động lượng m·l²·ω phải giữ nguyên:
+
+```
+đứng lên ở đáy:    l₁ = 2,50 m  →  l₂ = l₁ − Δ = 2,20 m
+mômen động lượng:  m·l₁²·ω₁ = m·l₂²·ω₂
+tốc độ dài:        v = l·ω  nhân  l₁/l₂ = 1,136
+động năng:         nhân (l₁/l₂)² = 1,291
+```
+
+Khoản 29% ấy không rơi từ trời xuống. Ở đáy vòng cung 30° bạn **nặng 1,27
+lần** bình thường — lực hướng tâm cộng vào trọng lực — và cơ đùi phải nâng
+cả cái trọng lượng phóng đại đó lên 30 cm; ở biên độ 60° con số đúng bằng
+**2 g**. Cảm giác nặng trịch mỗi lần qua đáy chính là cái vòi bơm.
+
+## Trọn một nhịp thì lãi 1,467, không phải 1,291
+
+Xích ngắn lại còn làm hai chuyện nữa. Một: cùng một năng lượng, con lắc ngắn
+vung được góc lớn hơn, vì thế năng ở biên là m·g·l·(1 − cos θ). Hai: cú ngồi
+xuống ở hai đầu là lãi chứ không lỗ — ở đó bạn đứng yên nên không mất động
+năng nào, trọng tâm tụt Δ nhưng đáy vòng cung mới cũng tụt đúng Δ, còn bạn
+chỉ thấp đi Δ·cos θ; phần chênh Δ(1 − cos θ) là lãi ròng.
+
+Gộp cả ba, luật cho trọn một nhịp đúng với mọi biên độ, không cần gần đúng
+góc nhỏ:
+
+```
+(1 − cos θ)  nhân  (l₁/l₂)³ = 1,467  mỗi nhịp
+```
+
+Đồ thị bậc thang trong demo là hàm ấy, và nó giải thích vì sao mấy nhịp đầu
+nản đến thế: từ 5°, ba nhịp mới được 8,9°, sáu nhịp mới 15,8° — rồi vượt 30°
+ngay ở **nhịp thứ 10**. Trừ 5% hao mỗi nhịp cho cản không khí và ma sát trục
+thì mất 11 nhịp, mỗi nhịp 1,54 giây: **chưa tới 17 giây** kể từ cú đẩy mồi.
+
+## Bạn nhún hai lần mỗi vòng, không phải một
+
+[Chu kỳ con lắc 2,5 m là 3,17
+s](/vi/posts/chu-ky-con-lac-don-co-that-su-khong-phu-thuoc-bien-do), nhưng
+xích đu đi qua đáy **hai lần** mỗi chu kỳ — nên cơ thể bạn phải lên xuống ở
+tần số **gấp đôi** tần số xích đu. Tỉ lệ 2:1 ấy là chữ ký của **cộng hưởng
+tham số**, và là chỗ trò này khác hẳn việc có người đẩy sau lưng: người đẩy
+bơm *lực* vào hệ, mỗi chu kỳ một cú đúng pha với vận tốc; bạn không đẩy gì
+hết, bạn lắc một **tham số** của hệ — chiều dài — ở tần số gấp đôi.
+
+## Hoá đơn gửi về cơ đùi
+
+Đứa trẻ 30 kg đu ở 30° mang trong mình 98,6 J và mỗi nhịp nạp thêm 46 J —
+chia cho 1,54 giây là **30 W**. Nhưng cơ đùi trả nhiều hơn thế: ở đáy nó đẩy
+lên **117 J** (88 J nâng chính mình 30 cm, cộng 29 J động năng dôi ra), rồi ở
+hai đầu **nhận lại 71 J** dưới dạng hạ người có kiểm soát. Khoản hoàn lại ấy
+tỉ lệ với cos của biên độ mới nên teo dần theo độ cao: ở 30° bạn đòi lại 80%
+khoản đã nâng, lên 60° chỉ còn 27%. Đu càng cao càng mệt không phải vì bạn
+yếu đi — vì trọng lực ngừng trả tiền.
+
+## Trường hợp biên: nhân 1,467 với số không vẫn ra số không
+
+Công thức có một điểm mù tuyệt đối: 0 nhân 1,467 vẫn bằng 0. Cộng hưởng tham
+số **khuếch đại**, nó không **khởi động** — ngồi im tuyệt đối rồi đứng lên
+ngồi xuống theo nhịp nào cũng vô ích, vì không có vận tốc ở đáy thì chẳng có
+động năng nào để nhân. Bạn buộc phải xin một cú đẩy, hoặc đạp một cái xuống
+đất.
+
+Ngưỡng thật ra nằm cao hơn số không. Đặt mức thu (l₁/l₂)³ cạnh mức hao ~5%
+mỗi nhịp: trên xích 2,5 m bạn phải nâng trọng tâm ít nhất **4,2 cm** thì hai
+vế mới hoà, dưới đó [xích đu chỉ còn một
+đường](/vi/posts/dao-dong-tat-dan-diem-vang-cua-giam-xoc) là tắt dần. Ngay
+sát trên ngưỡng cũng chẳng vui: kéo Δ về 5 cm, xích đu vẫn lớn lên thật —
+sau **383 nhịp**, tức mười phút nhún không nghỉ.
+
+Đầu kia, phép nhân đâm vào tường ở **90°**: tại điểm dừng, lực căng xích
+bằng m·g·cos θ, quá 90° số ấy đổi dấu — xích chùng, bạn rơi tự do thay vì
+vung theo cung tròn. Vòng tròn trọn vẹn là đặc quyền của ghế đu gắn thanh
+cứng; xích đu sân chơi có trần cứng, đúng một phần tư vòng.

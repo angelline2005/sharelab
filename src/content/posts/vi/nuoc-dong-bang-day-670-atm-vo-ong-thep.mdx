@@ -1,0 +1,97 @@
+---
+title: "Nước đóng băng đẩy 600 bar — gấp 300 lần áp suất lốp xe máy"
+seoTitle: "Vì sao nước đóng băng làm vỡ ống thép: đường nóng chảy và áp suất 60 MPa"
+description: "Nước nở 9,07 % khi hoá đá. Trong ống kín ở −5 °C nó đẩy tới 60 MPa — 592 atm — rồi mới chịu ngừng, vì đường nóng chảy của nước dốc ngược 13,5 MPa mỗi độ. Ống thép Ø20 mm dày 2 mm chịu ứng suất vòng 273 MPa và toác ra ngay từ −4,5 °C."
+pubDate: 2026-09-02
+tags: ["vat-ly", "nhiet-hoc", "javascript"]
+translationId: "nuoc-dong-bang-day-670-atm-vo-ong-thep"
+---
+
+import IcePressure from '../../../components/demos/IcePressure.astro';
+
+Bỏ quên chai nước đầy trong ngăn đá, sáng ra thấy nắp bật tung hoặc thân
+chai nứt dọc. Không ai bơm gì vào chai — nước chỉ làm đúng một việc mà
+gần như không chất lỏng nào khác làm: đông lại thì **to ra**. Câu hỏi hay
+hơn "vì sao" là: nó đẩy mạnh tới đâu?
+
+<IcePressure />
+
+## Đông thì nở, nén thì tan — cùng một dị thường
+
+Nước đá 916,7 kg/m³, nước lỏng 999,8 kg/m³: hoá đá là **nở thêm 9,07 %**
+thể tích. Đây là mặt kia của cái [dị thường quen thuộc ở 4
+°C](/vi/posts/nuoc-dac-nhat-o-4-do-di-thuong-cuu-song-moi-ho-ca) — mạng
+tinh thể của đá là một khung rỗng, xếp thưa hơn chính chất lỏng sinh ra nó.
+
+Hệ quả nằm ở một dấu trừ. Phương trình Clausius–Clapeyron nối độ dốc đường
+nóng chảy với [nhiệt nóng
+chảy](/vi/posts/nhiet-an-hai-quang-nhiet-ke-dung-im):
+
+```
+dP/dT = L_f / (T · Δv)
+Δv = 1/999,8 − 1/916,7 = −9,07 × 10⁻⁵ m³/kg
+dP/dT = 333 550 / (273,15 × (−9,07 × 10⁻⁵)) = −13,5 MPa mỗi độ
+```
+
+Δv âm nên độ dốc âm: đường nóng chảy trong demo **nghiêng sang trái**, và
+nén nước đá thì nó *tan* chứ không đông chặt thêm. Đọc ngược: muốn giữ
+nước còn lỏng ở −1 °C, bạn phải nén nó 13,2 MPa, tức 130 atm.
+
+## Đường cong ấy là một cái trần
+
+Trong ống kín đầy nước, đóng băng không sinh ra lực vô hạn. Nước nở, áp
+suất lên; áp suất lên thì điểm đông tụt xuống; đến khi áp suất chạm đúng
+đường nóng chảy tại nhiệt độ đang có, phần nước còn lại **không đông được
+nữa** và mọi thứ đứng lại. Đường xanh trong demo vì thế là một *trần áp
+suất*: mức tối đa mà cái lạnh ấy mua được.
+
+Ở −5 °C, cái trần đó là **60,0 MPa — 592 atm, tròn 600 bar**. Lốp xe máy
+bơm 2 bar; cú [búa nước khi bạn khoá vòi thật
+nhanh](/vi/posts/bua-nuoc-cu-dap-18-bar-khi-khoa-voi) đập 18 bar. Nước
+đóng băng bỏ xa cả hai: gấp 300 lần lốp xe, gấp 33 lần búa nước, chỉ nhờ
+trời lạnh thêm năm độ.
+
+Để ý đường cong **võng xuống dưới đường thẳng**. Lấy 13,5 MPa/độ nhân
+thẳng cho 5 độ, bạn ra 67,3 MPa — cao hơn sự thật 12 %. 13,5 chỉ là tiếp
+tuyến tại 0 °C: càng nén, nước đá càng bớt nở và L_f càng nhỏ, nên đường
+thật mềm dần.
+
+## Ống thép Ø20 thua từ −4,5 °C
+
+Áp suất trong lòng ống biến thành lực kéo xé dọc thành ống: ứng suất vòng
+`σ = P·D/(2t)` — hay chính xác hơn cho thành dày, công thức Lamé mà demo
+dùng. Ống thép Ø20 mm dày 2 mm khuếch đại áp suất lên **4,56 lần**: 60 MPa
+trong lòng thành **273 MPa** trên vách. Thép ống mềm chảy dẻo ở 250 MPa,
+nghĩa là nó thua sớm hơn thế — ngay tại **−4,5 °C**. Không cần mùa đông
+Siberia; một đêm Mẫu Sơn hay Sa Pa xuống −5 °C là thừa số.
+
+Kéo thanh bề dày lên 6 mm, ngưỡng lùi tới −18,4 °C. Kéo đường kính lên 100
+mm mà để thành 1 mm, ống toác ngay ở −0,4 °C. Cùng một thứ nước, cùng một
+cái lạnh: **hình học quyết định ai sống sót**.
+
+Một chi tiết thợ nước biết rõ hơn sách vật lý: ống hiếm khi nứt ngay tại
+cục băng, mà nứt ở đoạn *giữa cục băng và cái vòi đang khoá*. Nút băng bịt kín lòng ống, nước lỏng phía sau bị dồn ép và không có
+lối thoát. Vì thế mẹo chống rét cho đường ống là mở hé vòi cho nhỏ giọt —
+không phải để nước chảy cho khỏi đông, mà để **áp suất có cửa ra**.
+
+## Trường hợp biên: lưỡi giày trượt băng và một kết luận sai
+
+Chính độ dốc âm ấy đẻ ra một huyền thoại sống dai: người ta trượt được
+trên băng vì áp suất lưỡi giày làm băng tan thành màng nước bôi trơn. Công
+thức thì đúng — nên hãy kiểm ở biên. Người 70 kg dồn lên một chân, phần
+lưỡi thật sự chạm băng chỉ cỡ 2 cm dài và 1 mm rộng, tức 20 mm²: áp suất
+**34,3 MPa**, nghe khủng khiếp. Đặt con số ấy lên đường cong: nó hạ điểm
+đông xuống **−2,7 °C**. Hết.
+
+Mà thiên hạ vẫn trượt băng vui vẻ ở −20 °C, nơi đường nóng chảy đòi
+**193,7 MPa** — gấp 5,6 lần thứ lưỡi giày tạo ra. Kéo thanh nhiệt độ xuống
+hết cỡ còn thấy điều tệ hơn: đường cong **dừng hẳn ở −21,985 °C và 208,6
+MPa**. Đó là điểm ba Ih/III, và cũng là nhiệt độ thấp nhất mà nước lỏng
+còn tồn tại nổi ở *bất kỳ* áp suất nào — nén tiếp thì đá Ih nhảy thẳng
+sang đá III, pha đặc hơn cả nước lỏng, Δv đổi dấu và trò chơi kết thúc.
+Tan chảy vì áp suất không chỉ yếu ở −22 °C: nó **không còn tồn tại**.
+
+Thủ phạm thật là ma sát trượt làm nóng chảy tại chỗ, cộng lớp nước tiền
+nóng chảy dày vài nano-mét vốn có sẵn trên mọi mặt băng kể cả khi chưa ai
+bước lên. Một công thức đúng, ba chữ số đúng, và một kết luận sai — vì
+không ai chịu đẩy công thức tới chỗ nó gãy.

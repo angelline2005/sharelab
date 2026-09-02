@@ -1,0 +1,163 @@
+---
+// Định luật nguội Newton: T(t) = T_phòng + (T₀ − T_phòng)·exp(−t/τ),
+// τ = C/(hA) = m·c/(hA). Cốc mở miệng mất nhiệt chủ yếu qua mặt thoáng,
+// diện tích ấy không đổi khi thêm sữa → hA ≈ hằng số → τ ∝ m (lấy
+// τ = 22 phút cho 200 g, τ co giãn theo tổng khối lượng).
+// Trộn: T_trộn = (m₁T₁ + m₂T₂)/(m₁ + m₂), coi c của sữa ≈ c của nước.
+// Nguồn: Newton, Scala graduum caloris (1701); dạng hiện đại trong mọi
+// giáo trình truyền nhiệt. Miền đúng: mất nhiệt tuyến tính theo ΔT, tức
+// cốc có nắp hoặc ΔT vừa phải. Cốc mở ở 85 °C có phần bay hơi phi tuyến
+// — xem mục "Trường hợp biên" của bài.
+// Cố định: cà phê 200 g ở 85 °C, phòng 22 °C, sữa lấy từ tủ lạnh 5 °C.
+---
+
+<figure class="demo" data-demo="cho-sua-vao-ca-phe-truoc-hay-sau">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Phút bạn uống (cũng là lúc rót sữa muộn) <output data-out="tp"></output>
+      <input type="range" data-in="tp" min="0" max="20" step="1" value="10" /></label>
+    <label>Lượng sữa lạnh 5 °C (g) <output data-out="m"></output>
+      <input type="range" data-in="m" min="0" max="80" step="5" value="30" /></label>
+    <label>Hằng số nguội τ của cốc 200 g (phút) <output data-out="tau"></output>
+      <input type="range" data-in="tau" min="10" max="45" step="1" value="22" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Hai cốc cà phê giống hệt nhau, chỉ khác thứ tự. Đường xanh: rót sữa
+    ngay từ phút 0 — tụt một bậc lập tức rồi nguội thong thả. Đường cam:
+    để cà phê trần nguội trước, rót sữa đúng lúc đưa lên miệng — dốc hơn
+    hẳn, rồi rơi thẳng một bậc. Vạch dọc là thời điểm uống; đoạn đỏ giữa
+    hai chấm là phần bạn được hoặc mất chỉ vì đổi thứ tự.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const EARLY = '#2563eb', LATE = '#f59e0b', MARK = '#dc2626';
+  const TA = 22, T0 = 85, TMILK = 5, MCOFFEE = 200, TMAX = 30;
+
+  const vi = (x: number, n = 1) => x.toFixed(n).replace('.', ',');
+  const cool = (Ti: number, t: number, tau: number) => TA + (Ti - TA) * Math.exp(-t / tau);
+  const blend = (ta: number, ma: number, tb: number, mb: number) => (ma * ta + mb * tb) / (ma + mb);
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (k: string) => root.querySelector(`[data-in="${k}"]`) as HTMLInputElement;
+    const output = (k: string) => root.querySelector(`[data-out="${k}"]`) as HTMLOutputElement;
+
+    function draw() {
+      const tp = Number(input('tp').value);
+      const m = Number(input('m').value);
+      const tau0 = Number(input('tau').value);
+      output('tp').textContent = String(tp);
+      output('m').textContent = String(m);
+      output('tau').textContent = String(tau0);
+
+      const M = MCOFFEE + m;
+      const tauFull = (tau0 * M) / MCOFFEE;          // cốc đã có sữa nguội chậm hơn
+      const tMix0 = blend(T0, MCOFFEE, TMILK, m);    // rót ngay: nhiệt độ sau khi trộn
+
+      // Đường A: rót ngay từ phút 0.
+      const early = (t: number) => cool(tMix0, t, tauFull);
+      // Đường B: cà phê trần tới phút tp, rót sữa, rồi nguội tiếp.
+      const plain = (t: number) => cool(T0, t, tau0);
+      const lateAtPour = blend(plain(tp), MCOFFEE, TMILK, m);
+      const late = (t: number) => (t < tp ? plain(t) : cool(lateAtPour, t - tp, tauFull));
+
+      const tA = early(tp), tB = lateAtPour;
+      const gap = Math.abs(tA - tB) < 5e-3 ? 0 : tA - tB;   // tránh hiện "−0,0"
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.46);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+
+      const padL = 44, padB = 26, padT = 14, padR = 12;
+      const yLo = 18, yHi = 90;
+      const X = (t: number) => padL + (t / TMAX) * (cssW - padL - padR);
+      const Y = (c: number) => padT + ((yHi - c) / (yHi - yLo)) * (cssH - padB - padT);
+
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.3;
+      ctx.beginPath(); ctx.moveTo(padL, padT); ctx.lineTo(padL, cssH - padB); ctx.lineTo(cssW - padR, cssH - padB); ctx.stroke();
+      ctx.setLineDash([4, 4]);
+      ctx.beginPath(); ctx.moveTo(padL, Y(TA)); ctx.lineTo(cssW - padR, Y(TA)); ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.globalAlpha = 0.55; ctx.fillStyle = fg; ctx.font = '10px system-ui,sans-serif';
+      ctx.textAlign = 'left';
+      ctx.fillText('nhiệt độ phòng 22 °C', padL + 6, Y(TA) - 5);
+      ctx.textAlign = 'center';
+      for (const k of [0, 10, 20, 30]) ctx.fillText(`${k} phút`, X(k), cssH - padB + 14);
+      ctx.textAlign = 'right';
+      for (const c of [30, 45, 60, 75, 90]) ctx.fillText(`${c} °C`, padL - 4, Y(c) + 3);
+      ctx.globalAlpha = 1;
+
+      // Vạch dọc: thời điểm uống.
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.35; ctx.setLineDash([3, 3]);
+      ctx.beginPath(); ctx.moveTo(X(tp), padT); ctx.lineTo(X(tp), cssH - padB); ctx.stroke();
+      ctx.setLineDash([]); ctx.globalAlpha = 1;
+
+      const trace = (f: (t: number) => number, color: string) => {
+        ctx.strokeStyle = color; ctx.lineWidth = 2; ctx.beginPath();
+        for (let i = 0; i <= 300; i++) {
+          const t = (TMAX * i) / 300;
+          i ? ctx.lineTo(X(t), Y(f(t))) : ctx.moveTo(X(t), Y(f(t)));
+        }
+        ctx.stroke(); ctx.lineWidth = 1;
+      };
+      // Đường cam vẽ trước, kèm bậc rơi thẳng đứng đúng lúc rót.
+      trace(late, LATE);
+      ctx.strokeStyle = LATE; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.moveTo(X(tp), Y(plain(tp))); ctx.lineTo(X(tp), Y(lateAtPour)); ctx.stroke();
+      ctx.lineWidth = 1;
+      trace(early, EARLY);
+
+      // Khoảng cách giữa hai cốc tại thời điểm uống.
+      ctx.strokeStyle = MARK; ctx.lineWidth = 3;
+      ctx.beginPath(); ctx.moveTo(X(tp), Y(tA)); ctx.lineTo(X(tp), Y(tB)); ctx.stroke();
+      ctx.lineWidth = 1;
+      ctx.fillStyle = EARLY;
+      ctx.beginPath(); ctx.arc(X(tp), Y(tA), 5, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = LATE;
+      ctx.beginPath(); ctx.arc(X(tp), Y(tB), 5, 0, Math.PI * 2); ctx.fill();
+
+      ctx.font = '11px system-ui,sans-serif';
+      ctx.textAlign = tp > TMAX * 0.6 ? 'right' : 'left';
+      const dx = tp > TMAX * 0.6 ? -9 : 9;
+      ctx.fillStyle = MARK;
+      ctx.fillText(`chênh ${vi(gap)} °C`, X(tp) + dx, (Y(tA) + Y(tB)) / 2 + 4);
+      ctx.fillStyle = EARLY;
+      ctx.fillText('rót sữa ngay', X(tp) + dx, Y(tA) - 9);
+      ctx.fillStyle = LATE;
+      ctx.fillText('rót sữa lúc uống', X(tp) + dx, Y(tB) + 17);
+
+      let note = '';
+      if (m === 0) note = ' · <b>không sữa thì không có thứ tự nào để chọn</b>';
+      else if (tA > 65) note = ' · <b>vẫn trên 65 °C — ngưỡng IARC gọi là đồ uống quá nóng</b>';
+      else if (tA < 50) note = ' · <b>cả hai đã tụt vào vùng nguội dưới 50 °C</b>';
+
+      readout.innerHTML =
+        `τ = ${tau0} phút · uống ở phút ${tp} · rót ngay <b>${vi(tA)} °C</b>` +
+        ` · rót sau <b>${vi(tB)} °C</b> · chênh <b>${vi(gap)} °C</b>${note}`;
+    }
+
+    root.querySelectorAll('input').forEach((el) => el.addEventListener('input', draw));
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="cho-sua-vao-ca-phe-truoc-hay-sau"]').forEach(setup);
+</script>

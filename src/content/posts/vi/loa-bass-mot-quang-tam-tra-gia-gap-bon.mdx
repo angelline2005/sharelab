@@ -1,0 +1,101 @@
+---
+title: "Vì sao loa bé không có tiếng trầm: xuống một quãng tám là phải đẩy gấp bốn"
+seoTitle: "Vì sao loa nhỏ không có bass: hành trình màng loa và tần số"
+description: "Muốn 90 dB ở 1 mét, màng loa \"16 cm\" chỉ nhúc nhích 0,099 mm ở 300 Hz — nhưng phải chạy 9,91 mm mỗi chiều ở 30 Hz, gấp 100 lần và vượt xa giới hạn cơ khí của nó. Áp suất tỉ lệ với f², nên mỗi quãng tám đi xuống là giá phải trả nhân bốn."
+pubDate: 2026-09-02
+tags: ["vat-ly", "song", "am-thanh", "javascript"]
+translationId: "loa-bass-mot-quang-tam-tra-gia-gap-bon"
+---
+
+import ConeExcursion from '../../../components/demos/ConeExcursion.astro';
+
+Cùng một bài hát: nghe qua loa điện thoại, tiếng trống bass chỉ còn cái gõ
+khô; cắm sang cặp loa thùng, nó dội vào lồng ngực. Không phải chip rẻ tiền,
+cũng chẳng phải EQ bị cắt — thứ mà cái loa bé thiếu là **chỗ cho màng đi**:
+
+<ConeExcursion />
+
+## Loa tạo áp suất bằng gia tốc, không phải bằng quãng đường
+
+Màng loa đẩy không khí như một cái pít-tông, mà không khí chỉ chịu nén khi bị
+**đổi vận tốc**. Nên áp suất nghe được ở xa tỉ lệ với gia tốc của màng, chứ
+không tỉ lệ với biên độ:
+
+```
+p_đỉnh = ρ · Sd · a / (2π·r)     với  a = (2π·f)² · x
+```
+
+ρ là mật độ không khí (1,2 kg/m³), Sd diện tích màng hiệu dụng, r khoảng cách
+nghe, x là hành trình đỉnh của màng. Muốn **90 dB ở 1 mét** — cỡ mở nhạc to
+trong phòng khách — áp suất hiệu dụng phải đạt 0,632 Pa, đỉnh 0,894 Pa. Thay
+số cho màng 133 cm²: gia tốc cần **352 m/s², tức 35,9 g**. Con số ấy không phụ
+thuộc tần số chút nào — 30 Hz hay 3 000 Hz, cái màng vẫn phải chịu gần 36 g.
+Thứ thay đổi là quãng đường nó phải đi để đạt ngần ấy gia tốc.
+
+## Mỗi quãng tám đi xuống, hành trình nhân bốn
+
+Đảo công thức lại: x = a/(2π·f)². Gia tốc đã cố định, f nằm dưới mẫu và bị
+bình phương — **hạ một quãng tám, hành trình nhân bốn**. Vẫn màng 133 cm² và
+vẫn 90 dB ở 1 m: 300 Hz cần 0,099 mm; 150 Hz cần 0,396 mm; 75 Hz cần 1,59 mm;
+40 Hz cần 5,58 mm; **30 Hz cần 9,91 mm** — gần 20 mm đỉnh–đỉnh; 20 Hz cần
+22,3 mm. Từ 300 xuống 30 Hz, giá phải trả nhân đúng **100 lần**.
+
+Quy ra thể tích khí bị xúc đi thì dễ hình dung hơn: ở 300 Hz màng dời 1,3 cm³
+mỗi nhịp — vài giọt nước; ở 30 Hz nó phải dời **132 cm³**, non nửa lon bia,
+ba mươi lần mỗi giây. Và vì hành trình đi thẳng với áp suất, [thêm 6 dB
+nữa](/vi/posts/thang-decibel-vi-sao-tai-nguoi-dem-bang-logarit) là nhân đôi
+quãng đường ấy lần nữa: 96 dB ở 30 Hz đòi 19,8 mm.
+
+## "16 cm" không phải là 16 centimét
+
+Con số ghi trên hộp là đường kính danh định, tính cả gờ nhún và vành sắt. Phần
+thật sự đẩy không khí — diện tích hiệu dụng Sd — chỉ 133 cm², tương đương một
+đĩa tròn **đường kính 13,0 cm**. Hụt 19% đường kính nghe như chuyện làm tròn,
+nhưng áp suất tỉ lệ thẳng với Sd nên khoản hụt ấy tính tiền thật.
+
+Giới hạn thứ hai là cơ khí. Cuộn dây phải nằm trong khe từ, gờ nhún chỉ giãn
+được ngần ấy: một woofer 16 cm hi-fi có X_max cỡ **6 mm mỗi chiều**. Nhân với
+Sd, nó xúc được nhiều nhất 78 cm³ — trong khi 30 Hz ở 90 dB đòi 132 cm³. Ép nó
+chạy 30 Hz thì cuộn dây trượt ra khỏi khe, gờ nhún cứng lên phi tuyến, và thứ
+bạn nghe không còn là 30 Hz mà là một nắm hài âm của nó. Giải phương trình cho
+đúng X_max, cặp bookshelf ấy chạm trần ở **39 Hz** — khớp với dải cắt trầm mà
+loa 16 cm thường công bố, quanh 40–50 Hz.
+
+## Loa điện thoại hết hơi ở 355 Hz
+
+Kéo Sd trong demo về 7 cm² — cỡ màng trong điện thoại hay laptop, X_max chưa
+tới 1,4 mm — và giới hạn nhảy lên **355 Hz**. Dưới ngưỡng đó, cái màng ấy
+không phát nổi 90 dB ở 1 m dù mạch khuếch đại có mạnh đến đâu; nó chỉ còn cách
+làm nghèo đi, tức là kêu nhỏ hơn. Không có phần mềm nào bù được một thể tích
+khí không tồn tại.
+
+Muốn xuống thấp thì chỉ còn một cửa: nhân Sd lên. Mỗi quãng tám cần gấp bốn
+diện tích, tức **gấp đôi đường kính**. Để chơi 30 Hz nhàn nhã như nó đang chơi
+60 Hz, cái màng 133 cm² phải phình thành 532 cm² — đúng cỡ một driver 30 cm.
+Sub 30 cm thật (Sd 480 cm²) chỉ nhúc nhích 2,75 mm ở 30 Hz và còn dư hành
+trình xuống tận 15 Hz; đó là toàn bộ lý do cái thùng sub vô duyên đến thế
+trong phòng khách. Cách lách phổ biến là [mượn cộng hưởng Helmholtz của chính
+cái thùng](/vi/posts/cong-huong-helmholtz-chai-bia-keu-not-gi): quanh tần số
+cộng hưởng, lỗ thông hơi phát thay màng nên màng đứng gần yên — nhưng chỉ
+trong một dải hẹp, và ngay dưới dải đó màng mất tải, chạy loạn còn tệ hơn lúc
+chưa có lỗ. Tai bạn thì chẳng thiếu chỗ: [cả mười quãng tám nằm gọn trên 35 mm
+ốc tai](/vi/posts/ban-do-tan-so-oc-tai-muoi-chin-micromet). Chỉ cái màng loa
+là không có chỗ.
+
+## Trường hợp biên: khi f tiến về 0, công thức đòi hành trình vô hạn
+
+Kéo tần số xuống nữa thì 1/f² tăng không giới hạn: **10 Hz cần 89,2 mm đỉnh**,
+gần 18 cm đỉnh–đỉnh cho một cái màng rộng 13 cm — và ở f = 0 công thức chia
+cho không, đòi hành trình vô hạn để tạo ra một áp suất hữu hạn. Vật lý thật
+đổi ca trước đó rất lâu: gờ nhún thôi tuyến tính, cuộn dây rời khe từ, màng
+đập vào giới hạn cơ khí. Và một driver không thùng thì thua sớm hơn nữa — ở
+bước sóng dài, khí kịp chảy vòng từ mặt trước ra mặt sau ngay trong một phần
+chu kỳ, hai mặt triệt tiêu nhau và cái loa thành cái quạt: nó khuấy không khí
+mà không nén được không khí.
+
+Đầu kia của dải có biên riêng. Công thức giả định màng nhỏ hơn hẳn bước sóng
+nên bức xạ như một nguồn điểm — ở 30 Hz, bước sóng 11,4 m so với đĩa 13 cm,
+thoải mái. Nhưng điều kiện ấy hỏng ở **840 Hz**: từ đó màng bắt đầu dồn tiếng
+thành chùm hẹp quanh trục, và con số "1 mét" trong công thức chỉ còn đúng cho
+người ngồi đúng trục ấy. Cho nên dải cao được giao cho một cái tweeter 2,5 cm
+— chứ không phải cho cái màng đang gánh 36 g ở 30 Hz.

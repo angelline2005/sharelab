@@ -1,0 +1,188 @@
+---
+// Caster (swivel wheel) self-alignment. Rolling-without-slip constraint on a
+// wheel whose contact point trails the steering axis by d gives
+//   dθ/ds = −sin(θ)/d   →   tan(θ/2) = tan(θ₀/2)·exp(−s/d)
+// with s = distance travelled by the pivot, θ = angle between wheel heading
+// and push direction. Speed cancels: the result is a length, not a time.
+// Valid for pure rolling, rigid wheel, forward motion (s > 0), 0 < θ₀ < 180°.
+// θ₀ = 180° is excluded: tan(90°) diverges (unstable equilibrium).
+---
+
+<figure class="demo" data-demo="banh-xe-vali-tu-chinh-huong">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Độ lệch trục d (cm) <output data-out="d"></output>
+      <input type="range" data-in="d" min="1" max="10" step="0.5" value="5" /></label>
+    <label>Góc lệch ban đầu (°) <output data-out="a"></output>
+      <input type="range" data-in="a" min="10" max="179" step="1" value="90" /></label>
+    <label>Quãng đường đã đi (cm) <output data-out="s"></output>
+      <input type="range" data-in="s" min="0" max="50" step="0.1" value="5" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Trên: nhìn từ trên xuống. Trục xoay chạy thẳng theo hướng đẩy, bánh xe
+    treo ở cuối cánh tay đòn d, và vệt điểm chạm đất uốn dần về trùng hướng
+    đẩy. Dưới: góc lệch θ tắt theo hàm mũ của quãng đường — không phải của
+    thời gian. Đẩy nhanh hay chậm không đổi được đường cong này; chỉ d đổi
+    được. Thanh trượt dừng ở 179° vì đúng 180° là điểm công thức chia cho vô cực.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const CURVE = '#2563eb', MARK = '#dc2626', LM = '#f59e0b';
+  const RAD = Math.PI / 180, DEG = 180 / Math.PI;
+  const SMAX = 50, XMIN = -11, XMAX = 52;
+
+  // θ(s) in degrees, from tan(θ/2) = tan(θ₀/2)·exp(−s/d).
+  const theta = (a0: number, d: number, s: number) =>
+    2 * Math.atan(Math.tan((a0 * RAD) / 2) * Math.exp(-s / d)) * DEG;
+  // Distance needed to fall from a0 to a1.
+  const dist = (a0: number, d: number, a1: number) =>
+    d * Math.log(Math.tan((a0 * RAD) / 2) / Math.tan((a1 * RAD) / 2));
+  const vn = (x: number, n = 1) => x.toFixed(n).replace('.', ',');
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (k: string) => root.querySelector(`[data-in="${k}"]`) as HTMLInputElement;
+    const output = (k: string) => root.querySelector(`[data-out="${k}"]`) as HTMLOutputElement;
+
+    function draw() {
+      const d = Number(input('d').value);
+      const a0 = Number(input('a').value);
+      const s = Number(input('s').value);
+      output('d').textContent = vn(d);
+      output('a').textContent = String(a0);
+      output('s').textContent = vn(s);
+
+      const aNow = theta(a0, d, s);
+      const s5 = dist(a0, d, 5);
+      const halfLen = d * Math.LN2;
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.62);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+      ctx.font = '10px system-ui,sans-serif';
+
+      const padL = 42, padR = 12, padT = 14, padB = 26, gap = 30;
+      const plotW = cssW - padL - padR;
+      const innerH = cssH - padT - padB;
+      const topH = (innerH - gap) * 0.40, botH = innerH - gap - topH;
+      const topY0 = padT, botY0 = topY0 + topH + gap, botY1 = botY0 + botH;
+
+      // ---- Top panel: top-down view, equal aspect on x and y (cm → px).
+      const sc = plotW / (XMAX - XMIN);
+      const YA = topY0 + Math.min(22, topH * 0.2);
+      const PX = (x: number) => padL + (x - XMIN) * sc;
+      const PY = (y: number) => YA - y * sc;
+
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.3;
+      ctx.beginPath(); ctx.moveTo(PX(XMIN), YA); ctx.lineTo(PX(XMAX), YA); ctx.stroke();
+      ctx.globalAlpha = 0.55; ctx.fillStyle = fg; ctx.textAlign = 'left';
+      ctx.fillText('trục xoay chạy thẳng theo hướng đẩy →', PX(0), YA - 7);
+      ctx.globalAlpha = 1;
+
+      // Contact-point path: P = (s' − d·cosθ, −d·sinθ).
+      const px = (u: number) => u - d * Math.cos(theta(a0, d, u) * RAD);
+      const py = (u: number) => -d * Math.sin(theta(a0, d, u) * RAD);
+      const trace = (from: number, to: number) => {
+        ctx.beginPath();
+        for (let i = 0; i <= 160; i++) {
+          const u = from + ((to - from) * i) / 160;
+          i ? ctx.lineTo(PX(px(u)), PY(py(u))) : ctx.moveTo(PX(px(u)), PY(py(u)));
+        }
+        ctx.stroke();
+      };
+      ctx.strokeStyle = CURVE; ctx.lineWidth = 1;
+      ctx.globalAlpha = 0.25; trace(s, SMAX);
+      ctx.globalAlpha = 1; ctx.lineWidth = 2; trace(0, s);
+      ctx.lineWidth = 1;
+
+      // Caster arm + wheel at the current position.
+      const th = aNow * RAD;
+      const cx = px(s), cy = py(s);
+      ctx.strokeStyle = MARK; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.moveTo(PX(s), PY(0)); ctx.lineTo(PX(cx), PY(cy)); ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(PX(cx - 0.8 * Math.cos(th)), PY(cy - 0.8 * Math.sin(th)));
+      ctx.lineTo(PX(cx + 0.8 * Math.cos(th)), PY(cy + 0.8 * Math.sin(th)));
+      ctx.lineWidth = 4; ctx.stroke(); ctx.lineWidth = 1;
+      ctx.fillStyle = MARK;
+      ctx.beginPath(); ctx.arc(PX(s), PY(0), 3.5, 0, Math.PI * 2); ctx.fill();
+
+      ctx.fillStyle = fg; ctx.globalAlpha = 0.55; ctx.textAlign = 'center';
+      for (const k of [0, 10, 20, 30, 40, 50]) ctx.fillText(`${k}`, PX(k), topY0 + topH + 10);
+      ctx.textAlign = 'left';
+      ctx.fillText('cm', PX(50) + 12, topY0 + topH + 10);
+      ctx.globalAlpha = 1;
+
+      // ---- Bottom panel: θ against distance travelled.
+      const BX = (u: number) => padL + (u / SMAX) * plotW;
+      const BY = (t: number) => botY1 - (t / 180) * botH;
+
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.3;
+      ctx.beginPath(); ctx.moveTo(padL, botY0); ctx.lineTo(padL, botY1); ctx.lineTo(padL + plotW, botY1); ctx.stroke();
+      ctx.globalAlpha = 0.55; ctx.fillStyle = fg;
+      ctx.textAlign = 'right';
+      for (const t of [0, 45, 90, 135, 180]) ctx.fillText(`${t}°`, padL - 4, BY(t) + 3);
+      ctx.textAlign = 'center';
+      for (const k of [10, 20, 30, 40, 50]) ctx.fillText(`${k} cm`, BX(k), botY1 + 15);
+      ctx.globalAlpha = 1;
+
+      // 5° threshold.
+      ctx.strokeStyle = LM; ctx.setLineDash([4, 4]);
+      ctx.beginPath(); ctx.moveTo(padL, BY(5)); ctx.lineTo(padL + plotW, BY(5)); ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillStyle = LM; ctx.textAlign = 'right';
+      ctx.fillText('5° — mắt thường coi là thẳng', padL + plotW, BY(5) - 5);
+
+      if (s5 <= SMAX) {
+        ctx.strokeStyle = LM; ctx.globalAlpha = 0.5; ctx.setLineDash([3, 3]);
+        ctx.beginPath(); ctx.moveTo(BX(s5), BY(5)); ctx.lineTo(BX(s5), botY1); ctx.stroke();
+        ctx.setLineDash([]); ctx.globalAlpha = 1;
+        ctx.fillStyle = LM; ctx.textAlign = 'center';
+        ctx.fillText(`${vn(s5)} cm`, BX(s5), botY1 - 4);
+      }
+
+      ctx.strokeStyle = CURVE; ctx.lineWidth = 2; ctx.beginPath();
+      for (let i = 0; i <= 240; i++) {
+        const u = (SMAX * i) / 240;
+        const y = BY(theta(a0, d, u));
+        i ? ctx.lineTo(BX(u), y) : ctx.moveTo(BX(u), y);
+      }
+      ctx.stroke(); ctx.lineWidth = 1;
+
+      ctx.fillStyle = MARK;
+      ctx.beginPath(); ctx.arc(BX(s), BY(aNow), 6, 0, Math.PI * 2); ctx.fill();
+
+      const note =
+        aNow <= 5 ? ' · <b>đã vào ngưỡng 5°: nhìn là thẳng hàng</b>'
+        : a0 >= 170 ? ' · <b>xuất phát sát 180°: vùng gần cân bằng, đoạn đầu bò rất chậm</b>'
+        : '';
+      readout.innerHTML =
+        `d = ${vn(d)} cm · lệch ${a0}° → còn <b>${vn(aNow)}°</b> sau ${vn(s)} cm` +
+        ` · chạm 5° ở <b>${vn(s5)} cm</b> · mỗi ${vn(halfLen, 2)} cm cắt đôi góc lệch nhỏ${note}`;
+    }
+
+    root.querySelectorAll('input').forEach((el) => el.addEventListener('input', draw));
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="banh-xe-vali-tu-chinh-huong"]').forEach(setup);
+</script>

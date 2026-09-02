@@ -1,0 +1,203 @@
+---
+// Dwight's formula for a single vertical driven rod in uniform soil:
+//   R = (rho / 2*pi*L) * [ln(8L/d) - 1]      [ohm]
+// Source: H. B. Dwight, "Calculation of Resistances to Ground" (AIEE 1936);
+// same form in IEEE Std 142 (Green Book) and TCVN 9385.
+// Valid for a rod driven from the surface into homogeneous soil with L >> d
+// (here L/d >= 20 across the whole slider range) and no nearby electrodes.
+// The shading uses the equivalent radial-shell model: dR = rho*dr/(2*pi*r*L),
+// which reproduces R exactly when integrated from a = d/2 out to 4L/e.
+---
+
+<figure class="demo" data-demo="coc-tiep-dia-va-dien-tro-lan-truyen-dat">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Chiều dài cọc L (m) <output data-out="l"></output>
+      <input type="range" data-in="l" min="0.5" max="6" step="0.1" value="2.4" /></label>
+    <label>Điện trở suất đất ρ (Ω·m) <output data-out="r"></output>
+      <input type="range" data-in="r" min="10" max="1000" step="10" value="100" /></label>
+    <label>Đường kính cọc d (mm) <output data-out="d"></output>
+      <input type="range" data-in="d" min="10" max="25" step="1" value="16" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Trái: mặt cắt đất quanh cọc. Độ đậm của mỗi lớp vỏ trụ là phần điện trở
+    lớp ấy đóng góp — đậm đặc sát cọc rồi nhạt đi theo 1/r, nên gần như toàn
+    bộ số ôm nằm trong vòng đất chưa đầy một mét. Phải: điện trở nối đất theo
+    chiều dài cọc; chấm đỏ là điểm làm việc, chấm cam là cọc dài gấp đôi.
+    Đường cong đi xuống theo logarit chứ không theo chiều dài.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const CURVE = '#2563eb', MARK = '#dc2626', ALT = '#f59e0b';
+  const LMAX = 6, RVIEW = 2, DVIEW = 6.3, MAINS = 220;
+
+  // Dwight: R = (rho/2piL)(ln(8L/d) - 1), d in metres.
+  const Rg = (rho: number, L: number, d: number) =>
+    (rho / (2 * Math.PI * L)) * (Math.log((8 * L) / d) - 1);
+
+  // Cumulative share of R inside radius r, from the shell model.
+  const share = (r: number, L: number, d: number) => {
+    const a = d / 2, den = Math.log((8 * L) / d) - 1;
+    return Math.min(1, Math.max(0, Math.log(r / a) / den));
+  };
+  // Radius holding a given share of the ohms.
+  const radiusFor = (q: number, L: number, d: number) =>
+    (d / 2) * Math.exp(q * (Math.log((8 * L) / d) - 1));
+
+  const vi = (x: number, n: number) => x.toFixed(n).replace('.', ',');
+  const niceStep = (max: number) => {
+    const raw = max / 4, p = Math.pow(10, Math.floor(Math.log10(raw))), m = raw / p;
+    return (m <= 1 ? 1 : m <= 2 ? 2 : m <= 5 ? 5 : 10) * p;
+  };
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (k: string) => root.querySelector(`[data-in="${k}"]`) as HTMLInputElement;
+    const output = (k: string) => root.querySelector(`[data-out="${k}"]`) as HTMLOutputElement;
+
+    function draw() {
+      const L = Number(input('l').value);
+      const rho = Number(input('r').value);
+      const dmm = Number(input('d').value), d = dmm / 1000;
+      output('l').textContent = vi(L, 1);
+      output('r').textContent = String(rho);
+      output('d').textContent = String(dmm);
+
+      const R = Rg(rho, L, d);
+      const r50 = radiusFor(0.5, L, d);
+      const s80 = share(0.8, L, d);
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.5);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+      ctx.font = '10px system-ui,sans-serif';
+
+      const gap = 26, padT = 16, padB = 26;
+      const leftW = Math.round((cssW - gap) * 0.44);
+      const aX = 34, aY = padT, aW = leftW - aX, aH = cssH - padT - padB;
+      const XL = (r: number) => aX + (r / RVIEW) * aW;
+      const YL = (z: number) => aY + (z / DVIEW) * aH;
+
+      // ---- left panel: soil cross-section, shells shaded by 1/r contribution
+      ctx.fillStyle = fg; ctx.globalAlpha = 0.55; ctx.textAlign = 'left';
+      ctx.fillText('mặt cắt đất', aX, aY - 5);
+      ctx.globalAlpha = 1;
+
+      const N = 90, dr = (RVIEW - d / 2) / N;
+      for (let i = 0; i < N; i++) {
+        const r0 = d / 2 + i * dr, rm = r0 + dr / 2;
+        ctx.fillStyle = CURVE;
+        ctx.globalAlpha = Math.min(0.9, Math.max(0.02, 0.045 / rm));
+        ctx.fillRect(XL(r0), YL(0), Math.ceil(XL(r0 + dr) - XL(r0)) + 0.5, YL(L) - YL(0));
+      }
+      ctx.globalAlpha = 1;
+
+      // ground surface + rod
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.45;
+      ctx.beginPath(); ctx.moveTo(aX, YL(0)); ctx.lineTo(aX + aW, YL(0)); ctx.stroke();
+      ctx.globalAlpha = 1;
+      ctx.fillStyle = fg;
+      ctx.fillRect(aX - 3, YL(0), 5, YL(L) - YL(0));
+
+      // radius holding half the ohms
+      ctx.strokeStyle = ALT; ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.moveTo(XL(r50), YL(0)); ctx.lineTo(XL(r50), YL(L) + 6); ctx.stroke();
+      ctx.lineWidth = 1;
+      ctx.fillStyle = ALT; ctx.textAlign = 'left';
+      ctx.fillText(`50% số ôm · ${vi(r50 * 100, 0)} cm`, XL(r50) + 3, YL(0) + 11);
+
+      // the 0,8 m ring quoted in the article
+      if (RVIEW >= 0.8) {
+        ctx.strokeStyle = MARK; ctx.setLineDash([4, 3]);
+        ctx.beginPath(); ctx.moveTo(XL(0.8), YL(0)); ctx.lineTo(XL(0.8), YL(L) + 6); ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.fillStyle = MARK;
+        ctx.fillText(`${vi(s80 * 100, 0)}% trong 0,8 m`, XL(0.8) + 3, YL(0) + 25);
+      }
+
+      ctx.fillStyle = fg; ctx.globalAlpha = 0.55; ctx.textAlign = 'center';
+      for (const r of [0.5, 1, 1.5, 2]) ctx.fillText(`${vi(r, 1)} m`, XL(r), cssH - padB + 13);
+      ctx.textAlign = 'right';
+      for (const z of [2, 4, 6]) ctx.fillText(`${z} m`, aX - 6, YL(z) + 3);
+      ctx.globalAlpha = 1;
+
+      // ---- right panel: R versus rod length
+      const bX = leftW + gap + 12, bW = cssW - bX - 8;
+      const Rmax = Rg(rho, 0.5, d);
+      const XR = (l: number) => bX + ((l - 0.5) / (LMAX - 0.5)) * bW;
+      const YR = (v: number) => aY + (1 - v / Rmax) * aH;
+
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.3;
+      ctx.beginPath(); ctx.moveTo(bX, aY); ctx.lineTo(bX, aY + aH); ctx.lineTo(bX + bW, aY + aH); ctx.stroke();
+      ctx.globalAlpha = 0.55; ctx.fillStyle = fg; ctx.textAlign = 'center';
+      ctx.fillText('điện trở nối đất (Ω)', bX + bW / 2, aY - 5);
+      for (const l of [1, 2, 3, 4, 5, 6]) ctx.fillText(`${l} m`, XR(l), cssH - padB + 13);
+      ctx.textAlign = 'right';
+      const step = niceStep(Rmax);
+      for (let v = step; v <= Rmax * 1.001; v += step) ctx.fillText(`${vi(v, v < 10 ? 1 : 0)}`, bX - 4, YR(v) + 3);
+      ctx.globalAlpha = 1;
+
+      // the 4 ohm acceptance level
+      if (4 < Rmax) {
+        ctx.strokeStyle = ALT; ctx.globalAlpha = 0.6; ctx.setLineDash([3, 3]);
+        ctx.beginPath(); ctx.moveTo(bX, YR(4)); ctx.lineTo(bX + bW, YR(4)); ctx.stroke();
+        ctx.setLineDash([]); ctx.fillStyle = ALT; ctx.textAlign = 'left';
+        ctx.fillText('mức 4 Ω', bX + 4, YR(4) - 4);
+        ctx.globalAlpha = 1;
+      }
+
+      ctx.strokeStyle = CURVE; ctx.lineWidth = 2; ctx.beginPath();
+      for (let i = 0; i <= 200; i++) {
+        const l = 0.5 + ((LMAX - 0.5) * i) / 200;
+        i ? ctx.lineTo(XR(l), YR(Rg(rho, l, d))) : ctx.moveTo(XR(l), YR(Rg(rho, l, d)));
+      }
+      ctx.stroke(); ctx.lineWidth = 1;
+
+      // doubling the length: where it actually lands
+      if (2 * L <= LMAX) {
+        const R2 = Rg(rho, 2 * L, d);
+        ctx.fillStyle = ALT;
+        ctx.beginPath(); ctx.arc(XR(2 * L), YR(R2), 5, 0, Math.PI * 2); ctx.fill();
+        ctx.textAlign = 'center';
+        ctx.fillText(`${vi(R2, 1)} Ω`, XR(2 * L), YR(R2) - 9);
+      }
+      ctx.fillStyle = MARK;
+      ctx.beginPath(); ctx.arc(XR(L), YR(R), 6, 0, Math.PI * 2); ctx.fill();
+
+      const I = MAINS / R;
+      const verdict = R <= 4
+        ? ' · <b>đạt mức 4 Ω</b>'
+        : R <= 10
+          ? ' · đạt mức 10 Ω, chưa đạt 4 Ω'
+          : ` · <b>dòng chạm vỏ chỉ ${vi(I, 1)} A — aptomat 20 A đứng nhìn</b>`;
+      readout.innerHTML =
+        `L = ${vi(L, 1)} m · ρ = ${rho} Ω·m · d = ${dmm} mm → R = <b>${vi(R, 1)} Ω</b>` +
+        ` · một nửa số ôm nằm trong bán kính ${vi(r50 * 100, 0)} cm, ${vi(s80 * 100, 0)}% trong 0,8 m` +
+        verdict;
+    }
+
+    root.querySelectorAll('input').forEach((el) => el.addEventListener('input', draw));
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="coc-tiep-dia-va-dien-tro-lan-truyen-dat"]').forEach(setup);
+</script>

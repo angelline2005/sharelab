@@ -1,0 +1,96 @@
+---
+title: "Hạ mực nước ngầm 1 mét, nước mặn dâng lên 40 mét"
+seoTitle: "Ghyben-Herzberg: thấu kính nước ngọt ven biển dày bao nhiêu"
+description: "Nước biển nặng hơn nước ngọt đúng 2,5%, nên nước ngọt nổi trên nó như tảng băng: mỗi mét nhô trên mực biển phải có 40 mét cắm xuống dưới. Chạy ngược tỉ số ấy — hạ mực nước ngầm 1 mét là mất 40 mét bề dày tầng ngọt."
+pubDate: 2026-09-02
+tags: ["vat-ly", "chat-luu", "khi-hau", "javascript"]
+translationId: "hut-mot-met-nuoc-ngot-man-dang-len-bon-muoi-met"
+---
+
+import FreshwaterLens from '../../../components/demos/FreshwaterLens.astro';
+
+Một cồn cát giữa biển, bốn bề nước mặn chát. Đào xuống hơn một mét, gàu
+múc lên nước ngọt uống được. Không có bể chứa nào ngăn biển ở đây — nước
+ngọt chỉ đơn giản là **nổi** trên nước mặn, và cái nổi ấy đi kèm một tỉ
+số nghiệt ngã:
+
+<FreshwaterLens />
+
+## Một thấu kính nước ngọt, nổi như tảng băng nhưng tệ hơn năm lần
+
+Nước mưa ngấm xuống không trộn với nước biển bên dưới mà đè lên nó. Tại
+một điểm trên mặt phân cách, sâu z dưới mực biển, hai cột chất lỏng phải
+cân áp suất — đúng phép tính Δp = ρgh đã cho
+biết [não bạn hụt 31 mmHg khi đứng
+dậy](/vi/posts/huyet-ap-va-cot-nuoc-trong-nguoi-ban): phía biển là cột
+nước mặn cao z, phía đất liền là cột nước ngọt cao h + z.
+
+```
+ρ_ngọt · (h + z) = ρ_mặn · z
+     →   z = ρ_ngọt / (ρ_mặn − ρ_ngọt) · h
+```
+
+Nước biển 1 025 kg/m³, nước ngọt 1 000: hiệu số vỏn vẹn **2,5%**, mà
+chính nó nằm dưới mẫu số. z = 1000/25 · h = **40 h**. Trên một cồn cát
+nhỏ, h = 0,3 m cũng đủ nuôi thấu kính dày 12 m.
+
+Cùng công thức ấy, thay nước ngọt bằng băng: 917/(1025 − 917) = 8,5 —
+[tảng băng giấu thân dưới
+nước](/vi/posts/luc-day-archimedes-va-tam-bang-chin-phan-chim) theo tỉ số
+8,5 chìm trên 1 nổi. Thấu kính nước ngọt chơi đúng luật đó nhưng chênh
+lệch tỉ trọng mỏng hơn, nên tỉ số vọt lên 40:1. Badon Ghyben (Hà Lan,
+1888) và Herzberg (đảo Norderney, 1901) tìm ra nó độc lập, vì cùng một
+câu hỏi: nước uống của cả một vùng đất.
+
+## Tỉ số 40:1 chạy ngược lại mới là chỗ chết người
+
+Nhân lên đúng thì chia xuống cũng đúng. Hạ mực nước ngầm đi 1 m — bằng
+bơm, bằng đào kênh tiêu, bằng một mùa khô dài — là **đáy tầng ngọt dâng
+lên 40 m**. Kéo thanh trượt thứ ba: h từ 1,5 xuống 0,8 m, một khoảng lún
+mắt thường không thấy, mà đáy ngọt từ 60 m còn 32 m. **28 mét bề dày biến
+mất.**
+
+Đổi ra khối lượng thì tỉ giá còn khó nghe hơn. Cát ven biển có độ rỗng
+hữu hiệu ~0,25: hạ 1 m trên 1 km² lấy lên được 250 000 m³. Cùng lúc, 40 m
+tầng chứa (độ rỗng 0,3) trên chính 1 km² ấy — 12 triệu m³ — chuyển sang
+phía bên kia mặt phân cách: **48 mét khối hỏng cho mỗi mét khối bơm lên**.
+Mà "hỏng" đến rất sớm: nước biển chứa ~19 g clorua mỗi lít, ngưỡng lưỡi
+người nếm ra vị mặn là 250 mg/L, nên chỉ **1,3% nước biển** lẫn vào là
+giếng đã lợ.
+
+## Giếng không hút một cột nước, nó kéo lên một chóp nón
+
+Mực nước không hạ đều khắp: quanh giếng đang bơm nó võng thành phễu, sâu
+nhất ngay tại ống. Mặt phân cách bên dưới phản chiếu cái phễu ấy — lộn
+ngược, phóng đại 40 lần — thành mũi nhọn đỏ trong demo.
+
+Phản xạ tự nhiên khi giếng bắt đầu lợ là khoan sâu thêm, và nó làm mọi
+thứ tệ hơn. Thứ quyết định không phải giếng sâu bao nhiêu mà **khoảng
+cách d từ đáy ống lọc xuống mặt phân cách**, với lưu lượng an toàn tỉ lệ
+d²: theo Dagan–Bear (1968), `Q = 0,6 · π · d² · K · Δρ/ρ`. Cát có hệ số
+thấm K = 10 m/ngày, d = 20 m thì giếng chịu được 189 m³/ngày, tức 2,2
+L/s. Khoan cho d còn 10 m, hạn ngạch tụt xuống **47 m³/ngày**, đúng một
+phần tư. Nên nguyên tắc khai thác nước ven biển ngược trực giác: nhiều
+giếng nông trải rộng, không phải một giếng sâu khoẻ — may là [máy bơm hút
+vốn chỉ với tới 10,3
+m](/vi/posts/ap-suat-khi-quyen-va-tran-10-met-cua-moi-may-bom).
+
+## Trường hợp biên: vượt một phần ba là hết đường quay lại
+
+Ghyben–Herzberg giả định mặt phân cách sắc như nét bút và nước đứng yên
+theo phương đứng. Thực tế thuỷ triều bơm cả thấu kính lên xuống hai lần
+mỗi ngày, khuấy ra **đới pha trộn dày hàng chục mét**: "đáy ngọt" là một
+dải nước lợ chứ không phải một đường, nên phần thật sự uống được trên các
+đảo san hô thường mỏng hơn con số 40h khá nhiều.
+
+Nguy hiểm hơn là chỗ chóp nón hết ổn định. Chừng nào nó dâng chưa tới
+**một phần ba** khoảng cách d, lực nổi còn kéo được nó về. Vượt ngưỡng
+đó, cân bằng lật dấu — chóp lên càng gần thì sức hút của giếng càng thắng
+— và nó vọt lên nuốt ống lọc trong vài ngày. Với h = 1,5 m và ống lọc ở
+20 m, ngưỡng ấy là 13,3 m dâng: demo báo động khi mực nước tại giếng mới
+hạ có 0,4 m.
+
+Tắt bơm cũng không cứu được: nước ngọt nhẹ hơn thì không có cách nào ép
+khối mặn chìm xuống lại, chỉ nước mưa ngấm mới rửa dần, tính bằng năm đến
+hàng chục năm. Tỉ số 40:1 rộng lượng với người tích nước và tàn nhẫn với
+người rút nước — nó chỉ biết nhân lên, chưa bao giờ chia.

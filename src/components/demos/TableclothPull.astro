@@ -1,0 +1,193 @@
+---
+// Trò kéo khăn trải bàn — hai pha ma sát Coulomb, nghiệm chính xác.
+// Pha 1 (khăn còn dưới đáy ly, gia tốc a1 = μ1·g): mép khăn phải vượt ly một
+//   quãng tương đối L  ⇒  v·t − ½·a1·t² = L  ⇒  u = v − sqrt(v² − 2·a1·L).
+// Pha 2 (ly trượt trên mặt bàn, hãm a2 = μ2·g): s2 = u²/(2·a2).
+//   s = ½·a1·t1² + u²/(2·a2),  với t1 = u/a1.
+// Xấp xỉ quen thuộc s ≈ ½·μ1·g·(L/v)²·(1 + μ1/μ2) là giới hạn v ≫ v_c của
+//   nghiệm trên; ở đây dùng nghiệm đầy đủ nên đúng tới sát ngưỡng.
+// Điều kiện tồn tại: v² > 2·μ1·g·L. Dưới ngưỡng v_c = sqrt(2·μ1·g·L) ly bắt
+//   kịp tốc độ khăn trước khi mép khăn thoát ra — ly đi theo khăn (miền RIDE).
+// Giả thiết: khăn được kéo với tốc độ không đổi, ly trượt chứ không lật,
+//   μ Coulomb hằng số, μ ly–mặt bàn cố định 0,30 (thuỷ tinh trên gỗ/laminate).
+// Nguồn công thức: bài toán hai pha ma sát chuẩn (Serway, Physics for
+//   Scientists and Engineers, chương động lực học chất điểm).
+---
+
+<figure class="demo" data-demo="keo-khan-trai-ban-nhanh-hay-cham">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Tốc độ rút khăn (m/s) <output data-out="v"></output>
+      <input type="range" data-in="v" min="0.5" max="8" step="0.1" value="5" /></label>
+    <label>Ma sát khăn–đáy ly μ₁ <output data-out="m"></output>
+      <input type="range" data-in="m" min="0.05" max="0.4" step="0.01" value="0.10" /></label>
+    <label>Khăn nằm dưới ly (cm) <output data-out="l"></output>
+      <input type="range" data-in="l" min="10" max="60" step="1" value="30" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Trên: nhìn từ trên xuống, ly trước và sau cú rút, quãng dịch vẽ đúng tỉ
+    lệ với mép bàn cách 25 cm. Dưới: quãng dịch theo tốc độ rút, thang log —
+    đường cong dốc gần bằng 1/v². Nó không chạy tới vô hạn mà đứt tại tốc độ
+    tới hạn: chậm hơn mốc đó, ly bắt kịp khăn và bay theo khăn. Ma sát ly–mặt
+    bàn giữ cố định 0,30; khối lượng ly không xuất hiện ở đâu cả.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const CURVE = '#2563eb', MARK = '#dc2626', WARN = '#f59e0b';
+  const G = 9.81, MU2 = 0.3;
+  const EDGE = 0.25, WIN = 0.5, R = 0.035, X0 = 0.06;
+
+  const vn = (x: number, d: number) => x.toFixed(d).replace('.', ',');
+
+  function slide(v: number, mu1: number, L: number) {
+    const a1 = mu1 * G, a2 = MU2 * G;
+    const disc = v * v - 2 * a1 * L;
+    if (disc <= 0) return { ride: true, s: L * (1 + mu1 / MU2), t1: v / a1 };
+    const u = v - Math.sqrt(disc), t1 = u / a1;
+    return { ride: false, s: 0.5 * a1 * t1 * t1 + (u * u) / (2 * a2), t1, u };
+  }
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (k: string) => root.querySelector(`[data-in="${k}"]`) as HTMLInputElement;
+    const output = (k: string) => root.querySelector(`[data-out="${k}"]`) as HTMLOutputElement;
+
+    function draw() {
+      const v = Number(input('v').value);
+      const mu1 = Number(input('m').value);
+      const L = Number(input('l').value) / 100;
+      output('v').textContent = vn(v, 1);
+      output('m').textContent = vn(mu1, 2);
+      output('l').textContent = String(Math.round(L * 100));
+
+      const vc = Math.sqrt(2 * mu1 * G * L);
+      const r = slide(v, mu1, L);
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.62);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+      ctx.font = '10px system-ui,sans-serif';
+
+      const padL = 46, padR = 10, padT = 12, padB = 26;
+      const bandH = Math.round(cssH * 0.30);
+      const yBand = padT + bandH * 0.62;
+      const chartT = padT + bandH + 20, chartB = cssH - padB;
+
+      // ---- Bảng trên: nhìn từ trên mặt bàn, đúng tỉ lệ 0–50 cm ----
+      const PX = (m: number) => padL + (m / WIN) * (cssW - padL - padR);
+      ctx.strokeStyle = fg; ctx.fillStyle = fg;
+      ctx.globalAlpha = 0.28;
+      ctx.beginPath(); ctx.moveTo(padL, yBand); ctx.lineTo(PX(EDGE + X0), yBand); ctx.stroke();
+      ctx.globalAlpha = 0.5; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.moveTo(PX(EDGE + X0), yBand - bandH * 0.42); ctx.lineTo(PX(EDGE + X0), yBand + 8); ctx.stroke();
+      ctx.lineWidth = 1;
+      ctx.globalAlpha = 0.6; ctx.textAlign = 'left';
+      ctx.fillText('mép bàn (cách 25 cm)', PX(EDGE + X0) + 5, yBand - 2);
+
+      ctx.globalAlpha = 0.45;
+      const rp = (R / WIN) * (cssW - padL - padR);
+      ctx.beginPath(); ctx.arc(PX(X0), yBand - rp - 4, rp, 0, Math.PI * 2); ctx.stroke();
+      ctx.globalAlpha = 0.55; ctx.textAlign = 'center';
+      ctx.fillText('trước', PX(X0), yBand + 14);
+      ctx.globalAlpha = 1;
+
+      const sShown = Math.min(r.s, WIN - X0 - 0.01);
+      const off = r.ride || r.s >= EDGE;
+      ctx.strokeStyle = off ? MARK : CURVE; ctx.fillStyle = off ? MARK : CURVE;
+      ctx.globalAlpha = 0.85;
+      ctx.beginPath(); ctx.arc(PX(X0 + sShown), yBand - rp - 4, rp, 0, Math.PI * 2); ctx.fill();
+      ctx.globalAlpha = 1;
+
+      // Mũi tên quãng dịch.
+      ctx.strokeStyle = off ? MARK : CURVE;
+      ctx.beginPath(); ctx.moveTo(PX(X0), yBand + 5); ctx.lineTo(PX(X0 + sShown), yBand + 5); ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(PX(X0 + sShown), yBand + 5); ctx.lineTo(PX(X0 + sShown) - 5, yBand + 2);
+      ctx.lineTo(PX(X0 + sShown) - 5, yBand + 8); ctx.fill();
+      ctx.fillStyle = off ? MARK : CURVE; ctx.textAlign = 'left';
+      const sLab = r.ride
+        ? 'ly bám theo khăn — rơi khỏi bàn'
+        : r.s < 0.01 ? `s = ${vn(r.s * 1000, 2)} mm` : `s = ${vn(r.s * 100, 1)} cm`;
+      ctx.fillText(sLab, PX(X0 + sShown) + 6, yBand + 18);
+
+      // ---- Bảng dưới: s theo v, trục y log ----
+      const yLo = Math.log10(0.02), yHi = Math.log10(2000);
+      const CX = (vv: number) => padL + ((vv - 0.5) / 7.5) * (cssW - padL - padR);
+      const CY = (mm: number) => {
+        const t = (Math.log10(Math.max(mm, 0.02)) - yLo) / (yHi - yLo);
+        return chartB - t * (chartB - chartT);
+      };
+
+      ctx.strokeStyle = fg; ctx.fillStyle = fg; ctx.globalAlpha = 0.3;
+      ctx.beginPath(); ctx.moveTo(padL, chartT); ctx.lineTo(padL, chartB); ctx.lineTo(cssW - padR, chartB); ctx.stroke();
+      ctx.globalAlpha = 0.55; ctx.textAlign = 'center';
+      for (const k of [1, 2, 4, 6, 8]) ctx.fillText(`${k} m/s`, CX(k), chartB + 14);
+      ctx.textAlign = 'right';
+      for (const mm of [0.1, 1, 10, 100, 1000]) {
+        ctx.fillText(mm >= 10 ? `${mm / 10} cm` : `${vn(mm, 1)} mm`, padL - 4, CY(mm) + 3);
+      }
+      ctx.globalAlpha = 0.22;
+      ctx.beginPath(); ctx.moveTo(padL, CY(250)); ctx.lineTo(cssW - padR, CY(250)); ctx.stroke();
+      ctx.globalAlpha = 0.5; ctx.textAlign = 'left';
+      ctx.fillText('25 cm — rơi khỏi mép', padL + 5, CY(250) - 4);
+      ctx.globalAlpha = 1;
+
+      // Ngưỡng tới hạn.
+      if (vc > 0.5 && vc < 8) {
+        ctx.strokeStyle = WARN; ctx.setLineDash([4, 3]);
+        ctx.beginPath(); ctx.moveTo(CX(vc), chartT); ctx.lineTo(CX(vc), chartB); ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.fillStyle = WARN; ctx.textAlign = 'left';
+        ctx.fillText(`v tới hạn ${vn(vc, 2)} m/s`, CX(vc) + 4, chartT + 10);
+      }
+
+      ctx.strokeStyle = CURVE; ctx.lineWidth = 2; ctx.beginPath();
+      let started = false;
+      for (let i = 0; i <= 240; i++) {
+        const vv = 0.5 + (7.5 * i) / 240;
+        if (vv <= vc) continue;
+        const y = CY(slide(vv, mu1, L).s * 1000);
+        started ? ctx.lineTo(CX(vv), y) : ctx.moveTo(CX(vv), y);
+        started = true;
+      }
+      ctx.stroke(); ctx.lineWidth = 1;
+
+      ctx.fillStyle = off ? MARK : CURVE;
+      ctx.beginPath(); ctx.arc(CX(v), CY(r.s * 1000), 6, 0, Math.PI * 2); ctx.fill();
+
+      // ---- Readout ----
+      const sTxt = r.s < 0.01 ? `<b>${vn(r.s * 1000, 2)} mm</b>` : `<b>${vn(r.s * 100, 1)} cm</b>`;
+      const base =
+        `Khăn phủ ${Math.round(L * 100)} cm · rút ${vn(v, 1)} m/s · μ₁ = ${vn(mu1, 2)} ` +
+        `(μ ly–bàn 0,30) · ngưỡng ${vn(vc, 2)} m/s → `;
+      readout.innerHTML = r.ride
+        ? base + `<b>ly bắt kịp tốc độ khăn</b> — nó đi theo khăn khỏi mép bàn, quãng dịch không còn hữu hạn`
+        : base + `ly dịch ${sTxt} sau ${vn(r.t1, 3)} s bị đẩy` +
+          (r.s >= EDGE ? ' · <b>vượt 25 cm: ly rơi khỏi bàn</b>' : '');
+    }
+
+    root.querySelectorAll('input').forEach((el) => el.addEventListener('input', draw));
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="keo-khan-trai-ban-nhanh-hay-cham"]').forEach(setup);
+</script>

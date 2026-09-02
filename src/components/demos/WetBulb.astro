@@ -1,0 +1,195 @@
+---
+// Nhiệt độ bầu ướt, xấp xỉ Stull (2011), J. Appl. Meteor. Climatol. 50, 2267:
+// Tw = T·atan(0.151977·√(RH+8.313659)) + atan(T+RH) − atan(RH−1.676331)
+//      + 0.00391838·RH^1.5·atan(0.023101·RH) − 4.686035
+// T (°C), RH (%), atan theo radian. Hiệu lực: RH 5–99%, T −20…50 °C,
+// Tw −10…50 °C, ở áp suất ~101,3 kPa; sai số ±0,3 °C với đa số điểm.
+// Xấp xỉ này vượt T chừng 0,1–0,2 °C khi RH → 100, nên code kẹp Tw ≤ T
+// (bầu ướt không bao giờ cao hơn bầu khô).
+// Đường đồng mức vẽ bằng chia đôi trên RH: Tw đơn điệu tăng theo RH.
+---
+
+<figure class="demo" data-demo="nhiet-ke-uot-35-do-nguong-ma-quat-cung-vo-nghia">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Nhiệt độ không khí (°C) <output data-out="t"></output>
+      <input type="range" data-in="t" min="20" max="50" step="0.5" value="38" /></label>
+    <label>Độ ẩm tương đối (%) <output data-out="rh"></output>
+      <input type="range" data-in="rh" min="5" max="100" step="1" value="60" /></label>
+    <label>Ngưỡng cảnh báo (°C bầu ướt) <output data-out="th"></output>
+      <input type="range" data-in="th" min="28" max="35" step="0.5" value="35" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Mặt phẳng nhiệt độ – độ ẩm, với các đường đồng mức nhiệt độ bầu ướt.
+    Đường đỏ là ngưỡng bạn đặt (mặc định 35 °C, giới hạn sinh tồn lý
+    thuyết); đường cam 31 °C là ngưỡng đo được trên người thật. Chấm xanh
+    là điều kiện đang chọn. Hai ống bên phải là hai nhiệt kế cạnh nhau: một
+    khô, một bọc tất ướt — khoảng cách giữa hai cột chính là toàn bộ phần
+    mát mà bay hơi còn mua được cho bạn.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const CURVE = '#2563eb', MARK = '#dc2626', WARN = '#f59e0b';
+  const vi = (x: number, d = 1) => x.toFixed(d).replace('.', ',');
+
+  const stull = (T: number, RH: number) =>
+    T * Math.atan(0.151977 * Math.sqrt(RH + 8.313659))
+    + Math.atan(T + RH) - Math.atan(RH - 1.676331)
+    + 0.00391838 * Math.pow(RH, 1.5) * Math.atan(0.023101 * RH)
+    - 4.686035;
+
+  // Bầu ướt không thể vượt bầu khô: kẹp lại phần vượt của xấp xỉ ở RH ~100.
+  const tw = (T: number, RH: number) => Math.min(stull(T, RH), T);
+
+  // RH cần để đạt bầu ướt = target ở nhiệt độ T; null nếu cả 100% cũng không tới.
+  function rhFor(T: number, target: number): number | null {
+    if (tw(T, 100) < target) return null;
+    if (tw(T, 5) > target) return 5;
+    let lo = 5, hi = 100;
+    for (let i = 0; i < 60; i++) {
+      const m = (lo + hi) / 2;
+      if (tw(T, m) < target) lo = m; else hi = m;
+    }
+    return (lo + hi) / 2;
+  }
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (k: string) => root.querySelector(`[data-in="${k}"]`) as HTMLInputElement;
+    const output = (k: string) => root.querySelector(`[data-out="${k}"]`) as HTMLOutputElement;
+
+    function draw() {
+      const T = Number(input('t').value);
+      const RH = Number(input('rh').value);
+      const TH = Number(input('th').value);
+      output('t').textContent = vi(T);
+      output('rh').textContent = String(RH);
+      output('th').textContent = vi(TH);
+      const w = tw(T, RH);
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.56);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+      ctx.font = '10px system-ui,sans-serif';
+
+      const padL = 34, padB = 26, padT = 16, padR = 96;
+      const X = (t: number) => padL + ((t - 20) / 30) * (cssW - padL - padR);
+      const Y = (r: number) => padT + ((100 - r) / 95) * (cssH - padT - padB);
+
+      // Trục.
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.3; ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(padL, padT); ctx.lineTo(padL, cssH - padB);
+      ctx.lineTo(cssW - padR, cssH - padB); ctx.stroke();
+      ctx.globalAlpha = 0.55; ctx.fillStyle = fg;
+      ctx.textAlign = 'center';
+      for (const t of [20, 25, 30, 35, 40, 45, 50]) ctx.fillText(`${t}°`, X(t), cssH - padB + 14);
+      ctx.textAlign = 'right';
+      for (const r of [20, 40, 60, 80, 100]) ctx.fillText(`${r}%`, padL - 4, Y(r) + 3);
+      ctx.globalAlpha = 1;
+
+      // Vẽ một đường đồng mức Tw = v.
+      const contour = (v: number) => {
+        ctx.beginPath();
+        let started = false;
+        for (let i = 0; i <= 150; i++) {
+          const t = 20 + (30 * i) / 150;
+          const r = rhFor(t, v);
+          if (r === null || r <= 5.01) { started = false; continue; }
+          const x = X(t), y = Y(r);
+          if (started) ctx.lineTo(x, y); else { ctx.moveTo(x, y); started = true; }
+        }
+        ctx.stroke();
+      };
+
+      // Nền: các mức phụ, có nhãn ngay dưới mép trên (nơi RH = 100, T ≈ v).
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.28; ctx.lineWidth = 1;
+      for (const v of [22, 25, 28]) contour(v);
+      ctx.fillStyle = fg; ctx.globalAlpha = 0.5; ctx.textAlign = 'left';
+      for (const v of [22, 25, 28]) ctx.fillText(`${v}°`, X(v) + 3, Y(100) + 10);
+      ctx.globalAlpha = 1;
+
+      // 31 °C — ngưỡng đo trên người thật.
+      ctx.strokeStyle = WARN; ctx.lineWidth = 2; ctx.setLineDash([5, 4]);
+      contour(31); ctx.setLineDash([]);
+      ctx.fillStyle = WARN; ctx.textAlign = 'left';
+      ctx.fillText('31° người thật', X(31) + 3, Y(100) + 10);
+
+      // Ngưỡng người dùng đặt.
+      ctx.strokeStyle = MARK; ctx.lineWidth = 2.5;
+      contour(TH);
+      ctx.fillStyle = MARK;
+      ctx.fillText(`${vi(TH)}° ngưỡng`, X(Math.min(TH, 33.5)) + 3, Y(100) + 22);
+      ctx.lineWidth = 1;
+
+      // Điều kiện đang chọn.
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.35; ctx.setLineDash([2, 3]);
+      ctx.beginPath();
+      ctx.moveTo(X(T), cssH - padB); ctx.lineTo(X(T), Y(RH)); ctx.lineTo(padL, Y(RH));
+      ctx.stroke(); ctx.setLineDash([]); ctx.globalAlpha = 1;
+      ctx.fillStyle = CURVE;
+      ctx.beginPath(); ctx.arc(X(T), Y(RH), 6, 0, Math.PI * 2); ctx.fill();
+
+      // Hai nhiệt kế: khô (đỏ) và ướt (xanh).
+      const tubeTop = padT + 14, tubeBot = cssH - padB - 12;
+      const TY = (c: number) => tubeBot - ((c - 15) / 35) * (tubeBot - tubeTop);
+      const tube = (cx: number, val: number, col: string, lab: string) => {
+        ctx.strokeStyle = fg; ctx.globalAlpha = 0.35;
+        ctx.strokeRect(cx - 5, tubeTop, 10, tubeBot - tubeTop);
+        ctx.globalAlpha = 1;
+        const y = TY(Math.max(15, Math.min(50, val)));
+        ctx.fillStyle = col;
+        ctx.fillRect(cx - 4, y, 8, tubeBot - y);
+        ctx.beginPath(); ctx.arc(cx, tubeBot + 6, 7, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = fg; ctx.globalAlpha = 0.75; ctx.textAlign = 'center';
+        ctx.fillText(lab, cx, tubeTop - 5);
+        ctx.fillText(vi(val), cx, cssH - 4);
+        ctx.globalAlpha = 1;
+      };
+      const cxDry = cssW - padR + 30, cxWet = cssW - padR + 72;
+      tube(cxDry, T, MARK, 'khô');
+      tube(cxWet, w, CURVE, 'ướt');
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.3; ctx.setLineDash([2, 3]);
+      ctx.beginPath();
+      ctx.moveTo(cxDry + 8, TY(w)); ctx.lineTo(cxWet - 8, TY(w));
+      ctx.stroke(); ctx.setLineDash([]); ctx.globalAlpha = 1;
+
+      // Readout.
+      const need = rhFor(T, TH);
+      const needTxt = need === null
+        ? `ở nhiệt độ này, <b>kể cả bão hoà 100%</b> cũng không chạm ${vi(TH)} °C`
+        : `để chạm ${vi(TH)} °C ở nhiệt độ này cần độ ẩm <b>${vi(need, 0)}%</b>`;
+      const note = w >= 35 ? ' · <b>vượt giới hạn sinh tồn lý thuyết</b>'
+        : w >= 31 ? ' · <b>vượt ngưỡng đo được trên người thật</b>'
+        : w >= 28 ? ' · vùng nguy hiểm cho lao động ngoài trời'
+        : '';
+      readout.innerHTML =
+        `T = ${vi(T)} °C, độ ẩm ${RH}% → bầu ướt <b>${vi(w)} °C</b>${note}` +
+        `<br />Chênh khô − ướt: ${vi(T - w)} °C · ${needTxt}`;
+    }
+
+    root.querySelectorAll('input').forEach((el) => el.addEventListener('input', draw));
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="nhiet-ke-uot-35-do-nguong-ma-quat-cung-vo-nghia"]').forEach(setup);
+</script>

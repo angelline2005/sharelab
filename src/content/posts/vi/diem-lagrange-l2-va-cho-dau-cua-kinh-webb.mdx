@@ -1,0 +1,90 @@
+---
+title: "Điểm Lagrange: chỗ đậu của kính Webb nằm ở đúng 1% đường tới Mặt Trời"
+seoTitle: "Điểm Lagrange L1 L2: công thức khoảng cách và 1,5 triệu km của kính Webb"
+description: "Kính James Webb ở cách Trái Đất 1,5015 triệu km — đúng 1,004% đường tới Mặt Trời, xa gấp 3,91 lần Mặt Trăng. Con số ấy không do ai chọn: nó rơi ra từ một căn bậc ba. Và chỗ ấy là yên ngựa — sai lệch nhân e sau mỗi 23,4 ngày, nên Webb phải đốt nhiên liệu ba tuần một lần."
+pubDate: 2026-09-02
+tags: ["vat-ly", "thien-van", "co-hoc", "javascript"]
+translationId: "diem-lagrange-l2-va-cho-dau-cua-kinh-webb"
+---
+
+import LagrangeL2 from '../../../components/demos/LagrangeL2.astro';
+
+Kính James Webb bay ra xa Trái Đất một triệu rưỡi kilômét — gần gấp bốn lần
+khoảng cách Mặt Trăng — rồi dừng lại giữa chỗ trống rỗng và nằm yên đó từ
+tháng 1/2022. Ngoài ấy không có gì để neo vào, mà con số một triệu rưỡi
+cũng chẳng do ai chọn: nó rơi ra từ một căn bậc ba.
+
+<LagrangeL2 />
+
+## Một phần trăm, và suýt đúng bằng số tròn
+
+Càng xa Mặt Trời thì càng quay chậm — [định luật Kepler
+III](/vi/posts/dinh-luat-kepler-iii-va-duong-thang-cua-he-mat-troi) cho một
+vệ tinh thả tự do ở 1,010 AU chu kỳ **370,8 ngày**: tụt lại sau Trái Đất
+5,5 ngày mỗi năm, vài chục vòng là mất hút. Nhưng ngay sau lưng Trái Đất
+thì nó không được thả tự do — Trái Đất kéo thêm một chút về phía trong, bù
+đúng phần lực hướng tâm còn thiếu. Có một khoảng cách duy nhất mà phần bù
+ấy vừa khít, và ở đó chu kỳ rút lại tròn 365 ngày.
+
+Đặt cân bằng ấy lên giấy, nghiệm bậc nhất gọn đến mức khó tin:
+
+```
+r ≈ R · (m / (3·(M + m)))^(1/3)
+```
+
+Trái Đất nặng bằng **3,00×10⁻⁶** Mặt Trời. Chia cho 3 ra đúng 10⁻⁶, mà căn
+bậc ba của 10⁻⁶ là đúng 10⁻²: **một phần trăm**, khớp tới bốn chữ số và
+hoàn toàn tình cờ. Nhân với 1 AU được 1,4965 triệu km; nghiệm đúng đặt L2 ở
+**1,5015 triệu km** — 1,004% quãng đường tới Mặt Trời, xa gấp **3,91 lần**
+khoảng cách Mặt Trăng. Trên trục log–log của demo, luật căn bậc ba là một
+đường thẳng độ dốc 1/3, và hai nghiệm đúng bám sát nó suốt bốn bậc độ lớn.
+
+## Vì sao đáng đi 1,5 triệu km để đậu vào chỗ trống
+
+Không phải để trốn vào bóng Trái Đất, vì ở đó không có bóng: nhìn từ L2,
+đĩa Trái Đất rộng **0,486°** còn đĩa Mặt Trời rộng **0,528°** — Trái Đất
+nhỏ hơn trên bầu trời, nên L2 chỉ có [nhật thực hình
+khuyên](/vi/posts/nhat-thuc-toan-phan-va-trung-hop-400-lan) vĩnh viễn.
+
+Thứ L2 cho là hình học. Từ đó, Mặt Trời, Trái Đất và Mặt Trăng gom hết vào
+một nón hẹp — Mặt Trăng lệch khỏi Trái Đất nhiều nhất **14,4°** — nên một
+tấm chắn duy nhất che được cả ba nguồn nhiệt, và kính chỉ cần quay lưng về
+một hướng suốt đời. Tấm chắn năm lớp cỡ sân tennis của Webb giữ mặt nóng
+khoảng 110 °C, mặt lạnh dưới −230 °C: gương hồng ngoại buộc phải nguội hơn
+thứ nó đang nhìn, không thì nó tự phát sáng át mất tín hiệu.
+
+## Yên ngựa, không phải cái hố
+
+Hòn bi thả vào đáy chén thì nằm yên; đặt lên yên ngựa thì lệch một sợi tóc
+là trượt. L1, L2, L3 đều là yên ngựa: dọc đường nối hai thiên thể chúng là
+đỉnh, chỉ theo phương ngang mới là đáy. Tuyến tính hoá quanh L2 Trái
+Đất–Mặt Trời cho một nhánh tăng theo hàm mũ với **thời gian nhân e bằng
+23,4 ngày** — lệch 1 km hôm nay thành 2,45 km sau ba tuần.
+
+Nên Webb không đậu ở L2: nó chạy một vòng halo rộng hàng trăm nghìn kilômét
+quanh chỗ trống ấy, và đốt động cơ hiệu chỉnh **mỗi 21 ngày**, cố ý ngắn
+hơn 23,4. Oái oăm hơn nữa: động cơ nằm ở mặt hướng Mặt Trời, nên Webb chỉ
+đẩy được ra xa Mặt Trời, không bao giờ kéo ngược lại. Đội điều khiển vì thế
+luôn đốt thiếu một chút để tàu nằm phía trong L2 — lỡ một nhịp thì nó trôi
+về phía Trái Đất, vẫn cứu được; còn để nó vượt ra ngoài L2 là mất hẳn. Trên
+quỹ đạo, [hướng đẩy chưa bao giờ là hướng bạn
+tưởng](/vi/posts/nghich-ly-quy-dao-duoi-kip-bang-cach-phanh).
+
+## Trường hợp biên: đẩy tỉ số khối lượng tới 24,96
+
+Kéo thanh trượt khối lượng lên, đường cam tách dần khỏi hai đường xanh. Ở
+Trái Đất–Mặt Trời sai số mới 0,33%: căn bậc ba nói L1 và L2 đối xứng, cùng
+ở 1,4965 triệu km, còn nghiệm đúng đẩy L1 vào **1,4915** và L2 ra
+**1,5015** — lệch mỗi bên chừng 5 000 km. Ở Mặt Trăng quanh Trái Đất
+(m/M = 1,23×10⁻²) sai số vọt lên **5,0%**: công thức cho 15,94% của R, thực
+tế 16,78%, chênh 3 200 km — đủ để trượt hẳn quỹ đạo của vệ tinh chuyển tiếp
+Thước Kiều mà Trung Quốc treo sau lưng Mặt Trăng.
+
+Đẩy tiếp nữa thì hỏng một thứ khác hẳn. L4 và L5 — hai đỉnh của tam giác
+đều dựng trên đường nối — là hai điểm Lagrange duy nhất ổn định thật, nhưng
+chỉ khi thiên thể lớn nặng gấp thiên thể nhỏ ít nhất **24,96 lần**. Hệ Mặt
+Trời vượt ngưỡng thong thả: Mặt Trời trên Sao Mộc là 1 048, Trái Đất trên
+Mặt Trăng là 81,3. Mà chỗ nào ổn định thì tự đầy lên: bốn tỉ năm qua Sao
+Mộc đã gom hơn **12 000** tiểu hành tinh Trojan vào L4 và L5 của nó, không
+tốn một giọt nhiên liệu. Webb thì trả tiền ba tuần một lần, cho một chỗ
+đứng mà vũ trụ không hề giữ hộ.

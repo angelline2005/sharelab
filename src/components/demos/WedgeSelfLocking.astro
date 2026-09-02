@@ -1,0 +1,214 @@
+---
+// Nêm tự hãm — tĩnh học ma sát Coulomb.
+//   Tự hãm khi:  tan(α/2) < μ   ⇔   α < 2·arctan(μ)
+//   Hệ số nhân lực lúc đóng vào: (1 − μ·tan(α/2)) / (2·(tan(α/2) + μ))
+// Nguồn: bài toán nêm/vít tự hãm cổ điển (Shigley, Mechanical Engineering
+// Design, chương wedges & power screws; Meriam, Statics, mục "wedges").
+// Giá trị trong phạm vi: ma sát khô, nêm cứng, biến dạng đàn hồi nhỏ, tải
+// tĩnh. Slider dừng ở α ≤ 60° và μ ≤ 0,80 vì ngoài đó vật liệu chảy dẻo
+// hoặc dính, mô hình vật rắn tuyệt đối không còn mô tả đúng.
+---
+
+<figure class="demo" data-demo="nem-goc-15-do-nhan-luc-38-lan">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Góc nêm α <output data-out="a"></output>
+      <input type="range" data-in="a" min="2" max="60" step="0.1" value="15" /></label>
+    <label>Hệ số ma sát μ giữa nêm và vật liệu <output data-out="m"></output>
+      <input type="range" data-in="m" min="0.02" max="0.8" step="0.001" value="0.4" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Trái: mặt cắt cái nêm bị đóng vào khe. Vật liệu ép vào mặt nêm lực pháp
+    tuyến N; thành phần dọc trục của N đẩy nêm bật ra, ma sát μN kéo ngược
+    lại — hai thanh dưới là chính hai vế đó. Phải: đường ngưỡng
+    α = 2·arctan(μ); mọi điểm nằm dưới đường ấy là nêm tự hãm. Cả hai vế
+    đều tỉ lệ với N nên kết luận không phụ thuộc bạn đóng mạnh cỡ nào.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const CURVE = '#2563eb', MARK = '#dc2626', THIRD = '#f59e0b';
+  const rad = (d: number) => (d * Math.PI) / 180;
+  const deg = (x: number) => (x * 180) / Math.PI;
+  const thr = (mu: number) => 2 * deg(Math.atan(mu));
+  const gain = (a: number, mu: number) => {
+    const t = Math.tan(rad(a / 2));
+    return (1 - mu * t) / (2 * (t + mu));
+  };
+  const vn = (x: number, d = 1) => x.toFixed(d).replace('.', ',');
+  const OBJ: Array<[number, number, string]> = [
+    [0.1, 3, 'côn Morse 3°'],
+    [0.4, 30, 'rìu bổ củi 30°'],
+    [0.7, 18.4, 'chèn cửa 18,4°'],
+  ];
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (k: string) => root.querySelector(`[data-in="${k}"]`) as HTMLInputElement;
+    const output = (k: string) => root.querySelector(`[data-out="${k}"]`) as HTMLOutputElement;
+
+    function arrow(x1: number, y1: number, x2: number, y2: number, color: string) {
+      const a = Math.atan2(y2 - y1, x2 - x1), h = 6;
+      ctx.strokeStyle = color; ctx.fillStyle = color; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(x2, y2);
+      ctx.lineTo(x2 - h * Math.cos(a - 0.4), y2 - h * Math.sin(a - 0.4));
+      ctx.lineTo(x2 - h * Math.cos(a + 0.4), y2 - h * Math.sin(a + 0.4));
+      ctx.closePath(); ctx.fill(); ctx.lineWidth = 1;
+    }
+
+    function draw() {
+      const alpha = Math.round(Number(input('a').value) * 10) / 10;
+      const mu = Math.round(Number(input('m').value) * 1000) / 1000;
+      const muTxt = Math.round(mu * 1000) % 10 === 0 ? vn(mu, 2) : vn(mu, 3);
+      output('a').textContent = `${vn(alpha, 1)}°`;
+      output('m').textContent = muTxt;
+
+      const beta = rad(alpha / 2);
+      const push = Math.sin(beta), hold = mu * Math.cos(beta);
+      const lock = Math.tan(beta) < mu;
+      const aThr = thr(mu), g = gain(alpha, mu);
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.5);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+      ctx.font = '10px system-ui,sans-serif';
+
+      // ---------- panel trái: mặt cắt cái nêm ----------
+      const lx0 = 6, lx1 = Math.round(cssW * 0.46), pw = lx1 - lx0;
+      const top = 4, barsH = 52;
+      const wedgeTop = top + 14, wedgeH = cssH - wedgeTop - barsH - 6;
+      const cy = wedgeTop + wedgeH / 2;
+      const tipX = lx1 - 10;
+      const L = Math.min(pw * 0.62, (wedgeH * 0.34) / Math.tan(beta));
+      const hh = L * Math.tan(beta), bx = tipX - L;
+
+      const mTop = cy - wedgeH * 0.46, mBot = cy + wedgeH * 0.46;
+      ctx.fillStyle = fg; ctx.globalAlpha = 0.1;
+      ctx.beginPath();
+      ctx.moveTo(lx0, mTop); ctx.lineTo(tipX + 8, mTop); ctx.lineTo(tipX + 8, cy - 1);
+      ctx.lineTo(tipX, cy - 1); ctx.lineTo(bx, cy - hh); ctx.lineTo(lx0, cy - hh);
+      ctx.closePath(); ctx.fill();
+      ctx.beginPath();
+      ctx.moveTo(lx0, mBot); ctx.lineTo(tipX + 8, mBot); ctx.lineTo(tipX + 8, cy + 1);
+      ctx.lineTo(tipX, cy + 1); ctx.lineTo(bx, cy + hh); ctx.lineTo(lx0, cy + hh);
+      ctx.closePath(); ctx.fill();
+      ctx.globalAlpha = 1;
+
+      ctx.fillStyle = lock ? CURVE : MARK; ctx.globalAlpha = 0.8;
+      ctx.beginPath(); ctx.moveTo(tipX, cy);
+      ctx.lineTo(bx, cy - hh); ctx.lineTo(bx, cy + hh);
+      ctx.closePath(); ctx.fill(); ctx.globalAlpha = 1;
+
+      const mx = (tipX + bx) / 2, my = cy - hh / 2, A = Math.max(18, pw * 0.16);
+      arrow(mx, my, mx - A * Math.sin(beta), my + A * Math.cos(beta), THIRD);
+      arrow(mx, my, mx + mu * A * Math.cos(beta), my + mu * A * Math.sin(beta), lock ? CURVE : MARK);
+      const fLen = Math.max(20, pw * 0.14);
+      arrow(bx - fLen, cy, bx - 4, cy, fg);
+
+      ctx.fillStyle = fg; ctx.globalAlpha = 0.75;
+      ctx.textAlign = 'right';
+      ctx.fillText('N', mx - A * Math.sin(beta) - 4, my + A * Math.cos(beta) + 3);
+      ctx.textAlign = 'left';
+      ctx.fillText('μN', mx + mu * A * Math.cos(beta) + 5, my + mu * A * Math.sin(beta) + 3);
+      ctx.textAlign = 'center';
+      ctx.fillText('F', bx - fLen / 2, cy - 6);
+
+      ctx.globalAlpha = 1; ctx.textAlign = 'left';
+      ctx.fillStyle = lock ? CURVE : MARK;
+      ctx.font = 'bold 11px system-ui,sans-serif';
+      ctx.fillText(lock ? 'TỰ HÃM' : 'BẬT NGƯỢC', lx0, top + 9);
+      ctx.font = '10px system-ui,sans-serif';
+
+      const bScale = pw / 0.85, by0 = cssH - barsH + 8;
+      ctx.fillStyle = fg; ctx.globalAlpha = 0.75;
+      ctx.fillText(`đẩy nêm ra: sin(α/2) = ${vn(push, 3)}`, lx0, by0);
+      ctx.globalAlpha = 1; ctx.fillStyle = MARK;
+      ctx.fillRect(lx0, by0 + 4, push * bScale, 7);
+      ctx.fillStyle = fg; ctx.globalAlpha = 0.75;
+      ctx.fillText(`ma sát giữ: μ·cos(α/2) = ${vn(hold, 3)}`, lx0, by0 + 26);
+      ctx.globalAlpha = 1; ctx.fillStyle = CURVE;
+      ctx.fillRect(lx0, by0 + 30, hold * bScale, 7);
+
+      // ---------- panel phải: mặt phẳng (μ, α) ----------
+      const rx0 = lx1 + 36, rx1 = cssW - 16;
+      const ry0 = top + 14, ry1 = cssH - 22;
+      const RX = (m: number) => rx0 + (m / 0.85) * (rx1 - rx0);
+      const RY = (a: number) => ry1 - (a / 60) * (ry1 - ry0);
+
+      ctx.fillStyle = CURVE; ctx.globalAlpha = 0.12;
+      ctx.beginPath(); ctx.moveTo(RX(0), RY(0));
+      for (let i = 0; i <= 120; i++) {
+        const m = (0.85 * i) / 120;
+        ctx.lineTo(RX(m), RY(Math.min(60, thr(m))));
+      }
+      ctx.lineTo(RX(0.85), RY(0)); ctx.closePath(); ctx.fill(); ctx.globalAlpha = 1;
+
+      ctx.strokeStyle = CURVE; ctx.lineWidth = 2; ctx.beginPath();
+      for (let i = 0; i <= 120; i++) {
+        const m = (0.85 * i) / 120, y = RY(Math.min(60, thr(m)));
+        i ? ctx.lineTo(RX(m), y) : ctx.moveTo(RX(m), y);
+      }
+      ctx.stroke(); ctx.lineWidth = 1;
+
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.3;
+      ctx.beginPath(); ctx.moveTo(rx0, ry0); ctx.lineTo(rx0, ry1); ctx.lineTo(rx1, ry1); ctx.stroke();
+      ctx.globalAlpha = 0.55; ctx.fillStyle = fg;
+      ctx.textAlign = 'center';
+      for (const m of [0.2, 0.4, 0.6, 0.8]) ctx.fillText(vn(m, 1), RX(m), ry1 + 13);
+      ctx.textAlign = 'left';
+      ctx.fillText('μ', rx1 + 4, ry1 + 13);
+      ctx.textAlign = 'right';
+      for (const a of [15, 30, 45, 60]) ctx.fillText(`${a}°`, rx0 - 4, RY(a) + 3);
+      ctx.globalAlpha = 0.7; ctx.textAlign = 'left';
+      ctx.fillText('α = 2·arctan(μ)', rx0 + 6, ry0 + 9);
+      ctx.fillText('vùng tự hãm', rx0 + 6, ry1 - 8);
+
+      OBJ.forEach(([m, a, lab]) => {
+        ctx.globalAlpha = 1; ctx.fillStyle = THIRD;
+        ctx.beginPath(); ctx.arc(RX(m), RY(a), 3.5, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = fg; ctx.globalAlpha = 0.75;
+        const right = RX(m) > (rx0 + rx1) / 2;
+        ctx.textAlign = right ? 'right' : 'left';
+        ctx.fillText(lab, RX(m) + (right ? -6 : 6), RY(a) + 3);
+      });
+
+      ctx.globalAlpha = 1; ctx.fillStyle = MARK;
+      ctx.beginPath();
+      ctx.arc(RX(Math.min(mu, 0.85)), RY(Math.min(alpha, 60)), 5.5, 0, Math.PI * 2);
+      ctx.fill();
+
+      const ideal = 1 / (2 * Math.tan(beta));
+      readout.innerHTML =
+        `Nêm <b>${vn(alpha, 1)}°</b> · μ = <b>${muTxt}</b> → ngưỡng tự hãm <b>${vn(aThr, 1)}°</b> ⇒ ` +
+        (lock
+          ? `<b>TỰ HÃM</b> (còn dư ${vn(aThr - alpha, 1)}°; chỉ cần μ ≥ ${vn(push / Math.cos(beta), 3)})`
+          : `<b>BẬT NGƯỢC</b> (vượt ngưỡng ${vn(alpha - aThr, 1)}°; cần μ ≥ ${vn(push / Math.cos(beta), 3)})`) +
+        `<br>Lực banh mỗi bên = <b>${vn(g, 2)}×</b> lực đóng vào — nêm không ma sát sẽ là ${vn(ideal, 2)}×` +
+        (g < 1 ? ' · <b>ma sát ăn hết phần nhân lực</b>' : '');
+    }
+
+    root.querySelectorAll('input').forEach((el) => el.addEventListener('input', draw));
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="nem-goc-15-do-nhan-luc-38-lan"]').forEach(setup);
+</script>

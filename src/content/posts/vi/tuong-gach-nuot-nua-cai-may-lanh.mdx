@@ -1,0 +1,95 @@
+---
+title: "Bức tường 40 m² nuốt 1 177 W — gần nửa cái máy lạnh chỉ để bù cho tường"
+seoTitle: "Hệ số U và R của tường: tính lượng nhiệt lọt vào phòng điều hoà"
+description: "Tường gạch 110 mm trát hai mặt có U = 2,94 W/m²K. Chênh 10 °C với ngoài trời, 40 m² tường rót vào phòng 1 177 W — 45% công suất máy lạnh 9 000 BTU. Dán 25 mm xốp, con số ấy còn 379 W, và 12 mm đầu tiên đã ăn đứt 90 mm cuối."
+pubDate: 2026-09-02
+tags: ["vat-ly", "nhiet-hoc", "javascript"]
+translationId: "tuong-gach-nuot-nua-cai-may-lanh"
+---
+
+import WallUValue from '../../../components/demos/WallUValue.astro';
+
+Bạn đóng kín cửa, tắt đèn, đuổi hết người ra khỏi phòng ngủ — và cái máy
+lạnh 9 000 BTU vẫn chạy gần như không nghỉ. Không có khe hở nào cả. Chỉ có
+một cái lỗ rộng bốn chục mét vuông mà bạn quen gọi là *bức tường*:
+
+<WallUValue />
+
+## Tường là một chuỗi điện trở mắc nối tiếp
+
+Nhiệt xuyên tường gặp từng lớp cản một, và các lớp cộng thẳng vào nhau đúng
+như điện trở nối tiếp. Mỗi lớp góp một suất cản nhiệt R = L/k:
+
+```
+R_tổng = 0,13 + Σ(L_i / k_i) + 0,04   (m²K/W)
+U = 1 / R_tổng      q = U · ΔT      Q = U · A · ΔT
+```
+
+Tường 110 quen thuộc: gạch đặc 110 mm (k = 0,80 W/m·K) trát vữa 15 mm hai
+mặt (k = 0,93). Lõi gạch góp 0,1375; hai lớp vữa góp 0,0323 — cộng lại
+0,17. Còn hai số 0,13 và 0,04 kẹp hai đầu công thức thì **không phải vật
+liệu nào cả**: đó là hai màng không khí đứng yên bám vào mặt trong và mặt
+ngoài tường, thứ mà [gió ngoài trời chuyên xé
+rách](/vi/posts/gio-lanh-cam-giac-nhu-la-do-cai-gi). Chúng cũng góp đúng
+0,17.
+
+Đọc lại tỉ lệ ấy: **hai lớp không khí dày vài milimét gánh tròn một nửa khả
+năng cách nhiệt của bức tường gạch**. Tổng: R = 0,340 m²K/W, và nghịch đảo
+của nó là con số dân xây dựng gọi tắt — **U = 2,94 W/m²K**, tức mỗi mét
+vuông tường rò 2,94 watt cho mỗi độ chênh.
+
+## 45% cái máy lạnh dùng để làm mát bốn bức tường
+
+Phòng 26 °C, ngoài hiên 36 °C, ΔT = 10. Một phòng 4 × 5 m trần 3,3 m có ba
+mặt phơi ra ngoài, trừ cửa sổ, còn khoảng 40 m² tường. Nhân ra:
+q = 29,4 W/m², và **Q = 1 177 W**.
+
+Máy lạnh 9 000 BTU cho ra 2 638 W lạnh. Vậy chỉ riêng tường — chưa tính
+người, đèn, tủ lạnh, mái nhà hay cửa kính — đã chiếm **45% công suất máy**.
+Đó là lý do vật lý cho cảm giác "máy chạy hoài không ngắt": nó không yếu,
+nó đang bị bắt kéo một bức tường.
+
+Máy lạnh không sinh lạnh mà [dời nhiệt với COP cỡ
+3](/vi/posts/may-lanh-khong-tao-lanh-no-chuyen-nha-cho-nhiet), nên 1 177 W
+nhiệt chỉ tốn 392 W điện. Chạy 8 tiếng mỗi đêm, 30 đêm: **94 kWh mỗi
+tháng, riêng cho phần tường**.
+
+## 12 mm xốp đầu tiên ăn đứt 90 mm cuối
+
+Dán 25 mm xốp EPS (k = 0,035) lên mặt trong. Lớp mỏng bằng ngón tay ấy góp
+R = 0,714 — **gấp 5,2 lần cả viên gạch 11 cm**. Nói cách khác, 2,5 cm xốp
+cách nhiệt bằng **57 cm gạch đặc**.
+
+R vọt lên 1,054, U rơi xuống 0,95, dòng nhiệt còn **379 W** — 14% cái máy
+lạnh, 30 kWh mỗi tháng. Bức tường vừa trả lại bạn 64 kWh.
+
+Nhưng kéo thanh trượt đi tiếp thì đường cong trở mặt: Q tỉ lệ nghịch với R,
+còn R tăng tuyến tính theo bề dày — hyperbol, không phải đường thẳng.
+25 mm đầu cắt được 798 W; 25 mm thứ hai chỉ cắt thêm **153 W**, kém
+đúng 5,2 lần; 50 mm tiếp nữa cắt thêm vỏn vẹn 101 W. Cách nhớ gọn: muốn
+chia đôi dòng nhiệt thì phải **gấp đôi R**, mà R nền chỉ có 0,340 — nên
+**12 mm xốp đầu tiên đã đủ chia đôi 1 177 W**, lần chia đôi sau đòi thêm
+24 mm, lần sau nữa thêm 48 mm. Ai dán 100 mm xốp cho một bức tường gạch là
+đang trả tiền cho phần đuôi phẳng của hyperbol.
+
+## Trường hợp biên: 1 m² kính đơn xoá sạch công của 6 m² xốp
+
+Áp nguyên công thức ấy cho ô cửa sổ kính đơn 4 mm (k = 1,0):
+R = 0,13 + 0,004 + 0,04 = 0,174 → **U = 5,75 W/m²K**. Nhìn kỹ chỗ vô lý:
+bản thân tấm kính chỉ đóng góp 0,004 trong 0,174 — **2%**. Cửa kính hầu như
+không cách nhiệt gì cả; gần trọn khả năng của nó là hai màng không khí,
+đúng hai màng đã có sẵn ở tường.
+
+Hệ quả: 1 m² kính rò 57,5 W ở ΔT 10, bằng **1,95 m² tường gạch trần** và
+bằng **6,1 m² tường đã dán xốp**. Tường và cửa sổ [mắc song
+song](/vi/posts/dien-tro-song-song-nho-hon-ca-nhanh-nho-nhat), nên chúng
+cộng dòng chứ không cộng cản: dán xốp kín 40 m² tường mà chừa 2 m² cửa kính
+thì riêng ô kính ấy rót vào 115 W, cộng thêm 30% lên trên toàn bộ 379 W vừa
+khổ công hạ xuống. Bịt lỗ nhỏ, chừa lỗ to.
+
+Và cả bài toán này chỉ đúng ở trạng thái dừng: U ngầm giả định hai bên
+tường đứng yên một nhiệt độ mãi mãi. Ngoài trời thì không — [tường 22 cm có
+quán tính nhiệt](/vi/posts/tuong-day-22-cm-va-buoi-trua-den-cham), cái nóng
+đỉnh trưa mãi bảy giờ rưỡi sau mới gõ cửa phòng bạn và đã yếu đi bảy lần
+trên đường. U tính đúng hoá đơn cả tháng của bạn; nó không nói được lúc nào
+trong ngày bạn thấy nóng.

@@ -1,0 +1,97 @@
+---
+title: "Vì sao mọi chảo vệ tinh trên phố đều ngoảnh về một điểm trống trên trời"
+seoTitle: "Quỹ đạo địa tĩnh 35 786 km và cách tính góc ngẩng chảo vệ tinh"
+description: "Chỉ đúng một độ cao khiến vệ tinh quay cùng nhịp Trái Đất: 35 786 km. Chảo ở Hà Nội phải ngẩng 51,6° để bắt Vinasat ở 132° Đ, ở TP.HCM là 57,9°. Cái giá của độ cao ấy là 493 ms trễ khứ hồi cho một cuộc gọi — đủ để hai người liên tục cắt lời nhau."
+pubDate: 2026-09-02
+tags: ["vat-ly", "thien-van", "co-hoc", "javascript"]
+translationId: "quy-dao-dia-tinh-va-cai-chao-huong-nam"
+---
+
+import GeostationaryDish from '../../../components/demos/GeostationaryDish.astro';
+
+Đi dọc bất cứ con ngõ nào rồi ngước lên: hàng chục cái chảo trên hàng chục
+mái nhà, cái nào cũng nghiêng gần đúng một góc, quay gần đúng một hướng, và
+không cái nào nhúc nhích suốt mười năm. Chúng đang chăm chú nhìn vào một chỗ
+trống — soi mắt lên đó bạn chẳng thấy gì:
+
+<GeostationaryDish />
+
+## Chỉ có đúng một độ cao chịu đứng yên
+
+Muốn một vật treo bất động so với mái nhà bạn, nó phải quay quanh Trái Đất
+đúng nhịp Trái Đất tự quay: không phải 86 400 s mà **86 164 s** — ngày sao,
+[ngắn hơn ngày Mặt Trời 3 phút 56
+giây](/vi/posts/mot-ngay-tren-sao-thuy-dai-bang-hai-nam). Đưa chu kỳ ấy vào
+[định luật Kepler
+III](/vi/posts/dinh-luat-kepler-iii-va-duong-thang-cua-he-mat-troi) rồi giải
+ngược ra bán kính:
+
+```
+r = (GM·T² / 4π²)^(1/3),   GM = 3,986 004 4×10^14 m³/s²
+r = 42 164 km  →  cao 35 786 km trên mặt biển
+```
+
+Chỉ một nghiệm, và cũng không có quyền chọn mặt phẳng: lệch khỏi xích đạo
+thì vệ tinh vẽ số 8 trên trời mỗi ngày, chảo cố định mất bám. Sai số cũng
+không được phép — tin ngày dài 86 400 s là đặt vệ tinh cao thừa 77 km, chu
+kỳ dài ra 236 giây và [nó trôi dần về
+tây](/vi/posts/nghich-ly-quy-dao-duoi-kip-bang-cach-phanh) gần **1° kinh độ
+mỗi ngày**, một năm đi giáp vành. Nên quả nào cũng phải đốt nhiên liệu giữ
+chỗ, và hết nhiên liệu là hết đời dù máy móc còn tốt nguyên.
+
+## Chảo Hà Nội ngẩng 51,6°, chảo Sài Gòn 57,9°
+
+Vệ tinh đứng trên xích đạo còn bạn thì không, nên góc ngẩng chỉ còn là hình
+học. Cần đúng một góc trung gian: γ, góc nhìn từ tâm Trái Đất giữa chỗ bạn
+đứng và điểm ngay dưới vệ tinh.
+
+```
+cos γ = cos(vĩ độ) × cos(chênh kinh độ)
+tan(góc ngẩng) = (cos γ − R/r) / sin γ,   với R/r = 0,1513
+```
+
+Số hạng R/r là toàn bộ phần vật lý: Trái Đất chỉ to bằng **1/6,61** bán kính
+vành địa tĩnh, và chính tỉ lệ ấy dìm đường ngắm của bạn xuống dưới hướng nối
+tâm. Vinasat-1 đậu ở 132° Đ. Hà Nội (21,0° B, 105,9° Đ) lệch 26,1° kinh độ,
+ra γ = 33,0° và chảo ngẩng **51,6°**, phương vị 126° — đông nam. TP.HCM thấp
+vĩ độ hơn và gần kinh tuyến vệ tinh hơn: **57,9°**. Sáu độ chênh giữa hai
+đầu đất nước, đủ để cái chảo mang từ Sài Gòn ra Bắc câm tịt nếu không ai
+chỉnh lại.
+
+Còn "chỗ trống" thì trống thật: vệ tinh to cỡ chiếc xe buýt, chừng 3 m
+ngang, ở cách 36 981 km chỉ chiếm **0,017 giây cung** trên bầu trời — nhỏ
+hơn khả năng phân giải của mắt thường 3 600 lần.
+
+## 493 mili-giây là hoá đơn của độ cao
+
+Đường từ Hà Nội lên vệ tinh không phải 35 786 km mà **36 981 km**, dài thêm
+1 195 km vì bạn ngắm xiên chứ không ngắm thẳng đỉnh đầu. Giọng bạn leo lên
+đó rồi rơi xuống đầu dây bên kia mất 246,7 ms; người ta đáp lại, thêm chừng
+ấy nữa. Một vòng "tôi nói – bạn nghe – bạn đáp – tôi nghe" tốn **493 ms**.
+
+Ngưỡng để hội thoại còn tự nhiên, theo khuyến nghị của ITU, là trễ một chiều
+dưới 150 ms — 246,7 ms là **1,64 lần** ngưỡng đó, và ai từng gọi qua vệ tinh
+đều nhận ra hậu quả: hai bên liên tục giẫm lên lời nhau, rồi cùng im, rồi
+cùng nói tiếp. Thủ phạm là tốc độ ánh sáng chứ không phải băng thông, nên
+không kỹ sư nào chữa được. Chỉ còn cách hạ thấp quỹ đạo: ở 550 km khứ hồi
+rút xuống 7,3 ms, nhưng chu kỳ cũng tụt còn 95,6 phút — vệ tinh chạy ngang
+trời vài phút rồi khuất, phải có hàng nghìn quả và một ăng-ten biết bám
+theo, thay cho cái chảo bắt vít chết vào tường.
+
+## Trường hợp biên: vĩ độ 81,3° và 3 600 chỗ đậu
+
+Kéo vĩ độ lên trong demo: góc ngẩng tụt đều rồi về đúng 0 khi cos γ = R/r,
+tức **γ = 81,3°**. Qua vạch ấy vành địa tĩnh chìm hẳn dưới chân trời — không
+góc nào, không công suất phát nào cứu được. Longyearbyen ở 78,2° B còn ngẩng
+được 3,1°: trên giấy là thấy, ngoài đời là ngắm xuyên qua một ngọn núi. Vùng
+cực vì thế dùng quỹ đạo elip nghiêng kiểu Molniya, vệ tinh nấn ná nhiều giờ
+ở đỉnh quỹ đạo phía bắc và ăng-ten phải biết quay theo.
+
+Đầu kia của bài toán là chuyện đất đai. Mỗi vệ tinh được giữ trong hộp ±0,05°
+kinh độ, một ô rộng **73,6 km** trên vành, nên xét thuần vật lý cả vòng 360°
+có 3 600 chỗ đậu. Nhưng thứ ra giá thật lại là cái chảo: ở 12 GHz bước sóng
+2,5 cm, một chảo 60 cm có búp sóng rộng **2,9°** — hai vệ tinh cách nhau
+dưới 2° sẽ nhoè vào nhau thành một nguồn. Thế nên mỗi băng tần chỉ khai thác
+được chừng **180 vị trí**, và các cung trên Đông Á, châu Âu, Bắc Mỹ đã kín từ
+lâu. Cái chảo trên mái nhà bạn không chỉ trỏ vào một chỗ trống — nó trỏ vào
+một địa chỉ đã có chủ.

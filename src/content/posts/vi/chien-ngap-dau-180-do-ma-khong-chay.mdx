@@ -1,0 +1,91 @@
+---
+title: "Dầu 180 °C, nhưng ruột miếng khoai không bao giờ vượt 100 °C"
+seoTitle: "Vật lý món chiên: vì sao đồ chiên ngập dầu không cháy ở 180 độ"
+description: "Nước trong thực phẩm sôi ở 100 °C và ghim cả miếng ở mốc ấy tới khi bay hết. Món chiên vì thế là lớp vỏ 1,01 mm sau ba phút bọc quanh phần ruột vẫn đang bị luộc — và chính dòng hơi đi ra là thứ chặn dầu không cho ngấm vào."
+pubDate: 2026-09-02
+tags: ["vat-ly", "nhiet-hoc", "javascript"]
+translationId: "chien-ngap-dau-180-do-ma-khong-chay"
+---
+
+import FryingCrust from '../../../components/demos/FryingCrust.astro';
+
+Chảo dầu 180 °C. Thả lát khoai vào, ba phút sau vớt ra: rìa vàng giòn rộm,
+ruột mềm bở y hệt khoai luộc. Cùng một miếng, hai số phận nhiệt — và ranh
+giới giữa chúng là một mặt phẳng đang lùi dần vào trong:
+
+<FryingCrust />
+
+## Nước ghim cả miếng ở đúng 100 °C
+
+Chừng nào một điểm trong miếng khoai còn nước lỏng, điểm ấy **không thể vượt
+100 °C**: mọi joule rót thêm đều bị nhiệt hoá hơi nuốt sạch — 2 260 kJ mỗi
+kilôgam, [khoản nhiệt ẩn khiến nhiệt kế đứng
+im](/vi/posts/nhiet-an-hai-quang-nhiet-ke-dung-im) trong khi bếp vẫn cháy hết
+công suất. Đúng cơ chế giữ [nồi canh ở 100 °C dưới ngọn lửa 1 950
+°C](/vi/posts/nhiet-do-ngon-lua-bep-gas-1950-do), chỉ khác là lần này nó diễn
+ra *bên trong* miếng ăn: món chiên là lớp vỏ đang bị **nướng ở 180 °C** bọc
+quanh phần ruột đang bị **luộc ở 100 °C**, hai bên cách nhau đúng một milimét.
+
+Một gam nước hoá hơi ở 100 °C nở thành **1,70 lít**, gấp gần 1 700 lần: lát
+khoai đường kính 5 cm dày 4 mm bốc 3,23 g nước trong ba phút, tức **5,5 lít
+hơi** — gấp 700 lần thể tích chính nó. Bong bóng sùng sục trong chảo là hơi
+nước từ trong thức ăn thoát ra, không phải dầu sôi: dầu ăn trên 300 °C mới
+sôi. Chảo ngừng sủi tăm nghĩa là đồ đã cạn nước: không phải "đã chín", mà là
+"sắp cháy".
+
+## Vỏ dày lên theo căn bậc hai của thời gian
+
+Mặt sôi lùi vào trong, và nhiệt từ dầu phải chui qua chính lớp vỏ khô nó vừa
+bỏ lại. Cho dòng nhiệt dẫn qua vỏ bằng năng lượng hoá hơi ở mặt sôi, ra bề dày:
+
+```
+s = √( 2·k·(T_dầu − 100)·t / (ρ·w·L_v) )
+```
+
+với k ≈ 0,065 W/(m·K) là dẫn nhiệt của lớp vỏ xốp khô, ρ = 1 050 kg/m³, w là
+tỉ lệ nước, L_v = 2 260 kJ/kg.
+
+Điểm cốt lõi nằm ở chữ căn: **lớp vỏ tự bóp cổ nó**. Vỏ càng dày, trở nhiệt
+càng lớn, mặt sôi lùi càng chậm — ở 180 °C với khoai 78% nước, dòng nhiệt qua
+vỏ tụt từ 8,96 kW/m² lúc một phút xuống 2,83 kW/m² lúc mười phút. Bề dày vì
+thế bò theo √t: 0,58 mm sau một phút, **1,01 mm sau ba phút**, 1,84 mm sau
+mười phút. Muốn vỏ dày gấp đôi, phải chiên lâu gấp bốn.
+
+Nhiệt độ dầu gần như không đổi được điều đó: s tỉ lệ với √(T − 100), nên nhảy
+từ 140 lên 200 °C chỉ nhân bề dày vỏ lên **1,58 lần** (0,71 thành 1,12 mm ở
+phút thứ ba). Nhưng mặt ngoài thì nằm ở đúng nhiệt độ dầu ngay từ giây đầu, mà
+Maillard lại nhạy với nhiệt độ theo hàm mũ: **nhiệt độ dầu quyết định màu,
+thời gian quyết định độ dày vỏ**, hai núm vặn gần như độc lập — và đó là gần
+hết nghề chiên.
+
+## Dòng hơi đi ra chính là thứ chặn dầu đi vào
+
+Ở phút thứ ba, mỗi mét vuông mặt lát khoai thải 2,29 gam hơi mỗi giây — thành
+thể tích hơi ở 100 °C, đó là dòng thổi ngược ra **3,9 mm/s** ngay tại bề mặt.
+Cùng lúc, các lỗ xốp trong vỏ hút dầu vào bằng [mao
+dẫn](/vi/posts/mao-dan-nuoc-leo-cao-va-bi-mat-cua-cay-100-met): lỗ bán kính
+10 µm với sức căng dầu 0,03 N/m cho lực hút Δp = 2γ/r = **6 kPa**. Hai bên
+giằng nhau ở cùng một cỡ áp suất, nên khi còn trong chảo, dầu chủ yếu bám mặt.
+
+Thế cân bằng ấy sụp đúng lúc bạn vớt đồ ra: hơi ngừng thổi ngược, hơi kẹt
+trong lỗ nguội đi và ngưng tụ, áp suất bên trong tụt — còn lại 6 kPa hút vào
+mà không còn gì cưỡng lại. **Món chiên ngấm dầu chủ yếu sau khi rời chảo.**
+Nên vài giây đầu sau khi vớt đáng giá hơn cả: dốc thẳng lên giá thoáng, đừng để
+nằm trong vũng dầu nguội dưới đĩa, đừng đậy vung.
+
+## Trường hợp biên: giây mà mốc 100 °C sụp
+
+Đẩy demo tới 200 °C và 570 giây: hai mặt sôi từ hai phía gặp nhau ở tâm lát
+khoai (hạ độ ẩm xuống 40% thì chỉ cần 370 giây). Từ giây ấy trở đi, trong
+miếng không còn giọt nước nào để mua đứt cái mốc 100 °C nữa.
+
+Lớp vỏ khô có mật độ chừng 400 kg/m³ và nhiệt dung 1 700 J/(kg·K); với hệ số
+toả nhiệt của dầu cỡ 300 W/(m²·K), một lát mỏng 1,5 mm có hằng số thời gian
+nhiệt chỉ **1,7 giây** — nó đi từ 100 lên 170 °C trong **3,5 giây**. Lát ấy
+cạn nước ở giây thứ 100, rồi vàng chuyển thành cháy trong vài nhịp thở — mẻ
+chiên hỏng luôn hỏng ở phút cuối.
+
+Ngược lại, cọng khoai vuông cạnh 1 cm cần **74 phút** để mặt sôi bò tới tâm ở
+180 °C — ruột nó không có đường nào vượt 100 °C trong một chảo dầu bình
+thường. Đồ dày không bao giờ cháy ruột, đồ mỏng không bao giờ có ruột: một con
+số duy nhất, bề dày miếng, chia đôi cả thế giới đồ chiên.

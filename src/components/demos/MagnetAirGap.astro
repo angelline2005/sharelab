@@ -1,0 +1,190 @@
+---
+// Lực hút của nam châm trụ (từ hoá dọc trục) lên tấm thép dày, bằng phương
+// pháp ảnh: tấm thép được thay bằng một nam châm ảnh, lực là tổng tương tác
+// của bốn cặp "điện tích từ" mặt.
+//   F = M²·[Φ(2g) + Φ(2g+2L) − 2Φ(2g+L)],  M = Br/µ0
+//   Φ(d) = (µ0/2)·∫ sinh t · S(d·sinh t) / cosh²t · dt,  t: 0 → asinh(2R/d)
+//   S(ρ) = 2R²·acos(ρ/2R) − (ρ/2)·√(4R²−ρ²)  (diện tích giao của hai đĩa R)
+// Đúng tuyệt đối cho bán không gian µ → ∞. Đã kiểm: sai 0,03% so với công
+// thức lưỡng cực đồng trục ở 20 cm, và hội tụ về F = Br²A/2µ0 khi L ≫ R.
+// Lực nhà sản xuất công bố thấp hơn 10–20%: thép bão hoà ngay dưới cực và
+// lớp mạ niken tạo thêm khe. Br = 1,32 T (N42).
+// Slider: khe 0–15 mm, đường kính 6–50 mm, bề dày 1–20 mm.
+---
+
+<figure class="demo" data-demo="luc-hut-nam-cham-va-khe-ho-mot-milimet">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Khe hở g (mm) <output data-out="g"></output>
+      <input type="range" data-in="g" min="0" max="15" step="0.1" value="1" /></label>
+    <label>Đường kính nam châm (mm) <output data-out="d"></output>
+      <input type="range" data-in="d" min="6" max="50" step="1" value="10" /></label>
+    <label>Bề dày nam châm (mm) <output data-out="l"></output>
+      <input type="range" data-in="l" min="1" max="20" step="0.5" value="10" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Đường cong là lực hút (kg) theo khe hở giữa nam châm neodymium N42 và tấm
+    thép dày. Trục ngang nén theo căn bậc hai để vùng dưới 1 mm — nơi mọi
+    chuyện xảy ra — không bị dồn vào gốc. Ba vạch cam là bề dày đời thường:
+    tờ giấy in, tấm danh thiếp, chiếc ốp lưng điện thoại. Hình nhỏ góc trên là
+    mặt cắt vẽ đúng tỉ lệ: khe 0,1 mm mắt không nhìn ra, lực thì thấy ngay.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const CURVE = '#2563eb', MARK = '#dc2626', LM = '#f59e0b';
+  const MU0 = 4 * Math.PI * 1e-7, BR = 1.32, GRAV = 9.80665;
+  const GMAX = 15; // mm
+  const vn = (x: number, d: number) => x.toFixed(d).replace('.', ',');
+  const vnl = (x: number) => (Number.isInteger(x) ? String(x) : vn(x, 1));
+
+  // Lực giữa hai đĩa "tích từ" đồng trục bán kính R, cách nhau d (SI).
+  // N = 200 cho số đọc (sai < 0,01%); N = 90 khi chỉ vẽ đường cong.
+  function phi(d: number, R: number, N = 200): number {
+    if (d <= 0) return (MU0 * Math.PI * R * R) / 2;
+    const T = Math.asinh((2 * R) / d);
+    let s = 0;
+    for (let i = 0; i < N; i++) {
+      const t = (T * (i + 0.5)) / N, sh = Math.sinh(t), ch = Math.cosh(t);
+      const rho = d * sh, x = Math.min(1, rho / (2 * R));
+      const S = 2 * R * R * Math.acos(x) - (rho / 2) * Math.sqrt(Math.max(0, 4 * R * R - rho * rho));
+      s += (sh * S) / (ch * ch);
+    }
+    return ((MU0 / 2) * s * T) / N;
+  }
+  // Lực hút (N) của nam châm trụ R, L lên tấm thép dày, khe g. Mọi độ dài: m.
+  function force(g: number, L: number, R: number, N = 200): number {
+    const M = BR / MU0;
+    return M * M * (phi(2 * g, R, N) + phi(2 * g + 2 * L, R, N) - 2 * phi(2 * g + L, R, N));
+  }
+  const niceStep = (x: number) => {
+    const e = Math.pow(10, Math.floor(Math.log10(x))), m = x / e;
+    return (m <= 1 ? 1 : m <= 2 ? 2 : m <= 2.5 ? 2.5 : m <= 5 ? 5 : 10) * e;
+  };
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (k: string) => root.querySelector(`[data-in="${k}"]`) as HTMLInputElement;
+    const output = (k: string) => root.querySelector(`[data-out="${k}"]`) as HTMLOutputElement;
+
+    function draw() {
+      const gmm = Number(input('g').value);
+      const dmm = Number(input('d').value);
+      const lmm = Number(input('l').value);
+      output('g').textContent = vnl(gmm);
+      output('d').textContent = String(dmm);
+      output('l').textContent = vnl(lmm);
+
+      const R = dmm / 2000, L = lmm / 1000;
+      const kgAt = (mm: number, N = 200) => force(mm / 1000, L, R, N) / GRAV;
+      const f0 = kgAt(0), fNow = kgAt(gmm);
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.46);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+
+      const padL = 46, padB = 28, padT = 12, padR = 12;
+      const plotW = cssW - padL - padR, plotH = cssH - padT - padB;
+      // Trục ngang nén theo căn bậc hai; trục dọc tuyến tính, chia vạch tròn.
+      const tick = niceStep(f0 / 4), yMax = Math.ceil(f0 / tick) * tick;
+      const dec = tick >= 1 ? 0 : tick >= 0.1 ? 1 : 2;
+      const X = (mm: number) => padL + Math.sqrt(Math.max(0, mm) / GMAX) * plotW;
+      const Y = (kg: number) => padT + (1 - kg / yMax) * plotH;
+
+      ctx.font = '10px system-ui,sans-serif';
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.3;
+      ctx.beginPath();
+      ctx.moveTo(padL, padT); ctx.lineTo(padL, padT + plotH); ctx.lineTo(padL + plotW, padT + plotH);
+      ctx.stroke();
+      ctx.globalAlpha = 0.55; ctx.fillStyle = fg;
+      ctx.textAlign = 'center';
+      for (const t of [0, 0.3, 1, 3, 6, 10, 15]) {
+        ctx.fillText(t === 0 ? '0' : vn(t, t < 1 ? 1 : 0), X(t), padT + plotH + 14);
+      }
+      ctx.fillText('khe hở (mm)', padL + plotW * 0.5, padT + plotH + 25);
+      ctx.textAlign = 'right';
+      for (let kg = 0; kg <= yMax + tick / 2; kg += tick) {
+        ctx.fillText(`${vn(kg, dec)} kg`, padL - 5, Y(kg) + 3);
+      }
+      ctx.globalAlpha = 1;
+
+      // Mốc bề dày đời thường.
+      const marks: Array<[number, string]> = [[0.1, 'giấy'], [0.3, 'danh thiếp'], [1.5, 'ốp lưng']];
+      ctx.strokeStyle = LM; ctx.fillStyle = LM; ctx.setLineDash([3, 3]);
+      marks.forEach(([mm, name], i) => {
+        ctx.globalAlpha = 0.65;
+        ctx.beginPath(); ctx.moveTo(X(mm), padT); ctx.lineTo(X(mm), padT + plotH); ctx.stroke();
+        ctx.globalAlpha = 0.9; ctx.textAlign = 'left';
+        ctx.fillText(`${name} ${vn(mm, 1)} mm`, X(mm) + 3, padT + plotH - 6 - (i % 2) * 13);
+      });
+      ctx.setLineDash([]); ctx.globalAlpha = 1;
+
+      // Đường cong lực theo khe hở (lấy mẫu đều trên trục căn bậc hai).
+      ctx.strokeStyle = CURVE; ctx.lineWidth = 2; ctx.beginPath();
+      const NP = 130;
+      for (let i = 0; i <= NP; i++) {
+        const u = i / NP, mm = u * u * GMAX;
+        const y = Y(kgAt(mm, 90));
+        i ? ctx.lineTo(X(mm), y) : ctx.moveTo(X(mm), y);
+      }
+      ctx.stroke(); ctx.lineWidth = 1;
+
+      ctx.fillStyle = MARK;
+      ctx.beginPath(); ctx.arc(X(gmm), Y(fNow), 6, 0, Math.PI * 2); ctx.fill();
+
+      // Mặt cắt vẽ đúng tỉ lệ, đặt ở góc trên bên phải (nơi đường cong đã thấp).
+      const bx = padL + plotW * 0.58, by = padT + 4;
+      const bw = plotW * 0.4, bh = plotH * 0.42;
+      const s = Math.min((bw * 0.62) / dmm, (bh * 0.9) / (lmm + GMAX));
+      const plate = by + bh, cx = bx + bw * 0.42, halfW = (dmm * s) / 2;
+      ctx.globalAlpha = 0.3; ctx.fillStyle = fg;
+      ctx.fillRect(bx, plate, bw, 12);
+      ctx.globalAlpha = 0.85; ctx.textAlign = 'left';
+      ctx.fillText('thép dày', bx + 3, plate + 9);
+      ctx.globalAlpha = 0.18; ctx.strokeStyle = CURVE; ctx.fillStyle = CURVE;
+      ctx.fillRect(cx - halfW, plate - (gmm + lmm) * s, dmm * s, lmm * s);
+      ctx.globalAlpha = 1;
+      ctx.strokeRect(cx - halfW, plate - (gmm + lmm) * s, dmm * s, lmm * s);
+      ctx.fillStyle = MARK; ctx.globalAlpha = 0.8;
+      ctx.fillRect(cx - halfW, plate - gmm * s, dmm * s, Math.max(0.8, gmm * s));
+      ctx.globalAlpha = 0.7; ctx.fillStyle = fg;
+      ctx.fillText(gmm > 0 ? `khe ${vn(gmm, 1)} mm` : 'chạm sát', cx + halfW + 5, plate - 1);
+      ctx.globalAlpha = 1;
+
+      const pct = (100 * fNow) / f0;
+      const gram = fNow * 1000;
+      // Trần lý thuyết: áp suất Br²/2µ₀ trải đều trên toàn mặt cực.
+      const ceil = ((BR * BR) / (2 * MU0)) * Math.PI * R * R / GRAV;
+      const note = gmm === 0
+        ? ` · chạm sát đạt <b>${vn((100 * f0) / ceil, (100 * f0) / ceil < 10 ? 1 : 0)}% trần Br²/2µ₀</b> (${vn(ceil, 2)} kg)`
+        : pct < 10
+          ? ` · <b>đã mất ${vn(100 - pct, 1)}% lực, chỉ còn nhấc nổi ${vn(gram, gram < 10 ? 1 : 0)} g</b>`
+          : ` · còn <b>${vn(pct, 1)}%</b> so với khi chạm sát (${vn(f0, 2)} kg)`;
+      readout.innerHTML =
+        `N42 Ø${dmm} × ${vnl(lmm)} mm · khe ${vnl(gmm)} mm → ` +
+        `lực ${vn(fNow * GRAV, 1)} N = <b>${vn(fNow, 3)} kg</b>${note}`;
+    }
+
+    root.querySelectorAll('input').forEach((el) => el.addEventListener('input', draw));
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="luc-hut-nam-cham-va-khe-ho-mot-milimet"]').forEach(setup);
+</script>

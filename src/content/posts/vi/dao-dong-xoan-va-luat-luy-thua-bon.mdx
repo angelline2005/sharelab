@@ -1,0 +1,95 @@
+---
+title: "Dây dày gấp đôi thì cứng gấp mười sáu lần"
+seoTitle: "Dao động xoắn: hằng số xoắn của dây và chu kỳ con lắc xoắn"
+description: "Độ cứng xoắn của một sợi dây đi theo lũy thừa BỐN của đường kính. Sợi thép 0,5 mm dài 1 m chỉ có κ = 4,85×10⁻⁴ N·m/rad và đưa một thanh tạ 100 g qua lại mỗi 9 giây; đổi sang dây 1 mm là cứng gấp 16 lần, nhanh gấp 4."
+pubDate: 2026-09-02
+tags: ["vat-ly", "dao-dong", "co-hoc", "javascript"]
+translationId: "dao-dong-xoan-va-luat-luy-thua-bon"
+---
+
+import TorsionWire from '../../../components/demos/TorsionWire.astro';
+
+Treo chùm chìa khoá lên một sợi cước câu cá, xoắn một vòng rồi buông tay: nó
+quay tới quay lui, chậm và đều, cả chục lượt mới chịu đứng yên. Đổi sang cuộn
+cước cùng loại nhưng dày gấp đôi, vẫn chùm chìa khoá ấy, giờ nó giật qua giật
+lại nhanh gấp bốn. Bốn là căn bậc hai của con số thật sự đang chỉ huy:
+
+<TorsionWire />
+
+## Ba thừa số r nhân với nhau
+
+Xoắn một sợi dây tròn, mỗi vành vật liệu bên trong chống lại theo ba kênh
+nhân lên nhau: vành càng xa tâm càng bị trượt nhiều (`∝ r`), chu vi càng dài
+nên diện tích càng lớn (`∝ r·dr`), tay đòn với trục cũng càng xa (`∝ r`). Ba
+thừa số `r` cộng dồn từ tâm ra mép cho `r⁴`:
+
+```
+κ = π·G·d⁴/(32·L)
+```
+
+`G` là mô-đun trượt của vật liệu — thép 79 GPa. Cùng thép, cùng dài 1 m: dây
+0,25 mm cho κ = 3,03×10⁻⁵ N·m/rad; 0,5 mm cho 4,85×10⁻⁴; 1 mm cho 7,76×10⁻³;
+2 mm cho 0,124. Mỗi lần gấp đôi đường kính, cột số nhảy **16 bậc một**, trong
+khi chiều dài chỉ chia theo tỉ lệ thẳng: muốn sợi 1 mm mềm bằng sợi 0,5 mm,
+bạn phải kéo nó dài **16 mét**. Cũng vì `r⁴` mà nửa bán kính phía trong chỉ
+gánh **1/16 độ cứng xoắn** — trục truyền động và khung xe đạp làm rỗng ruột
+chính là bỏ đi phần vật liệu lười nhất.
+
+## Cứng gấp mười sáu, nhưng chỉ nhanh gấp bốn
+
+Mô-men hồi phục tỉ lệ thẳng với góc xoắn — đúng dạng [định luật
+Hooke](/vi/posts/dinh-luat-hooke-so-mot-phan-hai-tu-dau-ra) viết cho góc —
+nên chuyển động là dao động điều hoà thuần tuý:
+
+```
+T = 2π·√(I/κ),  với I = 2·m·r²
+```
+
+Hai quả 50 g cách trục 10 cm cho `I = 1,00×10⁻³ kg·m²`. Treo lên sợi 0,5 mm
+dài 1 m: **T = 9,02 giây**. Đổi sang sợi 1 mm, κ nhân 16 nhưng chu kỳ chỉ
+chia cho căn của 16 — còn **2,26 giây**.
+
+Đây là chỗ con lắc xoắn khác hẳn [con lắc
+đơn](/vi/posts/chu-ky-con-lac-don-co-that-su-khong-phu-thuoc-bien-do), nơi
+khối lượng triệt tiêu sạch khỏi công thức. Trục thẳng đứng thì thanh ngang
+không sinh nổi mô-men trọng lực nào quanh trục, nên khối lượng ở đây chẳng có
+gì để triệt tiêu với: nhồi mỗi đầu 200 g thay vì 50 g, chu kỳ kéo lên 18,05
+giây; hoặc giữ nguyên khối lượng mà dời hai quả ra 20 cm, cũng đúng 18,05
+giây, vì [I đếm theo
+r²](/vi/posts/bao-toan-momen-dong-luong-cu-xoay-khong-mien-phi).
+
+Biên độ thì vẫn không được tính công, và ở đây "biên độ nhỏ" rộng đến bất
+ngờ: xoắn trọn một vòng, mặt ngoài sợi 0,5 mm mới chịu 124 MPa ứng suất
+trượt. Quay **hơn bốn vòng** rồi buông, mỗi chu kỳ vẫn đúng 9,02 giây.
+
+## Thanh xoắn dưới gầm xe, dây tóc trong đồng hồ
+
+Cùng công thức, đổi thang. Thanh thép đặc 25 mm dài 1 m — hệ thống treo thanh
+xoắn của xe bọc thép — cho κ = 3 030 N·m/rad; qua tay đòn bánh xe 30 cm thành
+**33,7 N/mm**, đúng dải độ cứng lò xo ô tô, và một góc xe nặng 400 kg ngồi lún
+117 mm. Muốn mềm đi một phần tư, kỹ sư không kéo thanh dài thêm một phần ba —
+họ **gọt đường kính đi 7%**.
+
+Đầu kia của thang là dây tóc bánh lắc trong đồng hồ cơ: lá thép mỏng cuộn
+xoắn ốc, đập 8 nhịp mỗi giây (28 800 nhịp/giờ), **chu kỳ 0,25 giây**. Lá dẹt
+thì độ cứng theo lũy thừa ba của bề dày chứ không phải bốn — nhẹ hơn một bậc,
+vẫn đủ khắc nghiệt: cán dày thêm 1% là đồng hồ chạy nhanh thêm **21 phút mỗi
+ngày**.
+
+## Trường hợp biên: mỏng tới mức sợi dây thành vấn đề
+
+Kéo đường kính xuống 0,05 mm — mảnh bằng sợi tóc — thì công thức vẫn đứng
+vững: κ tụt 10 000 lần còn 4,85×10⁻⁸ N·m/rad, chu kỳ giãn ra **15 phút**. Vật
+liệu mới là bên đầu hàng. Chính sợi ấy treo 100 g đã chịu ứng suất kéo
+**500 MPa**, sát ngưỡng chảy của thép dây thường: nó dão dần theo giờ, điểm
+không trôi đi trong lúc bạn còn đang bấm giờ; và [dao động tắt
+dần](/vi/posts/dao-dong-tat-dan-diem-vang-cua-giam-xoc) vì cản không khí nuốt
+gần hết biên độ trước khi bạn đếm xong ba chu kỳ.
+
+Dưới cùng là cái sàn không ai gọt qua được: với κ = 4,85×10⁻⁸, phân bố đều
+năng lượng cho mỗi bậc tự do đúng `½·k_B·T`, tức góc xoắn nhiễu nhiệt
+`θ = √(k_B·T/κ)` = **0,29 micro-radian** — hai đầu thanh tạ tự rung 29 nanomét
+chỉ vì phòng đang ở 20 °C. Cavendish năm 1798 đâm thẳng vào bức tường ấy khi
+đem cân xoắn ra đo hằng số hấp dẫn: ông nhốt cả bộ cân trong hộp gỗ kín rồi
+đọc thước qua kính viễn vọng từ phòng bên — không phải vì cầu kỳ, mà vì hơi
+thở của chính người quan sát đủ sức đánh bại phép đo.

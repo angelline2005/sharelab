@@ -1,0 +1,237 @@
+---
+// Tầm xa của alpha / beta / gamma trong 5 vật liệu, trục sâu thang log.
+//
+// Alpha — tầm xa trong không khí (15 °C, 1 atm), công thức thực nghiệm hai nhánh:
+//   R = 0,56·E cm            (E < 4 MeV)
+//   R = 1,24·E − 2,62 cm     (4 ≤ E ≤ 8 MeV; ngoại suy tới 10 MeV, thiếu ~7%)
+//   Ở 5,5 MeV cho 4,20 cm, trùng với dạng luỹ thừa 0,325·E^1,5 = 4,19 cm.
+// Quy đổi sang môi trường khác bằng quy tắc Bragg–Kleeman:
+//   R_mt = R_kk · (ρ_kk/ρ_mt) · √(A_mt/A_kk), A hiệu dụng lấy theo
+//   1/√A = Σ wᵢ/√Aᵢ  → không khí 14,59; nước/mô 8,99; xenlulô 10,18.
+//   Đối chiếu NIST ASTAR: 5,5 MeV trong nước 41 µm, công thức cho 39,7 µm.
+//
+// Beta — Katz–Penfold, R tính bằng g/cm² rồi chia cho ρ:
+//   R = 0,412·E^(1,265 − 0,0954·lnE)   (0,01 ≤ E ≤ 2,5 MeV)
+//   R = 0,530·E − 0,106                (E > 2,5 MeV)
+//   Hai nhánh khớp nhau ở 2,5 MeV: 1,212 vs 1,219 g/cm². E là năng lượng cực đại.
+//
+// Gamma — I/I₀ = e^(−µx), µ/ρ nội suy log–log từ bảng NIST XCOM (tổng, có tán xạ
+//   kết hợp), 0,05–10 MeV. Bảng chì có thêm hai điểm hai bên bờ hấp thụ K (88 keV).
+//   Giấy dùng số liệu của nước với ρ = 0,8 g/cm³ (xenlulô lệch dưới 3%).
+---
+
+<figure class="demo" data-demo="to-giay-chan-alpha-va-dau-bao-khoi">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Năng lượng hạt (MeV) <output data-out="e"></output>
+      <input type="range" data-in="e" min="0.05" max="10" step="0.005" value="5.5" /></label>
+    <label>Vật liệu chắn <output data-out="m"></output>
+      <input type="range" data-in="m" min="0" max="4" step="1" value="1" /></label>
+    <label>Bề dày tấm chắn (mm) <output data-out="x"></output>
+      <input type="range" data-in="x" min="0" max="20" step="0.01" value="0.1" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Trục ngang là độ sâu trong vật liệu, thang log trải tám bậc mười — từ một
+    micromet tới một trăm mét. Alpha và beta có <em>tầm xa</em>: chúng đi hết
+    quãng đường của mình rồi dừng hẳn (chấm tròn). Gamma không có tầm xa nào
+    cả, chỉ nhạt dần theo hàm mũ, nên vạch nhỏ đánh dấu bề dày làm yếu một nửa.
+    Vạch đứt đỏ là tấm chắn bạn đang đặt.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const GAM = '#2563eb', ALP = '#dc2626', BET = '#f59e0b';
+
+  const EG = [0.05, 0.06, 0.08, 0.088, 0.0881, 0.1, 0.15, 0.2, 0.3, 0.4, 0.5, 0.6,
+              0.8, 1, 1.25, 1.5, 2, 3, 4, 5, 6, 8, 10];
+  const MU: Record<string, number[]> = {
+    air: [0.2080, 0.1875, 0.1662, 0.1621, 0.1621, 0.1541, 0.1356, 0.1233, 0.1067, 0.09549,
+          0.08712, 0.08055, 0.07074, 0.06358, 0.05687, 0.05175, 0.04447, 0.03581, 0.03079,
+          0.02751, 0.02522, 0.02225, 0.02045],
+    h2o: [0.2269, 0.2059, 0.1837, 0.1793, 0.1793, 0.1707, 0.1505, 0.1370, 0.1186, 0.1061,
+          0.09687, 0.08956, 0.07865, 0.07072, 0.06323, 0.05754, 0.04942, 0.03969, 0.03403,
+          0.03031, 0.02770, 0.02429, 0.02219],
+    al:  [0.3681, 0.2778, 0.2018, 0.1900, 0.1900, 0.1704, 0.1378, 0.1223, 0.1042, 0.09276,
+          0.08445, 0.07802, 0.06841, 0.06146, 0.05496, 0.05006, 0.04324, 0.03541, 0.03106,
+          0.02836, 0.02655, 0.02437, 0.02318],
+    pb:  [8.041, 5.021, 2.419, 1.910, 7.683, 5.549, 1.910, 0.9985, 0.4031, 0.2323,
+          0.1614, 0.1248, 0.08870, 0.07102, 0.05876, 0.05222, 0.04606, 0.04234, 0.04197,
+          0.04272, 0.04391, 0.04675, 0.04972],
+  };
+
+  // tên, ρ (g/cm³), √A hiệu dụng, khoá bảng gamma
+  const MAT: Array<[string, number, number, string]> = [
+    ['không khí', 1.205e-3, 3.8198, 'air'],
+    ['giấy', 0.8, 3.1898, 'h2o'],
+    ['mô mềm', 1.0, 2.9986, 'h2o'],
+    ['nhôm', 2.70, 5.1944, 'al'],
+    ['chì', 11.35, 14.3944, 'pb'],
+  ];
+  const SQRT_A_AIR = 3.8198, RHO_AIR = 1.205e-3;
+
+  const interp = (x: number, ys: number[]) => {
+    if (x <= EG[0]) return ys[0];
+    if (x >= EG[EG.length - 1]) return ys[ys.length - 1];
+    let i = 0;
+    while (EG[i + 1] < x) i++;
+    const t = (Math.log(x) - Math.log(EG[i])) / (Math.log(EG[i + 1]) - Math.log(EG[i]));
+    return Math.exp(Math.log(ys[i]) + t * (Math.log(ys[i + 1]) - Math.log(ys[i])));
+  };
+
+  const rAirCm = (E: number) => (E < 4 ? 0.56 * E : 1.24 * E - 2.62);
+  const rAlphaMm = (E: number, rho: number, sa: number) =>
+    10 * rAirCm(E) * (RHO_AIR / rho) * (sa / SQRT_A_AIR);
+  const rBetaMm = (E: number, rho: number) =>
+    10 * (E <= 2.5 ? 0.412 * Math.pow(E, 1.265 - 0.0954 * Math.log(E)) : 0.530 * E - 0.106) / rho;
+  const muPerMm = (E: number, rho: number, key: string) => interp(E, MU[key]) * rho / 10;
+
+  const vi = (n: number, d = 1) => n.toFixed(d).replace('.', ',');
+  const len = (mm: number) => {
+    if (mm < 1) return `${vi(mm * 1000, mm < 0.1 ? 1 : 0)} µm`;
+    if (mm < 1000) return `${vi(mm, mm < 10 ? 2 : 1)} mm`;
+    return `${vi(mm / 1000, 1)} m`;
+  };
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (k: string) => root.querySelector(`[data-in="${k}"]`) as HTMLInputElement;
+    const output = (k: string) => root.querySelector(`[data-out="${k}"]`) as HTMLOutputElement;
+
+    const LO = Math.log10(0.001), HI = Math.log10(100000); // 1 µm → 100 m
+
+    function draw() {
+      const E = Number(input('e').value);
+      const mi = Number(input('m').value);
+      const x = Number(input('x').value);
+      const [name, rho, sa, key] = MAT[mi];
+
+      output('e').textContent = vi(E, 3);
+      output('m').textContent = name;
+      output('x').textContent = vi(x, 2);
+
+      const aOK = E >= 1;
+      const Ra = rAlphaMm(E, rho, sa);
+      const Rb = rBetaMm(E, rho);
+      const mu = muPerMm(E, rho, key);
+      const hvl = Math.LN2 / mu;
+      const gT = Math.exp(-mu * x);
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.5);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+
+      const padL = 30, padR = 12, padT = 14, padB = 30;
+      const X = (mm: number) =>
+        padL + ((Math.log10(Math.max(mm, 1e-6)) - LO) / (HI - LO)) * (cssW - padL - padR);
+      const rowH = (cssH - padT - padB) / 3;
+      const Y = (r: number) => padT + rowH * (r + 0.5);
+
+      ctx.font = '10px system-ui,sans-serif';
+
+      // Trục và vạch chia thang log.
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.28;
+      ctx.beginPath(); ctx.moveTo(padL, padT); ctx.lineTo(padL, cssH - padB);
+      ctx.lineTo(cssW - padR, cssH - padB); ctx.stroke();
+      const TICKS: Array<[number, string]> = [
+        [0.001, '1 µm'], [0.01, '10 µm'], [0.1, '0,1 mm'], [1, '1 mm'], [10, '1 cm'],
+        [100, '10 cm'], [1000, '1 m'], [10000, '10 m'], [100000, '100 m'],
+      ];
+      ctx.textAlign = 'center';
+      for (const [mm, lab] of TICKS) {
+        ctx.globalAlpha = 0.16;
+        ctx.beginPath(); ctx.moveTo(X(mm), padT); ctx.lineTo(X(mm), cssH - padB); ctx.stroke();
+        ctx.globalAlpha = 0.55; ctx.fillStyle = fg;
+        ctx.fillText(lab, X(mm), cssH - padB + 14);
+      }
+      ctx.globalAlpha = 1;
+
+      // Gamma: dải nhạt dần, không bao giờ tắt.
+      const yG = Y(2), h = Math.max(9, rowH * 0.42);
+      for (let px = padL; px < cssW - padR; px += 2) {
+        const d = Math.pow(10, LO + ((px - padL) / (cssW - padL - padR)) * (HI - LO));
+        ctx.globalAlpha = Math.max(0.05, Math.exp(-mu * d));
+        ctx.fillStyle = GAM;
+        ctx.fillRect(px, yG - h / 2, 2.4, h);
+      }
+      ctx.globalAlpha = 1;
+      if (hvl > 0.001 && hvl < 100000) {
+        ctx.strokeStyle = GAM; ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.moveTo(X(hvl), yG - h / 2 - 5); ctx.lineTo(X(hvl), yG + h / 2 + 5); ctx.stroke();
+        ctx.lineWidth = 1; ctx.fillStyle = GAM; ctx.textAlign = 'center';
+        ctx.fillText('còn 50%', X(hvl), yG - h / 2 - 8);
+      }
+
+      // Alpha và beta: thanh đặc rồi dừng hẳn. Dưới 1 MeV không có nguồn alpha
+      // thật và khớp thực nghiệm hết hiệu lực, nên hàng alpha để trống.
+      const bars: Array<[number, number, string, string]> = aOK
+        ? [[0, Ra, ALP, 'α'], [1, Rb, BET, 'β']]
+        : [[1, Rb, BET, 'β']];
+      if (!aOK) {
+        ctx.fillStyle = fg; ctx.globalAlpha = 0.45; ctx.textAlign = 'left';
+        ctx.fillText('không có nguồn alpha dưới 1 MeV', padL + 8, Y(0) + 4);
+        ctx.globalAlpha = 1;
+      }
+      for (const [r, R, col, lab] of bars) {
+        const y = Y(r);
+        ctx.strokeStyle = col; ctx.lineWidth = Math.max(7, rowH * 0.3); ctx.lineCap = 'butt';
+        ctx.beginPath(); ctx.moveTo(padL, y); ctx.lineTo(Math.max(padL + 1, Math.min(X(R), cssW - padR)), y); ctx.stroke();
+        ctx.lineWidth = 1;
+        if (X(R) < cssW - padR) {
+          ctx.fillStyle = col;
+          ctx.beginPath(); ctx.arc(X(R), y, 5, 0, Math.PI * 2); ctx.fill();
+          ctx.textAlign = 'left';
+          ctx.fillText(`dừng ở ${len(R)}`, Math.min(X(R) + 9, cssW - padR - 78), y - 9);
+        }
+        ctx.fillStyle = fg; ctx.globalAlpha = 0.75; ctx.textAlign = 'right';
+        ctx.fillText(lab, padL - 5, y + 4);
+        ctx.globalAlpha = 1;
+      }
+      ctx.fillStyle = fg; ctx.globalAlpha = 0.75; ctx.textAlign = 'right';
+      ctx.fillText('γ', padL - 5, yG + 4);
+      if (!aOK) ctx.fillText('α', padL - 5, Y(0) + 4);
+      ctx.globalAlpha = 1;
+
+      // Tấm chắn đang đặt.
+      if (x > 0.001) {
+        ctx.strokeStyle = ALP; ctx.setLineDash([4, 3]); ctx.globalAlpha = 0.85;
+        ctx.beginPath(); ctx.moveTo(X(x), padT); ctx.lineTo(X(x), cssH - padB); ctx.stroke();
+        ctx.setLineDash([]); ctx.globalAlpha = 1;
+        ctx.fillStyle = ALP; ctx.textAlign = X(x) > cssW * 0.7 ? 'right' : 'left';
+        ctx.fillText(` tấm chắn ${len(x)} `, X(x), padT + 8);
+      }
+
+      const aPass = aOK && x < Ra;
+      const note = x > 0 && !aPass && x >= Rb && gT > 0.1
+        ? ' · <b>chỉ còn gamma đi qua</b>'
+        : (aPass ? ' · <b>alpha vẫn xuyên qua</b>' : '');
+      readout.innerHTML =
+        `${vi(E, 3)} MeV trong <b>${name}</b> — alpha dừng ở <b>${aOK ? len(Ra) : '—'}</b>, beta dừng ở ` +
+        `<b>${len(Rb)}</b>, gamma còn 50% sau <b>${len(hvl)}</b>. Sau tấm chắn ${len(x)}: ` +
+        `alpha ${aOK ? (aPass ? '100' : '0') + '%' : '—'}, beta ${x < Rb ? '100' : '0'}%, ` +
+        `gamma <b>${vi(100 * gT, 1)}%</b>${note}`;
+    }
+
+    root.querySelectorAll('input').forEach((el) => el.addEventListener('input', draw));
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="to-giay-chan-alpha-va-dau-bao-khoi"]').forEach(setup);
+</script>

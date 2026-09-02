@@ -1,0 +1,97 @@
+---
+title: "Thổi ngang miệng chai bia: 142 Hz, và hình dáng cái chai không liên quan"
+seoTitle: "Cộng hưởng Helmholtz: tần số khi thổi miệng chai và lỗ đàn guitar"
+description: "Chai 500 ml cổ Ø18 mm dài 60 mm kêu đúng 142 Hz — và hai cái chai hình thù khác hẳn nhau vẫn ra cùng một nốt, miễn cùng thể tích và cùng cổ. Cả cái chai rút gọn thành một quả cân 23 mg treo trên lò xo 18,4 N/m."
+pubDate: 2026-09-02
+tags: ["vat-ly", "song", "am-thanh", "dao-dong", "javascript"]
+translationId: "cong-huong-helmholtz-chai-bia-keu-not-gi"
+---
+
+import HelmholtzBottle from '../../../components/demos/HelmholtzBottle.astro';
+
+Thổi ngang miệng một chai bia rỗng, chai đáp lại bằng một nốt trầm no
+tròn. Uống thêm vài ngụm, thổi lại — nốt lên cao. Chuyện lạ là nốt ấy
+chẳng dính dáng gì tới chiều cao chai, cũng chẳng tới hình dáng bụng chai:
+
+<HelmholtzBottle />
+
+## Không phải ống sáo — mà là quả cân treo trên lò xo
+
+Phản xạ đầu tiên là nghĩ tới [cột khí trong ống
+sáo](/vi/posts/cot-khi-cong-huong-bit-mot-dau-tram-mot-quang-tam): sóng
+dừng, bước sóng ăn theo chiều dài ống. Sai hoàn toàn. Chai 500 ml kêu 142
+Hz, tức bước sóng **2,42 m** — gấp gần mười lần chiều cao cái chai: ở cỡ
+đó khí trong chai không kịp phân biệt trên với dưới, cả khối bị nén đồng
+loạt như một cục.
+
+Thứ thật sự dao động chỉ là **nút khí lọt trong cổ chai**: nó thụt vào,
+khí trong bụng bị nén và bật nó ngược ra; nó vọt quá đà, khí bụng loãng đi
+và hút nó trở lại. Nút khí trong cổ Ø18 mm dài 60 mm nặng **23,1 mg** — cỡ
+một hạt gạo; khí trong bụng 500 ml có độ cứng `k = ρc²A²/V` = **18,4 N/m**,
+mềm hơn lò xo trong cây bút bi. Thả vào `f = (1/2π)·√(k/m)`: đúng 142,0 Hz.
+Gộp hai vế lại là công thức Helmholtz:
+
+```
+f = (c/2π)·√( A / (V·L') )     với  L' = L + 1,7·r
+```
+
+Số hạng `1,7·r` không phải mẹo làm đẹp: khối khí dao động kéo theo một ít
+khí thò ra hai đầu, nên **cổ chai dài hơn nó trông thấy 25%**. Bỏ nó đi,
+kết quả vọt lên 159 Hz — sai 12%, lệch gần hai nửa cung.
+
+## Hình dáng cái chai không có mặt trong công thức
+
+Vế phải chỉ có tiết diện cổ, chiều dài cổ và thể tích — không chiều cao,
+không độ phình, không chuyện tròn hay vuông. Một cái lùn bè và
+một cái cao thon, cùng 500 ml khí và cùng cổ Ø18 × 60 mm, kêu **đúng một
+nốt, không lệch nổi một cent**. Vì độ cứng của lò xo khí chỉ hỏi *bao
+nhiêu khí đang bị nén*, chứ không hỏi lượng khí ấy xếp thành hình gì.
+
+## Rót bớt một nửa: nốt lên đúng nửa quãng tám
+
+Uống nửa chai, khí còn 250 ml. Vì `f ∝ V^(−1/2)`, nốt lên đúng √2 lần:
+**200,8 Hz**. Quy sang [thang
+cent](/vi/posts/vi-sao-dan-piano-co-y-chinh-sai-moi-not), √2 là **600 cent
+chẵn** — nửa quãng tám tròn trịa, quãng ba cung mà nhạc sĩ trung cổ gọi là
+"quỷ trong âm nhạc".
+
+Chai rỗng cũng chẳng nằm trên phím đàn nào: 142 Hz cao hơn Đô thăng quãng
+3 đúng **42 cent**. Và vì tần số tỉ lệ với tốc độ
+âm, chai vừa lấy khỏi tủ lạnh — khí 5 °C thay vì 20 °C — kêu 138,3 Hz,
+**thấp hơn 46 cent**.
+
+## Cùng công thức ấy: lỗ đàn guitar, cổng thùng loa, cái pô
+
+Cái lỗ tròn giữa mặt đàn guitar là một cổ chai, thùng đàn là bụng chai —
+cộng hưởng này dựng nên vùng trầm nhất của tiếng đàn, quanh 100 Hz. Cổng
+gió thùng loa bass reflex cũng vậy: thùng 30 lít với ống Ø50 mm dài 54 mm
+cộng hưởng đúng 45 Hz, và cắt ống ngắn đi là đẩy nốt ấy lên. [Cái pô xe
+máy](/vi/posts/po-xe-may-va-tan-so-trong-suot) mượn đúng nguyên lý để nuốt
+một dải tần cụ thể.
+
+Cây guitar còn để lộ chỗ công thức đuối: nhét số một cây cổ điển — thùng
+12,5 lít, lỗ Ø86 mm — ra **138 Hz**, trong khi đo thực tế nốt ấy nằm quanh
+**100 Hz**. Sai không ở công thức mà ở giả thiết "thành bình cứng": mặt gỗ
+vân sam dày 2,5 mm phồng nhẹ mỗi lần khí bị nén, nên khí không bị ép mạnh
+như trong thuỷ tinh — thùng đàn cư xử như cái chai **thể tích gấp 1,9 lần**
+thật. Lò xo mềm đi, nốt tụt xuống; chai bia dày và cứng nên không có trò đó.
+
+## Trường hợp biên: phóng cái chai lên cỡ khoang ô tô
+
+Công thức sống được chừng nào bước sóng còn lớn hơn nhiều mọi kích thước
+của bình — chai bia dư dả, 2,42 m so với 25 cm. Phóng to tất cả lên thì nó
+vẫn chạy, chỉ có kết quả trôi xuống đáy dải nghe được.
+
+Khoang một chiếc ô tô chứa chừng **3 m³** khí. Hạ một cửa kính sau là có
+"cổ chai" tiết diện **0,1 m²**, chiều dài gần bằng không nên chỉ còn phần
+hiệu chỉnh `1,7·r` = 30 cm. Thay số: **18,1 Hz**, bước sóng 19 m — vẫn gấp
+gần mười lần cái xe, mô hình còn hợp lệ.
+
+Và 18 Hz thì bạn gặp rồi: đó là tiếng "wub-wub" dập bùng bùng vào màng nhĩ
+khi ai đó hạ cửa kính sau lúc xe chạy 80 km/h. Gió lướt qua mép cửa tách
+thành từng xoáy, kích trúng cộng hưởng của khoang xe, và chiếc xe thành
+cái chai bia còn bạn ngồi bên trong. Dưới 20 Hz tai không nghe ra *nốt*
+nữa, chỉ còn áp suất đấm vào màng nhĩ. Cách chữa thì thuần vật lý mà ai
+cũng làm theo bản năng: hé thêm một cửa nữa.
+Bình mở hai lỗ thì không còn nút khí duy nhất nào để dao động — cái chai
+mất cổ, và nốt tắt.

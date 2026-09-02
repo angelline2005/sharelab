@@ -1,0 +1,236 @@
+---
+// Bimetallic strip, Timoshenko (1925) for equal thickness and equal modulus:
+//   1/ρ = 3·Δα·ΔT / (2t)      (t = TOTAL thickness of the two layers)
+// Tip deflection of a circular arc of arc-length L, exact:
+//   δ = ρ·(1 − cos(L/ρ))      → δ ≈ 3L²·Δα·ΔT/(4t) for small L/ρ
+// Δα = 17,8e−6 /K (invar 1,2e−6 vs brass 19,0e−6), the classic pairing.
+// The demo uses the EXACT arc form, so it stays valid out to L/ρ ≈ 92°
+// at the far corner of the sliders, where the small-angle form is 24% high.
+// Contact gap fixed at 0,7 mm. Elastic only: no yield, no creep.
+---
+
+<figure class="demo" data-demo="bang-luong-kim-cong-de-ngat-dien">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Chiều dài dải L (mm) <output data-out="l"></output>
+      <input type="range" data-in="l" min="10" max="60" step="1" value="25" /></label>
+    <label>Tổng bề dày t (mm) <output data-out="t"></output>
+      <input type="range" data-in="t" min="0.2" max="1.5" step="0.05" value="0.5" /></label>
+    <label>Chênh nhiệt độ ΔT (°C) <output data-out="dt"></output>
+      <input type="range" data-in="dt" min="10" max="200" step="1" value="100" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Trên: hình chiếu cạnh dải lưỡng kim invar–đồng thau uốn thành cung tròn
+    bán kính ρ, cùng thanh cò đặt cách 0,7 mm. Trục ngang đúng tỉ lệ, trục
+    đứng phóng đại theo hệ số ghi trên hình. Dưới: độ võng đầu dải theo ΔT,
+    đường đứt đỏ là khe hở — cắt nhau ở đâu thì aptomat bật ở đó. Chênh dài
+    hai lá luôn nhỏ hơn độ võng đúng 3L/4t lần.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const CURVE = '#2563eb', MARK = '#dc2626', THIRD = '#f59e0b';
+  const DA = 17.8e-6;   // Δα invar–đồng thau, /K
+  const GAP = 0.7;      // khe hở tới thanh cò, mm
+  const NICE = [1, 1.5, 2, 3, 4, 6, 8, 12, 16, 24, 32, 48, 64];
+  const vi = (x: number, d: number) => x.toFixed(d).replace('.', ',');
+
+  const rho = (t: number, dT: number) => (2 * t) / (3 * DA * dT);
+  const defl = (L: number, t: number, dT: number) => {
+    const r = rho(t, dT);
+    return r * (1 - Math.cos(L / r));
+  };
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (k: string) => root.querySelector(`[data-in="${k}"]`) as HTMLInputElement;
+    const output = (k: string) => root.querySelector(`[data-out="${k}"]`) as HTMLOutputElement;
+
+    function draw() {
+      const L = Number(input('l').value);
+      const t = Number(input('t').value);
+      const dT = Number(input('dt').value);
+      output('l').textContent = String(L);
+      output('t').textContent = vi(t, 2);
+      output('dt').textContent = String(dT);
+
+      const r = rho(t, dT);
+      const d = defl(L, t, dT);
+      const dLen = DA * dT * L;           // chênh dài hai lá, mm
+      const amp = (3 * L) / (4 * t);      // hệ số phóng đại hình học
+      const tripped = d >= GAP;
+      // ΔT ngắt: giải ρ(1−cos(L/ρ)) = GAP theo ΔT, đơn điệu tăng → chia đôi
+      let lo = 0, hi = 4000;
+      for (let i = 0; i < 90; i++) {
+        const m = (lo + hi) / 2;
+        if (defl(L, t, m) < GAP) lo = m; else hi = m;
+      }
+      const dTrip = (lo + hi) / 2;
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.62);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+      ctx.font = '10px system-ui,sans-serif';
+
+      const splitY = Math.round(cssH * 0.54);
+
+      /* ---------- Ô TRÊN: hình chiếu cạnh dải ---------- */
+      const padL = 46, padR = 12, topT = 14, topB = 10;
+      const availW = cssW - padL - padR;
+      const availH = splitY - topT - topB;
+
+      // Điểm cung thật (mm): x = ρ sin(s/ρ), y = ρ(1 − cos(s/ρ))
+      const pts: Array<[number, number]> = [];
+      for (let i = 0; i <= 120; i++) {
+        const s = (L * i) / 120;
+        pts.push([r * Math.sin(s / r), r * (1 - Math.cos(s / r))]);
+      }
+      let xMax = 0;
+      for (const p of pts) if (p[0] > xMax) xMax = p[0];
+      const yMax = Math.max(d, GAP * 1.45);
+
+      const sx0 = availW / Math.max(xMax, 5);
+      let M = 1;
+      const room = availH / (yMax * sx0);
+      for (const n of NICE) if (n <= room) M = n;
+      let S = sx0;
+      if (yMax * S * M > availH) S = availH / (yMax * M);
+
+      const baseY = splitY - topB;
+      const PX = (xmm: number) => padL + xmm * S;
+      const PY = (ymm: number) => baseY - ymm * S * M;
+
+      // nền cảnh báo khi đã ngắt
+      if (tripped) {
+        ctx.fillStyle = MARK; ctx.globalAlpha = 0.07;
+        ctx.fillRect(padL - 6, topT - 6, availW + 12, availH + 12);
+        ctx.globalAlpha = 1;
+      }
+
+      // dải nguội (đường đứt)
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.32; ctx.setLineDash([4, 4]);
+      ctx.beginPath(); ctx.moveTo(PX(0), PY(0)); ctx.lineTo(PX(L), PY(0)); ctx.stroke();
+      ctx.setLineDash([]); ctx.globalAlpha = 1;
+
+      // ngàm cố định
+      ctx.fillStyle = fg; ctx.globalAlpha = 0.45;
+      ctx.fillRect(padL - 8, PY(0) - 16, 7, 32);
+      ctx.globalAlpha = 1;
+
+      // dải đã uốn
+      ctx.strokeStyle = CURVE; ctx.lineWidth = Math.max(3, Math.min(9, t * S * M * 0.5));
+      ctx.lineCap = 'round';
+      ctx.beginPath();
+      pts.forEach(([x, y], i) => (i ? ctx.lineTo(PX(x), PY(y)) : ctx.moveTo(PX(x), PY(y))));
+      ctx.stroke();
+      ctx.lineWidth = 1; ctx.lineCap = 'butt';
+
+      // thanh cò ở độ cao khe hở
+      const tipX = pts[pts.length - 1][0];
+      const barY = PY(GAP);
+      ctx.strokeStyle = tripped ? MARK : fg;
+      ctx.globalAlpha = tripped ? 1 : 0.55; ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(PX(Math.max(0, tipX - L * 0.28)), barY);
+      ctx.lineTo(PX(tipX) + 16, barY);
+      ctx.stroke();
+      ctx.lineWidth = 1; ctx.globalAlpha = 1;
+
+      ctx.fillStyle = tripped ? MARK : fg;
+      ctx.globalAlpha = tripped ? 1 : 0.6; ctx.textAlign = 'right';
+      ctx.fillText(tripped ? 'thanh cò — ĐÃ BẬT' : `thanh cò (khe ${vi(GAP, 1)} mm)`, PX(tipX) + 14, barY - 6);
+      ctx.globalAlpha = 1;
+
+      // dấu đầu dải
+      ctx.fillStyle = MARK;
+      ctx.beginPath(); ctx.arc(PX(tipX), PY(d), 4.5, 0, Math.PI * 2); ctx.fill();
+
+      // nhãn tỉ lệ + bán kính
+      ctx.fillStyle = fg; ctx.globalAlpha = 0.55; ctx.textAlign = 'left';
+      ctx.fillText(
+        M === 1 ? 'ngang và đứng cùng tỉ lệ' : `ngang đúng tỉ lệ · đứng phóng đại ${vi(M, M % 1 ? 1 : 0)}×`,
+        padL, topT + 4,
+      );
+      ctx.fillText(`ρ = ${r >= 1000 ? vi(r / 1000, 2) + ' m' : vi(r, 0) + ' mm'}`, padL, topT + 17);
+      ctx.textAlign = 'right';
+      ctx.fillText(`δ = ${vi(d, 2)} mm`, cssW - padR, topT + 4);
+      ctx.globalAlpha = 1;
+
+      /* ---------- Ô DƯỚI: δ theo ΔT ---------- */
+      const bT = splitY + 16, bB = cssH - 24;
+      const dMax = Math.max(defl(L, t, 200), GAP * 1.6);
+      const X = (x: number) => padL + ((x - 10) / 190) * availW;
+      const Y = (y: number) => bB - (y / dMax) * (bB - bT);
+
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.3;
+      ctx.beginPath(); ctx.moveTo(padL, bT); ctx.lineTo(padL, bB); ctx.lineTo(cssW - padR, bB); ctx.stroke();
+      ctx.globalAlpha = 0.55; ctx.fillStyle = fg;
+      ctx.textAlign = 'center';
+      for (const k of [50, 100, 150, 200]) ctx.fillText(`${k} °C`, X(k), bB + 14);
+      ctx.textAlign = 'right';
+      const yTicks = dMax > 8 ? [0, 10, 20, 30] : dMax > 2.6 ? [0, 1, 2, 3] : [0, 0.5, 1];
+      for (const y of yTicks) if (y <= dMax) ctx.fillText(`${vi(y, y % 1 ? 1 : 0)} mm`, padL - 4, Y(y) + 3);
+      ctx.globalAlpha = 1;
+
+      // ngưỡng khe hở
+      ctx.strokeStyle = MARK; ctx.globalAlpha = 0.75; ctx.setLineDash([5, 4]);
+      ctx.beginPath(); ctx.moveTo(padL, Y(GAP)); ctx.lineTo(cssW - padR, Y(GAP)); ctx.stroke();
+      ctx.setLineDash([]); ctx.globalAlpha = 1;
+
+      // đường cong δ(ΔT)
+      ctx.strokeStyle = CURVE; ctx.lineWidth = 2; ctx.beginPath();
+      for (let i = 0; i <= 190; i++) {
+        const x = 10 + i;
+        const y = Math.min(defl(L, t, x), dMax);
+        i ? ctx.lineTo(X(x), Y(y)) : ctx.moveTo(X(x), Y(y));
+      }
+      ctx.stroke(); ctx.lineWidth = 1;
+
+      // vạch ΔT ngắt
+      if (dTrip >= 10 && dTrip <= 200) {
+        ctx.strokeStyle = THIRD; ctx.globalAlpha = 0.85;
+        ctx.beginPath(); ctx.moveTo(X(dTrip), Y(GAP)); ctx.lineTo(X(dTrip), bB); ctx.stroke();
+        ctx.globalAlpha = 1; ctx.fillStyle = THIRD; ctx.textAlign = 'center';
+        ctx.fillText(`ngắt ${vi(dTrip, 0)} °C`, X(dTrip), bT - 3);
+      }
+
+      ctx.fillStyle = MARK;
+      ctx.beginPath(); ctx.arc(X(dT), Y(Math.min(d, dMax)), 5.5, 0, Math.PI * 2); ctx.fill();
+
+      /* ---------- readout ---------- */
+      const state = tripped
+        ? `<b>đã bật thanh cò</b> (vượt khe ${vi(GAP, 1)} mm ở ΔT = ${vi(dTrip, 0)} °C)`
+        : dTrip <= 200
+          ? `chưa bật — còn thiếu ${vi(dTrip - dT, 0)} °C nữa`
+          : `chưa bật — dải này không bao giờ với tới khe 0,7 mm`;
+      readout.innerHTML =
+        `L = ${L} mm · t = ${vi(t, 2)} mm · ΔT = ${dT} °C → ρ = ` +
+        `<b>${r >= 1000 ? vi(r / 1000, 2) + ' m' : vi(r, 0) + ' mm'}</b>, ` +
+        `đầu võng <b>${vi(d, 2)} mm</b> từ chênh dài chỉ ${vi(dLen, 4)} mm ` +
+        `(phóng đại ${vi(amp, 1)}×) · ${state}`;
+    }
+
+    root.querySelectorAll('input').forEach((el) => el.addEventListener('input', draw));
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="bang-luong-kim-cong-de-ngat-dien"]').forEach(setup);
+</script>

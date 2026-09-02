@@ -1,0 +1,217 @@
+---
+// Wake vortex behind a lifting wing (elliptic loading, fully rolled up).
+// Circulation:  Γ = 4W / (π·ρ·V·b)      [Prandtl lifting-line, elliptic]
+// Core spacing: b₀ = π·b/4              [rolled-up pair]
+// Tangential:   v(r) = Γ/(2πr) outside a Rankine core of radius r_c = 0,04·b,
+//               v(r) = Γ·r/(2π·r_c²) inside it.
+// Pair sink:    w = Γ/(2π·b₀)
+// Induced rolling-moment coefficient on a following rectangular wing entirely
+// on one side of the core:  C_l = (a/(V₂·b₂²))·∫ v(y)·(y − y_c) dy, a = 5,0 /rad.
+// Valid out of ground effect, for an aircraft in steady flight (L = W), and
+// only while the wake is still coherent (first ~2–3 phút). ρ = 1,225 kg/m³ ISA.
+---
+
+<figure class="demo" data-demo="xoay-dau-canh-va-khoang-cach-ba-phut">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Máy bay tạo xoáy <output data-out="ac"></output>
+      <input type="range" data-in="ac" min="0" max="7" step="1" value="7" /></label>
+    <label>Tốc độ bay (m/s) <output data-out="v"></output>
+      <input type="range" data-in="v" min="60" max="250" step="1" value="80" /></label>
+    <label>Lõi xoáy cách đầu cánh máy bay sau (m) <output data-out="r"></output>
+      <input type="range" data-in="r" min="1" max="40" step="0.5" value="5" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Nhìn từ phía sau. Cánh nâng được là vì nó cuốn một lưu số Γ, và lưu số ấy
+    trượt khỏi hai đầu cánh thành hai lõi xoáy ngược chiều, cách nhau πb/4.
+    Đường cong là tốc độ gió quay quanh một lõi: giảm theo 1/r ở ngoài, phẳng
+    dần trong lõi. Máy bay nhỏ màu đỏ đặt lệch tâm cho thấy mô men lật mà hai
+    đầu cánh của nó nhận được — so với sức của cánh liệng.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const CURVE = '#2563eb', MARK = '#dc2626', REF = '#f59e0b';
+  const G0 = 9.81, RHO = 1.225;
+  // [tên, khối lượng (tấn), sải cánh (m)]
+  const FLEET: Array<[string, number, number]> = [
+    ['Cessna 172', 1.1, 11.0],
+    ['King Air 350', 6.8, 17.7],
+    ['ATR 72', 23, 27.1],
+    ['B737-800', 79, 35.8],
+    ['B767-300', 186, 47.6],
+    ['B777-300ER', 351, 64.8],
+    ['B747-8', 448, 68.4],
+    ['A380', 560, 79.75],
+  ];
+  const B2 = 11, V2 = 45, ALPHA = 5.0, CL_AIL = 0.06; // máy bay sau: hạng nhẹ
+  // Ngưỡng dưới của các cấp Beaufort 1..12 (m/s).
+  const BEAUFORT = [0.3, 1.6, 3.4, 5.5, 8.0, 10.8, 13.9, 17.2, 20.8, 24.5, 28.5, 32.7];
+
+  const vn = (x: number, d = 1) => x.toFixed(d).replace('.', ',');
+  const gamma = (mt: number, V: number, b: number) => (4 * mt * 1000 * G0) / (Math.PI * RHO * V * b);
+  const vtan = (G: number, r: number, rc: number) =>
+    r <= rc ? (G * r) / (2 * Math.PI * rc * rc) : G / (2 * Math.PI * r);
+  const beaufort = (v: number) => BEAUFORT.filter((t) => t <= v).length;
+
+  function rollRatio(G: number, rc: number, r: number) {
+    const yc = r + B2 / 2, N = 800;
+    let I = 0;
+    for (let i = 0; i < N; i++) {
+      const y = r + (B2 * (i + 0.5)) / N;
+      I += vtan(G, y, rc) * (y - yc) * (B2 / N);
+    }
+    return Math.abs((ALPHA * I) / (V2 * B2 * B2)) / CL_AIL;
+  }
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (k: string) => root.querySelector(`[data-in="${k}"]`) as HTMLInputElement;
+    const output = (k: string) => root.querySelector(`[data-out="${k}"]`) as HTMLOutputElement;
+
+    function draw() {
+      const idx = Number(input('ac').value);
+      const V = Number(input('v').value);
+      const r = Number(input('r').value);
+      const [name, mt, b] = FLEET[idx];
+
+      const G = gamma(mt, V, b);
+      const rc = 0.04 * b;
+      const b0 = (Math.PI * b) / 4;
+      const sink = G / (2 * Math.PI * b0);
+      const vPeak = G / (2 * Math.PI * rc);
+      const vHere = vtan(G, r, rc);
+      const ratio = rollRatio(G, rc, r);
+
+      output('ac').textContent = `${name} · ${mt} t · sải ${vn(b)} m`;
+      output('v').textContent = String(V);
+      output('r').textContent = vn(r);
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.62);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+      ctx.font = '10px system-ui,sans-serif';
+
+      // ---------- dải trên: nhìn từ phía sau ----------
+      const hTop = Math.round(cssH * 0.36);
+      const half = b0 / 2 + 40 + B2 + 6;
+      const sc = (cssW - 24) / (2 * half), cx = cssW / 2;
+      const SX = (xm: number) => cx + xm * sc;
+      const yWing = 16, yCore = Math.round(hTop * 0.68);
+
+      // máy bay tạo xoáy
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.35; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.moveTo(SX(-b / 2), yWing); ctx.lineTo(SX(b / 2), yWing); ctx.stroke();
+      ctx.fillStyle = fg;
+      ctx.fillRect(cx - 2, yWing - 6, 4, 14);
+      ctx.globalAlpha = 0.6; ctx.textAlign = 'center';
+      ctx.fillText(`${name} — sải ${vn(b)} m`, cx, yWing - 6);
+      ctx.globalAlpha = 1; ctx.lineWidth = 1;
+
+      // hai lõi xoáy
+      const rPix = Math.max(3, rc * sc);
+      for (const s of [-1, 1]) {
+        const x = SX((s * b0) / 2);
+        ctx.strokeStyle = CURVE; ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.arc(x, yCore, rPix, 0, Math.PI * 2); ctx.stroke();
+        ctx.beginPath(); ctx.arc(x, yCore, rPix + 5, -0.5 * Math.PI, 0.9 * Math.PI, s > 0); ctx.stroke();
+        ctx.lineWidth = 1;
+      }
+      // khoảng cách hai lõi
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.3; ctx.setLineDash([3, 3]);
+      ctx.beginPath(); ctx.moveTo(SX(-b0 / 2), yCore); ctx.lineTo(SX(b0 / 2), yCore); ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.globalAlpha = 0.65; ctx.fillStyle = fg; ctx.textAlign = 'center';
+      ctx.fillText(`hai lõi cách nhau πb/4 = ${vn(b0)} m`, cx, yCore + 16);
+      ctx.globalAlpha = 1;
+
+      // máy bay sau, đầu cánh gần cách lõi phải r mét
+      const xTip = b0 / 2 + r, yF = yCore - 22;
+      ctx.strokeStyle = MARK; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.moveTo(SX(xTip), yF); ctx.lineTo(SX(xTip + B2), yF); ctx.stroke();
+      ctx.fillStyle = MARK;
+      ctx.fillRect(SX(xTip + B2 / 2) - 1.5, yF - 4, 3, 10);
+      ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(SX(b0 / 2), yF - 9); ctx.lineTo(SX(xTip), yF - 9); ctx.stroke();
+      ctx.textAlign = 'left';
+      ctx.fillText(`${vn(r)} m`, SX(b0 / 2) + 3, yF - 12);
+
+      // ---------- dải dưới: v(r) ----------
+      const padL = 46, padR = 10, padT = hTop + 14, padB = 24;
+      const yMax = Math.max(10, Math.ceil((vPeak * 1.12) / 10) * 10);
+      const X = (rr: number) => padL + (rr / 40) * (cssW - padL - padR);
+      const Y = (vv: number) => cssH - padB - (vv / yMax) * (cssH - padB - padT);
+
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.3;
+      ctx.beginPath(); ctx.moveTo(padL, padT); ctx.lineTo(padL, cssH - padB); ctx.lineTo(cssW - padR, cssH - padB); ctx.stroke();
+      ctx.globalAlpha = 0.55; ctx.fillStyle = fg; ctx.textAlign = 'center';
+      for (const k of [10, 20, 30, 40]) ctx.fillText(`${k} m`, X(k), cssH - padB + 14);
+      ctx.textAlign = 'right';
+      for (let i = 1; i <= 5; i++) {
+        const vv = (yMax * i) / 5;
+        ctx.fillText(i === 5 ? `${vn(vv, 0)} m/s` : vn(vv, 0), padL - 4, Y(vv) + 3);
+      }
+      ctx.globalAlpha = 1;
+
+      // mốc bão cấp 8 và cấp 11
+      ctx.textAlign = 'left';
+      for (const [thr, lab] of [[17.2, 'bão cấp 8'], [28.5, 'bão cấp 11']] as Array<[number, string]>) {
+        if (thr > yMax) continue;
+        ctx.strokeStyle = REF; ctx.globalAlpha = 0.55; ctx.setLineDash([4, 4]);
+        ctx.beginPath(); ctx.moveTo(padL, Y(thr)); ctx.lineTo(cssW - padR, Y(thr)); ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.fillStyle = REF; ctx.globalAlpha = 0.9;
+        ctx.fillText(lab, padL + 6, Y(thr) - 4);
+        ctx.globalAlpha = 1;
+      }
+
+      ctx.strokeStyle = CURVE; ctx.lineWidth = 2; ctx.beginPath();
+      for (let i = 0; i <= 240; i++) {
+        const rr = (40 * i) / 240;
+        const y = Y(Math.min(vtan(G, rr, rc), yMax));
+        i ? ctx.lineTo(X(rr), y) : ctx.moveTo(X(rr), y);
+      }
+      ctx.stroke(); ctx.lineWidth = 1;
+
+      ctx.fillStyle = MARK;
+      ctx.beginPath(); ctx.arc(X(r), Y(Math.min(vHere, yMax)), 6, 0, Math.PI * 2); ctx.fill();
+
+      const shown = Math.round(vHere * 10) / 10;
+      const cap = beaufort(shown);
+      const capTxt = cap >= 12 ? 'trên bão cấp 12'
+        : cap >= 8 ? `bão cấp ${cap}`
+        : cap >= 1 ? `gió cấp ${cap}` : 'lặng gió';
+      const warn = ratio >= 1
+        ? ` — <b>vượt ${vn(ratio)}× sức cánh liệng, máy bay nhỏ không giữ nổi cánh bằng</b>`
+        : ` — bằng ${vn(ratio, 2)}× sức cánh liệng, còn lái được`;
+
+      readout.innerHTML =
+        `Γ = <b>${vn(G, 0)} m²/s</b> · đỉnh trong lõi ${vn(vPeak)} m/s ở bán kính ${vn(rc)} m · ` +
+        `cặp xoáy tụt xuống ${vn(sink, 2)} m/s (sau 3 phút đã chìm ${vn(sink * 180, 0)} m).<br>` +
+        `Cách lõi ${vn(r)} m: gió quay <b>${vn(shown)} m/s</b> (${capTxt})${warn}.`;
+    }
+
+    root.querySelectorAll('input').forEach((el) => el.addEventListener('input', draw));
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="xoay-dau-canh-va-khoang-cach-ba-phut"]').forEach(setup);
+</script>

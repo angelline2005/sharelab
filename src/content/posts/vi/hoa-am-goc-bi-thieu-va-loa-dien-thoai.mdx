@@ -1,0 +1,100 @@
+---
+title: "Loa điện thoại không hề phát ra 110 Hz — mà bạn vẫn nghe thấy giọng trầm"
+seoTitle: "Hoạ âm gốc bị thiếu: vì sao điện thoại vẫn truyền được giọng nam trầm"
+description: "Kênh thoại chỉ chở 300–3400 Hz, nên giọng nam 110 Hz mất sạch hoạ âm 1 và 2 — 77,6% toàn bộ năng lượng. Vứt đi hơn ba phần tư tín hiệu mà tai vẫn nghe đúng nốt La 110 Hz, vì tổng của các hoạ âm còn lại vẫn lặp lại đúng 9,09 ms một lần."
+pubDate: 2026-09-02
+tags: ["vat-ly", "song", "am-thanh", "javascript"]
+translationId: "hoa-am-goc-bi-thieu-va-loa-dien-thoai"
+---
+
+import MissingFundamental from '../../../components/demos/MissingFundamental.astro';
+
+Bạn gọi cho bố, nhận ra giọng ông ngay từ tiếng "alô" — trầm đúng như ngồi
+cạnh. Nhưng kênh thoại chỉ chở dải 300–3400 Hz, còn nốt cơ bản của giọng
+ấy nằm ở 110 Hz: **cái tần số bạn tưởng mình đang nghe chưa hề ra khỏi
+loa**.
+
+<MissingFundamental />
+
+## Hai vạch to nhất bị vứt trước tiên
+
+Dây thanh không phát một tần số, nó phát một *chuỗi*: đóng mở 110 lần mỗi
+giây thì phổ là các vạch tại 110, 220, 330, 440 Hz… — bội nguyên của f₀,
+đúng cùng lý do [một sợi dây đàn chỉ chịu hát vài
+nốt](/vi/posts/song-dung-tren-day-dan). Biên độ rơi cỡ 1/n, nên năng lượng
+(tỉ lệ bình phương biên độ) rơi theo 1/n²: phổ giọng nói **dồn gần hết vốn
+vào hai vạch đầu**.
+
+Đếm trên 40 hoạ âm đầu tiên: riêng vạch 110 Hz chiếm **61,7%** năng lượng,
+vạch 220 Hz thêm 15,4%. Kênh thoại cắt sạch cả hai vì chúng nằm dưới 300
+Hz, rồi cắt nốt phần trên 3400 Hz — tổng cộng **77,6% năng lượng giọng bạn
+không bao giờ tới tai người nghe**. Thứ còn lại là 28 vạch từ 330 đến
+3300 Hz, gánh vẻn vẹn 22,4%. Vậy mà cao độ không xê dịch một cent — không
+phải "gần đúng", mà đúng.
+
+## Tổng vẫn lặp lại sau đúng 9,09 ms
+
+Lý do gói trong hai dòng:
+
+```
+Σ A_n · sin(2π · n · f₀ · t)  lặp lại sau đúng 1/f₀
+với MỌI tập hợp số nguyên n — kể cả tập không chứa n = 1
+```
+
+Mỗi thành phần n·f₀ hoàn thành trọn vẹn đúng n chu kỳ trong khoảng thời
+gian 1/f₀. Sau 9,09 ms, cả 28 sóng còn sống cùng lúc quay về đúng pha cũ,
+nên tổng của chúng quay về đúng giá trị cũ. Bỏ vạch 110 Hz đi thì **hình
+dạng** sóng tổng đổi hẳn — kéo thanh "cắt dưới" trong demo mà xem, đỉnh
+nhọn lại và biên độ tụt — nhưng khoảng cách giữa các mốc lặp không nhúc
+nhích một pixel. Cái tai nhận được vẫn là một chuỗi xung 110 lần mỗi giây.
+
+## Tai không đo tần số thấp nhất, nó đo nhịp lặp
+
+Ốc tai trải tần số ra theo vị trí: mỗi tần số kích riêng một chỗ trên
+[màng đáy dài 35 mm](/vi/posts/ban-do-tan-so-oc-tai-muoi-chin-micromet).
+Khi 110 Hz biến khỏi tín hiệu thì **chỗ ứng với 110 Hz không nhận được
+gì** — thế mà bạn vẫn nghe đúng nốt La ấy.
+
+Helmholtz đoán thủ phạm là méo phi tuyến ngay trong tai: hai vạch mạnh 330
+và 440 Hz đập vào nhau đẻ ra hiệu 110 Hz thật. Thí nghiệm nghe tách hai
+tai bác bỏ giả thuyết ấy gọn ghẽ: đưa hoạ âm lẻ vào tai trái, hoạ âm chẵn
+vào tai phải — chúng không bao giờ gặp nhau trong bất kỳ ốc tai nào — người
+nghe vẫn báo đúng cao độ cũ. Việc ghép chu kỳ diễn ra ở **não**, phía sau
+chỗ hai tai hợp dòng, chứ không phải trong cơ học của màng đáy.
+
+## Ngành loa bán tiếng trầm mà loa không phát nổi
+
+Đây là món quà lớn nhất sinh học tặng cho kỹ thuật âm thanh. Bước sóng của
+110 Hz trong không khí là **3,1 m**; một màng loa vài milimét muốn đẩy
+ngần ấy không khí thì phải chạy hành trình dài đến vô lý mà vẫn bức xạ cực
+tồi. Nên các bộ xử lý "virtual bass" không cố khuếch đại nốt trầm: chúng
+dò ra nó rồi **tổng hợp thêm hoạ âm 2, 3, 4** ở vùng 200–600 Hz, nơi màng
+loa nhỏ làm việc tốt. Não người dựng lại nốt gốc miễn phí.
+
+Thợ đàn organ nhà thờ biết mẹo này từ thế kỷ 18 và gọi là *resultant*:
+muốn nốt Đô 16,35 Hz mà không dựng nổi hàng ống 32 foot, người ta kéo đồng
+thời hai hàng cho 32,70 và 49,05 Hz — chênh nhau đúng 16,35. Cả nhà thờ
+rung lên một nốt trầm mà không ống nào phát ra.
+
+## Trường hợp biên: dịch cả chùm lên 30 Hz, cao độ chỉ nhích 7,5
+
+Trò này đứng được nhờ các thành phần là bội nguyên của cùng một số. Phá
+điều kiện đó thì lộ ra não đang thật sự làm gì.
+
+Lấy chùm 330–440–550 Hz (hoạ âm 3, 4, 5 của 110) rồi dịch cả ba lên 30 Hz:
+360–470–580. Khoảng cách giữa chúng vẫn đúng 110 Hz, nhưng ước chung lớn
+nhất tụt xuống **10 Hz** — về mặt toán học, chu kỳ chung vừa nhảy từ 9,09
+ms lên 100 ms. Nếu não đi tìm ước chung, bạn phải nghe 10 Hz, tức là không
+nghe ra cao độ nào cả.
+
+Cái người ta thật sự nghe là **khoảng 117,5 Hz**: cao hơn 110 đúng 7,5 Hz,
+tức 114 cent — [nhỉnh hơn một nửa
+cung](/vi/posts/vi-sao-dan-piano-co-y-chinh-sai-moi-not). Con số ấy là 470
+chia 4. Não áp một cái *lược hoạ âm* lên phổ nhận được và chọn cái lược
+khớp nhất; vạch giữa 470 Hz rơi vào răng số 4, và cao độ báo về là 470/4.
+Dịch cả chùm lên ΔF thì cao độ chỉ nhích ΔF chia cho bậc của hoạ âm giữa —
+30 chia 4.
+
+Vậy nên câu trả lời không phải "tai tính ước chung". Kênh điện thoại vứt
+77,6% năng lượng mà vẫn thoát tội, chỉ vì nó chừa lại vừa đủ răng lược để
+câu trả lời không đổi.

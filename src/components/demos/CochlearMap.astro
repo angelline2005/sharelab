@@ -1,0 +1,239 @@
+---
+// Greenwood place–frequency map for the human cochlea (Greenwood, JASA 1990):
+//   f = 165,4 · (10^(2,1·x/L) − 0,88) Hz, x = distance from the apex, L = cochlear length.
+// x/L = 0 → 19,85 Hz (apex), x/L = 1 → 20 677 Hz (base): 10,0 octaves over L.
+// Note sliders step in semitones from A4 = 440 Hz, so 440 / 880 / 4186 Hz land exactly.
+// Valid only inside the audible band; below 19,85 Hz the map runs off the apex.
+// Zoom strip: hair-cell comb at 10 µm (3 500 inner hair cells over 35 mm) and the
+// 0,3% pitch JND. Auditory-filter width uses ERB = 24,7·(0,00437f + 1) Hz (Glasberg–Moore 1990).
+---
+
+<figure class="demo" data-demo="ban-do-tan-so-oc-tai-muoi-chin-micromet">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Nốt thứ nhất <output data-out="n1"></output>
+      <input type="range" data-in="n1" min="-53" max="66" step="1" value="0" /></label>
+    <label>Nốt thứ hai <output data-out="n2"></output>
+      <input type="range" data-in="n2" min="-53" max="66" step="1" value="12" /></label>
+    <label>Chiều dài ốc tai L (mm) <output data-out="len"></output>
+      <input type="range" data-in="len" min="28" max="40" step="0.5" value="35" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Ốc tai duỗi thẳng: đỉnh (trái, đỏ) nhận âm trầm, đáy (phải, xanh) nhận âm
+    cao. Dải phím phía dưới là 88 phím piano đặt đúng chỗ chúng kích thích —
+    phím trầm bị dồn sát nhau, phím cao dàn đều. Ô phóng to bên dưới mở rộng
+    đúng 1 mm quanh nốt thứ nhất: vạch mờ là hàng tế bào lông trong cách nhau
+    10 µm, vệt đỏ là quãng dịch khi tần số tăng 0,3% — ngưỡng bạn còn nghe ra.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const A = 165.4, AEXP = 2.1, K = 0.88;
+  const LOW = '#dc2626', MID = '#f59e0b', HIGH = '#2563eb';
+  const NAMES = ['Đô', 'Đô♯', 'Rê', 'Rê♯', 'Mi', 'Fa', 'Fa♯', 'Sol', 'Sol♯', 'La', 'La♯', 'Si'];
+  const BLACK = [1, 3, 6, 8, 10];
+  const TICKS: Array<[number, string]> = [
+    [20, '20 Hz'], [100, '100'], [200, '200'], [500, '500'],
+    [1000, '1 kHz'], [2000, '2 k'], [5000, '5 k'], [10000, '10 k'], [20000, '20 k'],
+  ];
+
+  const freq = (n: number) => 440 * Math.pow(2, n / 12);
+  const posN = (f: number) => Math.log10(f / A + K) / AEXP;
+  const noteName = (n: number) => {
+    const m = 69 + n;
+    return NAMES[((m % 12) + 12) % 12] + String(Math.floor(m / 12) - 1);
+  };
+  const fmt = (v: number, d: number) => v.toFixed(d).replace('.', ',');
+  // Hz in house style: one decimal below 1 000, a space as thousands separator above.
+  const hz = (f: number) =>
+    f < 1000 ? fmt(f, 1) : fmt(f, 0).replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (k: string) => root.querySelector(`[data-in="${k}"]`) as HTMLInputElement;
+    const output = (k: string) => root.querySelector(`[data-out="${k}"]`) as HTMLOutputElement;
+
+    function draw() {
+      const n1 = Number(input('n1').value);
+      const n2 = Number(input('n2').value);
+      const L = Number(input('len').value);
+      const f1 = freq(n1), f2 = freq(n2);
+      const x1 = posN(f1) * L, x2 = posN(f2) * L;
+      const semi = (posN(f1 * Math.pow(2, 1 / 12)) - posN(f1)) * L;
+      const jnd = (posN(f1 * 1.003) - posN(f1)) * L;
+
+      output('n1').textContent = `${noteName(n1)} · ${hz(f1)} Hz`;
+      output('n2').textContent = `${noteName(n2)} · ${hz(f2)} Hz`;
+      output('len').textContent = fmt(L, 1);
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.46);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+      ctx.font = '10px system-ui,sans-serif';
+
+      const padL = 24, padR = 14;
+      const W = cssW - padL - padR;
+      const X = (mm: number) => padL + (mm / L) * W;
+      const yB1 = 0.20 * cssH, yB2 = 0.31 * cssH;
+      const yDelta = 0.375 * cssH;
+      const yK1 = 0.42 * cssH, yK2 = 0.56 * cssH;
+      const yRule = 0.665 * cssH;
+      const yZ1 = 0.79 * cssH, yZ2 = 0.945 * cssH;
+
+      // --- cochlea band, apex (left, low) to base (right, high) ---
+      const grad = ctx.createLinearGradient(X(0), 0, X(L), 0);
+      grad.addColorStop(0, LOW); grad.addColorStop(0.45, MID); grad.addColorStop(1, HIGH);
+      ctx.fillStyle = grad; ctx.fillRect(X(0), yB1, W, yB2 - yB1);
+
+      // frequency ticks above the band, labels staggered on two rows
+      ctx.strokeStyle = fg; ctx.fillStyle = fg;
+      TICKS.forEach(([f, lab], i) => {
+        const px = X(posN(f) * L);
+        ctx.globalAlpha = 0.35;
+        ctx.beginPath(); ctx.moveTo(px, yB1 - 4); ctx.lineTo(px, yB1); ctx.stroke();
+        ctx.globalAlpha = 0.65; ctx.textAlign = i === 0 ? 'left' : 'center';
+        ctx.fillText(lab, px, yB1 - 8 - (i % 2) * 11);
+      });
+      ctx.globalAlpha = 1;
+
+      // --- 88 piano keys, each drawn across its own semitone span ---
+      for (let m = 21; m <= 108; m++) {
+        const kl = X(posN(freq(m - 69.5)) * L), kr = X(posN(freq(m - 68.5)) * L);
+        const black = BLACK.indexOf(((m % 12) + 12) % 12) >= 0;
+        ctx.fillStyle = black ? '#111827' : '#e5e7eb';
+        ctx.fillRect(kl, yK1, Math.max(kr - kl, 0.6), black ? (yK2 - yK1) * 0.62 : yK2 - yK1);
+      }
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.35;
+      ctx.strokeRect(X(posN(freq(-48.5)) * L), yK1,
+        X(posN(freq(39.5)) * L) - X(posN(freq(-48.5)) * L), yK2 - yK1);
+      ctx.globalAlpha = 0.6; ctx.fillStyle = fg; ctx.textAlign = 'center';
+      ctx.fillText('88 phím piano (La0 → Đô8)',
+        (X(posN(freq(-48.5)) * L) + X(posN(freq(39.5)) * L)) / 2, yK2 + 12);
+      ctx.globalAlpha = 1;
+
+      // --- millimetre ruler ---
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.3;
+      ctx.beginPath(); ctx.moveTo(X(0), yRule); ctx.lineTo(X(L), yRule); ctx.stroke();
+      for (let mm = 0; mm <= L + 1e-9; mm += 1) {
+        ctx.beginPath(); ctx.moveTo(X(mm), yRule); ctx.lineTo(X(mm), yRule + 3); ctx.stroke();
+      }
+      ctx.globalAlpha = 0.65; ctx.fillStyle = fg; ctx.textAlign = 'center';
+      for (let mm = 0; mm <= L + 1e-9; mm += 5) {
+        ctx.beginPath(); ctx.moveTo(X(mm), yRule); ctx.lineTo(X(mm), yRule + 6); ctx.stroke();
+        ctx.fillText(mm === 0 ? 'đỉnh' : String(mm), X(mm), yRule + 17);
+      }
+      ctx.textAlign = 'right'; ctx.fillText(`${fmt(L, 1)} mm`, X(L), yRule - 4);
+      ctx.globalAlpha = 1;
+
+      // --- the two markers ---
+      const drawMark = (x: number, col: string) => {
+        ctx.strokeStyle = col; ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.moveTo(X(x), yB1); ctx.lineTo(X(x), yK2); ctx.stroke();
+        ctx.lineWidth = 1;
+        ctx.fillStyle = col;
+        ctx.beginPath(); ctx.arc(X(x), (yB1 + yB2) / 2, 5, 0, Math.PI * 2); ctx.fill();
+      };
+      drawMark(x2, MID);
+      drawMark(x1, LOW);
+
+      // Labels sit centred under their own marker. A semitone apart the markers
+      // are only a few pixels away, so below that gap the two labels merge into
+      // one centred line instead of printing on top of each other.
+      const lab1 = `${noteName(n1)} · ${fmt(x1, 2)} mm`;
+      const lab2 = `${noteName(n2)} · ${fmt(x2, 2)} mm`;
+      const w1 = ctx.measureText(lab1).width, w2 = ctx.measureText(lab2).width;
+      const yLab = yDelta + 4;
+      ctx.textAlign = 'center';
+      if (Math.abs(X(x1) - X(x2)) > (w1 + w2) / 2 + 8) {
+        ctx.fillStyle = LOW; ctx.fillText(lab1, X(x1), yLab);
+        ctx.fillStyle = MID; ctx.fillText(lab2, X(x2), yLab);
+      } else {
+        const merged = `${lab1}  →  ${lab2}`;
+        const wm = ctx.measureText(merged).width;
+        const cx = Math.min(Math.max((X(x1) + X(x2)) / 2, wm / 2 + 2), cssW - wm / 2 - 2);
+        ctx.fillStyle = fg; ctx.fillText(merged, cx, yLab);
+      }
+
+      // distance between the two places
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.5;
+      ctx.beginPath(); ctx.moveTo(X(x1), yDelta - 8); ctx.lineTo(X(x2), yDelta - 8); ctx.stroke();
+      ctx.globalAlpha = 0.8; ctx.fillStyle = fg; ctx.textAlign = 'center';
+      ctx.fillText(`${fmt(Math.abs(x2 - x1), 2)} mm`, (X(x1) + X(x2)) / 2, yDelta - 11);
+      ctx.globalAlpha = 1;
+
+      // --- zoom strip: 1 mm window centred on marker 1 ---
+      const HW = 0.5;
+      const zx0 = padL, zw = W;
+      const XZ = (mm: number) => zx0 + ((mm - x1 + HW) / (2 * HW)) * zw;
+      ctx.save();
+      ctx.beginPath(); ctx.rect(zx0, yZ1, zw, yZ2 - yZ1); ctx.clip();
+      // region outside the cochlea
+      ctx.fillStyle = fg; ctx.globalAlpha = 0.09;
+      if (x1 - HW < 0) ctx.fillRect(zx0, yZ1, XZ(0) - zx0, yZ2 - yZ1);
+      if (x1 + HW > L) ctx.fillRect(XZ(L), yZ1, zx0 + zw - XZ(L), yZ2 - yZ1);
+      // hair-cell comb, one inner hair cell every 10 µm
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.28;
+      for (let t = Math.ceil((x1 - HW) / 0.01); t * 0.01 <= x1 + HW; t++) {
+        const px = XZ(t * 0.01);
+        ctx.beginPath(); ctx.moveTo(px, yZ2 - 9); ctx.lineTo(px, yZ2 - 1); ctx.stroke();
+      }
+      // neighbouring semitones
+      ctx.globalAlpha = 0.55; ctx.setLineDash([3, 3]);
+      for (const d of [-1, 1]) {
+        const px = XZ(posN(f1 * Math.pow(2, d / 12)) * L);
+        ctx.beginPath(); ctx.moveTo(px, yZ1 + 2); ctx.lineTo(px, yZ2 - 10); ctx.stroke();
+        ctx.setLineDash([]); ctx.fillStyle = fg; ctx.textAlign = 'center';
+        ctx.fillText(d < 0 ? '−1 nửa cung' : '+1 nửa cung', px, yZ1 + 22);
+        ctx.setLineDash([3, 3]);
+      }
+      ctx.setLineDash([]); ctx.globalAlpha = 1;
+      // the 0,3% just-noticeable shift
+      ctx.fillStyle = LOW; ctx.globalAlpha = 0.75;
+      ctx.fillRect(XZ(x1), yZ1 + 2, Math.max(XZ(x1 + jnd) - XZ(x1), 1.5), yZ2 - yZ1 - 12);
+      ctx.globalAlpha = 1;
+      ctx.strokeStyle = LOW; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.moveTo(XZ(x1), yZ1); ctx.lineTo(XZ(x1), yZ2); ctx.stroke();
+      ctx.lineWidth = 1;
+      ctx.restore();
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.3;
+      ctx.strokeRect(zx0, yZ1, zw, yZ2 - yZ1);
+      ctx.globalAlpha = 0.7; ctx.fillStyle = fg; ctx.textAlign = 'left';
+      ctx.fillText(`phóng to 1 mm quanh ${noteName(n1)} · +0,3% = ${fmt(jnd * 1000, 1)} µm`, zx0 + 6, yZ1 - 5);
+      ctx.textAlign = 'right';
+      ctx.fillText('mỗi vạch = 1 tế bào lông trong (10 µm)', zx0 + zw - 6, yZ1 - 5);
+      ctx.globalAlpha = 1;
+
+      const note = f1 > 4200
+        ? ' · <b>trên ngưỡng khoá pha: chỉ còn mã hoá bằng vị trí</b>'
+        : '';
+      readout.innerHTML =
+        `${noteName(n1)} (${hz(f1)} Hz) ở <b>${fmt(x1, 2)} mm</b> tính từ đỉnh · ` +
+        `${noteName(n2)} (${hz(f2)} Hz) ở ${fmt(x2, 2)} mm · ` +
+        `cách nhau <b>${fmt(Math.abs(x2 - x1), 2)} mm</b> · nửa cung tại đây = ${fmt(semi, 2)} mm · ` +
+        `ngưỡng 0,3% = <b>${fmt(jnd * 1000, 1)} µm</b> (${fmt(jnd / 0.01, 1)} tế bào lông)${note}`;
+    }
+
+    root.querySelectorAll('input').forEach((el) => el.addEventListener('input', draw));
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="ban-do-tan-so-oc-tai-muoi-chin-micromet"]').forEach(setup);
+</script>

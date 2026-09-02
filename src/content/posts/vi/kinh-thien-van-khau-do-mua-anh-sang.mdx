@@ -1,0 +1,96 @@
+---
+title: "Kính thiên văn 60 mm ghi \"675 lần\" — giới hạn thật là 120"
+seoTitle: "Kính thiên văn: độ phóng đại tối đa và ý nghĩa của khẩu độ"
+description: "Khẩu độ 200 mm hứng ánh sáng gấp 816 lần con ngươi 7 mm và đẩy cấp sao giới hạn từ 6,9 lên 14,2. Còn dòng \"675×\" in trên hộp kính 60 mm cho đồng tử ra 0,089 mm — nhỏ hơn ngưỡng hữu ích 5,6 lần, tức là phóng to một vệt mờ."
+pubDate: 2026-09-02
+tags: ["vat-ly", "quang-hoc", "thien-van", "javascript"]
+translationId: "kinh-thien-van-khau-do-mua-anh-sang"
+---
+
+import TelescopeAperture from '../../../components/demos/TelescopeAperture.astro';
+
+Hộp kính thiên văn nào ngoài hiệu cũng in một con số thật to: 525×, 675×.
+Đó là con số dễ hiểu nhất trên hộp và cũng là con số rỗng nhất — với cái
+ống 60 mm nằm bên trong, vượt quá 120 lần là bạn đang phóng to một vệt mờ:
+
+<TelescopeAperture />
+
+## Thứ bạn mua là diện tích, không phải độ phóng đại
+
+Kính thiên văn làm đúng một việc: gom ánh sáng từ một vòng tròn to hơn con
+ngươi bạn rồi dồn vào mắt. Thông số thật vì thế là **khẩu độ D**, đường
+kính vòng tròn ấy — và nó vào bằng diện tích:
+
+```
+thu sáng = (D / d_con ngươi)²
+```
+
+Con ngươi người trẻ mở tối đa ~7 mm trong đêm tối. Ống 60 mm rẻ tiền cho
+(60/7)² = **73 lần** ánh sáng; cái 200 mm của câu lạc bộ thiên văn cho
+**816 lần** — không phải hơn 3,3 lần mà hơn 11 lần, vì diện tích. Kéo
+slider khẩu độ: hai đĩa vẽ đúng tỉ lệ trên cùng một thước milimét, và đĩa
+con ngươi gần như tan biến.
+
+Độ phóng đại thì không nằm trong ống: nó là tỉ số tiêu cự vật kính chia
+tiêu cự thị kính, nên hãng in "675×" chỉ vì cắm một thị kính 3 mm giá vài
+đô vào là ra. Khẩu độ thì không đổi được — nó chính là cái ống.
+
+## Cấp sao: thang mà mỗi bậc đúng 2,512 lần
+
+Độ sáng thiên thể chấm bằng cấp sao, số càng nhỏ càng sáng, và giống hệt
+[cách tai người đếm âm thanh](/vi/posts/thang-decibel-vi-sao-tai-nguoi-dem-bang-logarit):
+thang lôgarit, mỗi cấp 2,512 lần cường độ, năm cấp đúng 100 lần. Quy tắc
+quan trắc, với D tính bằng milimét:
+
+```
+cấp sao giới hạn m ≈ 2,7 + 5·log₁₀ D
+```
+
+Thay D = 7 mm ra 6,9 — đúng cỡ giới hạn mắt trần dưới bầu trời thật tối;
+60 mm ra **11,6**; 200 mm ra **14,2**. Cả khoảng ấy chỉ là 816 lần ánh sáng
+viết lại bằng lôgarit: 2,5·log₁₀816 = 7,3 cấp. Con số 5 chính là 2,5 nhân
+2, số mũ của diện tích.
+
+Sao Diêm Vương cấp 14,4 vì thế đòi **D ≥ 219 mm** — lý do mọi cái kính hứa
+cho bạn xem Diêm Vương đều bắt đầu từ cỡ 8–10 inch, và mọi lời hứa dưới
+mức ấy là quảng cáo. Dưới đèn thành phố, trừ thẳng ba đến bốn cấp.
+
+## Đồng tử ra 0,5 mm — chỗ độ phóng đại hết chuyện để nói
+
+Ánh sáng rời thị kính thành một chùm nhỏ đường kính `D/M` — đồng tử ra. Ở
+60 mm và 675× nó là **0,089 mm**, nhỏ hơn ngưỡng hữu ích 0,5 mm tới 5,6 lần.
+
+Vì sao lại đúng 0,5 mm? Vì [ánh sáng chui qua lỗ thì
+loe](/vi/posts/vi-sao-khong-kinh-nao-thay-la-co-tren-mat-trang): ngôi sao
+trong ống 60 mm không bao giờ là một điểm mà là đĩa nhiễu xạ rộng
+1,22λ/D = **2,3 giây cung**, phóng đại M lần thì to gấp M. Đặt M = 2·D —
+tức đồng tử ra 0,5 mm — thì D triệt tiêu khỏi tích số: đĩa ấy ra đúng
+**4,6 phút cung, với mọi cái kính trên đời**. Mắt người phân giải nổi
+1 phút cung, nên đốm mờ nhỏ nhất ống kính vẽ được đã to gấp gần năm lần
+thứ bé nhất mắt bạn thấy: chi tiết nó giữ được đã bày hết lên bàn. Vặn
+tiếp chỉ được cái đốm to thêm, nhạt thêm, rung theo từng nhịp thở.
+
+Trần hữu ích vì thế gọn một dòng: **M tối đa ≈ 2 × D tính bằng milimét**.
+60 mm cho 120×, 200 mm cho 400×; muốn 675× tử tế phải có khẩu 338 mm — và
+một đêm khí quyển đứng yên hiếm hoi, vì quá 250× thứ chặn bạn thường là
+không khí chứ không phải thuỷ tinh.
+
+## Trường hợp biên: phóng đại thấp quá cũng là vứt ánh sáng
+
+Luật đảo chiều ở đầu kia. Đồng tử ra là chùm sáng chui vào mắt: nếu nó **to
+hơn con ngươi**, phần vành ngoài đập vào mống mắt và mất sạch. Kính 200 mm
+ở 25× cho đồng tử ra 8 mm; mắt 7 mm chỉ nhận (7/8)² = **77%**, nên đêm đó
+cái 200 mm làm việc đúng như một cái **175 mm**. Trần dưới vì thế là D chia
+con ngươi: 29× với kính 200 mm, và 40× nếu tuổi tác đã khép con ngươi bạn
+còn 5 mm.
+
+Và có một thứ khẩu độ không mua được. Với thiên thể diện rộng — tinh vân,
+thiên hà — độ chói bề mặt nhìn qua kính luôn **nhỏ hơn hoặc bằng** lúc
+nhìn suông, bằng nhau đúng khi đồng tử ra khớp con ngươi: cùng một điều
+cấm đã [chặn cái kính lúp không nung nổi vật nóng hơn Mặt
+Trời](/vi/posts/kinh-lup-dot-giay-va-tran-5772-do-khong-the-vuot) — quang
+học dời ánh sáng đi chứ không chế ra độ chói. Khẩu độ chỉ mua kích thước
+góc: tinh vân to ra, trải lên nhiều tế bào võng mạc hơn nên bạn thấy nó,
+còn mỗi điểm trên mặt nó không sáng thêm một li. Chỉ với vật điểm — các
+ngôi sao, nơi trọn 816 lần dồn vào một đĩa nhiễu xạ duy nhất — thì 816 lần
+mới là 816 lần thật.

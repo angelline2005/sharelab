@@ -1,0 +1,98 @@
+---
+title: "Con quay trong điện thoại không hề quay — nó rung 20 000 lần mỗi giây"
+seoTitle: "Cảm biến con quay MEMS: lực Coriolis và độ lệch 80 picomet"
+description: "Cảm biến xoay của điện thoại là một khối silic 2 nanogram rung 20 kHz. Bạn xoay máy 1 rad/s, lực Coriolis sinh ra 2,51 pico-newton và đẩy khối lệch 79,6 picomet — nhỏ hơn đường kính một nguyên tử hydro — vậy mà mạch điện vẫn đọc được, nhờ một mẹo về pha."
+pubDate: 2026-09-02
+tags: ["vat-ly", "dien-tu", "dao-dong", "javascript"]
+translationId: "con-quay-trong-dien-thoai-khong-he-quay"
+---
+
+import MemsGyroscope from '../../../components/demos/MemsGyroscope.astro';
+
+Nghiêng máy, màn hình xoay theo. Chơi game đua xe, bạn vặn cả cái điện thoại
+như vô-lăng. Linh kiện đọc được cử động ấy mang tên "con quay hồi chuyển" —
+nhưng bóc con chip ra soi thì tuyệt nhiên không có gì quay:
+
+<MemsGyroscope />
+
+## Không quay được thì rung
+
+Con quay thật giữ hướng nhờ mômen động lượng của một đĩa quay tít — [thứ
+khiến bánh xe đang quay từ chối
+đổ](/vi/posts/con-quay-hoi-chuyen-vi-sao-khong-chiu-do). Nhét một đĩa có ổ bi
+vào điện thoại thì vài tháng là rơ, lại ngốn điện. Nên MEMS đổi luật chơi:
+thay vì quay tròn, cho một khối silic **rung qua lại**.
+
+Khối ấy nặng chừng 2 nanogram, treo trên lò xo silic khắc cùng một miếng
+wafer, bị điện cực đẩy đúng tần số riêng của nó — 20 000 lần mỗi giây, biên
+độ 5 µm, một phần mười bốn bề ngang sợi tóc. Nghe hiền — cho tới khi làm phép
+nhân: vận tốc đỉnh `v = A·2πf` = **0,628 m/s**, gia tốc `A·(2πf)²` =
+79 000 m/s², tức **8 050 g**. Cứ 25 micro giây khối ấy đảo chiều một lần
+dưới tám nghìn g, suốt đời chiếc máy.
+
+## Lực Coriolis ở đây chỉ đáng 2,5 pico-newton
+
+Vật đang chạy trong hệ đang quay thì bị đẩy ngang — [đúng hiệu ứng bẻ
+cong đường đạn pháo và cuộn xoáy
+bão](/vi/posts/hieu-ung-coriolis-va-huyen-thoai-bon-cau). Khối rung thì
+*luôn* đang chạy, nên chỉ cần bạn xoay máy:
+
+```
+F = 2·m·v·Ω
+```
+
+Với m = 2,0 ng, v = 0,628 m/s, Ω = 1 rad/s (57,3 °/s — cỡ một cái vẩy cổ tay
+thong thả): F = **2,51 pN**, bằng một phần 7,8 trọng lượng của chính khối
+rung. Lực ấy đẩy khối lệch sang trục vuông góc, ép vào lò xo trục đo có độ
+cứng `k = m·(2πf)²` = 0,0316 N/m:
+
+```
+x = F/k = A·Ω/(π·f) = 79,6 pm = 0,0796 nm
+```
+
+Nhìn kỹ vế phải: **khối lượng biến mất**. Khối nặng gấp nghìn lần hứng lực lớn
+gấp nghìn lần, nhưng lò xo cũng phải cứng gấp nghìn lần mới giữ được 20 kHz —
+hai cái triệt tiêu. Và 79,6 picomet nhỏ hơn đường kính nguyên tử hydro
+(106 pm), bằng một phần ba liên kết Si–Si trong chính miếng silic ấy.
+
+## Đo 80 picomet bằng điện dung — và mẹo tách pha
+
+Hai bên khối rung là hàng trăm răng lược tạo thành tụ điện, khe hở cỡ 2 µm;
+khối lệch thì khe đổi, điện dung đổi theo đúng tỉ lệ: 79,6 pm
+chia 2 µm = **40 phần triệu**. Trên tổng điện dung 1 pF, đó là 39,8
+atô-fara — ở mức phân cực 1 V, chừng **250 electron** đổi chỗ.
+
+Con số đáng sợ nằm chỗ khác: biên độ rung lớn hơn độ lệch Coriolis đúng
+**62 832 lần** — tỉ số bằng π·f/Ω. Chỉ cần hai trục lệch nhau 1/62 832
+radian — **3,3 giây cung**, tức 0,0009° — thì phần rung rò sang trục đo đã
+đủ giả mạo trọn vẹn một cú xoay 1 rad/s. Không xưởng nào khắc silic chính
+xác tới mức ấy.
+
+Lối thoát nằm ở **pha**. Rung dẫn động đi theo sin(ωt); lực Coriolis tỉ lệ
+với *vận tốc*, tức cos(ωt) — lệch đúng 90°. Con chip nhân tín hiệu thu
+được với cos(ωt) rồi lấy trung bình: thành phần Coriolis cộng dồn, phần rò cơ
+khí (sai số vuông pha) trung bình về không. Cả nghề làm con quay MEMS gói
+trong phép nhân ấy.
+
+## Trường hợp biên: đối thủ cuối cùng là nhiệt độ phòng
+
+Kéo Ω xuống tận đáy. Trái Đất quay 15,04 °/h, tức 7,29×10⁻⁵ rad/s, cho độ
+lệch **5,8 femtomet** — nhỏ hơn cả hạt nhân nguyên tử vàng, đường kính chừng
+14 fm.
+
+Nhưng thứ chặn nó lại không phải kích thước, mà là **chuyển động Brown của
+chính khối rung**. Ở 300 K, môi trường quanh khối bơm vào đó một lực nhiễu
+nhiệt `√(4·k_B·T·b)`: với hệ số phẩm chất Q = 1 000 thì hệ số cản
+b = 2,51×10⁻¹⁰ N·s/m, lực nhiễu 2,04 femto-newton trên mỗi căn hertz — quy
+ra tốc độ quay là **0,047 °/s trên căn hertz**. Con quay của bạn không bao giờ
+đứng yên — nó đi bộ ngẫu nhiên. Sau một phút hướng đã trôi 0,36°, sau một
+giờ là 2,8°, mà đó mới chỉ là sàn lý thuyết.
+
+Đây là chỗ duy nhất khối lượng còn nói được tiếng nói: nó không đổi độ
+lệch, nhưng nặng hơn và Q cao hơn thì sàn nhiễu tụt theo căn bậc hai. Ngoài
+ra hết cách — nên không thiết bị nào dám dùng con quay một mình. Gia tốc kế
+kéo phương "xuống" về đúng chỗ, [từ kế kéo phương
+bắc](/vi/posts/kim-la-ban-o-ha-noi-chuc-xuong-dat) về đúng chỗ, con quay chỉ
+lo phần biến thiên nhanh mà hai anh kia đọc không kịp. Cái vòng số 8 điện
+thoại bắt bạn vẽ khi la bàn giở chứng chính là lúc bạn hiệu chuẩn tay một mắt
+xích của bộ ba ấy — để nó giữ hộ một khối 2 nanogram khỏi lạc đường.

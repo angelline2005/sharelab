@@ -1,0 +1,217 @@
+---
+// Maelzel metronome = compound pendulum with a fixed bob BELOW the pivot and a
+// sliding weight ABOVE it, so the two gravity torques subtract:
+//   T = 2π·sqrt( I / [ g·(m1·r1 − m2·r2) ] ),  I = m1·r1² + m2·r2² + m_rod·L²/3
+//   BPM = 120/T  (the escapement clicks twice per full swing)
+// Fixed hardware here: r1 = 3,0 cm, rod 10 g with L = 12 cm above the pivot
+// (idealised as a uniform rod pivoted at its lower end).
+// Valid in the small-angle limit; a real ±25° swing runs ~1,2% slow. Beyond
+// r2 = m1·r1/m2 the restoring torque reverses and the rod topples instead of
+// oscillating — the demo switches to the inverted-pendulum e-folding time.
+---
+
+<figure class="demo" data-demo="may-danh-nhip-va-mau-so-gan-bang-khong">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Vị trí quả nặng trượt r₂ (cm) <output data-out="r2"></output>
+      <input type="range" data-in="r2" min="1" max="13" step="0.1" value="10" /></label>
+    <label>Khối lượng quả nặng trượt m₂ (g) <output data-out="m2"></output>
+      <input type="range" data-in="m2" min="4" max="15" step="0.5" value="8" /></label>
+    <label>Đối trọng cố định dưới trục m₁ (g) <output data-out="m1"></output>
+      <input type="range" data-in="m1" min="20" max="40" step="1" value="32" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Trái: mặt cắt đứng chiếc máy đánh nhịp. Trục quay nằm thấp; đối trọng m₁
+    treo dưới trục 3,0 cm, còn quả nặng bạn trượt được thì nằm TRÊN trục — nó
+    trừ đi mô-men hồi phục thay vì cộng vào. Phải: nhịp theo vị trí quả nặng,
+    lao xuống 0 tại tiệm cận đứng r₂ = m₁r₁/m₂ (vạch cam). Dải 40–208 là thang
+    số in trên máy đánh nhịp cơ thật.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const CURVE = '#2563eb', MARK = '#dc2626', ASYM = '#f59e0b';
+  const G = 9.81, R1 = 0.030, MROD = 0.010, LROD = 0.12;
+  const IROD = (MROD * LROD * LROD) / 3;
+  const vi = (x: number, n: number) => x.toFixed(n).replace('.', ',');
+
+  // r2, m1, m2 in SI. denom = m1r1 − m2r2 (the term that vanishes).
+  const denom = (m1: number, m2: number, r2: number) => m1 * R1 - m2 * r2;
+  const inertia = (m1: number, m2: number, r2: number) =>
+    m1 * R1 * R1 + m2 * r2 * r2 + IROD;
+  const bpm = (m1: number, m2: number, r2: number) => {
+    const d = denom(m1, m2, r2);
+    if (d <= 0) return 0;
+    return (120 * Math.sqrt((G * d) / inertia(m1, m2, r2))) / (2 * Math.PI);
+  };
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (k: string) => root.querySelector(`[data-in="${k}"]`) as HTMLInputElement;
+    const output = (k: string) => root.querySelector(`[data-out="${k}"]`) as HTMLOutputElement;
+
+    function draw() {
+      const r2cm = Number(input('r2').value);
+      const m2g = Number(input('m2').value);
+      const m1g = Number(input('m1').value);
+      output('r2').textContent = vi(r2cm, 1);
+      output('m2').textContent = vi(m2g, 1);
+      output('m1').textContent = String(m1g);
+
+      const r2 = r2cm / 100, m1 = m1g / 1000, m2 = m2g / 1000;
+      const d = denom(m1, m2, r2);
+      const I = inertia(m1, m2, r2);
+      const b = bpm(m1, m2, r2);
+      const rStar = (m1 * R1) / m2;          // asymptote, metres
+      const rStarCm = rStar * 100;
+      const toppled = d <= 0;
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.5);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+      ctx.font = '10px system-ui,sans-serif';
+
+      // ---------- left panel: the metronome in elevation ----------
+      const leftW = Math.max(118, Math.min(250, cssW * 0.34));
+      const s = (cssH - 34) / 17;                     // px per cm
+      const cx = leftW / 2, pivotY = 16 + LROD * 100 * s;
+      const tilt = (toppled ? 62 : 25) * (Math.PI / 180);
+
+      // pyramid case
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.22;
+      ctx.beginPath();
+      ctx.moveTo(cx - 8, 20); ctx.lineTo(cx - leftW * 0.4, pivotY + 5.2 * s);
+      ctx.lineTo(cx + leftW * 0.4, pivotY + 5.2 * s); ctx.lineTo(cx + 8, 20);
+      ctx.stroke();
+      // ghost of the opposite extreme
+      ctx.globalAlpha = 0.18; ctx.lineWidth = 2; ctx.beginPath();
+      ctx.moveTo(cx, pivotY);
+      ctx.lineTo(cx - LROD * 100 * s * Math.sin(tilt), pivotY - LROD * 100 * s * Math.cos(tilt));
+      ctx.stroke();
+      ctx.globalAlpha = 1;
+
+      // rod: r1 below the pivot, LROD above it
+      const ux = Math.sin(tilt), uy = -Math.cos(tilt);
+      const tipX = cx + LROD * 100 * s * ux, tipY = pivotY + LROD * 100 * s * uy;
+      const bobX = cx - R1 * 100 * s * ux, bobY = pivotY - R1 * 100 * s * uy;
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.75; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.moveTo(bobX, bobY); ctx.lineTo(tipX, tipY); ctx.stroke();
+      ctx.globalAlpha = 1; ctx.lineWidth = 1;
+
+      // scale ticks along the rod (every 2 cm)
+      ctx.globalAlpha = 0.4; ctx.fillStyle = fg;
+      for (let c = 2; c <= 12; c += 2) {
+        ctx.beginPath();
+        ctx.arc(cx + c * s * ux, pivotY + c * s * uy, 1.4, 0, Math.PI * 2); ctx.fill();
+      }
+      ctx.globalAlpha = 1;
+
+      // sliding weight (above the pivot) — the thing you move
+      const wx = cx + r2cm * s * ux, wy = pivotY + r2cm * s * uy;
+      const wh = Math.max(7, 3 + m2g * 0.55);
+      ctx.save(); ctx.translate(wx, wy); ctx.rotate(tilt);
+      ctx.fillStyle = MARK; ctx.fillRect(-11, -wh / 2, 22, wh); ctx.restore();
+
+      // fixed counterweight (below the pivot)
+      ctx.fillStyle = fg; ctx.globalAlpha = 0.8;
+      ctx.beginPath(); ctx.arc(bobX, bobY, Math.max(5, 2 + m1g * 0.16), 0, Math.PI * 2); ctx.fill();
+      ctx.globalAlpha = 1;
+      // pivot
+      ctx.fillStyle = fg;
+      ctx.beginPath(); ctx.arc(cx, pivotY, 3, 0, Math.PI * 2); ctx.fill();
+      ctx.globalAlpha = 0.55; ctx.textAlign = 'left';
+      ctx.fillText('trục', cx + 6, pivotY + 12);
+      ctx.textAlign = 'center';
+      ctx.fillText(toppled ? 'đổ hẳn' : 'm₂', wx, wy - wh / 2 - 5);
+      ctx.fillText('m₁', bobX, bobY + 18);
+      ctx.globalAlpha = 1;
+
+      // ---------- right panel: BPM vs slider position ----------
+      const padL = leftW + 42, padR = 8, padT = 14, padB = 26;
+      const X = (c: number) => padL + ((c - 1) / 12) * (cssW - padL - padR);
+      const Y = (v: number) => cssH - padB - (v / 240) * (cssH - padB - padT);
+
+      // the printed 40–208 band of a real metronome
+      ctx.fillStyle = CURVE; ctx.globalAlpha = 0.08;
+      ctx.fillRect(padL, Y(208), cssW - padL - padR, Y(40) - Y(208));
+      ctx.globalAlpha = 1;
+
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.3;
+      ctx.beginPath(); ctx.moveTo(padL, padT); ctx.lineTo(padL, cssH - padB);
+      ctx.lineTo(cssW - padR, cssH - padB); ctx.stroke();
+      ctx.globalAlpha = 0.55; ctx.fillStyle = fg;
+      ctx.textAlign = 'center';
+      for (const c of [1, 4, 7, 10, 13]) ctx.fillText(`${c} cm`, X(c), cssH - padB + 14);
+      ctx.textAlign = 'right';
+      for (const v of [40, 80, 120, 160, 200]) ctx.fillText(String(v), padL - 4, Y(v) + 3);
+      ctx.save(); ctx.translate(padL - 30, (padT + cssH - padB) / 2); ctx.rotate(-Math.PI / 2);
+      ctx.textAlign = 'center'; ctx.fillText('nhịp/phút', 0, 0); ctx.restore();
+      ctx.globalAlpha = 1;
+
+      // vertical asymptote
+      if (rStarCm > 1 && rStarCm < 13.4) {
+        ctx.strokeStyle = ASYM; ctx.setLineDash([4, 3]);
+        ctx.beginPath(); ctx.moveTo(X(rStarCm), padT); ctx.lineTo(X(rStarCm), cssH - padB); ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.fillStyle = ASYM; ctx.textAlign = rStarCm > 10 ? 'right' : 'left';
+        ctx.fillText(`r₂* = ${vi(rStarCm, 1)} cm`, X(rStarCm) + (rStarCm > 10 ? -4 : 4), padT + 9);
+      }
+
+      ctx.strokeStyle = CURVE; ctx.lineWidth = 2; ctx.beginPath();
+      let started = false;
+      for (let i = 0; i <= 300; i++) {
+        const c = 1 + (12 * i) / 300;
+        if (denom(m1, m2, c / 100) <= 0) break;
+        const yy = Y(bpm(m1, m2, c / 100));
+        started ? ctx.lineTo(X(c), yy) : ctx.moveTo(X(c), yy);
+        started = true;
+      }
+      ctx.stroke(); ctx.lineWidth = 1;
+
+      ctx.fillStyle = MARK;
+      ctx.beginPath(); ctx.arc(X(r2cm), Y(toppled ? 0 : b), 6, 0, Math.PI * 2); ctx.fill();
+
+      // ---------- readout ----------
+      const dgcm = d * 1e5;              // kg·m → g·cm
+      const Igcm = I * 1e7;              // kg·m² → g·cm²
+      const head = `m₂ = ${vi(m2g, 1)} g ở r₂ = ${vi(r2cm, 1)} cm · m₁r₁ = ${vi(m1g * 3, 0)} g·cm`;
+      if (toppled) {
+        const tau = Math.sqrt(I / (G * -d));
+        readout.innerHTML =
+          `${head} → mẫu số = <b>${vi(dgcm, 1)} g·cm</b> (âm) · <b>không còn dao động</b>: ` +
+          `mô-men đổi dấu, cần đổ sang một bên, lệch nhân e sau mỗi ${vi(tau, 2)} s — đúng một con lắc ngược.`;
+      } else {
+        const zone = b < 40 ? ' · <b>chậm hơn vạch 40 in trên máy thật</b>'
+          : b > 208 ? ' · nhanh hơn vạch 208 in trên máy thật' : '';
+        readout.innerHTML =
+          `${head} → mẫu số m₁r₁ − m₂r₂ = <b>${vi(dgcm, 1)} g·cm</b> ` +
+          `(còn ${vi((100 * dgcm) / (m1g * 3), 0)}%) · I = ${vi(Igcm, 0)} g·cm² → ` +
+          `T = ${vi(120 / b, 2)} s = <b>${vi(b, 1)} nhịp/phút</b>` +
+          `${zone} · tiệm cận đứng im: r₂ = ${vi(rStarCm, 1)} cm`;
+      }
+    }
+
+    root.querySelectorAll('input').forEach((el) => el.addEventListener('input', draw));
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="may-danh-nhip-va-mau-so-gan-bang-khong"]').forEach(setup);
+</script>

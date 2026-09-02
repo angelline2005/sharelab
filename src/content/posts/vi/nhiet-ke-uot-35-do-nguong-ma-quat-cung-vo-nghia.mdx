@@ -1,0 +1,96 @@
+---
+title: "Nhiệt kế ướt 35 °C: cái ngưỡng mà bóng râm, quạt và nước uống đều hết tác dụng"
+seoTitle: "Nhiệt độ bầu ướt là gì: ngưỡng 35 °C và cách tính từ nhiệt độ, độ ẩm"
+description: "Cơ thể chỉ còn một cửa thải nhiệt khi trời nóng hơn da — bay hơi mồ hôi — và giới hạn của cửa ấy là nhiệt độ bầu ướt. Hà Nội 38 °C với độ ẩm 60% cho 31,2 °C; chỉ cần 40 °C đi kèm 70% là chạm 34,9."
+pubDate: 2026-09-02
+tags: ["vat-ly", "nhiet-hoc", "khi-hau", "javascript"]
+translationId: "nhiet-ke-uot-35-do-nguong-ma-quat-cung-vo-nghia"
+---
+
+import WetBulb from '../../../components/demos/WetBulb.astro';
+
+Treo hai nhiệt kế cạnh nhau ngoài hiên, một cái bọc miếng vải ướt. Cái bọc
+vải luôn chỉ thấp hơn — và khoảng cách giữa hai con số ấy là toàn bộ ngân
+sách làm mát của cơ thể bạn hôm đó:
+
+<WetBulb />
+
+## Cái nhiệt kế bọc vải ướt dừng lại ở đâu
+
+Nước trên miếng vải bay hơi, mỗi gam mang theo [2 418 J nhiệt
+ẩn](/vi/posts/nhiet-an-hai-quang-nhiet-ke-dung-im) rút thẳng khỏi bầu thuỷ
+ngân. Nhưng càng tụt, nhiệt từ không khí càng chảy ngược vào — tới một điểm
+hai dòng hoà nhau và nhiệt kế đứng im. Điểm ấy là **nhiệt độ bầu ướt**: mức thấp nhất mà bay
+hơi, làm hết sức mình, kéo được một bề mặt ẩm xuống trong đúng khối không
+khí đó.
+
+Hà Nội một ngày 38 °C, độ ẩm 60%: bầu ướt **31,2 °C**. Chênh 6,8 độ đó là
+tiền lãi của bay hơi, và nó không phụ thuộc bạn quạt mạnh cỡ nào — gió chỉ
+đưa bạn tới đích *nhanh hơn*, không xuống *thấp hơn*. Xấp xỉ trong demo là
+của Stull (2011), gọn vừa một dòng code:
+
+```
+Tw = T·atan(0,151977·√(RH+8,313659)) + atan(T+RH) − atan(RH−1,676331)
+     + 0,00391838·RH^1,5·atan(0,023101·RH) − 4,686035
+```
+
+## Vì sao con số là 35, không phải 45
+
+Da người giữ quanh **35 °C**. Ngồi yên, cơ thể vẫn đốt khoảng **100 W**
+và phải tống chỗ đó ra ngoài; mà nhiệt chỉ chảy một chiều, từ nóng sang
+lạnh. Khi không khí đã 38 °C, dẫn nhiệt và bức xạ quay
+đầu đổ nhiệt *vào* bạn, chỉ còn đúng một cửa thoát: mồ hôi bay hơi.
+
+Nếu bầu ướt chạm 35 °C, da không thể nguội hơn 35 — bằng đúng chính nó.
+Chênh lệch bằng không, dòng nhiệt bằng không, **100 W kia ở lại trong
+người**, và thân nhiệt lõi bò lên không gì ngăn được, tính bằng giờ. Đó là
+lý do con số 35 nghe thấp một cách vô lý bên cạnh kỷ
+lục 44,2 °C của Việt Nam: nó không đo cái nóng, nó đo **cửa thoát**.
+
+## 45 độ sa mạc mát hơn 36 độ Hà Nội
+
+Kéo demo tới 45 °C với độ ẩm 30%: bầu ướt **29,7 °C**. Kéo về 36 °C với
+70%: **31,2 °C** — cao hơn một độ rưỡi, dù nhiệt kế thường đọc ít hơn chín
+độ. Không khí khô nuốt mồ hôi tham lam, không khí ẩm thì đã gần no. Phần
+trăm độ ẩm đọc một mình là con số nghèo nàn; [điểm
+sương](/vi/posts/diem-suong-vi-sao-coc-bia-do-mo-hoi) và bầu ướt nói thẳng
+hơn.
+
+Đường đồng mức cho thấy đánh đổi ấy phi tuyến. Muốn chạm 35 °C bầu
+ướt, ở 38 °C bạn cần độ ẩm **81%**; ở 42 °C chỉ cần **61%**; ở 50 °C là
+**35%** — trong tầm với của vùng vịnh Ba Tư, nơi vài trạm đã chạm mốc trong
+một hai giờ. Việt Nam ở nhánh còn lại: nóng vừa mà ẩm dai — Sài Gòn 33 °C
+với 75% cho 29,2 °C, chưa chạm 35 nhưng đã là vùng cơ thể phải chạy hết
+công suất mới hoà vốn.
+
+## Bóng râm, nước uống và quạt rơi cùng một lúc
+
+Bóng râm không phải quân bài dự phòng: con số bầu ướt vốn đã giả định bạn
+trong bóng râm, ngoài nắng chỉ tệ hơn. Nước uống giữ cho tuyến mồ hôi
+có nguyên liệu: một lít mồ hôi *bay hơi hết* mang đi **672 W** trong
+một giờ, thừa sức gánh 100 W của người ngồi nghỉ (chỉ cần **150 g mỗi
+giờ**). Nhưng uống bao nhiêu cũng vô ích nếu mồ hôi chảy thành dòng xuống
+áo: nước rơi khỏi da không lấy đi gam nhiệt ẩn nào.
+
+Quạt là lá bài lật ngửa rõ nhất. Không khí 38 °C thổi 3 m/s lên làn da
+35 °C cho hệ số đối lưu `hc = 8,3·v^0,6` khoảng 16 W/m²K — trên 1,8 m² da,
+chiếc quạt **bơm thêm 87 W vào người bạn**. Vẫn lãi, chừng nào gió còn thúc
+được bay hơi. Đúng lúc bầu ướt chạm 35, vế lãi biến mất: quạt
+thành lò sưởi. Cùng một cơn gió, mùa đông là [kẻ cướp áo
+giáp](/vi/posts/gio-lanh-cam-giac-nhu-la-do-cai-gi), ở đây là kẻ tiếp tay.
+
+## Trường hợp biên: 35 là con số dành cho người trần truồng ngồi im
+
+Phải đọc kỹ 35 °C là ngưỡng của ai: giới hạn **nhiệt động** thuần tuý, tính
+cho một người không mặc gì, trong bóng râm, có gió, uống nước thoả thích và
+không làm gì cả — tức là một người không tồn tại.
+Khi Penn State đưa tình nguyện viên trẻ khoẻ vào buồng khí hậu (2021–2022)
+rồi tăng dần độ ẩm tới lúc thân nhiệt lõi mất kiểm soát, ngưỡng thực đo
+được rơi vào **30–31 °C bầu ướt** — thấp hơn bốn độ, và thấp hơn nữa với
+người già hay người lao động chân tay. Đường cam trong demo là ngưỡng đó,
+và Hà Nội 38 °C/60% nằm ngay trên nó.
+
+Ở đầu kia nhiệt giai, công thức này có anh em sinh đôi: wind chill. Một bên hỏi bay hơi còn kéo da xuống được tới đâu; bên kia hỏi đối
+lưu rút nhiệt khỏi da nhanh cỡ nào. Cả hai cùng thú nhận điều nhiệt kế ngoài
+hiên không bao giờ chịu nói: nó đo không khí, còn thứ định đoạt
+số phận bạn là dòng nhiệt đi qua da.

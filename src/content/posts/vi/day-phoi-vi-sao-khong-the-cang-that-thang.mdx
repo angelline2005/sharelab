@@ -1,0 +1,90 @@
+---
+title: "Không ai căng nổi sợi dây cho thật thẳng — cái áo 1 kg chứng minh điều đó"
+seoTitle: "Lực căng dây khi treo vật ở giữa: T = W·L/(4·độ võng)"
+description: "Áo ướt 1 kg treo giữa sợi dây phơi 4 m võng 5 cm đã kéo hai đầu dây bằng 196 N — 20 kgf mỗi bên. Ép độ võng còn 2 cm: 50 kgf. Muốn dây thẳng tuyệt đối thì lực căng phải là vô hạn, và chính phép chia cho số nhỏ ấy là mẹo kéo xe khỏi hố bằng một sợi cáp."
+pubDate: 2026-09-02
+tags: ["vat-ly", "co-hoc", "javascript"]
+translationId: "day-phoi-vi-sao-khong-the-cang-that-thang"
+---
+
+import ClotheslineSag from '../../../components/demos/ClotheslineSag.astro';
+
+Bạn căng dây phơi hết sức, thắt chặt hai đầu, lùi lại ngắm: thẳng băng. Vắt
+lên một cái áo ướt, dây võng xuống. Kéo lại chặt hơn nữa — vẫn võng. Không
+phải tay bạn yếu; con số bạn đang đòi hỏi mới là thứ vô lý:
+
+<ClotheslineSag />
+
+## Cái áo 1 kg kéo hai đầu dây bằng 20 kgf
+
+Sợi dây chỉ biết kéo dọc theo chính nó. Ở điểm treo, hai nhánh dây gần như
+nằm ngang, mà thứ cần đỡ lại thẳng đứng — chúng chỉ góp được phần thẳng
+đứng khi đã nghiêng đi một góc θ, với tan θ bằng độ võng chia nửa nhịp. Cân
+bằng lực tại điểm ấy viết ra đúng một dòng:
+
+```
+2·T·sin θ = W,  tan θ = 2d/L   ⇒   T ≈ W·L/(4d)
+```
+
+Dạng gọn bên phải là giới hạn võng nhỏ, sai dưới 1 % khi độ võng còn dưới
+1/14 nhịp — tức là đúng với mọi sợi dây phơi trên đời. Áo ướt 1,0 kg cho
+W = 9,81 N. Dây 4,0 m võng 5 cm: **θ = 1,43°**, mắt thường vẫn gọi là thẳng.
+Thay số: **T = 196 N = 20,0 kgf mỗi bên** — gấp 20 lần trọng lượng cái áo.
+
+Để ý hướng: 196 N ấy gần như nằm ngang. Mỗi cọc phơi đang bị bẻ nghiêng vào
+trong bằng lực của một bao gạo 20 kg đặt ngay đầu cọc, và đó là lý do cọc
+phơi luôn đổ chụm vào nhau chứ không bao giờ ngả ra ngoài. Trò này ngược hẳn
+với [ròng rọc chia trọng lực thành từng nhánh
+dây](/vi/posts/rong-roc-chia-nho-trong-luc-thanh-tung-nhanh-day): hai nhánh
+dây phơi không chia nhỏ W, chúng nhân nó lên, vì đang đứng gần vuông góc với
+việc phải làm.
+
+## Ba centimét độ võng, giá 30 kgf
+
+Vặn tăng-đơ cho võng còn 2 cm: T nhảy lên **490 N = 50,0 kgf**. Còn 1 cm:
+**981 N, tức 100 kgf** — một tạ lực, vì một cái áo. Đường cong bên phải demo
+là một nhánh hyperbol: d nằm dưới mẫu số. "Dây thật thẳng" nghĩa là
+d = 0, nghĩa là T vô hạn. Không sợi dây nào, không cái
+tăng-đơ nào và không bắp tay nào mua nổi con số ấy, nên vũ trụ này chưa từng
+có một sợi dây thẳng.
+
+Cũng chính đại lượng đó, khi nằm trên [dây đàn, quyết định cao
+độ](/vi/posts/song-dung-tren-day-dan) — sáu dây ghi ta cộng lại kéo cần đàn
+bằng cỡ 70 kgf, nên cần đàn mới phải dày và có thanh thép chạy dọc bên trong.
+Ngược lại, chừa võng là cách mua rẻ nhất: để dây phơi võng 5 cm thay vì 1 cm
+không tốn gì cả, mà lực căng chia cho năm. Người thợ nào cũng biết điều này
+trước khi biết công thức.
+
+## Chia cho số nhỏ: mẹo kéo xe ra khỏi hố
+
+Chạy ngược phép chia thì nó thành đòn bẩy. Xe kẹt bùn, sợi cáp 20 m nối xe
+với gốc cây, kéo dọc cáp thì xe không nhúc nhích. Ra giữa cáp, đẩy ngang: bạn
+đẩy được 800 N, cáp lệch 40 cm, hệ số nhân L/(4d) = **12,5** — móc xe nhận
+**10 000 N, hơn một tấn lực**, từ một người không có tời.
+
+Hoá đơn vẫn phải trả, [như mọi đòn bẩy](/vi/posts/don-bay-cho-toi-mot-diem-tua):
+tay bạn đi ngang 10 cm thì hai đầu cáp chỉ xích lại **9,0 mm** — tỉ số 12,5
+lần chỉ đúng ở milimét đầu, càng đẩy sâu thì d càng lớn, lợi thế càng tụt.
+Xe nhích chín milimét mỗi lượt, rồi bạn căng lại cáp và làm lần nữa.
+Vật lý không cho không, nó chỉ cho trả góp.
+
+## Trường hợp biên: bỏ cái áo ra, dây vẫn không thẳng
+
+Tháo áo xuống. W = 0, công thức trả về T = 0 và một sợi dây thẳng tắp. Sai —
+vì dây có khối lượng của chính nó. Tải rải đều dọc dây đổi công thức thành
+`T = w·L²/(8d)` với w là trọng lượng mỗi mét, và sợi dây phơi 4 m nặng 20 g/m
+giữ nguyên lực căng 196 N vẫn võng **2,0 mm**. Muốn 0 mm thì lại phải chia
+cho 0. Hình dạng cũng đổi: không còn hai đoạn gấp khúc mà là đường cong họ
+hàm cosh — đường dây điện, sợi xích, cáp cầu treo đều nằm trong họ ấy (dưới
+độ võng 1/20 nhịp nó lệch khỏi parabol chưa tới 0,1 %, nên kỹ sư cứ dùng
+parabol cho tiện). Đường 22 kV nhịp 100 m, dây 0,4 kg/m, người ta **cố tình**
+chừa võng 1,5 m — và mỗi trụ vẫn phải giữ 3 270 N ≈ 333 kgf. Chừa 15 cm thay
+vì 1,5 m thì nhân mười con số đó, chưa kể đêm lạnh dây co lại còn cộng thêm.
+
+Mặt trái của mẹo kéo xe nằm đúng ở chỗ nhân lực. Sợi cáp mang 10 000 N cũng
+đang tích năng lượng đàn hồi: một dây kéo tổng hợp dài 6 m giãn 6 % dưới lực
+ấy ngậm khoảng **1 800 J**. Nếu cáp tuột và cái móc 5 kg nuốt trọn số đó, nó
+rời đi ở 27 m/s — **97 km/h**, mang động năng gấp ba lần rưỡi một viên đạn 9 mm.
+Vì thế người cứu hộ luôn vắt một tấm chăn ướt lên giữa sợi cáp trước khi kéo:
+tấm chăn không giữ nổi cáp, nó chỉ ăn bớt động năng đủ để đường bay của cái
+móc kết thúc trên mặt đất thay vì trên kính lái.

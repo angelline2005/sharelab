@@ -1,0 +1,252 @@
+---
+// Relativistic beam kinematics, exact (no small-angle/high-energy approximation
+// in the code — the 1/E² approximation is only quoted in the prose):
+//   gamma = E / (mc²)          E = total energy
+//   x     = (mc²/E)²
+//   beta  = sqrt(1 − x)
+//   c − v = c·x / (1 + sqrt(1 − x))     ← algebraically identical to c(1−beta)
+//           but numerically stable for x ~ 1e-13, where 1 − sqrt(1−x) loses
+//           all significance in float64.
+//   L' = C/gamma  (ring length in the particle's own frame)
+//   f_rev = v / C
+// Valid for every E > mc² (the slider minimum is clamped per particle so the
+// ladder can never sit below the rest energy). Rest energies: electron
+// 0,510999 MeV; proton 938,272 MeV; Pb-208 nucleus 193,687 GeV.
+// Source: Jackson, Classical Electrodynamics §11; CERN LHC design report
+// (C = 26 659 m, f_rev = 11 245 Hz at 7 TeV).
+---
+
+<figure class="demo" data-demo="proton-lhc-cham-hon-anh-sang-2-7-met">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Hạt <output data-out="p"></output>
+      <input type="range" data-in="p" min="0" max="2" step="1" value="1" /></label>
+    <label>Năng lượng toàn phần E <output data-out="e"></output>
+      <input type="range" data-in="e" min="0" max="1" step="1" value="0" /></label>
+    <label>Chu vi vòng máy <output data-out="c"></output>
+      <input type="range" data-in="c" min="0" max="6" step="1" value="4" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Trục dọc là <em>c − v</em>: hạt còn thiếu bao nhiêu mét mỗi giây nữa mới
+    bằng ánh sáng. Cả hai trục đều logarit, nên ba đường của ba loại hạt là ba
+    đường thẳng song song dốc −2: tăng năng lượng gấp 10 thì khoảng thiếu ấy
+    giảm 100 lần. Hạt nặng hơn nằm dịch sang phải — cùng một khoảng thiếu, chì
+    phải trả năng lượng gấp 207 lần proton. Thanh dưới cùng so vòng máy đo
+    trong phòng thí nghiệm với chính vòng ấy đo trong hệ quy chiếu của hạt.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const C_LIGHT = 299792458;
+  const CURVE = '#2563eb', MARK = '#dc2626', LM = '#f59e0b';
+
+  const PARTICLES = [
+    { name: 'electron', m: 0.51099895e6 },
+    { name: 'proton', m: 938.27209e6 },
+    { name: 'ion chì Pb-208', m: 193.687e9 },
+  ];
+
+  // Landmark total energies (eV), tied to the particle index they belong to.
+  const LANDMARKS: Array<[number, number, string]> = [
+    [0, 5.3599895e5, 'electron ống hình 25 kV'],
+    [0, 6.51099895e6, 'electron máy xạ trị 6 MeV'],
+    [1, 1.13827209e9, 'proton xạ trị 200 MeV'],
+    [1, 4.5e11, 'proton bơm vào LHC 450 GeV'],
+    [1, 7e12, 'proton LHC 7 TeV'],
+    [1, 1.4e13, 'proton 14 TeV'],
+    [2, 5.7408e14, 'chì LHC 2,76 TeV/nucleon'],
+  ];
+
+  // Energy ladder: decades 1..5 e5 .. e15, plus every landmark, sorted.
+  const LADDER: number[] = (() => {
+    const s = new Set<number>();
+    for (let d = 5; d <= 15; d++) for (const mant of [1, 2, 5]) s.add(mant * Math.pow(10, d));
+    for (const [, E] of LANDMARKS) s.add(E);
+    return [...s].sort((a, b) => a - b);
+  })();
+
+  const RINGS: Array<[number, string]> = [
+    [157, 'PS Booster'], [628, 'PS'], [2000, ''], [6911, 'SPS'],
+    [26659, 'LHC'], [50000, ''], [90659, 'FCC-hh (dự kiến)'],
+  ];
+
+  const vi = (n: number, d = 0) =>
+    n.toLocaleString('vi-VN', { minimumFractionDigits: d, maximumFractionDigits: d });
+
+  function kin(E: number, m: number) {
+    const x = (m / E) * (m / E);
+    const r = Math.sqrt(Math.max(0, 1 - x));
+    return { g: E / m, beta: r, gap: (C_LIGHT * x) / (1 + r) };
+  }
+
+  const SUP = '⁰¹²³⁴⁵⁶⁷⁸⁹';
+  const sup = (n: number) =>
+    String(n).split('').map((ch) => (ch === '-' ? '⁻' : SUP[Number(ch)])).join('');
+  const sci = (v: number) => {
+    const e = Math.floor(Math.log10(v));
+    return `${vi(v / Math.pow(10, e), 1)}·10${sup(e)}`;
+  };
+  const lenStr = (L: number) =>
+    L >= 100 ? `${vi(L)} m` : L >= 0.01 ? `${vi(L, 2)} m` : `${vi(L * 1000, 3)} mm`;
+
+  const trim = (s: string) => s.replace(/,0+$/, '');
+  const eLabel = (E: number) => {
+    if (E >= 1e15) return `${trim(vi(E / 1e15, 3))} PeV`;
+    if (E >= 1e12) return `${trim(vi(E / 1e12, E / 1e12 < 10 ? 3 : 1))} TeV`;
+    if (E >= 1e9) return `${trim(vi(E / 1e9, E / 1e9 < 10 ? 3 : 0))} GeV`;
+    if (E >= 1e6) return `${trim(vi(E / 1e6, E / 1e6 < 10 ? 3 : 0))} MeV`;
+    return `${trim(vi(E / 1e3, 1))} keV`;
+  };
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (k: string) => root.querySelector(`[data-in="${k}"]`) as HTMLInputElement;
+    const output = (k: string) => root.querySelector(`[data-out="${k}"]`) as HTMLOutputElement;
+
+    const eSlider = input('e');
+    eSlider.max = String(LADDER.length - 1);
+    eSlider.value = String(LADDER.indexOf(7e12)); // open on the LHC proton
+
+    function draw() {
+      const pi = Number(input('p').value);
+      const part = PARTICLES[pi];
+
+      // The ladder may never sit at or below the rest energy of the chosen particle.
+      const minIdx = LADDER.findIndex((v) => v > part.m * 1.000001);
+      eSlider.min = String(minIdx);
+      if (Number(eSlider.value) < minIdx) eSlider.value = String(minIdx);
+      const E = LADDER[Number(eSlider.value)];
+
+      const ringIdx = Number(input('c').value);
+      const [C, ringName] = RINGS[ringIdx];
+
+      const { g, beta, gap } = kin(E, part.m);
+      const contracted = C / g;
+      const fRev = (beta * C_LIGHT) / C;
+
+      output('p').textContent = part.name;
+      output('e').textContent = eLabel(E);
+      output('c').textContent = `${vi(C)} m${ringName ? ` (${ringName})` : ''}`;
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.62);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+      ctx.font = '10px system-ui,sans-serif';
+
+      const padL = 46, padR = 10, padT = 12;
+      const plotB = cssH - 84;   // baseline of the log-log plot; 84 px reserved below
+      const stripT = plotB + 38; // top of the ring-contraction strip
+      const LX = 5, HX = 15;                           // log10 eV
+      const LY = -2, HY = 9;                           // log10 (m/s)
+      const X = (Ev: number) => padL + ((Math.log10(Ev) - LX) / (HX - LX)) * (cssW - padL - padR);
+      const Y = (d: number) => padT + ((HY - Math.log10(d)) / (HY - LY)) * (plotB - padT);
+
+      // --- axes ---
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.3;
+      ctx.beginPath();
+      ctx.moveTo(padL, padT); ctx.lineTo(padL, plotB); ctx.lineTo(cssW - padR, plotB);
+      ctx.stroke();
+      ctx.globalAlpha = 0.55; ctx.fillStyle = fg;
+      ctx.textAlign = 'center';
+      for (const [ev, lab] of [[1e6, '1 MeV'], [1e9, '1 GeV'], [1e12, '1 TeV'], [1e15, '1 PeV']] as Array<[number, string]>)
+        ctx.fillText(lab, X(ev), plotB + 14);
+      ctx.textAlign = 'right';
+      for (const [d, lab] of [[1e8, '10⁸ m/s'], [1e6, '10⁶'], [1e4, '10⁴'], [1e2, '100'], [1, '1'], [1e-2, '0,01']] as Array<[number, string]>)
+        ctx.fillText(lab, padL - 4, Y(d) + 3);
+      ctx.globalAlpha = 1;
+
+      // --- the three curves; the selected one in blue, the others faint ---
+      ctx.save();
+      ctx.beginPath(); ctx.rect(padL, padT, cssW - padL - padR, plotB - padT); ctx.clip();
+      PARTICLES.forEach((q, k) => {
+        const sel = k === pi;
+        ctx.strokeStyle = sel ? CURVE : fg;
+        ctx.globalAlpha = sel ? 1 : 0.28;
+        ctx.lineWidth = sel ? 2 : 1;
+        ctx.beginPath();
+        const lo = Math.log10(q.m), hi = HX;
+        for (let i = 0; i <= 240; i++) {
+          const Ev = Math.pow(10, lo + ((hi - lo) * i) / 240);
+          const y = Y(kin(Ev, q.m).gap);
+          i ? ctx.lineTo(X(Ev), y) : ctx.moveTo(X(Ev), y);
+        }
+        ctx.stroke();
+      });
+      ctx.restore();
+      ctx.lineWidth = 1; ctx.globalAlpha = 1;
+
+      // --- landmarks belonging to the selected particle ---
+      LANDMARKS.filter(([k]) => k === pi).forEach(([, Ev, lab], n) => {
+        const y = Y(kin(Ev, part.m).gap);
+        ctx.fillStyle = LM;
+        ctx.beginPath(); ctx.arc(X(Ev), y, 3.5, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = fg; ctx.globalAlpha = 0.75;
+        ctx.textAlign = X(Ev) > cssW * 0.62 ? 'right' : 'left';
+        ctx.fillText(lab, X(Ev) + (X(Ev) > cssW * 0.62 ? -7 : 7), y + 3 + (n % 2 ? 11 : 0));
+        ctx.globalAlpha = 1;
+      });
+
+      // --- current point ---
+      ctx.fillStyle = MARK;
+      ctx.beginPath(); ctx.arc(X(E), Math.min(Y(gap), plotB), 6, 0, Math.PI * 2); ctx.fill();
+
+      // --- ring contraction strip: both labels left-aligned so neither can be
+      // pushed off-canvas by a long bar at low gamma ---
+      const barW = cssW - padL - padR;
+      ctx.textAlign = 'left';
+      ctx.fillStyle = fg; ctx.globalAlpha = 0.7;
+      ctx.fillText(`vòng máy đo trong phòng thí nghiệm: ${vi(C)} m`, padL, stripT - 4);
+      ctx.globalAlpha = 0.28;
+      ctx.fillRect(padL, stripT, barW, 9);
+      ctx.globalAlpha = 0.7;
+      ctx.fillText(
+        `chính vòng ấy trong hệ quy chiếu của hạt: ${lenStr(contracted)}`,
+        padL, stripT + 24,
+      );
+      ctx.globalAlpha = 1; ctx.fillStyle = MARK;
+      ctx.fillRect(padL, stripT + 28, Math.max(1.5, barW / g), 9);
+
+      // --- readout ---
+      // 1 − beta from the stable gap: subtracting beta from 1 in float64 dies
+      // above gamma ~ 1e7, and the ladder goes well past that.
+      const rel = gap / C_LIGHT;
+      const nines = Math.max(4, Math.ceil(-Math.log10(Math.max(1e-300, rel))));
+      const bStr = nines <= 12 ? (1 - rel).toFixed(nines).replace('.', ',') : `1 − ${sci(rel)}`;
+      const gStr = g < 100 ? vi(g, 3) : vi(Math.round(g));
+      const gapStr = gap >= 1e6 ? `${vi(gap / 1e6, 1)} triệu m/s`
+        : gap >= 0.1 ? `${vi(gap, 2)} m/s`
+        : gap >= 1e-4 ? `${vi(gap * 1000, 2)} mm/s`
+        : `${sci(gap)} m/s`;
+      const flag = g >= 1000
+        ? ' · <b>vùng cực tương đối tính: đo bằng năng lượng, không đo bằng vận tốc nữa</b>'
+        : '';
+      readout.innerHTML =
+        `${part.name} ở E = <b>${eLabel(E)}</b> → γ = <b>${gStr}</b> · v = ${bStr} c · ` +
+        `còn thiếu <b>c − v = ${gapStr}</b> · vòng ${vi(C)} m co còn ` +
+        `<b>${lenStr(contracted)}</b> · ${vi(fRev)} vòng mỗi giây${flag}`;
+    }
+
+    root.querySelectorAll('input').forEach((el) => el.addEventListener('input', draw));
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="proton-lhc-cham-hon-anh-sang-2-7-met"]').forEach(setup);
+</script>

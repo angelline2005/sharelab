@@ -1,0 +1,169 @@
+---
+// Young–Laplace cho mặt cầu. Bong bóng xà phòng có HAI mặt thoáng (trong và
+// ngoài màng) nên Δp = 4γ/R; giọt nước hay bọt khí một mặt thì Δp = 2γ/R.
+// Nguồn: Young (1805), Laplace (1806); de Gennes, "Capillarity and Wetting
+// Phenomena" (2004), ch. 1. γ là sức căng cân bằng của dung dịch.
+// Miền hợp lệ ở đây: R = 0,5–30 mm, γ = 0,025–0,073 N/m. Dưới cỡ micromet
+// công thức vẫn đúng nhưng màng xà phòng không tồn tại nổi; trên vài chục
+// milimét bong bóng thật bị trọng lực kéo méo, không còn cầu hoàn hảo.
+---
+
+<figure class="demo" data-demo="bong-bong-nho-ap-cao-hon-bong-bong-to">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Bán kính bong bóng A (mm) <output data-out="ra"></output>
+      <input type="range" data-in="ra" min="0.5" max="30" step="0.5" value="5" /></label>
+    <label>Bán kính bong bóng B (mm) <output data-out="rb"></output>
+      <input type="range" data-in="rb" min="0.5" max="30" step="0.5" value="15" /></label>
+    <label>Sức căng bề mặt γ (N/m) <output data-out="g"></output>
+      <input type="range" data-in="g" min="25" max="73" step="1" value="25" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Bên trái: hai bong bóng vẽ đúng tỉ lệ bán kính bạn chọn, nối nhau bằng
+    một ống thông. Mũi tên chỉ chiều khí chảy, dày theo hiệu áp. Bên phải là
+    đường Δp = 4γ/R với hai điểm A, B nằm trên đó. Kéo A nhỏ lại: điểm A leo
+    dốc đứng của hyperbol, mũi tên dày lên — cái nhỏ luôn là bên thổi.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const CURVE = '#2563eb', A_COL = '#dc2626', B_COL = '#f59e0b';
+  const RMAX = 30;
+  // Δp (Pa) với R tính bằng mm, γ tính bằng N/m. Màng xà phòng: hai mặt.
+  const dp = (g: number, Rmm: number) => (4 * g) / (Rmm / 1000);
+  const vn = (x: number, d: number) => x.toFixed(d).replace('.', ',');
+  const NICE = [5, 10, 20, 25, 50, 100, 200, 250, 500];
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (k: string) => root.querySelector(`[data-in="${k}"]`) as HTMLInputElement;
+    const output = (k: string) => root.querySelector(`[data-out="${k}"]`) as HTMLOutputElement;
+
+    function draw() {
+      const RA = Number(input('ra').value);
+      const RB = Number(input('rb').value);
+      const g = Number(input('g').value) / 1000;
+      output('ra').textContent = vn(RA, 1);
+      output('rb').textContent = vn(RB, 1);
+      output('g').textContent = vn(g, 3);
+
+      const pA = dp(g, RA), pB = dp(g, RB), diff = Math.abs(pA - pB);
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.48);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+      ctx.font = '10px system-ui,sans-serif';
+
+      // ---------- panel trái: hai bong bóng đúng tỉ lệ ----------
+      const splitX = Math.round(cssW * 0.46);
+      const availW = splitX - 16, availH = cssH - 40, tube = 24;
+      const k = Math.min((availW - tube) / (2 * (RA + RB)), availH / (2 * Math.max(RA, RB)));
+      const rA = RA * k, rB = RB * k;
+      const x0 = 8 + (availW - (2 * rA + tube + 2 * rB)) / 2;
+      const cxA = x0 + rA, cxB = x0 + 2 * rA + tube + rB, cy = 14 + availH / 2;
+
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.35; ctx.lineWidth = 5;
+      ctx.beginPath(); ctx.moveTo(cxA + rA, cy); ctx.lineTo(cxB - rB, cy); ctx.stroke();
+      ctx.lineWidth = 1; ctx.globalAlpha = 1;
+
+      const bubble = (cx: number, r: number, col: string) => {
+        ctx.strokeStyle = col; ctx.fillStyle = col; ctx.lineWidth = 2;
+        ctx.globalAlpha = 0.12; ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.fill();
+        ctx.globalAlpha = 1; ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.stroke();
+        ctx.lineWidth = 1;
+      };
+      bubble(cxA, rA, A_COL);
+      bubble(cxB, rB, B_COL);
+
+      // mũi tên: từ bên áp cao sang bên áp thấp, dày theo hiệu áp
+      if (diff > 0.05) {
+        const lw = 1.5 + 5 * Math.min(1, diff / 60);
+        const from = pA > pB ? cxA + rA + 2 : cxB - rB - 2;
+        const to = pA > pB ? cxB - rB - 2 : cxA + rA + 2;
+        const dir = Math.sign(to - from);
+        ctx.strokeStyle = fg; ctx.fillStyle = fg; ctx.globalAlpha = 0.8;
+        ctx.lineWidth = lw;
+        ctx.beginPath(); ctx.moveTo(from, cy); ctx.lineTo(to - dir * 7, cy); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(to, cy);
+        ctx.lineTo(to - dir * 9, cy - 5); ctx.lineTo(to - dir * 9, cy + 5);
+        ctx.closePath(); ctx.fill();
+        ctx.lineWidth = 1; ctx.globalAlpha = 1;
+      }
+
+      ctx.textAlign = 'center'; ctx.globalAlpha = 0.85;
+      ctx.fillStyle = A_COL; ctx.fillText(`A · ${vn(pA, 1)} Pa`, cxA, cssH - 6);
+      ctx.fillStyle = B_COL; ctx.fillText(`B · ${vn(pB, 1)} Pa`, cxB, cssH - 6);
+      ctx.globalAlpha = 1;
+
+      // ---------- panel phải: hyperbol Δp = 4γ/R ----------
+      const padL = splitX + 42, padR = 8, padT = 16, padB = 26;
+      const yTop = dp(g, 0.5);
+      const X = (R: number) => padL + (R / RMAX) * (cssW - padL - padR);
+      const Y = (p: number) => cssH - padB - (p / yTop) * (cssH - padB - padT);
+
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.3;
+      ctx.beginPath(); ctx.moveTo(padL, padT); ctx.lineTo(padL, cssH - padB);
+      ctx.lineTo(cssW - padR, cssH - padB); ctx.stroke();
+      ctx.globalAlpha = 0.55; ctx.fillStyle = fg;
+      ctx.textAlign = 'center';
+      for (const R of [5, 10, 20, 30]) ctx.fillText(`${R} mm`, X(R), cssH - padB + 14);
+      ctx.textAlign = 'right';
+      let step = NICE[0];
+      for (const s of NICE) if (s <= yTop / 4) step = s;
+      for (let p = step; p <= yTop + 0.01; p += step) ctx.fillText(`${Math.round(p)} Pa`, padL - 4, Y(p) + 3);
+      ctx.globalAlpha = 1;
+
+      ctx.strokeStyle = CURVE; ctx.lineWidth = 2; ctx.beginPath();
+      for (let i = 0; i <= 240; i++) {
+        const R = 0.5 + ((RMAX - 0.5) * i) / 240;
+        i ? ctx.lineTo(X(R), Y(dp(g, R))) : ctx.moveTo(X(R), Y(dp(g, R)));
+      }
+      ctx.stroke(); ctx.lineWidth = 1;
+
+      const mark = (R: number, p: number, col: string, lab: string) => {
+        ctx.fillStyle = col;
+        ctx.beginPath(); ctx.arc(X(R), Y(p), 5.5, 0, Math.PI * 2); ctx.fill();
+        ctx.textAlign = 'left';
+        ctx.fillText(lab, X(R) + 8, Y(p) + 3);
+      };
+      mark(RB, pB, B_COL, 'B');
+      mark(RA, pA, A_COL, 'A');
+
+      // ---------- readout ----------
+      if (diff <= 0.05) {
+        readout.innerHTML =
+          `Hai bên bằng nhau: <b>${vn(pA, 1)} Pa</b> dư áp mỗi bên — cân bằng, nhưng ` +
+          `<b>không bền</b>: lệch bán kính một phần trăm là bên nhỏ hơn bắt đầu thua.`;
+      } else {
+        const loser = pA > pB ? 'A' : 'B', winner = pA > pB ? 'B' : 'A';
+        readout.innerHTML =
+          `A (R = ${vn(RA, 1)} mm): <b>${vn(pA, 1)} Pa</b> · B (R = ${vn(RB, 1)} mm): ` +
+          `<b>${vn(pB, 1)} Pa</b> · chênh ${vn(diff, 1)} Pa → khí chảy từ ${loser} sang ${winner}: ` +
+          `<b>${loser} xẹp, ${winner} phồng</b>.`;
+      }
+    }
+
+    root.querySelectorAll('input').forEach((el) => el.addEventListener('input', draw));
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="bong-bong-nho-ap-cao-hon-bong-bong-to"]').forEach(setup);
+</script>

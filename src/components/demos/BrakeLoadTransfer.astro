@@ -1,0 +1,227 @@
+---
+// Longitudinal load transfer while braking a two-wheeler (quasi-static rigid body):
+//   N_front/W = b/L + (h/L)(a/g)      N_rear/W = a_f/L − (h/L)(a/g)
+// Single-brake traction limits, solved self-consistently from a = mu*N/m:
+//   rear only   a/g = mu*a_f/(L + mu*h)
+//   front only  a/g = mu*b /(L − mu*h)     [valid while mu*h < L]
+// Stoppie (rear wheel lifts): a/g = a_f/h — reachable only when mu >= a_f/h.
+// Model bike + rider: a_f = 0,70 m, b = 0,54 m, L = 1,24 m (xe số phổ thông).
+// Ignores aerodynamic drag and suspension pitch; good to ~1 g, the whole
+// range that matters here. Ref: Cossalter, Motorcycle Dynamics, 2nd ed., ch. 6.
+---
+
+<figure class="demo" data-demo="phanh-xe-may-truoc-hay-sau">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Gia tốc hãm (g) <output data-out="a"></output>
+      <input type="range" data-in="a" min="0.1" max="1.2" step="0.01" value="0.7" /></label>
+    <label>Chiều cao trọng tâm h (m) <output data-out="h"></output>
+      <input type="range" data-in="h" min="0.4" max="0.8" step="0.01" value="0.65" /></label>
+    <label>Hệ số bám lốp–đường μ <output data-out="mu"></output>
+      <input type="range" data-in="mu" min="0.3" max="1.2" step="0.01" value="0.8" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Phanh gấp dồn trọng lượng ra bánh trước: hai cột bên phải là phần tải mỗi
+    bánh đang gánh ở mức hãm bạn chọn. Bánh nào gánh nhiều thì bám nhiều, nên
+    phanh trước càng bóp càng ăn, còn phanh sau càng bóp càng tự cắt đất dưới
+    chân mình. Ba vạch dưới cùng là quãng đường dừng từ 40 km/h với xe mẫu
+    (a_f = 0,70 m, b = 0,54 m, L = 1,24 m). Khi cột sau về 0, xe chúi mũi.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const FRONT = '#2563eb', REAR = '#f59e0b', MARK = '#dc2626';
+  const AF = 0.7, B = 0.54, L = 1.24, G = 9.81, V40 = 40 / 3.6, DMAX = 48;
+
+  const vi = (x: number, n = 2) => x.toFixed(n).replace('.', ',');
+  const frontLoad = (h: number, x: number) => B / L + (h / L) * x;
+  const rearLimit = (mu: number, h: number) => (mu * AF) / (L + mu * h);
+  const frontLimit = (mu: number, h: number) => (mu * B) / (L - mu * h);
+  const dist = (x: number) => (V40 * V40) / (2 * x * G);
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (k: string) => root.querySelector(`[data-in="${k}"]`) as HTMLInputElement;
+    const output = (k: string) => root.querySelector(`[data-out="${k}"]`) as HTMLOutputElement;
+
+    function draw() {
+      const x = Number(input('a').value);
+      const h = Number(input('h').value);
+      const mu = Number(input('mu').value);
+      output('a').textContent = vi(x);
+      output('h').textContent = vi(h);
+      output('mu').textContent = vi(mu);
+
+      const roll = AF / h;
+      const nf = Math.min(1, frontLoad(h, x));
+      const nr = Math.max(0, 1 - nf);
+      const xRear = rearLimit(mu, h);
+      const xFront = Math.min(frontLimit(mu, h), roll);
+      const xBoth = Math.min(mu, roll);
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32;
+      const cssH = Math.round(cssW * (cssW < 420 ? 0.86 : 0.58));
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+      ctx.font = '10px system-ui,sans-serif';
+      ctx.lineJoin = 'round';
+
+      // ---------- zone 1: side view of the bike ----------
+      const topH = Math.round(cssH * 0.6);
+      const yG = topH - 30;
+      const s = Math.min((cssW * 0.46) / 1.5, (yG - 34) / 1.0);
+      const xR = 30 + 18, xF = xR + L * s;
+      const rw = 0.25 * s;
+      const xC = xF - AF * s, yC = yG - h * s;
+      const pitch = x > roll ? Math.min(0.3, (x - roll) * 0.9) : 0;
+
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.35; ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(10, yG); ctx.lineTo(cssW * 0.56, yG); ctx.stroke();
+      ctx.globalAlpha = 1;
+
+      ctx.save();
+      ctx.translate(xF, yG); ctx.rotate(-pitch); ctx.translate(-xF, -yG);
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.55; ctx.lineWidth = 2;
+      for (const wx of [xR, xF]) {
+        ctx.beginPath(); ctx.arc(wx, yG - rw, rw, 0, Math.PI * 2); ctx.stroke();
+      }
+      ctx.beginPath();
+      ctx.moveTo(xR, yG - rw); ctx.lineTo(xC, yC); ctx.lineTo(xF, yG - rw);
+      ctx.moveTo(xC, yC); ctx.lineTo(xF - 0.18 * s, yG - h * s - 0.1 * s);
+      ctx.stroke();
+      ctx.lineWidth = 1; ctx.globalAlpha = 0.4; ctx.setLineDash([3, 3]);
+      ctx.beginPath();
+      ctx.moveTo(xC, yC); ctx.lineTo(xC, yG);
+      ctx.moveTo(xC, yC); ctx.lineTo(xF, yC);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.globalAlpha = 0.65; ctx.fillStyle = fg; ctx.textAlign = 'right';
+      ctx.fillText(`h ${vi(h)} m`, xC - 4, (yC + yG) / 2);
+      ctx.textAlign = 'center';
+      ctx.fillText(`a_f ${vi(AF)} m`, (xC + xF) / 2, yC - 5);
+      ctx.globalAlpha = 1;
+      ctx.fillStyle = MARK;
+      ctx.beginPath(); ctx.arc(xC, yC, 5, 0, Math.PI * 2); ctx.fill();
+      // inertial force at the centre of mass, length scaled by a/g
+      const alen = 20 + 46 * (x / 1.2);
+      ctx.strokeStyle = MARK; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.moveTo(xC, yC); ctx.lineTo(xC + alen, yC); ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(xC + alen, yC); ctx.lineTo(xC + alen - 7, yC - 4);
+      ctx.lineTo(xC + alen - 7, yC + 4); ctx.closePath(); ctx.fill();
+      ctx.restore();
+
+      ctx.fillStyle = MARK; ctx.textAlign = 'left'; ctx.globalAlpha = 0.9;
+      ctx.fillText(`m·a = ${vi(x)} W`, xC + 6, yC - 9);
+      if (pitch > 0) {
+        ctx.font = 'bold 12px system-ui,sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('LỘN NHÀO', (xR + xF) / 2, yG - h * s - 26);
+        ctx.font = '10px system-ui,sans-serif';
+      }
+      ctx.globalAlpha = 1;
+
+      // ---------- zone 2: load carried by each wheel ----------
+      const axX = Math.round(cssW * 0.6);
+      const bw = Math.round(cssW * 0.11);
+      const fx = Math.round(cssW * 0.655), rx = Math.round(cssW * 0.83);
+      const bh = Math.min(yG - 34, Math.round(cssH * 0.34));
+
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.3;
+      ctx.beginPath(); ctx.moveTo(axX, yG - bh); ctx.lineTo(axX, yG); ctx.lineTo(cssW - 10, yG); ctx.stroke();
+      ctx.globalAlpha = 0.55; ctx.fillStyle = fg; ctx.textAlign = 'right';
+      for (const p of [0, 50, 100]) {
+        const y = yG - (p / 100) * bh;
+        ctx.fillText(`${p}%`, axX - 4, y + 3);
+        if (p > 0) {
+          ctx.globalAlpha = 0.15; ctx.beginPath();
+          ctx.moveTo(axX, y); ctx.lineTo(cssW - 10, y); ctx.stroke(); ctx.globalAlpha = 0.55;
+        }
+      }
+      ctx.globalAlpha = 1;
+      const bars: Array<[number, number, string, string]> = [
+        [fx, nf, FRONT, 'bánh trước'], [rx, nr, REAR, 'bánh sau'],
+      ];
+      for (const [bx, val, col, name] of bars) {
+        ctx.fillStyle = col;
+        ctx.fillRect(bx, yG - val * bh, bw, val * bh);
+        ctx.textAlign = 'center';
+        ctx.fillText(`${vi(val * 100, 1)}%`, bx + bw / 2, yG - val * bh - 5);
+        ctx.fillStyle = fg; ctx.globalAlpha = 0.7;
+        ctx.fillText(name, bx + bw / 2, yG + 14);
+        ctx.globalAlpha = 1;
+      }
+
+      // ---------- zone 3: stopping distance from 40 km/h ----------
+      const axisY = cssH - 20, padL = 86, padR = 10;
+      const rowH = 15, rowGap = 7;
+      const row0 = axisY - 9 - (3 * rowH + 2 * rowGap);
+      const X = (d: number) => padL + (Math.min(d, DMAX) / DMAX) * (cssW - padL - padR);
+
+      ctx.fillStyle = fg; ctx.globalAlpha = 0.65; ctx.textAlign = 'left';
+      ctx.fillText('Quãng đường dừng từ 40 km/h', padL, row0 - 8);
+      ctx.globalAlpha = 1;
+
+      const rows: Array<[string, number, string]> = [
+        ['cả hai phanh', xBoth, FRONT],
+        ['chỉ phanh trước', xFront, REAR],
+        ['chỉ phanh sau', xRear, MARK],
+      ];
+      rows.forEach(([name, acc, col], i) => {
+        const y = row0 + i * (rowH + rowGap);
+        const d = dist(acc);
+        ctx.fillStyle = fg; ctx.globalAlpha = 0.75; ctx.textAlign = 'right';
+        ctx.fillText(name, padL - 6, y + rowH - 4);
+        ctx.globalAlpha = 1; ctx.fillStyle = col;
+        ctx.fillRect(padL, y, X(d) - padL, rowH);
+        ctx.textAlign = 'left'; ctx.fillStyle = fg;
+        ctx.fillText(`${vi(d, 1)} m · ${vi(acc)} g`, X(d) + 5, y + rowH - 4);
+      });
+
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.3;
+      ctx.beginPath(); ctx.moveTo(padL, axisY); ctx.lineTo(cssW - padR, axisY); ctx.stroke();
+      ctx.globalAlpha = 0.55; ctx.fillStyle = fg; ctx.textAlign = 'center';
+      for (const d of [0, 10, 20, 30, 40]) {
+        ctx.beginPath(); ctx.moveTo(X(d), axisY); ctx.lineTo(X(d), axisY + 4); ctx.stroke();
+        ctx.fillText(`${d} m`, X(d), axisY + 15);
+      }
+      ctx.globalAlpha = 1;
+
+      // ---------- readout ----------
+      let flag = '';
+      if (x > roll) flag = ' · <b>bánh sau đã nhấc khỏi mặt đường — lộn nhào</b>';
+      else if (x > mu) flag = ` · <b>vượt ngưỡng bám μ = ${vi(mu)}: cả hai lốp đang trượt</b>`;
+      else if (mu >= roll) flag = ' · <b>μ đủ cao: lộn nhào tới trước khi lốp trượt</b>';
+
+      readout.innerHTML =
+        `Hãm ${vi(x)} g → bánh trước gánh <b>${vi(nf * 100, 1)}%</b> trọng lượng, ` +
+        `bánh sau còn ${vi(nr * 100, 1)}% · ngưỡng lộn nhào a_f/h = ${vi(roll)} g · ` +
+        `với μ = ${vi(mu)}: phanh sau tối đa ${vi(xRear)} g (${vi(dist(xRear), 1)} m), ` +
+        `phanh trước ${vi(xFront)} g (${vi(dist(xFront), 1)} m), ` +
+        `cả hai ${vi(xBoth)} g (${vi(dist(xBoth), 1)} m)${flag}`;
+    }
+
+    root.querySelectorAll('input').forEach((el) => el.addEventListener('input', draw));
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="phanh-xe-may-truoc-hay-sau"]').forEach(setup);
+</script>

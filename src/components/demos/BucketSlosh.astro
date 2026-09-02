@@ -1,0 +1,200 @@
+---
+// Sloshing: first antisymmetric mode of a free surface in a vertical circular cylinder.
+// Linear potential flow (Lamb, Hydrodynamics §191; Ibrahim, Liquid Sloshing Dynamics, ch. 2):
+//   k = e/R with e = 1.8412 (first root of J1'(x) = 0)
+//   omega^2 = g*k*tanh(k*h);  f = omega/(2*pi)
+//   surface shape along a diameter: eta(x) ~ J1(k*|x|)*sign(x)
+// Exact for small amplitude, inviscid, surface tension ignored: the capillary term
+// sigma*k^3/rho is 0,11 % of g*k at R = 15 cm and 2,8 % at R = 3 cm — the smallest
+// radius on the slider — so it is left out over the whole range.
+// The drawn tilt is ILLUSTRATIVE: a single-degree-of-freedom magnification with
+// zeta = 0,04 driven at the step frequency plus its second harmonic weighted 0,4
+// (walking fore-aft acceleration spectra carry a strong second harmonic).
+// Frequencies in the readout and the curve are exact; the tilt is a sketch.
+---
+
+<figure class="demo" data-demo="xo-nuoc-va-nhip-buoc-chan-cua-ban">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Bán kính bình R (cm) <output data-out="r"></output>
+      <input type="range" data-in="r" min="3" max="25" step="0.1" value="15" /></label>
+    <label>Độ sâu nước h (cm) <output data-out="h"></output>
+      <input type="range" data-in="h" min="2" max="30" step="0.1" value="25" /></label>
+    <label>Nhịp bước (bước/giây) <output data-out="s"></output>
+      <input type="range" data-in="s" min="1.2" max="3.2" step="0.01" value="1.8" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Trên: mặt cắt đứng của bình, mặt nước nghiêng theo dạng dao động phản đối
+    xứng bậc một — một bên dâng, bên kia hạ, tâm đứng yên. Độ nghiêng vẽ theo
+    mức đáp ứng, không phải số đo thật. Dưới: tần số riêng f theo bán kính bình
+    ở độ sâu đang chọn; dải xanh là nhịp đi bộ thường gặp 1,6–2,0 bước/giây,
+    dải cam là hài bậc hai của nó. Chấm đỏ là bình hiện tại — rơi vào dải nào
+    thì bình đó bị nhịp chân bơm.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const CURVE = '#2563eb', MARK = '#dc2626', HARM = '#f59e0b';
+  const G = 9.81, EPS = 1.8412, ZETA = 0.04;
+
+  const fact = (n: number) => { let r = 1; for (let i = 2; i <= n; i++) r *= i; return r; };
+  const J1 = (x: number) => {
+    let s = 0;
+    for (let m = 0; m < 14; m++) s += (m % 2 ? -1 : 1) * Math.pow(x / 2, 2 * m + 1) / (fact(m) * fact(m + 1));
+    return s;
+  };
+  // R, h in metres.
+  const freq = (R: number, h: number) =>
+    Math.sqrt(G * (EPS / R) * Math.tanh(EPS * h / R)) / (2 * Math.PI);
+  const mag = (r: number) => 1 / Math.sqrt((1 - r * r) ** 2 + (2 * ZETA * r) ** 2);
+  const respond = (fc: number, fs: number) => mag(fs / fc) + 0.4 * mag(2 * fs / fc);
+
+  const vi = (x: number, d: number) => x.toFixed(d).replace('.', ',');
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (k: string) => root.querySelector(`[data-in="${k}"]`) as HTMLInputElement;
+    const output = (k: string) => root.querySelector(`[data-out="${k}"]`) as HTMLOutputElement;
+
+    function draw() {
+      const Rcm = Number(input('r').value);
+      const hcm = Number(input('h').value);
+      const fs = Number(input('s').value);
+      output('r').textContent = vi(Rcm, 1);
+      output('h').textContent = vi(hcm, 1);
+      output('s').textContent = vi(fs, 2);
+
+      const fc = freq(Rcm / 100, hcm / 100);
+      const resp = respond(fc, fs);
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.72);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+      ctx.font = '10px system-ui,sans-serif';
+
+      // ---------- top panel: vessel cross-section ----------
+      const topH = Math.round(cssH * 0.40);
+      const wallCm = hcm + 5;                       // 5 cm freeboard above the water
+      const ppc = Math.min((cssW - 24) / 54, (topH - 24) / (wallCm + 2), 5);
+      const cx = cssW / 2, baseY = topH - 10;       // inner bottom of the vessel
+      const halfW = Rcm * ppc, wallH = wallCm * ppc;
+      const restY = baseY - hcm * ppc;
+
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.55; ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(cx - halfW, baseY - wallH); ctx.lineTo(cx - halfW, baseY);
+      ctx.lineTo(cx + halfW, baseY); ctx.lineTo(cx + halfW, baseY - wallH);
+      ctx.stroke(); ctx.lineWidth = 1; ctx.globalAlpha = 1;
+
+      const ampCm = 5 * Math.min(1, resp / 10);
+      const spill = resp >= 10;
+      const surf = (x: number) => {              // x in px from centre
+        const u = Math.abs(x) / halfW;
+        return restY - (J1(EPS * u) / 0.58187) * Math.sign(x) * ampCm * ppc;
+      };
+
+      ctx.beginPath();
+      ctx.moveTo(cx - halfW, surf(-halfW));
+      for (let i = -40; i <= 40; i++) ctx.lineTo(cx + (halfW * i) / 40, surf((halfW * i) / 40));
+      ctx.lineTo(cx + halfW, baseY); ctx.lineTo(cx - halfW, baseY); ctx.closePath();
+      ctx.fillStyle = spill ? MARK : CURVE; ctx.globalAlpha = 0.22; ctx.fill();
+      ctx.globalAlpha = 1; ctx.strokeStyle = spill ? MARK : CURVE; ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(cx - halfW, surf(-halfW));
+      for (let i = -40; i <= 40; i++) ctx.lineTo(cx + (halfW * i) / 40, surf((halfW * i) / 40));
+      ctx.stroke(); ctx.lineWidth = 1;
+
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.28; ctx.setLineDash([3, 3]);
+      ctx.beginPath(); ctx.moveTo(cx - halfW, restY); ctx.lineTo(cx + halfW, restY); ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.globalAlpha = 0.6; ctx.fillStyle = fg; ctx.textAlign = 'center';
+      ctx.fillText(`${vi(2 * Rcm, 1)} cm`, cx, baseY + 14);
+      ctx.textAlign = 'left';
+      ctx.fillText(spill ? 'nghiêng tới mép — trào' : 'dạng dao động bậc một', 8, 14);
+      ctx.globalAlpha = 1;
+
+      // ---------- bottom panel: f vs R ----------
+      const padL = 40, padR = 12, padT = topH + 14, padB = 26;
+      const xLo = 3, xHi = 25, yLo = 0.8, yHi = 4.4;
+      const X = (r: number) => padL + ((r - xLo) / (xHi - xLo)) * (cssW - padL - padR);
+      const Y = (f: number) => padT + ((yHi - f) / (yHi - yLo)) * (cssH - padB - padT);
+
+      ctx.fillStyle = CURVE; ctx.globalAlpha = 0.14;
+      ctx.fillRect(padL, Y(2.0), cssW - padL - padR, Y(1.6) - Y(2.0));
+      ctx.fillStyle = HARM;
+      ctx.fillRect(padL, Y(4.0), cssW - padL - padR, Y(3.2) - Y(4.0));
+      ctx.globalAlpha = 1;
+
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.3;
+      ctx.beginPath(); ctx.moveTo(padL, padT); ctx.lineTo(padL, cssH - padB);
+      ctx.lineTo(cssW - padR, cssH - padB); ctx.stroke();
+      ctx.globalAlpha = 0.55; ctx.fillStyle = fg;
+      ctx.textAlign = 'center';
+      for (const r of [5, 10, 15, 20, 25]) ctx.fillText(`${r} cm`, X(r), cssH - padB + 14);
+      ctx.textAlign = 'right';
+      for (const f of [1, 2, 3, 4]) ctx.fillText(`${f} Hz`, padL - 4, Y(f) + 3);
+      ctx.textAlign = 'left';
+      ctx.fillText('nhịp bước 1,6–2,0', padL + 6, Y(2.0) - 4);
+      ctx.fillText('hài bậc hai 3,2–4,0', padL + 6, Y(4.0) - 4);
+      ctx.globalAlpha = 1;
+
+      // driving lines: step frequency (solid) and its second harmonic (dashed amber)
+      for (const [fd, col, dash] of [[fs, fg, false], [2 * fs, HARM, true]] as [number, string, boolean][]) {
+        if (fd < yLo || fd > yHi) continue;
+        ctx.strokeStyle = col; ctx.globalAlpha = dash ? 0.85 : 0.4;
+        if (dash) ctx.setLineDash([5, 4]);
+        ctx.beginPath(); ctx.moveTo(padL, Y(fd)); ctx.lineTo(cssW - padR, Y(fd)); ctx.stroke();
+        ctx.setLineDash([]); ctx.globalAlpha = 1;
+      }
+
+      ctx.save();
+      ctx.beginPath(); ctx.rect(padL, padT, cssW - padL - padR, cssH - padB - padT); ctx.clip();
+      ctx.strokeStyle = CURVE; ctx.lineWidth = 2; ctx.beginPath();
+      for (let i = 0; i <= 220; i++) {
+        const r = xLo + ((xHi - xLo) * i) / 220;
+        const y = Y(freq(r / 100, hcm / 100));
+        i ? ctx.lineTo(X(r), y) : ctx.moveTo(X(r), y);
+      }
+      ctx.stroke(); ctx.lineWidth = 1;
+
+      ctx.fillStyle = MARK;
+      ctx.beginPath(); ctx.arc(X(Rcm), Y(fc), 6, 0, Math.PI * 2); ctx.fill();
+      ctx.restore();
+
+      // ---------- readout ----------
+      // detuning of the drive relative to the vessel's own frequency
+      const d1 = Math.abs(fs / fc - 1), d2 = Math.abs((2 * fs) / fc - 1);
+      let verdict: string;
+      if (d1 < 0.15) verdict = `<b>cộng hưởng bậc một</b> — lệch ${vi(d1 * 100, 1)} %`;
+      else if (d2 < 0.12) verdict = `<b>dính hài bậc hai</b> — lệch ${vi(d2 * 100, 1)} % so với 2 × nhịp`;
+      else verdict = `lệch nhịp ${vi(d1 * 100, 0)} % — nước chỉ lắc nhẹ`;
+      readout.innerHTML =
+        `R = ${vi(Rcm, 1)} cm, nước sâu ${vi(hcm, 1)} cm → f = <b>${vi(fc, 2)} Hz</b> · ` +
+        `nhịp ${vi(fs, 2)} bước/giây (${Math.round(fs * 60)} bước/phút) → ${verdict} · ` +
+        `đáp ứng ×${vi(resp, 1)}${spill ? ' · <b>trào</b>' : ''}`;
+    }
+
+    root.querySelectorAll('input').forEach((el) => el.addEventListener('input', draw));
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="xo-nuoc-va-nhip-buoc-chan-cua-ban"]').forEach(setup);
+</script>

@@ -1,0 +1,216 @@
+---
+// Bất ổn định Plateau–Rayleigh, nghiệm không nhớt của Rayleigh (1878):
+//   omega^2 = (sigma / (rho r^3)) · x(1 − x^2) · I1(x)/I0(x),  x = k·r
+// Chỉ x < 1 (tức lambda > 2*pi*r) mới có omega thực -> nhiễu lớn lên.
+// Cực đại tại x = 0,697019 -> lambda = 9,0144·r = 4,5072·d.
+// Bảo toàn thể tích pi·r^2·lambda = pi·D^3/6 -> D = (6 r^2 lambda)^(1/3); tại lambda nhanh nhất D = 1,8909·d.
+// Chiều dài đoạn liền: L = (v/omega)·ln(r/delta0), lấy ln(r/delta0) = 12 (Weber 1931).
+// Nước 20 °C: sigma = 0,0728 N/m, rho = 998 kg/m^3 -> Ohnesorge = 0,0037, bỏ qua độ nhớt là hợp lệ.
+// Giới hạn: tia nằm ngang, đường kính không đổi (không có gravity thinning), bỏ qua khí động lực.
+---
+
+<figure class="demo" data-demo="vi-sao-khong-co-tia-nuoc-dai-vo-han">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Đường kính tia d (mm) <output data-out="d"></output>
+      <input type="range" data-in="d" min="0.5" max="6" step="0.1" value="2" /></label>
+    <label>Tốc độ tia v (m/s) <output data-out="v"></output>
+      <input type="range" data-in="v" min="0.3" max="5" step="0.1" value="1" /></label>
+    <label>Bước sóng gợn (× bán kính) <output data-out="k"></output>
+      <input type="range" data-in="k" min="2" max="20" step="0.01" value="9.01" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Tia nước không đứt vì hết đà hay vì va vào gì: sức căng bề mặt khuếch đại
+    những gợn li ti vốn đã có sẵn trên mặt tia. Chỉ gợn dài hơn chu vi tia
+    (2πr) mới lớn lên nổi, và trong số đó một bước sóng duy nhất — 9,01 lần
+    bán kính, tức 4,51 lần đường kính — lớn nhanh nhất nên luôn thắng. Cửa sổ trong hình phóng to đoạn
+    cuối của tia và vẽ đúng tỉ lệ ngang–dọc: giọt sinh ra rộng gần gấp đôi
+    chính tia đẻ ra nó. (Ngoài đời giữa các giọt lớn còn sót vài giọt vệ tinh
+    tí hon — phần phi tuyến mà lý thuyết tuyến tính này không mô tả.)
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const CURVE = '#2563eb', MARK = '#dc2626', OPT = '#f59e0b';
+  const SIG = 0.0728, RHO = 998, LN0 = 12, XM = 0.697019;
+  const CUT = 2 * Math.PI;          // lambda/r ngưỡng ổn định
+  const LOPT = 2 * Math.PI / XM;    // lambda/r nhanh nhất = 9,0144
+
+  const lf: number[] = [0];
+  for (let i = 1; i < 40; i++) lf[i] = lf[i - 1] + Math.log(i);
+  const bessI = (n: number, x: number) => {
+    let s = 0;
+    for (let k = 0; k < 26; k++) s += Math.exp(2 * k * Math.log(x / 2) - lf[k] - lf[k + n]);
+    return Math.pow(x / 2, n) * s;
+  };
+  // Tốc độ lớn của nhiễu (1/s); 0 nghĩa là nhiễu không lớn lên.
+  const growth = (x: number, r: number) =>
+    x <= 0 || x >= 1 ? 0
+      : Math.sqrt((SIG / (RHO * r * r * r)) * x * (1 - x * x) * bessI(1, x) / bessI(0, x));
+
+  const vn = (x: number, n = 2) => x.toFixed(n).replace('.', ',').replace('-', '−');
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (k: string) => root.querySelector(`[data-in="${k}"]`) as HTMLInputElement;
+    const output = (k: string) => root.querySelector(`[data-out="${k}"]`) as HTMLOutputElement;
+
+    function draw() {
+      const d = Number(input('d').value);      // mm
+      const v = Number(input('v').value);      // m/s
+      const lr = Number(input('k').value);     // lambda / r
+      output('d').textContent = vn(d, 1);
+      output('v').textContent = vn(v, 1);
+      output('k').textContent = vn(lr, 2);
+
+      const rMm = d / 2, r = d / 2000;         // mm, m
+      const lamMm = lr * rMm, lam = lr * r;
+      const w = growth(2 * Math.PI / lr, r);   // 1/s
+      const wOpt = growth(XM, r);
+      const DMm = Math.cbrt(6 * rMm * rMm * lamMm);
+      const DoptMm = Math.cbrt(6 * rMm * rMm * LOPT * rMm);
+      const Lcm = w > 0 ? (100 * v * LN0) / w : Infinity;
+      const freq = v / lam;
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.52);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+      ctx.font = '10px system-ui,sans-serif';
+      ctx.lineWidth = 1;
+
+      const padL = 12, padR = 12, padT = 12;
+      const usable = cssW - padL - padR;
+      const stripBot = cssH - 74, stripH = stripBot - padT;
+      const yc = padT + stripH / 2;
+      const scale = stripH / (6 * d);                 // px trên mm, dùng chung cho cả hai trục
+      const rPx = rMm * scale, lamPx = lamMm * scale;
+      const xRef = w > 0 ? padL + usable * 0.58 : padL + usable;
+
+      // ---- tia và giọt, đúng tỉ lệ ngang–dọc ----
+      const amp = (px: number) => {
+        const sMm = (xRef - px) / scale;              // mm phía trước điểm vỡ
+        return w > 0 ? Math.exp((-w * sMm) / (1000 * v)) : 0.1;
+      };
+      const radAt = (px: number) => {
+        const sMm = (xRef - px) / scale;
+        return rMm * (1 - Math.min(amp(px), 1) * Math.cos((2 * Math.PI * sMm) / lamMm));
+      };
+      const xEnd = w > 0 ? xRef : padL + usable;
+      ctx.beginPath();
+      for (let px = padL; px <= xEnd; px += 1) ctx.lineTo(px, yc - radAt(px) * scale);
+      for (let px = xEnd; px >= padL; px -= 1) ctx.lineTo(px, yc + radAt(px) * scale);
+      ctx.closePath();
+      ctx.fillStyle = CURVE; ctx.globalAlpha = 0.2; ctx.fill(); ctx.globalAlpha = 1;
+      ctx.strokeStyle = CURVE; ctx.lineWidth = 1.6; ctx.stroke(); ctx.lineWidth = 1;
+
+      if (w > 0) {
+        // đường gióng đường kính tia, để thấy giọt trồi ra ngoài
+        ctx.strokeStyle = fg; ctx.globalAlpha = 0.35; ctx.setLineDash([3, 3]);
+        for (const sgn of [-1, 1]) {
+          ctx.beginPath(); ctx.moveTo(xRef, yc + sgn * rPx); ctx.lineTo(padL + usable, yc + sgn * rPx); ctx.stroke();
+        }
+        ctx.setLineDash([]);
+        ctx.strokeStyle = MARK; ctx.globalAlpha = 0.8;
+        ctx.beginPath(); ctx.moveTo(xRef, padT); ctx.lineTo(xRef, stripBot); ctx.stroke();
+        ctx.globalAlpha = 1;
+
+        const dPx = (DMm / 2) * scale;
+        for (let i = 0; ; i++) {
+          const cx = xRef + (i + 0.5) * lamPx;
+          if (cx - dPx > padL + usable) break;
+          ctx.beginPath(); ctx.arc(cx, yc, dPx, 0, Math.PI * 2);
+          ctx.fillStyle = CURVE; ctx.globalAlpha = 0.2; ctx.fill(); ctx.globalAlpha = 1;
+          ctx.strokeStyle = CURVE; ctx.lineWidth = 1.6; ctx.stroke(); ctx.lineWidth = 1;
+          if (i === 0) {
+            ctx.fillStyle = MARK; ctx.textAlign = 'center';
+            ctx.fillText(`giọt ⌀${vn(DMm, 2)} mm`, cx, yc - dPx - 6);
+          }
+        }
+        ctx.fillStyle = MARK; ctx.textAlign = 'right';
+        ctx.fillText('điểm vỡ', xRef - 5, padT + 10);
+      }
+      ctx.fillStyle = fg; ctx.globalAlpha = 0.75; ctx.textAlign = 'left';
+      ctx.fillText(`tia ⌀${vn(d, 2)} mm`, padL + 2, yc - rPx - 6);
+      ctx.globalAlpha = 1;
+
+      // ---- trục mm dọc theo tia, gốc 0 tại điểm vỡ ----
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.3;
+      ctx.beginPath(); ctx.moveTo(padL, stripBot); ctx.lineTo(padL + usable, stripBot); ctx.stroke();
+      const windowMm = usable / scale;
+      const step = [0.5, 1, 2, 5, 10, 20, 50, 100].find((s) => windowMm / s <= 7) ?? 200;
+      ctx.globalAlpha = 0.55; ctx.fillStyle = fg; ctx.textAlign = 'center';
+      const lo = Math.ceil(((padL - xRef) / scale) / step) * step;
+      for (let t = lo; t <= (padL + usable - xRef) / scale + 1e-9; t += step) {
+        const px = xRef + t * scale;
+        ctx.beginPath(); ctx.moveTo(px, stripBot); ctx.lineTo(px, stripBot + 4); ctx.stroke();
+        ctx.fillText(`${vn(t, step < 1 ? 1 : 0)} mm`, px, stripBot + 15);
+      }
+      ctx.globalAlpha = 1;
+
+      // ---- thước bước sóng, đơn vị bán kính ----
+      const ry = cssH - 24, rw = usable;
+      const RX = (u: number) => padL + (u / 20) * rw;
+      ctx.fillStyle = fg; ctx.globalAlpha = 0.12;
+      ctx.fillRect(padL, ry - 6, RX(CUT) - padL, 12);
+      ctx.globalAlpha = 0.3; ctx.strokeStyle = fg;
+      ctx.beginPath(); ctx.moveTo(padL, ry); ctx.lineTo(padL + rw, ry); ctx.stroke();
+      ctx.globalAlpha = 0.55; ctx.textAlign = 'center';
+      for (const u of [0, 5, 10, 15, 20]) {
+        ctx.beginPath(); ctx.moveTo(RX(u), ry); ctx.lineTo(RX(u), ry + 4); ctx.stroke();
+        ctx.fillText(`${u}·r`, RX(u), ry + 15);
+      }
+      ctx.globalAlpha = 1;
+      const pin = (u: number, col: string, lab: string, up: number) => {
+        ctx.strokeStyle = col; ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.moveTo(RX(u), ry - 7); ctx.lineTo(RX(u), ry + 7); ctx.stroke();
+        ctx.lineWidth = 1; ctx.fillStyle = col; ctx.textAlign = 'center';
+        ctx.fillText(lab, RX(u), ry - 10 - up);
+      };
+      ctx.globalAlpha = 0.6; ctx.fillStyle = fg; ctx.textAlign = 'center';
+      ctx.fillText('không vỡ', RX(CUT / 2), ry - 11);
+      ctx.globalAlpha = 1;
+      pin(LOPT, OPT, `nhanh nhất 9,01·r`, 0);
+      pin(lr, MARK, `đang chọn ${vn(lr, 2)}·r`, 12);
+
+      // ---- readout ----
+      if (w <= 0) {
+        readout.innerHTML =
+          `λ = <b>${vn(lr, 2)}·r</b> = ${vn(lamMm, 2)} mm — ngắn hơn chu vi tia 2πr = ${vn(CUT * rMm, 2)} mm, ` +
+          `nên sức căng bề mặt <b>san phẳng</b> gợn này thay vì khuếch đại: tia không vỡ vì bước sóng này. ` +
+          `Bước sóng thắng cuộc vẫn là 9,01·r = ${vn(LOPT * rMm, 2)} mm → giọt ⌀${vn(DoptMm, 2)} mm.`;
+      } else {
+        const slow = wOpt / w;
+        const note = slow > 2
+          ? ` · gợn này lớn chậm hơn gợn nhanh nhất <b>${vn(slow, 1)} lần</b> nên ngoài đời nó thua`
+          : '';
+        readout.innerHTML =
+          `Tia ⌀${vn(d, 1)} mm chảy ${vn(v, 1)} m/s · λ = ${vn(lr, 2)}·r = ${vn(lamMm, 2)} mm → giọt ` +
+          `<b>⌀${vn(DMm, 2)} mm</b>, rộng gấp <b>${vn(DMm / d, 2)} lần</b> chính tia · đoạn tia còn liền ` +
+          `<b>${Lcm > 999 ? '> 10 m' : vn(Lcm, 1) + ' cm'}</b>, rơi ra ${vn(freq, 0)} giọt mỗi giây${note}`;
+      }
+    }
+
+    root.querySelectorAll('input').forEach((el) => el.addEventListener('input', draw));
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="vi-sao-khong-co-tia-nuoc-dai-vo-han"]').forEach(setup);
+</script>

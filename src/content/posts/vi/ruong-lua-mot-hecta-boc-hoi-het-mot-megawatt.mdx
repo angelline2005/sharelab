@@ -1,0 +1,91 @@
+---
+title: "Một hecta ruộng lúa “đốt” 1,13 megawatt chỉ để bốc hơi nước"
+seoTitle: "Bốc thoát hơi nước của ruộng lúa: tỉ số Bowen và vì sao ruộng mát hơn bê tông"
+description: "Ruộng lúa mất 4 mm nước mỗi ngày; hoá hơi chỗ nước ấy ngốn 113 W trên mỗi mét vuông — 1,13 megawatt cho một hecta, tức 87% toàn bộ bức xạ rơi xuống ruộng. Phần thừa mới đi sưởi không khí, và đó là toàn bộ lý do trưa hè mặt ruộng mát hơn sân bê tông 14 độ."
+pubDate: 2026-09-02
+tags: ["vat-ly", "nhiet-hoc", "khi-hau", "javascript"]
+translationId: "ruong-lua-mot-hecta-boc-hoi-het-mot-megawatt"
+---
+
+import BowenRatio from '../../../components/demos/BowenRatio.astro';
+
+Trưa tháng sáu, đi chân trần qua sân bê tông thì bỏng rát, bước xuống bờ
+ruộng lại thấy mát. Cùng một mặt trời, cùng một giờ, chênh nhau vài chục
+mét — mà nhiệt độ mặt chênh nhau hơn chục độ. Khác biệt duy nhất giữa hai
+chỗ ấy là **nước**, và nước tiêu tiền theo một cách rất riêng:
+
+<BowenRatio />
+
+## Hoá hơi là khoản chi lớn nhất trên hoá đơn năng lượng của ruộng
+
+Biến nước sôi thành hơi còn tốn hơn đun nó sôi rất nhiều: **2,45 MJ cho
+mỗi kilôgam**, mà [nhiệt kế không nhúc nhích một
+độ](/vi/posts/nhiet-an-hai-quang-nhiet-ke-dung-im) suốt quãng ấy. Ruộng
+lúa đang thì con gái bốc thoát chừng **4 mm nước mỗi ngày** — 4 kilôgam
+trên mỗi mét vuông, tức 9,8 MJ. Chia cho 86 400 giây: **113 W trên mỗi
+mét vuông**, chạy liên tục cả ngày lẫn đêm.
+
+Một hecta là 10 000 mét vuông, nên thửa ruộng ấy đang duy trì công suất
+bốc hơi **1,13 MW** — 27 200 kWh mỗi ngày, bằng phần điện của hơn 4 000
+hộ gia đình Việt. Mặt trời phát không khoản đó, nhưng phát không vừa đủ:
+bức xạ ròng trung bình ngày trên ruộng mùa nắng chỉ khoảng 131 W/m². Bốc
+hơi nuốt **87%**; đúng 13% còn lại mới là thứ đi sưởi không khí.
+
+## Tỉ số Bowen: một con số quyết định mặt đất nóng đến đâu
+
+Mọi mét vuông mặt đất đều phải cân sổ. Bức xạ ròng `Rn` rót vào chỉ có ba
+đường ra: hoá hơi nước (`LE`), sưởi thẳng không khí bên trên (`H`), và nạp
+xuống lòng đất hay cột nước (`G`). Tỉ lệ giữa hai đường đầu có tên riêng —
+**tỉ số Bowen**, `β = H/LE` — và biết nó là biết cả bảng phân chia:
+
+```
+A  = Rn − G          (năng lượng còn dùng được ở mặt)
+LE = A / (1 + β)
+H  = A · β / (1 + β)
+```
+
+Ruộng ngập nước có β ≈ **0,15**; sân bê tông khô có β ≈ **6**. Cùng nhận
+600 W/m² giữa trưa với gió nhẹ 2 m/s, ruộng đẩy **453 W/m²** vào hoá hơi
+— 0,66 mm nước mỗi giờ — và chỉ còn 68 W/m² sưởi không khí, nên mặt ruộng
+vượt nhiệt độ không khí đúng 3,5 độ. Bê tông chẳng có gì để hoá hơi: 353
+W/m² của nó, **gấp 5,2 lần**, dồn cả vào việc hun lớp không khí sát mặt.
+Mặt sân leo lên **50,6 °C** trong khi mặt ruộng nằm ở **36,5 °C** — chênh
+14,1 độ, và vào trưa lặng gió 1 m/s thì khoảng cách giãn ra 17,3 độ.
+
+Đấy là máy lạnh chạy bằng nước, không máy nén, không hoá đơn. Cùng cơ chế
+ấy giải thích vì sao [mái tôn sẫm màu chạm 70
+°C](/vi/posts/mai-ton-72-do-va-lop-son-trang) còn tán cây ngay cạnh thì
+không: lá có β nhỏ, tôn thì không có mẫu số nào để chia.
+
+## Một bát cơm là 150 lít nước đã bay lên trời
+
+Tính ngược ra bàn ăn: trung bình toàn cầu cần khoảng **2 500 lít nước cho
+mỗi kilôgam gạo**. Bát cơm trưa nay, 60 gam gạo, tương ứng **150 lít** đã
+bốc lên trời.
+
+Cân bằng ấy cũng đảo rất nhanh. Tháo nước phơi ruộng trước khi gặt, β
+trượt từ 0,15 lên khoảng 5 chỉ trong một tuần: cùng nắng ấy, mặt ruộng
+nhảy từ 36,5 °C lên **50,3 °C**. Thửa ruộng từng làm mát cả xóm biến
+thành một cái sân bê tông màu vàng. Ở quy mô lớn, chính khoản megawatt mỗi
+hecta ấy khiến các vùng tưới tiêu mênh mông ở Bắc Ấn Độ *lạnh đi* chừng
+một độ ban ngày trong lúc cả hành tinh nóng lên.
+
+## Trường hợp biên: khi mẫu số 1 + β đổi dấu
+
+Công thức có một chỗ chết người: nếu β = −1 thì `LE = A/0`. Nghe như trò
+đại số, nhưng β âm là chuyện có thật. Một thửa ruộng nhỏ nằm giữa vùng đất
+khô nóng còn được gió mang nhiệt tới tặng thêm — `H` đổi chiều, chảy *vào*
+mặt ruộng thay vì đi ra. Với β = −0,4, `LE = A/0,6`: ruộng bốc hơi **1,67
+lần** lượng năng lượng mặt trời rót xuống nó, đốt cả phần vay của hàng
+xóm. Đó là "hiệu ứng ốc đảo", và là lý do một mảnh tưới cô lập luôn ngốn
+nước vượt xa mọi bảng tra.
+
+Ban đêm thì cả sơ đồ lật ngược: Rn xuống chừng **−70 W/m²**, mặt ruộng
+lạnh hơn không khí, và LE đổi dấu — hơi nước ngưng lại thành sương, trả
+về mặt lá khoảng **17 W/m²** nếu đọng được 0,2 mm suốt tám tiếng, gần một
+phần tư khoản lỗ bức xạ. Giọt sương trên lá lúa lúc rạng sáng không phải
+nước rơi xuống: nó là năng lượng đang chảy ngược, đúng cỗ máy mà [nhà
+vườn dùng để cứu cây khỏi sương
+giá](/vi/posts/tuoi-nuoc-cuu-cay-khoi-suong-gia). Ban ngày nước là máy
+lạnh của cánh đồng, ban đêm nó là chiếc chăn — cùng một 2,45 MJ mỗi
+kilôgam, chỉ đổi chiều mũi tên.

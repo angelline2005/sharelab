@@ -1,0 +1,179 @@
+---
+// Stiles–Holladay disability-glare law: L_veil = 10·E / θ²
+//   E = I/d²  (lux at the eye, from a glare source of intensity I at distance d)
+//   θ = angle between the line of sight and the glare source, in DEGREES
+// Source: Stiles (1929) / Holladay (1926); it is the mid-angle limb of the
+// CIE general disability glare equation (Vos & van den Berg, CIE 135/1-6 1999),
+// whose full form is L/E = 10/θ³ + [5/θ² + 0,1p/θ]·[1+(A/62,5)⁴] + 2,5·10⁻³·p.
+// Validity: 1,5° ≲ θ ≲ 30° for a ~20–30-year-old eye. Below 1,5° the 10/θ³ term
+// of the full CIE equation takes over and this form UNDER-estimates; the slider
+// is clamped at 1,5° for that reason.
+// Remaining contrast: C = C₀·L_road/(L_road + L_veil) — the veil adds equally to
+// target and background, so the difference survives but the denominator grows.
+// Fixed here: L_road = 1,0 cd/m² (class M3, EN 13201-2), C₀ = 0,60 (dark clothing).
+---
+
+<figure class="demo" data-demo="choi-loa-den-pha-lop-suong-tren-vong-mac">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Cường độ đèn về phía mắt I (cd) <output data-out="i"></output>
+      <input type="range" data-in="i" min="200" max="5000" step="50" value="1000" /></label>
+    <label>Khoảng cách tới đèn d (m) <output data-out="d"></output>
+      <input type="range" data-in="d" min="5" max="100" step="1" value="10" /></label>
+    <label>Góc lệch khỏi hướng nhìn θ (°) <output data-out="th"></output>
+      <input type="range" data-in="th" min="1.5" max="20" step="0.1" value="3" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Trên: độ chói màn phủ lên võng mạc theo góc lệch (trục dọc logarit), vạch
+    cam là độ chói 1 cd/m² của mặt đường đô thị đạt chuẩn. Dưới: đúng cảnh ấy
+    khi lớp chói được cộng vào cả nền đường lẫn người đi bộ — hiệu số độ chói
+    không mất đi, nhưng nó bị chia cho một cái nền sáng hơn. Nền lấy 1,0 cd/m²,
+    người mặc áo tối có tương phản gốc 0,60.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const CURVE = '#2563eb', MARK = '#dc2626', REF = '#f59e0b';
+  const L_ROAD = 1.0, C0 = 0.60;
+
+  const veil = (I: number, d: number, th: number) => (10 * (I / (d * d))) / (th * th);
+  const vn = (x: number, n: number) => x.toFixed(n).replace('.', ',');
+  // Perceptual grey: the eye adapts to the scene, so map luminance against the
+  // current adaptation level (2× the veiled background) through a 2,2 gamma.
+  const grey = (L: number, adapt: number) => {
+    const v = Math.pow(Math.max(L, 0) / adapt, 1 / 2.2);
+    const g = Math.round(255 * Math.min(v, 1));
+    return `rgb(${g},${g},${g})`;
+  };
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (k: string) => root.querySelector(`[data-in="${k}"]`) as HTMLInputElement;
+    const output = (k: string) => root.querySelector(`[data-out="${k}"]`) as HTMLOutputElement;
+
+    function draw() {
+      const I = Number(input('i').value);
+      const d = Number(input('d').value);
+      const th = Number(input('th').value);
+      output('i').textContent = I.toLocaleString('vi-VN');
+      output('d').textContent = String(d);
+      output('th').textContent = vn(th, 1);
+
+      const E = I / (d * d);
+      const Lv = veil(I, d, th);
+      const C = (C0 * L_ROAD) / (L_ROAD + Lv);
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.66);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+      ctx.font = '10px system-ui,sans-serif';
+
+      const padL = 46, padR = 10, padT = 12;
+      const chartB = Math.round(cssH * 0.62);
+      const sceneTop = chartB + 40, sceneH = cssH - sceneTop;
+      const X = (t: number) => padL + ((t - 1.5) / 18.5) * (cssW - padL - padR);
+      // log10 axis from 0,001 to 1000 cd/m²
+      const Y = (L: number) => {
+        const u = (Math.log10(Math.max(L, 1e-4)) + 3) / 6;
+        return chartB - Math.min(Math.max(u, 0), 1) * (chartB - padT);
+      };
+
+      // axes
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.3;
+      ctx.beginPath();
+      ctx.moveTo(padL, padT); ctx.lineTo(padL, chartB); ctx.lineTo(cssW - padR, chartB);
+      ctx.stroke();
+      ctx.globalAlpha = 0.55; ctx.fillStyle = fg;
+      ctx.textAlign = 'center';
+      for (const t of [2, 5, 10, 15, 20]) ctx.fillText(`${t}°`, X(t), chartB + 14);
+      ctx.textAlign = 'right';
+      const yt: Array<[number, string]> = [[0.01, '0,01'], [0.1, '0,1'], [1, '1'], [10, '10'], [100, '100'], [1000, '1000']];
+      for (const [L, lab] of yt) ctx.fillText(lab, padL - 4, Y(L) + 3);
+      ctx.textAlign = 'left';
+      ctx.fillText('cd/m²', padL + 4, padT + 2);
+      ctx.globalAlpha = 1;
+
+      // road-luminance reference
+      ctx.strokeStyle = REF; ctx.setLineDash([4, 3]);
+      ctx.beginPath(); ctx.moveTo(padL, Y(L_ROAD)); ctx.lineTo(cssW - padR, Y(L_ROAD)); ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillStyle = REF; ctx.textAlign = 'right';
+      ctx.fillText('mặt đường 1 cd/m²', cssW - padR - 2, Y(L_ROAD) - 5);
+
+      // veiling-luminance curve vs angle
+      ctx.strokeStyle = CURVE; ctx.lineWidth = 2; ctx.beginPath();
+      for (let i = 0; i <= 200; i++) {
+        const t = 1.5 + (18.5 * i) / 200;
+        const y = Y(veil(I, d, t));
+        i ? ctx.lineTo(X(t), y) : ctx.moveTo(X(t), y);
+      }
+      ctx.stroke(); ctx.lineWidth = 1;
+
+      ctx.fillStyle = MARK;
+      ctx.beginPath(); ctx.arc(X(th), Y(Lv), 6, 0, Math.PI * 2); ctx.fill();
+
+      // ---- simulated night scene, veil added to everything ----
+      ctx.fillStyle = fg; ctx.globalAlpha = 0.55; ctx.textAlign = 'left';
+      ctx.fillText('cảnh trên võng mạc bạn (nền + người + lớp chói)', padL, sceneTop - 10);
+      ctx.globalAlpha = 1;
+
+      const sx = padL, sw = cssW - padL - padR;
+      const adapt = 2 * (L_ROAD + Lv);
+      const L_ped = L_ROAD * (1 - C0);            // dark clothing, negative contrast
+      ctx.fillStyle = grey(L_ROAD + Lv, adapt);
+      ctx.fillRect(sx, sceneTop, sw, sceneH);
+
+      const pw = Math.max(8, sceneH * 0.17), px = sx + sw * 0.26;
+      const py = sceneTop + sceneH * 0.30, ph = sceneH * 0.62;
+      ctx.fillStyle = grey(L_ped + Lv, adapt);
+      ctx.fillRect(px, py, pw, ph);
+      ctx.beginPath(); ctx.arc(px + pw / 2, py - pw * 0.42, pw * 0.42, 0, Math.PI * 2); ctx.fill();
+
+      const hx = sx + sw * 0.74, hy = sceneTop + sceneH * 0.38;
+      const hr = Math.max(4, Math.min(sceneH * 0.34, sceneH * 0.10 * Math.pow(E, 0.22)));
+      const halo = ctx.createRadialGradient(hx, hy, 0, hx, hy, hr * 3);
+      halo.addColorStop(0, 'rgba(255,255,255,.95)');
+      halo.addColorStop(0.28, 'rgba(255,246,214,.55)');
+      halo.addColorStop(1, 'rgba(255,246,214,0)');
+      ctx.fillStyle = halo;
+      ctx.beginPath(); ctx.arc(hx, hy, hr * 3, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#ffffff';
+      ctx.beginPath(); ctx.arc(hx, hy, hr, 0, Math.PI * 2); ctx.fill();
+
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.35;
+      ctx.strokeRect(sx, sceneTop, sw, sceneH);
+      ctx.globalAlpha = 1;
+
+      const regime = Lv >= L_ROAD
+        ? ' · <b>lớp chói át mặt đường</b>'
+        : Lv >= 0.1 * L_ROAD ? ' · lớp chói đã thấy rõ' : ' · lớp chói không đáng kể';
+      readout.innerHTML =
+        `I = ${I.toLocaleString('vi-VN')} cd · d = ${d} m → E = <b>${vn(E, 2)} lx</b> tại mắt` +
+        ` · θ = ${vn(th, 1)}° → L_màn = <b>${vn(Lv, 2)} cd/m²</b> (gấp ${vn(Lv / L_ROAD, 1)}× mặt đường)` +
+        ` · tương phản người đi bộ: 0,60 → <b>${vn(C, 3)}</b>${regime}`;
+    }
+
+    root.querySelectorAll('input').forEach((el) => el.addEventListener('input', draw));
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="choi-loa-den-pha-lop-suong-tren-vong-mac"]').forEach(setup);
+</script>

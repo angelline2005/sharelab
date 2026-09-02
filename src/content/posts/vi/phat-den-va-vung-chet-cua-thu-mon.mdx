@@ -1,0 +1,93 @@
+---
+title: "Quả phạt đền: hai phần ba bề ngang khung thành là vùng thủ môn không thể với tới"
+seoTitle: "Vật lý quả phạt đền 11 m: thời gian phản xạ và vùng chết của thủ môn"
+description: "Bóng đi 28 m/s vượt 11 m trong 0,393 giây. Trừ 0,20 giây phản xạ, thủ môn còn 0,193 giây để bay — đủ dịch 22 cm. Cộng tầm với 1,0 m, anh ta phủ 2,45 m giữa khung 7,32 m: 4,87 m, tức 66,6% bề ngang, là vùng không ai cứu nổi. Đó là lý do mọi thủ môn buộc phải đoán trước khi chân chạm bóng."
+pubDate: 2026-09-02
+tags: ["vat-ly", "co-hoc", "mo-phong", "javascript"]
+translationId: "phat-den-va-vung-chet-cua-thu-mon"
+---
+
+import PenaltyDeadZone from '../../../components/demos/PenaltyDeadZone.astro';
+
+Cầu thủ chạy đà ba bước. Chân chưa chạm bóng thì thủ môn đã đổ người sang
+trái — và ai cũng thấy đó là đoán mò. Đúng là đoán mò, nhưng không phải vì
+anh ta thiếu bình tĩnh: vật lý không để lại cho anh ta lựa chọn nào khác.
+
+<PenaltyDeadZone />
+
+## Ngân sách 0,393 giây
+
+Chấm phạt đền cách vạch vôi **11 m**, và cú sút của một cầu thủ chuyên
+nghiệp rời chân ở cỡ **28 m/s** — 101 km/h. Chia ra là xong: bóng qua vạch
+sau **0,393 giây** — ngắn hơn một cái chớp mắt thong thả.
+
+Thủ môn không được tiêu trọn ngân sách ấy. Thời gian phản xạ nhìn — vận
+động của người khoẻ mạnh là khoảng **0,20 s**: ánh sáng vào võng mạc, tín
+hiệu leo lên vỏ não thị giác, não quyết định trái hay phải, rồi lệnh chạy
+ngược xuống cơ chân. Mỗi chặng là một [đường truyền có độ trễ đo
+được](/vi/posts/dap-ngon-chan-vi-sao-mot-nhip-sau-moi-thay-dau), và tổng
+của chúng là hằng số sinh học bướng bỉnh đứng đầu cả công thức [quãng
+đường phanh](/vi/posts/duong-phanh-xe-may-va-toc-do-con-lai). Trong 0,20
+giây ấy bóng đã bay **5,60 m**, quá nửa đường, còn thủ môn vẫn đứng nguyên
+tại chỗ. Anh ta vào cuộc với **0,193 giây** trong tay.
+
+## Cú bay hết cỡ chỉ mua được 22 centimét
+
+Một cú đổ người là chuyển động có gia tốc từ đứng yên, nên trọng tâm dịch
+ngang được
+
+```
+x = ½ · a · t²
+```
+
+Gia tốc ngang một thủ môn đạp chân bật ra được vào khoảng **12 m/s²** —
+kiểm lại được: cùng gia tốc ấy, sau 0,65 giây trọng tâm dịch 2,5 m, đúng
+tầm một cú bay hết cỡ. Nhưng ở đây anh ta chỉ có 0,193 giây, và hàm bình
+phương trừng phạt điều đó không thương tiếc: 0,5 × 12 × 0,193² =
+**0,223 m**. Hai mươi hai centimét.
+
+Cộng tầm với ngang lúc đứng, khoảng 1,0 m từ thân ra đầu ngón tay, thủ môn
+chạm tới **1,22 m mỗi bên** — một dải rộng 2,45 m, tình cờ đúng bằng chiều
+cao khung thành. Khung thành rộng **7,32 m**, gấp ba chiều cao 2,44 m của
+nó. Phần còn lại: **4,87 m, chiếm 66,6% bề ngang, là vùng không cú bay nào
+với tới**. Cứ ba mét vạch vôi thì hai mét không có người trông.
+
+## Bắp chân khoẻ không cứu được ai, phản xạ nhanh thì có
+
+Bản năng nói: tập cho khoẻ hơn, bật mạnh hơn. Kéo thanh gia tốc trong demo
+từ 6 lên 16 m/s² — từ một thủ môn nghiệp dư tới một người bật như vận động
+viên nhảy xa — và vùng chết chỉ nhúc nhích từ 69,6% xuống **64,5%**. Năm
+điểm phần trăm cho toàn bộ dải thể lực mà loài người có.
+
+Bây giờ giữ nguyên thể lực và kéo thanh phản xạ: từ 0,35 s xuống 0,12 s,
+vùng chết đi từ 72,4% xuống **60,5%** — gần **12 điểm**, hơn gấp đôi.
+Thời gian nằm trong bình phương, thể lực chỉ nằm ngoài; rút bớt được vài
+phần trăm giây đáng giá hơn cả phòng tập. Muốn phủ kín cả khung bằng phản
+ứng thuần tuý, anh ta phải dịch thêm 2,66 m trong 0,193 giây: gia tốc
+**143 m/s², tức 14,6 g** — mức cơ thể người không tạo ra nổi.
+
+Mô hình còn hào phóng với thủ môn: nó cho anh ta gia tốc đầy đủ ngay từ
+mili-giây đầu, trong khi cú bay thật tiêu gần hết 0,19 giây ấy chỉ để nạp
+lực vào chân trụ. Chiều ngược lại, tính cả lực cản không khí thì bóng chậm
+dần, bay 0,417 giây, và vùng chết co còn 64,9%. Hai điểm phần trăm.
+
+## Trường hợp biên: khi thủ môn đoán trước, bài toán đổi môn
+
+Thực tế khoảng một phần tư số quả phạt đền không thành bàn — cao hơn hẳn
+mức 66,6% vùng chết cho phép. Nghịch lý tự giải: thủ môn **không
+chờ**. Anh ta đổ người trước khi chân chạm bóng, đọc hướng mũi chân trụ và
+hông người sút, và bằng cách đó xoá luôn 0,20 giây phản xạ khỏi phương
+trình. Cái giá là đoán sai thì vùng chết không còn 66,6% mà là 100%.
+
+Ngay khoảnh khắc ấy bài toán rời vật lý. Nó thành trò chơi hai người tổng
+bằng không, nghiệm tối ưu là một **chiến lược hỗn hợp**: cả hai phải ngẫu
+nhiên hoá lựa chọn, vì mọi thói quen đều bị đối phương khai thác. Đây là
+một trong vài chỗ hiếm hoi lý thuyết trò chơi được kiểm chứng ngoài đời —
+và cả hai bên ngẫu nhiên hoá gần đúng mức tối ưu.
+
+Đầu kia của thanh trượt thì bất ngờ hơn. Sút chậm dưới **19 m/s** (68
+km/h) và vùng chết tụt xuống dưới một nửa; ở 15 m/s nó chỉ còn 26%. Cú
+"đặt lòng nhẹ vào góc" mà bình luận viên khen là an toàn hoá ra tự trả lại
+cho thủ môn đúng thứ anh ta thiếu — thời gian. Muốn vừa chậm vừa an toàn
+thì chỉ còn một cửa: bắt quả bóng [đi vòng](/vi/posts/cu-sut-xoay-magnus-lech-ba-met),
+để nó rời chân theo một hướng và chạm lưới theo hướng khác.

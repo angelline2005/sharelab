@@ -1,0 +1,97 @@
+---
+title: "Phanh sau một mình chỉ cho bạn 0,32 g — quãng dừng dài gấp 2,5 lần"
+seoTitle: "Chuyển tải khi phanh xe máy: vì sao phanh trước ăn hơn 80% lực hãm"
+description: "Phanh gấp dồn trọng lượng ra bánh trước: ở 0,7 g bánh trước gánh 80,2%, bánh sau chỉ còn 19,8% để bám. Nên phanh sau đơn độc chỉ hãm nổi 0,32 g — 19,8 m từ 40 km/h, còn hai phanh cùng lúc dừng trong 7,9 m. Còn ngưỡng lộn nhào 1,08 g thì đường nhựa thường không bao giờ chạm tới."
+pubDate: 2026-09-02
+tags: ["vat-ly", "co-hoc", "javascript"]
+translationId: "phanh-xe-may-truoc-hay-sau"
+---
+
+import BrakeLoadTransfer from '../../../components/demos/BrakeLoadTransfer.astro';
+
+Người ta truyền nhau hai lời khuyên trái ngược, cùng một giọng chắc nịch:
+"bóp phanh trước là lộn nhào" và "chỉ đạp phanh sau thì không bao giờ dừng
+kịp". Cả hai nói về đúng một con số — con số tự thay đổi ngay trong lúc bạn
+bóp phanh:
+
+<BrakeLoadTransfer />
+
+## Bóp phanh là dồn trọng lượng ra phía trước
+
+Xe mẫu trong demo — xe số phổ thông có người ngồi, chiều dài cơ sở `L` =
+1,24 m, trọng tâm cách trục trước `a_f` = 0,70 m, cách trục sau `b` = 0,54 m
+và cao `h` = 0,65 m — đứng yên thì bánh trước gánh b/L = **43,5%** trọng lượng.
+
+Bóp phanh, mặt đường đẩy ngược về sau ở *chỗ tiếp đất*, còn quán tính của cả
+khối xe-người nằm ở trọng tâm *cao 0,65 m phía trên*. Cặp lực lệch nhau ấy
+phải được cân lại bằng cách bốc tải khỏi bánh sau đặt sang bánh trước:
+
+```
+N_trước/W = b/L + (h/L)·(a/g)
+```
+
+Hệ số duy nhất điều khiển tốc độ dồn tải là h/L = 0,524: **cứ thêm 0,1 g lực
+hãm, 5,2% trọng lượng chuyển ra bánh trước.** Ở mức hãm gấp vừa phải 0,7 g,
+bánh trước gánh **80,2%**, bánh sau chỉ còn **19,8%** — cái phanh sau bạn tin
+tưởng đang được giao một bánh xe gần như rỗng tải.
+
+## Phanh sau tự cắt đất dưới chân mình
+
+Lực hãm tối đa của một bánh bằng μ nhân tải nó đang gánh — hệ số bám μ đo được
+bằng [một tấm ván nghiêng và cái thước đo
+góc](/vi/posts/mat-phang-nghieng-va-goc-bat-dau-truot), nhựa khô với lốp xe
+máy phổ thông cho khoảng 0,8. Nhưng tải lại phụ thuộc chính gia tốc hãm, nên
+phải giải một vòng lặp: đạp phanh sau mạnh hơn → giảm tốc nhiều hơn → tải rời
+khỏi bánh sau → bám kém đi. Vòng lặp tự dập tắt mình ở
+
+```
+a/g = μ·a_f/(L + μ·h) = 0,32
+```
+
+Bánh sau lúc ấy chỉ giữ **39,8%** trọng lượng, người lái có đạp mạnh đến đâu
+cũng vậy. Phanh trước chạy cùng vòng lặp theo chiều ngược: càng bóp, tải đổ về
+càng nhiều, bám càng tăng — nghiệm là a/g = μ·b/(L − μ·h) = **0,60 g**, với
+bánh trước gánh tròn 75,0%.
+
+Quy ra mét, từ 40 km/h: phanh sau đơn độc **19,8 m**, phanh trước **10,5 m**,
+hai phanh cùng lúc **7,9 m** — gấp 2,5 lần giữa hai đầu bảng. Và [tốc độ còn
+lại](/vi/posts/duong-phanh-xe-may-va-toc-do-con-lai) mới là cách so tàn nhẫn:
+tại đúng vạch 7,9 m nơi người bóp cả hai phanh đã đứng im, người chỉ đạp phanh
+sau vẫn đang lao tới ở **31,0 km/h**.
+
+## Ngưỡng lộn nhào nằm ở đâu, thật sự
+
+Đẩy công thức tới chỗ bánh sau về 0 thì ngưỡng lộn nhào hiện ra trần trụi,
+không còn μ, không còn khối lượng:
+
+```
+a/g = a_f/h = 0,70/0,65 = 1,08
+```
+
+Nỗi sợ này có một lỗ hổng ít ai để ý. Muốn tạo ra 1,08 g thì toàn bộ trọng
+lượng đã nằm trên bánh trước, tức mặt đường phải trả lại đúng μ = 1,08. Nhựa
+khô cho bạn 0,8, nên **lốp trước buông tay ở 0,60 g, còn xa ngưỡng lộn nhào
+tới 80%**: chiếc xe của bạn về mặt vật lý không lộn nhào được trên đường phố.
+
+Người ta sợ đúng nhưng nhầm tên. Bóp cứng phanh trước cho lốp trượt thì mất
+lái tức thì, vì bánh đang trượt không đổi hướng được; bánh sau trượt còn cứu
+vãn, bánh trước trượt thì ngã. Đó mới là lý do để bóp phanh trước *dứt khoát
+nhưng tăng dần* — cho tải kịp dồn ra trước rồi mới đòi lực hãm lớn.
+
+## Trường hợp biên: đúng lúc μ chạm 1,08 thì hai ngưỡng đổi chỗ
+
+Cho hai ngưỡng bằng nhau, μ·b/(L − μ·h) = a_f/h, mọi thứ rút gọn xuống một kết
+quả gọn đến khó chịu: **μ\* = a_f/h**, đúng bằng chính ngưỡng lộn nhào. Dưới
+mức bám ấy lốp luôn trượt trước và cú lộn nhào là chuyện không thể; trên mức
+ấy xe lật trước khi lốp kịp trượt. Với xe mẫu μ\* = 1,08 — nằm gọn trong tầm
+lốp đua trên nhựa nóng (1,1–1,3), nên "bốc đầu ngược" là trò của đường đua chứ
+không phải tai nạn của người đi chợ.
+
+Kéo μ về phía mưa thì không gì đảo ngược, chỉ mọi thứ cùng tệ đi: μ = 0,45 cho
+phanh trước 0,26 g (24,5 m), phanh sau 0,21 g (30,6 m). Thứ dịch chuyển ngưỡng
+mạnh nhất lại là hành khách: chở thêm một người đẩy `a_f` từ 0,70 lên khoảng
+0,85 m, ngưỡng lộn nhào vọt lên 1,31 g, phanh sau khoẻ lên 0,39 g còn phanh
+trước tụt còn 0,43 g — hai bàn phanh gần như đổi vai. Vẫn tỉ số chiều dài chia
+chiều cao ấy, đặt nằm ngang thay vì dọc, là thứ [quyết định xe khách lật hay
+trượt](/vi/posts/xe-khach-lat-truoc-khi-lop-truot): vật lý chỉ xoay bài toán
+đi 90 độ.

@@ -1,0 +1,92 @@
+---
+title: "Hai ngón tay bóp 40 N, má phanh ép xuống đĩa 173 kg"
+seoTitle: "Nguyên lý Pascal: phanh dầu xe máy khuếch đại lực bao nhiêu lần"
+description: "Xi-lanh chính ⌀11 mm đẩy piston kẹp ⌀32 mm nhân lực lên 8,46 lần, cộng tay đòn 5:1 nữa là 40 N thành 1 693 N — 173 kg ép lên đĩa phanh. Cái giá nằm ở quãng đường: piston kẹp chỉ nhích 0,47 mm khi ngón tay bạn đi 20 mm."
+pubDate: 2026-09-02
+tags: ["vat-ly", "chat-luu", "co-hoc", "javascript"]
+translationId: "phanh-dau-xe-may-hai-ngon-tay-170-kg"
+---
+
+import HydraulicBrake from '../../../components/demos/HydraulicBrake.astro';
+
+Bóp tay phanh bằng hai ngón, nhẹ như bấm chuông xe đạp, cả chiếc xe hơn trăm
+ký chậm lại thấy rõ. Không trợ lực, không mô tơ — chỉ một ống dầu nhỏ hơn ruột
+bút bi và một phép nhân đọc thẳng ra từ hai con số đường kính:
+
+<HydraulicBrake />
+
+## Áp suất không biết mình đang ở chỗ nào
+
+Pascal, 1653: chất lỏng đứng yên truyền áp suất đi mọi hướng như nhau. Cột dầu
+bị ép trong xi-lanh chính vì thế chỉ mang đúng **một con số** — áp suất p — và
+mọi bề mặt nó chạm vào đều nhận p nhân diện tích của riêng mình. Xi-lanh chính
+⌀11 mm có 95,0 mm²; piston trong cùm phanh ⌀32 mm có 804 mm².
+
+```
+F₂ = p·A₂ = F₁·(d₂/d₁)² = F₁·(32/11)² = 8,46·F₁
+```
+
+Trước cả khúc thuỷ lực, tay phanh đã là một [đòn
+bẩy](/vi/posts/don-bay-cho-toi-mot-diem-tua) tỉ số khoảng 5:1 — hai ngón tay
+bóp 40 N thành 200 N đẩy piston chính. Áp suất sinh ra: 200 / 95,0 = 2,10 N/mm²,
+tức **21 bar**, gấp mười lần áp suất trong chính cái lốp bạn đang ngồi lên
+(2,1 bar). Nhân với 804 mm² ở đầu kia: **1 693 N — 173 kilôgam** ép lên đĩa,
+tổng hệ số nhân 42,3 lần.
+
+Điều lạ nằm ở những thứ *không* xuất hiện trong phép tính: chiều dài ống dầu,
+đường kính ống, số khúc cua nó luồn qua. Ống chỉ là kẻ đưa tin và đưa không hao
+— nên phanh dầu luồn được qua mọi ngóc ngách khung xe, còn dây cáp thì kêu ca
+ở từng chỗ gấp.
+
+## Cái giá phải trả là 0,47 mm
+
+Dầu gần như không nén được, nên thể tích rời xi-lanh chính phải bằng đúng thể
+tích chui vào cùm phanh: A₁·s₁ = A₂·s₂. Tỉ số lợi về lực lộn ngược lại thành
+tỉ số thiệt về đường:
+
+```
+s₂ = s₁·(d₁/d₂)² = s₁ / 8,46
+```
+
+Đầu ngón tay bạn đi 20 mm, đòn bẩy chia xuống còn 4,00 mm ở piston chính, rồi
+8,46 lần nữa: piston kẹp **nhích 0,47 mm**. Công hai vế khớp đến chữ số cuối —
+40 N × 20 mm = 0,80 J vào, 1 693 N × 0,47 mm = 0,80 J ra.
+
+Con số 0,47 mm ấy quyết định luôn cảm giác tay phanh: má mòn tụt thêm 1 mm là
+ngón tay phải đi thêm 1 × 8,46 × 5 = 42 mm — bóp lút cán vẫn hụt. Cứu cánh là
+cái phớt cao su chỉ kéo piston lùi vài chục micromét lúc bạn nhả: má mòn tới
+đâu, piston ở lại tới đó.
+
+## Từ 173 kg thành một cú giảm tốc
+
+Ép 1 693 N vào đĩa vẫn chưa phải là hãm. Bố phanh có μ ≈ 0,40 và ép cả hai mặt
+đĩa: ma sát 2 × 0,40 × 1 693 = 1 354 N. Đĩa ⌀240 mm, bán kính hiệu dụng khoảng
+0,100 m, cho mô men hãm 135 N·m. Bánh trước đi lốp 110/70-17 lăn ở bán kính
+0,293 m, nên tới mặt đường chỉ còn 462 N. Xe cộng người 150 kg:
+**3,08 m/s², đúng 0,31 g**.
+
+Bóp mạnh lên khoảng 100 N thì lực má phanh thành 4 231 N và gia tốc chạm
+0,79 g — gần đúng trần bám của lốp trước. Qua ngưỡng đó, bóp thêm không đổi
+thêm được gì: [quãng đường phanh](/vi/posts/duong-phanh-xe-may-va-toc-do-con-lai)
+từ điểm ấy do lốp và mặt đường định đoạt, không phải do bàn tay.
+
+## Trường hợp biên: một bọt khí 0,40 cm³
+
+Cả trò này treo trên một chữ: *không nén được*. Ở 21 bar, dầu phanh với mô đun
+đàn hồi khối cỡ 1,5 GPa chỉ co 0,14% thể tích — chính độ cứng ấy khiến nước bị
+chặn đứng trong ống [đóng lại cú búa 18
+bar](/vi/posts/bua-nuoc-cu-dap-18-bar-khi-khoa-voi). Không khí thì mô đun khối
+bằng đúng áp suất của chính nó: 0,1 MPa ở 1 bar, **kém dầu 15 000 lần**.
+
+Piston chính ⌀11 mm đi 4 mm chỉ quét 380 mm³. Một bọt khí ở 1 bar khi bị nén
+lên 22 bar tuyệt đối teo còn 1/22, tức nhả ra 95,5% thể tích của nó — nên chỉ
+cần một bọt **0,40 cm³, quả cầu đường kính 9,1 mm**, là toàn bộ hành trình tay
+phanh đi vào việc bóp bọt. Bóp lút cán, piston kẹp đứng yên, xe vẫn chạy.
+
+Và bọt ấy tự sinh ra được. Dầu DOT 4 mới sôi ở 230 °C, nhưng nó hút ẩm qua
+phớt và ống: ngậm khoảng 3% nước sau hai năm, điểm sôi tụt còn 155 °C. Đổ đèo
+dài mà rà phanh liên tục, đĩa lên 300–400 °C và nhiệt bò ngược vào cùm cho tới
+lúc dầu sôi ngay tại chỗ. Không đòn bẩy cơ khí nào hỏng theo kiểu này: dây cáp
+đứt thì tay bạn biết ngay lập tức, còn phanh dầu bị vapour lock trả về đúng
+cảm giác của một cần phanh còn nguyên vẹn — vẫn mềm, vẫn đủ nặng, chỉ là nó
+đang ép một túi hơi.

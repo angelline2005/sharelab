@@ -1,0 +1,95 @@
+---
+title: "0,29 microgram americi trên trần nhà bạn — và tờ giấy chặn được nó"
+seoTitle: "Alpha, beta, gamma: sức xuyên khác nhau bao nhiêu lần"
+description: "Hạt alpha 5,5 MeV từ americi-241 trong đầu báo khói đi 4,2 cm trong không khí rồi dừng, và chỉ xuyên 40 micromet vào mô — nông hơn lớp tế bào đáy của da bạn. Cùng năng lượng ấy, hạt beta đi 23 mét không khí, còn tia gamma thì không có tầm xa nào cả."
+pubDate: 2026-09-02
+tags: ["vat-ly", "hat-nhan", "javascript"]
+translationId: "to-giay-chan-alpha-va-dau-bao-khoi"
+---
+
+import RadiationRange from '../../../components/demos/RadiationRange.astro';
+
+Mặt sau chiếc đầu báo khói trên trần nhà bạn có một dòng chữ nhỏ và hình
+tam giác ba cánh: *Am-241, 37 kBq*. Nguồn phóng xạ thật, đang bắn ba mươi
+bảy nghìn hạt alpha mỗi giây, cách chỗ bạn ngủ hai mét. Toàn bộ lá chắn
+cần thiết là cái vỏ nhựa — thật ra còn ít hơn thế nhiều:
+
+<RadiationRange />
+
+## Ba phần mười microgram, mười nghìn tỉ hạt
+
+37 kBq nghe rất to. Nhưng americi-241 có
+[chu kỳ bán rã](/vi/posts/chu-ky-ban-ra-khong-hat-nao-biet-tuoi-minh) 432,6
+năm, nên để giữ 37 000 phân rã mỗi giây chỉ cần 7,3·10¹⁴ nguyên tử — **0,29
+microgram**, một vệt không nhìn thấy trên lá vàng cán mỏng. Cũng vì thế
+mà sau mười năm treo trần, 1,17·10¹³ hạt alpha đã bay ra nhưng nguồn mới
+hao **1,6%**. Mỗi hạt thoát ra bằng
+[xuyên hầm](/vi/posts/xuyen-ham-luong-tu-trong-chiec-the-nho): không đủ sức
+trèo hàng rào, nó rò qua.
+
+Cỗ máy bên trong thô bạo đến duyên dáng. Hạt alpha 5,5 MeV lao vào
+buồng không khí giữa hai bản cực, cày đứt electron dọc đường: mỗi cặp ion
+tốn chừng 34 eV, nên **một hạt sinh hơn 160 000 cặp ion** — thu trọn thì
+được 0,96 nanoampe. Khói lọt vào, bồ hóng bắt lấy ion, dòng sụt: còi kêu.
+Đầu báo khói không hề "ngửi" thấy khói, nó đo một dòng điện nano-ampe bị
+mất. Buồng ion hoá rộng chừng một centimet — vừa lọt trong tầm với của
+hạt alpha, và đó là cả thiết kế.
+
+## Vì sao đúng một tờ giấy là đủ
+
+Hạt alpha là hạt nhân heli: nặng gấp **7 294 lần** electron, mang hai đơn
+vị điện tích, và ở 5,5 MeV bò với tốc độ chỉ 5,43% vận tốc ánh sáng.
+Nặng, chậm, điện tích đôi — nó va chạm liên tục mà gần như không đổi
+hướng, nên nhả sạch năng lượng trên một đoạn ngắn đến kỳ lạ:
+`R ≈ 0,325·E^1,5` cm trong không khí, tức 4,2 cm. Trong giấy, đặc gấp 664
+lần, nó chết ở **53 micromet**: quá nửa bề dày một tờ A4 (0,1 mm) rồi
+hết.
+
+Trong mô người con số là **40 micromet**. Chuẩn đo liều da của ICRP đặt
+lớp tế bào đáy — lớp sống thật sự, chia được và hỏng được — ở độ sâu quy
+ước **70 micromet**: alpha của americi không với tới đó. Cầm nguyên cái nguồn trong lòng bàn tay cũng chỉ là hâm nóng phần da
+đã chết.
+
+## Cùng 5,5 MeV, beta đi xa gấp 555 lần
+
+Giữ nguyên năng lượng, đổi vật liệu sang "không khí": hạt beta cùng
+5,5 MeV đi **23,3 mét**, gấp **555 lần** hạt alpha — chỉ vì electron nhẹ
+hơn bảy nghìn lần nên bị đá văng đi sau mỗi cú va chạm thay vì cày thẳng.
+Nguồn beta mạnh đến thế hiếm; loại 1 MeV quen thuộc đi 3,4 m không khí,
+xuyên 1,53 mm nhôm, hay **51 tờ giấy** chồng lên nhau. Kèm một quy tắc
+nghe ngược đời: **chắn beta thì đừng dùng chì** — electron hãm gấp trong
+nguyên tử nặng biến `0,00035·Z·E` phần năng lượng thành tia X, **2,9%**
+với chì (Z = 82) so với 0,46% với nhôm.
+
+## Gamma không có tầm xa, chỉ có những lần giảm một nửa
+
+Hai hàng trên trong demo kết thúc bằng một chấm tròn; hàng gamma thì
+không, nó nhạt dần theo `I = I₀·e^(−µx)` và **không bao giờ chạm số
+không**. Nên câu hỏi đúng không phải "bao nhiêu chì để chặn" mà "bao nhiêu
+để còn một nửa": ở 5,5 MeV là **14,1 mm chì**. Muốn còn một phần nghìn thì
+cần mười lần thế — 14 cm chì, **1 594 kilogram mỗi mét vuông tường**.
+
+Đường cong ấy còn không đơn điệu. Chọn chì rồi kéo năng lượng: bề dày nửa
+giá trị leo từ 8,6 mm ở 1 MeV lên **cực đại 14,55 mm ở đúng 4,00 MeV**,
+rồi *tụt* còn 12,3 mm ở 10 MeV. Chì trong suốt nhất với gamma cỡ 4 MeV vì
+đó là khoảng giữa hai cơ chế: dưới nó, hiệu ứng quang điện
+[nuốt trọn từng photon](/vi/posts/hieu-ung-quang-dien-anh-sang-tra-tien-le);
+trên 1,022 MeV, sinh cặp mới mở ra. Vạch gamma 59,5 keV của chính americi
+rơi sâu trong vùng quang điện — 0,12 mm chì đã cắt mất một nửa.
+
+## Trường hợp biên: hạt yếu nhất lại là hạt độc nhất
+
+Cả bài đứng trên một chữ ngầm: *bên ngoài*. Bỏ nó đi thì mọi kết luận lật
+ngược — cùng một tầm xa ngắn, đọc theo chiều kia. Hít phải một hạt americi: 5,5 MeV không còn lớp da chết
+nào để vượt, nó nhả trọn trong 40 micromet mô sống. Một hạt alpha xuyên
+qua nhân tế bào đường kính 8 µm để lại 1,11 MeV; chia cho khối lượng nhân
+(2,68·10⁻¹³ kg) ra **0,66 gray dồn vào riêng cái nhân ấy**, từ một hạt.
+Một electron 1 MeV qua đúng nhân đó để lại 0,00096 Gy — ít hơn **693
+lần**. Đấy là lý do ICRP gán cho alpha hệ số trọng số bức xạ 20: cùng số
+joule, hai mươi lần nguy cơ. Radon trong nhà, plutoni hít vào: vẫn công
+thức ấy, đọc ngược.
+
+Còn gamma chưa từng có ngưỡng nào để vượt, nên không có chiều nào để đọc
+ngược: tấm chắn dày gấp đôi không chặn gấp đôi, nó chỉ bình phương phần
+lọt qua. Với alpha, bạn được hỏi *đã đủ chưa*; với gamma, chỉ *còn lại bao
+nhiêu*.

@@ -1,0 +1,101 @@
+---
+title: "Quả cầu 660 tấn treo giữa Taipei 101 để làm gì"
+seoTitle: "Bộ giảm chấn khối lượng điều chỉnh (TMD) và công thức Den Hartog"
+description: "Một khối nặng 1% toà nhà, treo đúng tần số, kéo đỉnh cộng hưởng từ 50 lần xuống 11,5 lần — cắt 77% độ lắc. Den Hartog nói chính xác phải chỉnh tần số về 0,990 và cản về 6,1%; và vì sao một TMD không cản còn tệ hơn không có gì."
+pubDate: 2026-09-02
+tags: ["vat-ly", "dao-dong", "co-hoc", "javascript"]
+translationId: "bo-giam-chan-khoi-luong-660-tan-taipei-101"
+---
+
+import TunedMassDamper from '../../../components/demos/TunedMassDamper.astro';
+
+Giữa tầng 87 và 92 của Taipei 101 có một quả cầu thép đường kính 5,5 mét,
+nặng 660 tấn, treo lơ lửng bằng tám bó cáp, mở cửa cho khách tham quan
+chụp ảnh. Nó không phải tác phẩm điêu khắc. Trong toà tháp 508 mét ấy,
+nó là bộ phận duy nhất có nhiệm vụ **lắc**:
+
+<TunedMassDamper />
+
+## Chỉ khối lượng mới quyết định được trần
+
+Một tháp thép là cái lò xo khổng lồ có tần số riêng — Taipei 101 lắc trọn
+một vòng mất khoảng 6,8 giây. Khi gió xoáy sau toà nhà [đẩy đúng nhịp
+ấy](/vi/posts/cong-huong-vi-sao-day-nho-thang-luc-lon), biên độ nhân lên
+theo luật cộng hưởng: với cản sẵn có của khung thép ζ ≈ 1%, đỉnh khuếch
+đại là `1/(2ζ)` = **50 lần** so với cùng lực ấy đẩy tĩnh.
+
+Bây giờ treo thêm một khối m, chỉnh về gần cùng tần số, đặt μ = m/M.
+Den Hartog giải xong bài toán này năm 1947 và ra một kết quả đẹp đến khó
+tin: đỉnh còn lại **chỉ phụ thuộc μ**.
+
+```
+đỉnh khuếch đại = √(1 + 2/μ)
+```
+
+μ = 1% cho **14,2 lần**. Độ cứng cáp, cản của khối treo, khối lượng
+tuyệt đối: không tham số nào khác len vào được, và muốn thấp hơn nữa chỉ
+còn một đường — nặng thêm. Công thức bỏ qua cản sẵn có của chính toà nhà
+nên nó là **cận trên**; demo tính đủ cả 1% ấy ra 11,5 lần, tức cắt
+**77%** độ lắc.
+
+## Chỉnh thấp hơn một chút, và cản vừa đúng
+
+Trực giác bảo chỉnh khối treo đúng bằng tần số nhà. Sai — hai công thức
+còn lại của Den Hartog nói khác:
+
+```
+f = 1/(1 + μ)          ζ₂ = √( 3μ / (8(1+μ)) )
+```
+
+Với μ = 1%: chỉnh **thấp hơn 1%**, xuống 0,990, và cho khối treo cản
+**6,1%**.
+
+Con số cản mới là chỗ khó nuốt. Kéo ζ₂ về 0 trong demo: khối treo không
+cản khoá toà nhà đứng im **tuyệt đối** — nhưng chỉ tại đúng tần số của
+riêng nó, và hai bên cái đáy thọc xuống ấy mọc lên **hai đỉnh cao 52,8
+lần**, cao hơn cả toà nhà để trần. Một TMD không cản chẳng hấp thụ gì; nó
+chỉ tách một cộng hưởng thành hai. Kéo ζ₂ lên 20% thì ngược lại: quả cầu
+bị khoá cứng vào kết cấu, thành 660 tấn chết, đỉnh vọt lại 22,4 lần. Vẫn
+là [bài toán điểm vàng của giảm
+xóc](/vi/posts/dao-dong-tat-dan-diem-vang-cua-giam-xoc), chỉ khác chỗ đặt
+cái cản.
+
+## Quả cầu 5,5 mét và sợi con lắc 11,5 mét
+
+Thử kiểm: cầu thép đặc đường kính 5,5 m có thể tích 87,1 m³, nhân
+7 850 kg/m³ ra **684 tấn** — sát con số 660 tấn công bố, nên quả cầu ấy
+là thép đặc chứ không phải vỏ rỗng.
+
+Còn tần số lấy ở đâu? TMD của Taipei 101 là một con lắc, T = 2π√(L/g).
+Muốn T = 6,8 giây phải có `L = g(T/2π)²` = **11,5 m** dây treo — gần ba
+tầng nhà chỉ để đung đưa, cộng 5,5 mét đường kính quả cầu. Đó là lý do
+bộ giảm chấn ăn trọn năm tầng lầu.
+
+Còn μ? Đây là chỗ dễ tính sai nhất. 660 tấn trên một toà tháp 700 000
+tấn là 0,094% — nghe như vô vọng. Nhưng mẫu số đúng không phải toàn bộ
+khối lượng: mode dao động thứ nhất gần như không nhấc nổi các tầng dưới,
+khối lượng *hiệu dụng* của nó chỉ cỡ một phần ba toà tháp. μ thực tế
+khoảng **0,3%**, và công thức trả đỉnh còn 18,0 lần — cắt 64%. Taipei 101
+công bố giảm khoảng 40% độ lắc; cùng một cỡ, và phần chênh chính là
+khoảng cách giữa gió thật và một lực điều hoà lý tưởng.
+
+## Trường hợp biên: cú giật đầu tiên tới quá sớm
+
+TMD không có phép màu nào ngoài việc lắc lệch pha với toà nhà — mà lệch
+pha thì cần thời gian. Đỉnh 14,2 lần tương đương một hệ có cản
+1/(2 × 14,2) = 3,5%, và biên độ của hệ ấy chỉ leo tới 63% giá trị ổn định
+sau `1/(2πζ)` = **4,5 chu kỳ**, ở đây là **31 giây** rung liên tục. Bão
+thừa 31 giây. Động đất thì không: pha phá huỷ mạnh nhất của một trận gần
+tâm chấn đến trong vài giây đầu, lúc quả cầu 660 tấn còn chưa kịp nhúc
+nhích — nó đi qua cơn động đất gần như một khối chết, và nhà chống bão
+với nhà chống động đất vì thế không mua chung một món.
+
+Chỉnh sai cũng đủ đắt: lệch tần số 5% về bên nào cũng đưa đỉnh từ 11,5
+lên khoảng 19 lần, mất non nửa số tiền đã bỏ ra. Mà tần số riêng của toà
+nhà *có* trôi — thêm nội thất, thêm người, kết cấu mỏi dần — nên TMD lớn
+phải được đo và chỉnh lại định kỳ suốt đời toà nhà. Ranh giới nghề nằm
+gọn ở đó: [nhịp cầu bị chính người đi bộ bơm năng lượng
+vào](/vi/posts/cau-di-bo-lac-ngang-va-66-nguoi) chữa được bằng đúng món
+này, vì nó rung đều và rung lâu; còn thứ đến một lần rồi thôi thì phải
+mua loại khác — loại ăn năng lượng ngay từ cú giật đầu tiên, chứ không
+xin bốn chu kỳ rưỡi để khởi động.

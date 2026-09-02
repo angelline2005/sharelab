@@ -1,0 +1,97 @@
+---
+title: "Con NTC 10 kΩ: mỗi độ C là 4,4% — nhạy gấp 11 lần cảm biến công nghiệp"
+seoTitle: "Nhiệt điện trở NTC: công thức tính điện trở theo nhiệt độ và độ nhạy"
+description: "Điện trở của NTC giảm theo hàm mũ chứ không tuyến tính: 10 kΩ ở 25 °C còn 3,59 kΩ ở 50 °C và chỉ 698 Ω ở 100 °C. Độ nhạy 4,4% mỗi độ, gấp 11,5 lần Pt100 — và chính độ nhạy ấy bóp chết dải đo."
+pubDate: 2026-09-02
+tags: ["vat-ly", "dien-tu", "nhiet-hoc", "javascript"]
+translationId: "nhiet-dien-tro-ntc-nhay-gap-muoi-mot-lan"
+---
+
+import NtcThermistor from '../../../components/demos/NtcThermistor.astro';
+
+Nhiệt kế điện tử kẹp nách, cục sạc laptop, viên pin điện thoại, đầu in 3D
+— trong mỗi thứ có một hạt gốm đen cỡ hạt gạo lo việc đo nhiệt độ. Nó phi
+tuyến một cách trắng trợn, và đó chính là lý do người ta chọn nó:
+
+<NtcThermistor />
+
+## Bốn phẩy bốn phần trăm mỗi độ
+
+Con NTC 10 kΩ đang ở 25 °C: hâm thêm đúng một độ, điện trở tụt 444 Ω —
+**4,44%**. Pt100, cảm biến bạch kim chuẩn công nghiệp, mỗi độ đổi 0,385%
+giá trị danh định: NTC nhạy hơn **11,5 lần**. Thang chia bậc 10 ở panel
+trên nói điều đó bằng hình — đường Pt100 gần như nằm ngang suốt từ 0 tới
+150 °C (100 → 157 Ω), còn NTC lao từ 33,6 kΩ xuống 200 Ω.
+
+Đổi sang volt để thấy cái được: cắm NTC vào cầu phân áp 3,3 V với điện trở
+nối tiếp 10 kΩ, đầu ra dốc **36,7 mV mỗi độ** quanh 25 °C. Cặp nhiệt điện
+loại K cho 41 µV/K — kém gần **900 lần**. Nên NTC là cảm biến duy nhất
+trong nhóm cắm thẳng vào chân ADC của vi điều khiển, không cần một con
+op-amp nào, và cũng chẳng thèm để ý tới 0,134 Ω điện trở của hai mét dây
+dẫn — thứ buộc Pt100 phải đi ba sợi để bù.
+
+## Hằng số B trên nhãn là một rào năng lượng 0,34 eV
+
+Hạt gốm ấy là bán dẫn oxit mangan–niken. Electron dẫn trong nó không có
+sẵn mà phải được nhiệt kích qua một rào năng lượng Ea, và số hạt vượt rào
+tuân phân bố Boltzmann, tỉ lệ e^(−Ea/kT). Điện trở tỉ lệ nghịch với số hạt
+tải, nên nó rơi theo đúng hàm mũ ấy:
+
+```
+R(T) = R₂₅ · exp[B · (1/T − 1/298,15)]   với B = Ea/k, T tính bằng kelvin
+```
+
+Con số B = 3950 K in trên nhãn không phải hệ số kinh nghiệm vô nghĩa: nhân
+với hằng số Boltzmann 8,617·10⁻⁵ eV/K ra **Ea = 0,34 eV** — chiều cao thật
+của cái rào, cùng đơn vị với [vùng cấm mà một con LED biến thành
+màu](/vi/posts/mau-cua-led-va-hang-so-1240) (LED đỏ: 1,97 eV). Rào thấp
+hơn gần sáu lần, nên nhiệt độ phòng thừa sức chi phối nó.
+
+Đạo hàm ra độ nhạy tương đối `−B/T²`, và chữ T² ấy là một lời cảnh báo:
+**độ nhạy tự tụt khi trời nóng lên**. 5,29 %/K ở 0 °C, 4,44 ở 25 °C, chỉ
+còn 2,21 ở 150 °C — đầu nóng của dải đo nhạy bằng 42% đầu lạnh.
+
+## Chính độ nhạy ấy bóp chết dải đo
+
+33,6 kΩ ở 0 °C, 10 kΩ ở 25, 3,59 kΩ ở 50, **698 Ω ở 100 °C — 7% giá trị
+ban đầu**, 200 Ω ở 150. Suốt dải đo, điện trở đổi **168 lần**; Pt100 cùng
+quãng đổi 1,57 lần. Cái gì phải nén 168 lần vào một đường dây thì đầu nào
+đó phải chịu thiệt, và panel dưới cho thấy ai: cầu phân áp bão hoà. 0,757 V
+ở 0 °C, 1,650 V ở 25 °C, 3,085 V ở 100 °C, 3,235 V ở 150 °C — cả nửa trên
+của dải nhiệt độ chen nhau trong 150 mV cuối. Một ADC 12-bit trên 3,3 V có
+bước 0,806 mV: ở 25 °C mỗi bước là 0,022 °C, ở 150 °C mỗi bước đã là
+**0,58 °C**, tệ đi 26 lần dù vẫn con cảm biến đó. Tuyến tính còn hẹp hơn:
+trong cửa sổ ±15 °C quanh 25 °C, đường ra lệch khỏi tiếp tuyến tối đa
+0,65 °C — ra ngoài đó phải tra bảng.
+
+Nên NTC thống trị đúng những chỗ chỉ cần một khoảng hẹp: pin, tủ lạnh,
+nhiệt kế y tế 35–42 °C. Lò nướng thì dùng cặp nhiệt điện, còn nồi cơm hay
+bàn ủi chẳng cần đo gì cả — [một băng lưỡng kim cong lên là tách tiếp
+điểm](/vi/posts/bang-luong-kim-cong-de-ngat-dien).
+
+## Trường hợp biên: quá 13,4 vôn thì cảm biến tự nung chính nó
+
+Muốn đọc điện trở phải cho dòng chạy qua, mà dòng qua điện trở thì sinh
+nhiệt: cảm biến tự hâm chính nó. 1 mA qua 10 kΩ là P = I²R = 10 mW; đầu dò
+epoxy ngâm nước tĩnh tản được cỡ 10 mW mỗi độ, nên nó đọc **cao hơn sự
+thật 1 °C**; treo trong không khí lặng (δ ≈ 2 mW/K) thì sai **5 °C** —
+cảm biến đang đo cơn sốt của chính nó. Thuốc chữa: hạ xuống 0,1 mA, hoặc
+chỉ cấp điện vài mili giây mỗi lần đo.
+
+Đẩy tiếp thì công thức không chỉ sai — nó hết nghiệm. Cấp NTC bằng nguồn
+áp cố định: nóng lên → R giảm → P = V²/R tăng → nóng thêm. Vòng lặp dương
+ấy còn dừng được chừng nào nhiệt toả kịp, δ·ΔT = V²/R(T); điểm tới hạn là
+chỗ hai đường chạm nhau, và nó rút gọn đẹp đến bất ngờ: **cảm biến chỉ
+được phép tự nóng ΔT = T²/B**, không phụ thuộc δ, không phụ thuộc R₂₅. Với
+B = 3950 và phòng 25 °C, giải ra **26,7 °C tự nóng** là hết đường lùi —
+với δ = 2 mW/K, ngưỡng ấy rơi vào **13,41 V**. Thêm một phần trăm vôn nữa,
+phương trình cân bằng không còn nghiệm nào, con NTC chạy nhiệt tới khi
+cháy hoặc tới khi [một chỗ tiếp xúc nào đó nóng
+đỏ](/vi/posts/dien-tro-tiep-xuc-o-cam-long-gay-chay).
+
+Ngành điện tử không chữa hiện tượng ấy — họ bán nó. Cục **NTC hạn dòng
+khởi động** ngay sau phích cắm mọi bộ nguồn máy tính chính là con
+thermistor cố tình cho chạy nhiệt: lúc bật máy nó còn nguội, 10 Ω, chặn cú
+sốc nạp tụ; vài giây sau tự nung mình xuống còn nửa ôm và biến mất khỏi
+mạch. Cùng một đường cong, đọc xuôi là nhiệt kế, đọc ngược là cầu chì tự
+phục hồi — thứ duy nhất phân vai là bạn cấp cho nó bao nhiêu vôn.

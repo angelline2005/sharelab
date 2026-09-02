@@ -1,0 +1,98 @@
+---
+title: "Trên Sao Thuỷ, một ngày dài đúng bằng hai năm"
+seoTitle: "Ngày Mặt Trời và ngày sao: vì sao Sao Kim tự quay lâu hơn một năm"
+description: "Sao Thuỷ tự quay hết 58,646 ngày và đi hết quỹ đạo trong 87,969 ngày. Trừ hai nghịch đảo cho nhau ra 175,94 ngày — đúng 2,000 năm Sao Thuỷ cho một lần Mặt Trời mọc rồi mọc lại. Cũng phép trừ ấy giải thích vì sao ngôi sao của bạn mọc sớm hơn 3 phút 56 giây mỗi đêm."
+pubDate: 2026-09-02
+tags: ["vat-ly", "thien-van", "javascript"]
+translationId: "mot-ngay-tren-sao-thuy-dai-bang-hai-nam"
+---
+
+import SolarDay from '../../../components/demos/SolarDay.astro';
+
+Trên Sao Thuỷ, từ lúc Mặt Trời mọc tới lần mọc kế tiếp mất **175,94 ngày
+Trái Đất**. Một năm ở đó chỉ 87,97 ngày. Hành tinh trong cùng kịp đón hai
+lần sinh nhật trong một ngày — và không có lỗi đánh máy nào ở đây, chỉ có
+một phép trừ:
+
+<SolarDay />
+
+## Bốn phút mà cuốn lịch giấu bạn
+
+Chọn một ngôi sao, ghi giờ nó đi qua đúng đỉnh đầu, rồi ghi lại đêm hôm
+sau: khoảng cách là **23 giờ 56 phút 4,1 giây**, không phải 24 giờ. Đó là
+*ngày sao* — thời gian Trái Đất quay trọn một vòng thật trong không gian.
+Ngày 24 giờ của bạn dài hơn thế **3 phút 55,9 giây**, vì trong lúc quay,
+Trái Đất còn trôi được 0,986° trên quỹ đạo: phải quay bù chừng ấy nữa Mặt
+Trời mới trở lại đúng kinh tuyến cũ.
+
+Khoản bù ấy cộng dồn nhanh: ngôi sao bạn nhắm mọc sớm hơn gần **2 giờ mỗi
+tháng**, 12 giờ sau nửa năm. Đó là toàn bộ lý do bầu trời tháng Chạp
+không giống bầu trời tháng Sáu. Tính cả năm: Trái Đất quay đủ
+**366,2422 vòng** nhưng lịch chỉ đếm được 365,2422 ngày. Vòng thừa ra
+chính là vòng quỹ đạo.
+
+## Trừ hai nghịch đảo là ra
+
+```
+1/T_MặtTrời = | 1/T_tựquay − 1/T_quỹđạo |
+```
+
+Vế trái là tốc độ Mặt Trời trôi trên bầu trời, và nó là **hiệu của hai tốc
+độ góc**: tốc độ hành tinh tự quay, trừ tốc độ nó đi quanh sao.
+
+Sao Thuỷ tự quay hết **58,646 ngày** và đi hết quỹ đạo trong **87,969
+ngày** — đúng con số [định luật Kepler
+III](/vi/posts/dinh-luat-kepler-iii-va-duong-thang-cua-he-mat-troi) trả về
+từ bán trục lớn 57,9 triệu km. Trừ hai nghịch đảo: **175,94 ngày**, bằng
+chằn chặn 2,000 vòng quỹ đạo và 3,000 vòng tự quay. Sự tròn trịa ấy không
+phải trùng hợp — thuỷ triều của Mặt Trời đã kéo Sao Thuỷ vào **cộng hưởng
+3:2**, ba vòng tự quay gói gọn trong đúng hai năm.
+
+Hệ quả cảm được bằng da thịt: ban ngày ở đó kéo dài **87,97 ngày Trái
+Đất** — trọn một năm nắng, rồi trọn một năm đêm. Không có khí quyển san
+nhiệt sang nửa tối, mặt đất chạy từ **427 °C** xuống **−173 °C**: biên độ
+600 độ trong một ngày.
+
+## Sao Kim quay ngược, nên dấu trừ hoá dấu cộng
+
+Sao Kim tự quay **ngược chiều** mọi hành tinh còn lại, chu kỳ 243,025
+ngày — tức mang dấu âm trong công thức. Hai nghịch đảo thôi trừ nhau mà
+*cộng* vào nhau, và ngày Mặt Trời rút xuống **116,75 ngày**: ngắn hơn hẳn
+một vòng tự quay 243 ngày, gọn trong một năm 224,7 ngày tới **1,92 lần**.
+Mặt Trời ở đó mọc đằng tây — nếu xuyên nổi lớp mây axit sunfuric dày mấy
+chục kilômét để mà thấy. Kéo thanh trượt tự quay qua bên âm và nhìn thanh
+xanh trong demo: chỉ một dấu đổi, nó ngắn lại thay vì dài ra.
+
+## Trên Sao Thuỷ, Mặt Trời có lúc đi giật lùi
+
+Công thức trên giả định hành tinh đi đều trên quỹ đạo tròn. Sao Thuỷ thì
+không: độ lệch tâm 0,2056 kéo nó từ 69,8 triệu km ở viễn nhật xuống 46,0
+triệu km ở cận nhật, và [Kepler II bắt nó phóng nhanh hẳn lên tại
+đó](/vi/posts/sao-choi-halley-luc-phong-54-km-moi-giay-luc-bo-di-bo).
+Nhanh tới mức tốc độ góc quỹ đạo **vượt tốc độ tự quay 3,4%** — hiệu số
+đổi dấu, và Mặt Trời đứng khựng rồi **bò giật lùi** trên bầu trời suốt
+**8,1 ngày Trái Đất**, lùi chừng **1,1°** trước khi quay đầu đi tiếp.
+
+Nghe nhỏ, cho tới khi biết đĩa Mặt Trời nhìn từ Sao Thuỷ lúc cận nhật rộng
+**1,73°**, gấp 3,3 lần đĩa ta thấy từ Trái Đất: nó lùi gần hai phần ba
+đường kính của chính mình. Vậy nên 175,94 ngày là con số *trung bình* —
+demo trả đúng giá trị ấy, nhưng làm phẳng cú giật lùi giữa trưa.
+
+## Trường hợp biên: khi mẫu số về 0
+
+Kéo hai thanh trượt về **cùng một giá trị** — 100,000 và 100,000 chẳng
+hạn. Hiệu hai nghịch đảo về 0, ngày Mặt Trời dài **vô hạn**: đó là khoá
+triều, một nửa hành tinh nắng vĩnh viễn, nửa kia đêm vĩnh viễn. Đây không
+phải trạng thái hiếm mà là *đích đến*: ma sát triều luôn hãm vòng tự quay
+lại cho tới khi bằng vòng quỹ đạo — [ngày Trái Đất cũng đang dài thêm 1,8
+mili-giây mỗi thế kỷ](/vi/posts/mat-trang-lui-xa-va-nam-400-ngay) vì đúng
+cái phanh ấy. Sao Thuỷ dừng nửa đường ở 3:2 chỉ vì quỹ đạo quá lệch tâm,
+đủ để cộng hưởng ấy cũng bền.
+
+Nhưng "khoá triều" luôn phải hỏi lại: khoá vào *ai*? Mặt Trăng khoá vào
+Trái Đất, không phải vào Mặt Trời. Nên với nó, phép trừ vẫn chạy, chỉ là
+đổi bạn nhảy: 1/27,32 − 1/365,24, lật ngược lại là **29,53 ngày** — đúng
+một tuần trăng. Mặt Trăng vì thế không hề có nửa mặt nắng vĩnh viễn; nó có **14,8
+ngày nắng rồi 14,8 ngày đêm ở −170 °C**. Đó là lý do tuổi thọ một trạm đổ
+bộ Mặt Trăng được ghi bằng tuần chứ không bằng giờ: hết ngày là hết pin
+mặt trời, và cái lạnh đêm giết thiết bị trước khi Mặt Trời kịp mọc lại.

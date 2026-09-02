@@ -1,0 +1,176 @@
+---
+// Hohmann transfer between two circular coplanar orbits (Hohmann 1925).
+//   a_t = (r1+r2)/2 ;  t = pi*sqrt(a_t^3/GM_sun)
+//   phase angle at departure = 180 - 360*t/T2   (negative = target must trail)
+//   dv1 = v1*(sqrt(2*r2/(r1+r2)) - 1) ;  dv2 = v2*(1 - sqrt(2*r1/(r1+r2)))
+//   synodic period S = 1/|1/T1 - 1/T2|
+// GM_sun = 1.32712440018e20 m^3/s^2, AU = 1.495978707e11 m.
+// Valid for circular, coplanar orbits. Real planets have e (Mars 0.0934) and
+// inclination (Mars 1.85 deg), so real dv runs above these floors.
+---
+
+<figure class="demo" data-demo="quy-dao-hohmann-va-cua-so-sao-hoa">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Quỹ đạo đích (AU) <output data-out="r2"></output>
+      <input type="range" data-in="r2" min="0.3" max="5.5" step="0.0001" value="1.5237" /></label>
+    <label>Quỹ đạo xuất phát (AU) <output data-out="r1"></output>
+      <input type="range" data-in="r1" min="0.7" max="1.6" step="0.0001" value="1" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Nhìn hệ Mặt Trời từ trên xuống. Hai vòng tròn mảnh là quỹ đạo xuất phát và
+    quỹ đạo đích; đường xanh đậm là nửa ellipse Hohmann chạm cả hai. Chấm đặc
+    là vị trí hai hành tinh lúc phóng, chấm mờ là lúc tàu tới nơi, nét đứt đỏ
+    là quãng đường hành tinh đích đi trong thời gian đó. Cung ở tâm là góc pha
+    khởi hành — cả chuyến bay chỉ là hai lần đốt, còn lại là rơi tự do.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const AU = 1.495978707e11, GM = 1.32712440018e20, DAY = 86400, YEAR = 365.25;
+  const TRANS = '#2563eb', TARGET = '#dc2626', SUN = '#f59e0b';
+  const PLANETS: Array<[number, string]> = [
+    [0.3871, 'Sao Thuỷ'], [0.7233, 'Sao Kim'], [1.0, 'Trái Đất'],
+    [1.5237, 'Sao Hoả'], [2.7658, 'Ceres'], [5.2038, 'Sao Mộc'],
+  ];
+  const vi = (x: number, d: number) => x.toFixed(d).replace('.', ',');
+  const period = (r: number) => 2 * Math.PI * Math.sqrt(Math.pow(r * AU, 3) / GM);
+  const named = (r: number) => {
+    const hit = PLANETS.find(([rp]) => Math.abs(rp - r) < 0.0006);
+    return hit ? ` (${hit[1]})` : '';
+  };
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (k: string) => root.querySelector(`[data-in="${k}"]`) as HTMLInputElement;
+    const output = (k: string) => root.querySelector(`[data-out="${k}"]`) as HTMLOutputElement;
+
+    function draw() {
+      const r1 = Number(input('r1').value), r2 = Number(input('r2').value);
+      output('r1').textContent = vi(r1, 3) + named(r1);
+      output('r2').textContent = vi(r2, 3) + named(r2);
+
+      const at = (r1 + r2) / 2;
+      const tSec = Math.PI * Math.sqrt(Math.pow(at * AU, 3) / GM);
+      const tDay = tSec / DAY;
+      const T1 = period(r1), T2 = period(r2);
+      const phase = 180 - (360 * tSec) / T2;
+      const v1 = Math.sqrt(GM / (r1 * AU)), v2 = Math.sqrt(GM / (r2 * AU));
+      const dv1 = v1 * (Math.sqrt((2 * r2) / (r1 + r2)) - 1);
+      const dv2 = v2 * (1 - Math.sqrt((2 * r1) / (r1 + r2)));
+      const dvTot = (Math.abs(dv1) + Math.abs(dv2)) / 1000;
+      const inv = Math.abs(1 / T1 - 1 / T2);
+      const synDay = inv > 1e-12 ? 1 / inv / DAY : Infinity;
+      const ecc = Math.abs(r2 - r1) / (r2 + r1);
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.62);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+      ctx.font = '10px system-ui,sans-serif';
+
+      const cx = cssW / 2, cy = cssH / 2;
+      const rMax = Math.max(r1, r2);
+      const s = (Math.min(cssW, cssH) / 2 - 22) / (rMax * 1.06);
+      const PX = (r: number, th: number) => [cx + s * r * Math.cos(th), cy - s * r * Math.sin(th)];
+      const D = Math.PI / 180;
+
+      // Polar grid: circles at whole AU, labelled straight below the Sun.
+      ctx.strokeStyle = fg; ctx.fillStyle = fg; ctx.setLineDash([2, 4]);
+      for (let k = 1; k <= Math.floor(rMax * 1.06); k++) {
+        ctx.globalAlpha = 0.18;
+        ctx.beginPath(); ctx.arc(cx, cy, s * k, 0, Math.PI * 2); ctx.stroke();
+        ctx.globalAlpha = 0.5; ctx.textAlign = 'left';
+        ctx.fillText(`${k} AU`, cx + 3, cy + s * k - 3);
+      }
+      ctx.setLineDash([]);
+
+      // The two circular orbits.
+      ctx.globalAlpha = 0.45; ctx.strokeStyle = fg;
+      for (const r of [r1, r2]) { ctx.beginPath(); ctx.arc(cx, cy, s * r, 0, Math.PI * 2); ctx.stroke(); }
+
+      // Arc swept by the target planet while the probe coasts.
+      ctx.strokeStyle = TARGET; ctx.globalAlpha = 0.55; ctx.lineWidth = 2;
+      ctx.setLineDash([5, 4]);
+      ctx.beginPath(); ctx.arc(cx, cy, s * r2, -phase * D, -Math.PI, true); ctx.stroke();
+      ctx.setLineDash([]);
+
+      // Departure phase angle, drawn at the Sun.
+      const rArc = Math.min(s * Math.min(r1, r2) * 0.55, 46);
+      ctx.globalAlpha = 0.7; ctx.lineWidth = 1;
+      for (const th of [0, phase * D]) {
+        const [px, py] = PX(rMax * 1.0, th);
+        ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(px, py); ctx.stroke();
+      }
+      ctx.beginPath(); ctx.arc(cx, cy, rArc, 0, -phase * D, phase > 0); ctx.stroke();
+      ctx.fillStyle = TARGET; ctx.globalAlpha = 1; ctx.textAlign = 'center';
+      const [lx, ly] = PX((rArc + 13) / s, (phase / 2) * D);
+      ctx.fillText(`${vi(phase, 1)}°`, lx, ly + 3);
+
+      // The transfer half-ellipse: r = a(1-e²)/(1 + e·cosθ), θ from 0 to 180°.
+      const eS = (r2 - r1) / (r2 + r1);
+      ctx.strokeStyle = TRANS; ctx.lineWidth = 2.5; ctx.beginPath();
+      for (let i = 0; i <= 180; i++) {
+        const th = i * D, r = (at * (1 - eS * eS)) / (1 + eS * Math.cos(th));
+        const [px, py] = PX(r, th);
+        i ? ctx.lineTo(px, py) : ctx.moveTo(px, py);
+      }
+      ctx.stroke(); ctx.lineWidth = 1;
+
+      // Ghost positions at arrival.
+      const dot = (r: number, th: number, col: string, alpha: number, rad: number) => {
+        const [px, py] = PX(r, th);
+        ctx.globalAlpha = alpha; ctx.fillStyle = col;
+        ctx.beginPath(); ctx.arc(px, py, rad, 0, Math.PI * 2); ctx.fill();
+        ctx.globalAlpha = 1;
+        return [px, py];
+      };
+      dot(r1, (360 * tSec) / T1 * D, TRANS, 0.3, 5);
+      const [ax, ay] = dot(r2, Math.PI, TARGET, 0.35, 6);
+      ctx.fillStyle = fg; ctx.globalAlpha = 0.6; ctx.textAlign = 'center';
+      ctx.fillText('tới nơi', ax, ay - 11);
+
+      // Sun, then the two planets at launch.
+      dot(0, 0, SUN, 1, 6);
+      const [dx, dy] = dot(r1, 0, TRANS, 1, 5);
+      const [tx, ty] = dot(r2, phase * D, TARGET, 1, 6);
+      ctx.fillStyle = fg; ctx.globalAlpha = 0.8;
+      ctx.textAlign = 'left'; ctx.fillText('phóng', dx + 8, dy + 3);
+      ctx.textAlign = 'center'; ctx.fillText('đích lúc phóng', tx, ty - 11);
+      ctx.globalAlpha = 1;
+
+      const dir = phase >= 0
+        ? `hành tinh đích phải ở <b>trước ${vi(phase, 1)}°</b>`
+        : `hành tinh đích phải ở <b>sau ${vi(-phase, 1)}°</b> (chuyển tiếp vào trong, cả hai lần đốt đều ngược chiều bay)`;
+      const win = Number.isFinite(synDay)
+        ? `cửa sổ lặp mỗi <b>${vi(synDay / (YEAR / 12), 1)} tháng</b> (${Math.round(synDay).toLocaleString('vi-VN')} ngày)`
+        : 'cùng quỹ đạo — hình dạng này đúng mọi lúc, không có cửa sổ';
+      readout.innerHTML =
+        `Nửa ellipse a = <b>${vi(at, 3)} AU</b> (e = ${vi(ecc, 3)}) · bay <b>${vi(tDay, 0)} ngày</b> · ` +
+        `lúc phóng ${dir} · Δv = ${vi(Math.abs(dv1) / 1000, 2)} + ${vi(Math.abs(dv2) / 1000, 2)} = ` +
+        `<b>${vi(dvTot, 2)} km/s</b> · ${win}`;
+    }
+
+    root.querySelectorAll('input').forEach((el) => el.addEventListener('input', draw));
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="quy-dao-hohmann-va-cua-so-sao-hoa"]').forEach(setup);
+</script>

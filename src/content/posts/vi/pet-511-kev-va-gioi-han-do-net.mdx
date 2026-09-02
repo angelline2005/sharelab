@@ -1,0 +1,93 @@
+---
+title: "Máy PET: mỗi ca chụp là một liều phản vật chất, và một trần độ nét 2,7 mm"
+seoTitle: "Chụp PET hoạt động thế nào: photon 511 keV và giới hạn độ phân giải"
+description: "Positron trong thuốc PET đi lạc nửa milimét rồi gặp electron và biến mất, để lại hai photon 511 keV bay ngược nhau — nhưng lệch khỏi 180° chừng nửa độ. Với vòng máy 80 cm, riêng độ lệch ấy đã làm nhoè 1,76 mm: dù tinh thể nhỏ tới đâu, ảnh cũng không nét hơn 1,84 mm."
+pubDate: 2026-09-02
+tags: ["vat-ly", "hat-nhan", "luong-tu", "javascript"]
+translationId: "pet-511-kev-va-gioi-han-do-net"
+---
+
+import PetResolution from '../../../components/demos/PetResolution.astro';
+
+Trước ca chụp PET, y tá tiêm vào tĩnh mạch bạn một liều phản vật chất. Đó
+không phải cách nói cho kêu: thuốc FDG chứa flo-18, mỗi hạt nhân phóng ra
+một positron — hạt đối của electron — và sâu trong mô bạn, vật chất gặp
+phản vật chất rồi biến mất đúng nghĩa đen. Lạ là màn trình diễn ấy lại đụng
+trần ở vài milimét, và không hãng máy nào phá nổi:
+
+<PetResolution />
+
+## Vì sao luôn là 511 keV
+
+Positron chạm electron thì cả hai thôi tồn tại, để lại đúng phần năng lượng
+chúng vốn *là*: [E = mc²](/vi/posts/e-bang-mc-binh-phuong-mot-gram-gia-bao-nhieu)
+của một electron bằng 511 keV. Tổng động lượng trước đó gần bằng không nên
+sau đó cũng phải gần không: hai photon sinh ra bay ngược chiều nhau, mỗi cái
+mang **đúng 511 keV**. Con số ấy không do hãng máy chọn, không đổi theo đồng
+vị, không đổi theo bệnh nhân: nó là khối lượng electron viết dưới dạng năng
+lượng. Mọi máy PET trên thế giới vì thế đều rình đúng một vạch phổ.
+
+Liều 370 MBq FDG là khoảng **3,5 × 10¹² nguyên tử flo-18**, cân lên được
+0,1 nanogram. Gom hết phản vật chất một ca chụp lại được 3,1 femtogram; huỷ
+sạch chúng chỉ toả ra **0,56 joule**, bằng thả quả táo 100 g từ độ cao 57 cm.
+Chỗ gấp gáp không nằm ở năng lượng mà ở đồng hồ: flo-18 rụng nửa sau 110
+phút, nên thuốc phải nấu ngay cạnh bệnh viện —
+[không hạt nào biết tuổi của mình](/vi/posts/chu-ky-ban-ra-khong-hat-nao-biet-tuoi-minh),
+nhưng cả đám thì đúng giờ đến tàn nhẫn.
+
+## Positron chết cách chỗ nó sinh ra nửa milimét
+
+Máy không nhìn thấy thuốc. Nó nhìn thấy **chỗ positron chết** — và hai điểm
+ấy không trùng nhau. Positron rời hạt nhân với động năng tới 0,63 MeV, phải
+va chạm chán chê trong mô cho tới khi đủ chậm mới huỷ được, và quãng zíc-zắc
+đó làm nhoè ảnh **0,54 mm** với flo-18. Đổi thuốc là đổi luôn con số: rubidi-82
+dùng chụp tưới máu cơ tim bắn positron mạnh gấp hơn năm lần, nhoè **6,14 mm**.
+Cùng một cái máy, cùng một buổi sáng, hai độ nét khác hẳn nhau.
+
+## Nửa độ nhân với bán kính máy
+
+"Hai photon bay ngược chiều nhau" chỉ đúng nếu cặp electron–positron đứng yên
+tuyệt đối. Electron trong mô thì không: nó còn động lượng quỹ đạo cỡ 4,5 keV/c,
+và phần thừa ấy hất hai photon lệch khỏi 180° chừng **0,5°**.
+
+Nửa độ nghe như không đáng gì — cho tới lúc bạn nhớ máy làm việc bằng cách
+nào. Nó chỉ ghi nhận hai đầu dò cùng sáng một lúc rồi kẻ đường thẳng nối
+chúng, tin rằng ca huỷ nằm đâu đó trên đường ấy. Lệch nửa độ thì đường ấy
+trượt khỏi điểm huỷ thật một đoạn bằng bán kính máy nhân nửa góc lệch — hệ
+số quy ước 0,0022·D. Vòng 80 cm: **1,76 mm**. Đây là chỗ trái khoáy nhất của
+PET — **máy càng to, sai số hình học càng lớn**, trong khi ở mọi ngành quang
+học khác, to hơn đồng nghĩa với nét hơn.
+
+## Cộng bình phương, và luật hiệu suất giảm dần
+
+Ba nguồn nhoè ấy độc lập với nhau nên không cộng thẳng mà cộng theo bình phương:
+
+```
+R = √[ (d/2)² + (0,0022·D)² + r² ]
+```
+
+d là bề rộng tinh thể (một cặp đầu dò rộng d cho vùng mờ d/2 ở tâm máy), D là
+đường kính vòng tính bằng milimét, r là tầm bay positron. Máy toàn thân điển
+hình — D = 80 cm, tinh thể 4 mm, FDG — ra **2,72 mm**, trong đó tinh thể đóng
+54%, hình học 42%, positron 4%.
+
+Phần đau lòng cho kỹ sư bắt đầu từ đây. Mài tinh thể từ 4 mm xuống **1 mm**,
+khó và đắt gấp bội, chỉ kéo độ nhoè xuống **1,91 mm**. Và nếu có thứ tinh thể
+hoàn hảo rộng bằng không, ảnh vẫn nhoè **1,84 mm**. Đường ngang trong demo
+chính là bức tường đó: một trần độ nét không tiền nào mua qua được, hệt như
+[giới hạn nhiễu xạ không cho kính thiên văn nào thấy lá cờ trên Mặt
+Trăng](/vi/posts/vi-sao-khong-kinh-nao-thay-la-co-tren-mat-trang). Với
+rubidi-82 thì tinh thể tốt còn vô nghĩa hơn: 6,69 mm, và 84% khoản nhoè ấy
+nằm trong lọ thuốc chứ không nằm trong thiết bị.
+
+## Trường hợp biên: thu nhỏ vòng máy thì trần tụt theo
+
+Số hạng 0,0022·D là số hạng duy nhất gỡ được bằng cách làm máy *bé lại*. Máy
+PET cho chuột có vòng 25 cm: khoản nhoè hình học tụt từ 1,76 xuống **0,55 mm**,
+cùng tinh thể 4 mm ấy cho 2,14 mm, lắp tinh thể 1,5 mm thì xuống **1,08 mm**.
+Máy cho người thì không có cửa, vì vòng phải ôm vừa vai bệnh nhân và cái vai
+ấy không thu nhỏ được. Trần 2,7 mm của PET toàn thân là bài toán hình học chứ
+không phải bài toán công nghệ — nên ba mươi năm tiến bộ đầu dò đổ vào độ nhạy,
+tốc độ và liều xạ, còn độ nét thì gần như đứng yên. Riêng 511 keV thì đến hình
+học cũng không đụng tới được: muốn đổi con số ấy, bạn phải đổi khối lượng của
+electron.

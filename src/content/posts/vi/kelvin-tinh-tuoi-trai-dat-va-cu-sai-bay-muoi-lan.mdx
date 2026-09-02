@@ -1,0 +1,101 @@
+---
+title: "Kelvin tính Trái Đất 65 triệu năm tuổi — sai 70 lần, và cái sai nằm ở một chữ"
+seoTitle: "Tuổi Trái Đất theo Kelvin: bài toán nguội đi và vì sao nó sai 70 lần"
+description: "Đo được gradient 25 °C mỗi km, giả sử hành tinh khởi đầu ở 2 000 K rồi nguội bằng dẫn nhiệt thuần tuý, ta ra 64,6 triệu năm. Tuổi thật là 4,54 tỉ — hụt 70 lần, đủ để Kelvin công khai bác bỏ Darwin. Chỉ có điều lòng đất không dẫn nhiệt, nó đối lưu."
+pubDate: 2026-09-02
+tags: ["vat-ly", "nhiet-hoc", "hat-nhan", "javascript"]
+translationId: "kelvin-tinh-tuoi-trai-dat-va-cu-sai-bay-muoi-lan"
+---
+
+import KelvinCooling from '../../../components/demos/KelvinCooling.astro';
+
+Xuống hầm mỏ, cứ sâu thêm **40 mét thì đá nóng thêm 1 °C**. Con số tầm
+thường ấy là toàn bộ chứng cứ mà William Thomson — Lord Kelvin — cần để
+tuyên bố tuổi của hành tinh, và để bác bỏ Darwin:
+
+<KelvinCooling />
+
+## Sóng lạnh ngấm xuống theo căn bậc hai của thời gian
+
+Mô hình của Kelvin gọn đến mức khó cãi. Một quả cầu sinh ra nóng đều ở
+nhiệt độ T₀, mặt ngoài phơi vào không gian lạnh, nhiệt bên trong chỉ có
+một đường ra: dẫn qua đá — đúng cơ chế khiến [tay nắm cửa kim loại rút
+nhiệt khỏi da bạn](/vi/posts/vi-sao-kim-loai-so-vao-thay-lanh). Nghiệm là
+hàm sai số: T(z,t) = T₀·erf( z / (2√(κt)) ). Bề dày lớp đá đã nguội không
+tăng theo t mà theo **√t** — hối hả lúc đầu rồi chậm lại mãi mãi.
+
+Đạo hàm tại mặt đất cho thứ duy nhất đo được:
+
+```
+G = T₀ / √(π·κ·t)      →      t = (T₀/G)² / (π·κ)
+```
+
+Thay bộ số của thế kỷ 19 — đá nóng chảy T₀ = 2 000 K, κ = 10⁻⁶ m²/s,
+gradient 25 °C/km — phép chia ra **64,6 triệu năm**. Kelvin công bố dải
+20–400 triệu năm vào 1862, tới 1897 siết còn 20–40. Tuổi thật, đọc bằng
+đồng vị chì trên thiên thạch Canyon Diablo năm 1956: **4,54 tỉ năm**. Mô
+hình hụt **70 lần**.
+
+## Một con số đem dùng làm vũ khí
+
+Kelvin không tính cho vui. Darwin cần hàng trăm triệu năm cho chọn lọc tự
+nhiên; bản in đầu của *Nguồn gốc các loài* còn tự ước lượng rằng bào mòn
+vùng Weald mất 300 triệu năm — đoạn ấy bị gỡ khỏi các bản sau. Một hàm erf
+đủ để vật lý tuyên án cho cả địa chất lẫn sinh học.
+
+Tệ hơn: đo càng kỹ, án càng nặng. Tuổi tỉ lệ nghịch với **bình phương**
+gradient. Kéo thanh trượt lên 36,5 °C/km — con số từ các mỏ than Scotland
+mà Kelvin tin dùng — mô hình trả về **30,3 triệu năm**. Gấp đôi gradient là
+chia bốn tuổi. Ngược lại, muốn công thức nhả ra 4,5 tỉ năm thì hầm mỏ phải
+đọc được **2,98 °C/km**, một độ mỗi 335 mét, nhỏ hơn thực đo 8,4 lần.
+
+## Sai lầm không nằm ở con số nào cả
+
+Kiểm lại từng đầu vào thì lạ: κ đúng cỡ, T₀ đúng cỡ, gradient đo đúng, số
+học đúng. Cái sai nằm gọn trong một chữ của câu "nhiệt thoát ra bằng
+**dẫn nhiệt**".
+
+Manti không dẫn nhiệt là chính — nó chảy. Đưa nhiệt qua 2 890 km bề dày
+manti bằng dẫn nhiệt thuần cần L²/κ ≈ **265 tỉ năm**, gấp 19 lần tuổi vũ
+trụ. Đá manti bò với tốc độ mảng kiến tạo, cỡ 5 cm mỗi năm, đi hết quãng
+ấy trong **58 triệu năm** — nhanh hơn bốn nghìn lần. Và dòng đá nóng đi
+lên **nạp lại nhiệt cho đáy lớp vỏ liên tục**.
+
+Nên gradient 25 °C/km không phải chiếc đồng hồ đang chạy chậm dần: nó là
+một **trạng thái dừng**. Vỏ Trái Đất được hâm từ dưới gần đúng bằng mức nó
+thải lên trời, nên nó dốc mãi, "trẻ" mãi. Đọc tuổi hành tinh từ đó cũng vô
+nghĩa như đoán ấm nước đã đun bao lâu bằng cách sờ vỏ ấm khi bếp vẫn đang
+bật.
+
+Cái bếp ấy còn một vòi mà năm 1862 chưa ai biết:
+[phóng xạ](/vi/posts/chu-ky-ban-ra-khong-hat-nao-biet-tuoi-minh) của urani,
+thori và kali-40 rót chừng **20 TW** trong tổng 47 TW nhiệt Trái Đất thải
+ra hôm nay — gần nửa là do đá tự sinh, không phải di sản lúc chào đời.
+(Vẫn nhỏ hơn [dòng nắng rót
+xuống](/vi/posts/can-bang-nhiet-trai-dat-va-tam-chan-33-do) 3 700 lần: lòng
+đất chi phối địa chất, không chi phối thời tiết.) John Perry, trợ lý cũ của
+chính Kelvin, chỉ ra năm 1895 rằng một lòng đất chảy được cho phép tuổi
+2–3 tỉ năm. Ông không được nghe.
+
+## Trường hợp biên: cùng công thức ấy lại đúng dưới đáy biển
+
+Hàm erf của Kelvin không sai, nó chỉ sai địa chỉ — và có một nơi đúng đến
+mức đẹp: **thạch quyển đại dương**. Đá trào lên ở sống núi giữa đại dương
+rồi trôi ngang, nguội từ mặt xuống bằng dẫn nhiệt thật, "tuổi" của nó là
+khoảng cách chia cho tốc độ tách giãn. Lớp nguội dày theo √t, nặng thêm và
+lún xuống cũng theo √t:
+
+```
+độ sâu đáy biển (m) ≈ 2 500 + 350·√(tuổi tính bằng triệu năm)
+```
+
+Vỏ 4 triệu năm sâu 3 200 m; vỏ 80 triệu năm sâu 5 630 m. Để ý cái căn bậc
+hai: từ 0 lên 1 triệu năm đáy tụt 350 m, còn từ 80 lên 81 triệu năm chỉ
+tụt thêm **19,5 m**.
+
+Rồi đúng ở đó công thức gãy. Quá 80 triệu năm, đáy biển thôi sâu thêm và
+phẳng ra quanh 5,7–6 km, dù √t bảo nó phải tụt mãi. Thủ phạm vẫn là thứ đã
+hạ bệ Kelvin, lần này ở quy mô nhỏ: mảng già nguội đến mức nặng hơn manti
+bên dưới, đối lưu cỡ nhỏ khởi động và liếm nhiệt vào từ đáy. Ở đâu đối lưu
+chạm tới, đồng hồ dẫn nhiệt ngừng chạy — dưới Thái Bình Dương cũng như
+dưới chân bạn.

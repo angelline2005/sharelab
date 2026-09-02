@@ -1,0 +1,181 @@
+---
+// Solar day vs sidereal rotation:  1/T_matroi = |1/T_sao − 1/T_quydao|
+// (classical result, e.g. Seidelmann, Explanatory Supplement to the
+// Astronomical Almanac, §"rotation of the planets"). Signed rotation period:
+// negative = retrograde, so the two reciprocals add instead of subtract.
+// Exact only for a circular orbit, constant spin rate and zero obliquity;
+// with e ≠ 0 it gives the AVERAGE solar day (Mercury's real Sun stalls near
+// perihelion). Rotation slider guarded away from 0 (|T| ≥ 0,05 ngày).
+---
+
+<figure class="demo" data-demo="mot-ngay-tren-sao-thuy-dai-bang-hai-nam">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Chu kỳ tự quay (ngày, âm = nghịch hành) <output data-out="r"></output>
+      <input type="range" data-in="r" min="-300" max="300" step="0.001" value="58.646" /></label>
+    <label>Chu kỳ quỹ đạo (ngày) <output data-out="o"></output>
+      <input type="range" data-in="o" min="50" max="700" step="0.001" value="87.969" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Bốn vị trí liên tiếp trên quỹ đạo: mũi tên đỏ là một cột mốc cắm trên bề
+    mặt hành tinh, đường đứt nét là hướng tới ngôi sao. Ở vị trí đầu, mốc chỉ
+    đúng vào sao — giữa trưa. Sau đó hành tinh vừa tự quay vừa đi trên quỹ đạo,
+    nên mốc luôn lệch khỏi sao một góc bù, và phải quay thêm đúng chừng ấy mới
+    tới trưa hôm sau. Ba thanh bên phải so độ dài vòng tự quay, vòng quỹ đạo và
+    ngày Mặt Trời tính ra từ hai cái kia.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const SOLAR = '#2563eb', MARK = '#dc2626', STAR = '#f59e0b';
+  const vn = (x: number, d: number) => x.toFixed(d).replace('.', ',');
+  const TICKS = [1, 2, 5, 10, 20, 25, 50, 100, 200, 250, 500, 1000, 2000, 5000];
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (k: string) => root.querySelector(`[data-in="${k}"]`) as HTMLInputElement;
+    const output = (k: string) => root.querySelector(`[data-out="${k}"]`) as HTMLOutputElement;
+
+    function draw() {
+      let Tr = Number(input('r').value);
+      const To = Number(input('o').value);
+      if (Math.abs(Tr) < 0.05) Tr = Tr < 0 ? -0.05 : 0.05;
+      output('r').textContent = vn(Tr, 3);
+      output('o').textContent = vn(To, 3);
+
+      const inv = 1 / Tr - 1 / To;
+      const locked = Math.abs(inv) < 1e-9;
+      const Ts = locked ? Infinity : 1 / Math.abs(inv);
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.5);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+      ctx.font = '10px system-ui,sans-serif';
+
+      // ---- left panel: orbit with four marked positions ----
+      const LW = Math.min(cssH * 1.02, cssW * 0.46);
+      const cx = LW / 2, cy = cssH / 2, R = Math.min(LW, cssH) * 0.32;
+
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.25;
+      ctx.beginPath(); ctx.arc(cx, cy, R, 0, Math.PI * 2); ctx.stroke();
+      ctx.globalAlpha = 1;
+      ctx.fillStyle = STAR;
+      ctx.beginPath(); ctx.arc(cx, cy, 7, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = fg; ctx.globalAlpha = 0.6; ctx.textAlign = 'center';
+      ctx.fillText('sao', cx, cy + 20);
+      ctx.globalAlpha = 1;
+
+      for (let k = 0; k < 4; k++) {
+        const t = (k * To) / 4;
+        const th = (k * Math.PI) / 2;                      // orbital phase
+        const px = cx + R * Math.cos(th), py = cy - R * Math.sin(th);
+        const toStar = th + Math.PI;                       // inertial angle planet→star
+        const mark = toStar + 2 * Math.PI * (t / Tr);      // surface marker angle
+
+        ctx.strokeStyle = fg; ctx.globalAlpha = 0.35; ctx.setLineDash([3, 3]);
+        ctx.beginPath(); ctx.moveTo(px, py); ctx.lineTo(cx, cy); ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.globalAlpha = 0.55;
+        ctx.beginPath(); ctx.arc(px, py, 10, 0, Math.PI * 2); ctx.stroke();
+        ctx.globalAlpha = 1;
+
+        const ax = px + 19 * Math.cos(mark), ay = py - 19 * Math.sin(mark);
+        ctx.strokeStyle = MARK; ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.moveTo(px, py); ctx.lineTo(ax, ay); ctx.stroke();
+        ctx.fillStyle = MARK;
+        ctx.beginPath(); ctx.arc(ax, ay, 2.6, 0, Math.PI * 2); ctx.fill();
+        ctx.lineWidth = 1;
+
+        let lag = 360 * t * (1 / Tr - 1 / To);
+        lag = ((lag % 360) + 540) % 360 - 180;
+        const lx = cx + (R + 34) * Math.cos(th), ly = cy - (R + 34) * Math.sin(th);
+        ctx.fillStyle = fg; ctx.globalAlpha = 0.75;
+        ctx.textAlign = 'center';
+        ctx.fillText(k === 0 ? 'trưa' : `lệch ${vn(Math.abs(lag), 0)}°`, lx, ly + 3);
+        ctx.globalAlpha = 1;
+      }
+
+      // ---- right panel: three lengths on a labelled day axis ----
+      const PX = LW + 10, x0 = PX + 74, x1 = cssW - 14;
+      const big = Math.max(Math.abs(Tr), To);
+      const shown = Number.isFinite(Ts) ? Math.min(Ts, 4 * big) : 4 * big;
+      const axMax = Math.max(big * 1.15, shown * 1.08);
+      const step = TICKS.find((s) => axMax / s <= 5) ?? 10000;
+      const X = (d: number) => x0 + (Math.min(d, axMax) / axMax) * (x1 - x0);
+
+      const rows: Array<[string, number, string]> = [
+        ['tự quay', Math.abs(Tr), STAR],
+        ['quỹ đạo', To, fg],
+        ['ngày Mặt Trời', Number.isFinite(Ts) ? Ts : Infinity, SOLAR],
+      ];
+      const yTop = cssH * 0.24, bh = 15, gap = 26;
+
+      rows.forEach(([lab, val, col], i) => {
+        const y = yTop + i * gap;
+        ctx.fillStyle = fg; ctx.globalAlpha = 0.7; ctx.textAlign = 'right';
+        ctx.fillText(lab, x0 - 6, y + bh - 4);
+        ctx.globalAlpha = col === fg ? 0.35 : 1;
+        ctx.fillStyle = col;
+        ctx.fillRect(x0, y, Math.max(1, X(val) - x0), bh);
+        ctx.globalAlpha = 1;
+        if (!Number.isFinite(val) || val > axMax) {
+          ctx.fillStyle = col; ctx.textAlign = 'left';
+          ctx.fillText('▸', x1 + 1, y + bh - 3);
+        }
+      });
+
+      const yAx = yTop + 3 * gap;
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.3;
+      ctx.beginPath(); ctx.moveTo(x0, yAx); ctx.lineTo(x1, yAx); ctx.stroke();
+      ctx.globalAlpha = 0.55; ctx.fillStyle = fg; ctx.textAlign = 'center';
+      for (let d = 0; d <= axMax; d += step) {
+        ctx.globalAlpha = 0.3;
+        ctx.beginPath(); ctx.moveTo(X(d), yAx); ctx.lineTo(X(d), yAx + 4); ctx.stroke();
+        ctx.globalAlpha = 0.55;
+        ctx.fillText(String(d), X(d), yAx + 15);
+      }
+      ctx.fillText('ngày Trái Đất', (x0 + x1) / 2, yAx + 29);
+      ctx.globalAlpha = 1;
+
+      // ---- readout ----
+      const dir = Tr < 0 ? 'nghịch hành' : 'thuận hành';
+      if (locked) {
+        readout.innerHTML =
+          `Tự quay ${vn(Math.abs(Tr), 3)} ngày = quỹ đạo ${vn(To, 3)} ngày → ngày Mặt Trời <b>vô hạn</b>` +
+          ` · <b>khoá triều: một nửa hành tinh nắng vĩnh viễn, nửa kia đêm vĩnh viễn</b>`;
+      } else {
+        const perYear = To / Ts;
+        const note = Tr < 0
+          ? ' · <b>quay ngược nên hai nghịch đảo cộng nhau: ngày Mặt Trời ngắn hơn cả vòng tự quay</b>'
+          : Ts > 10 * To ? ' · <b>gần khoá triều</b>' : '';
+        readout.innerHTML =
+          `Tự quay <b>${vn(Math.abs(Tr), 3)} ngày</b> (${dir}) · quỹ đạo <b>${vn(To, 3)} ngày</b>` +
+          ` → ngày Mặt Trời <b>${vn(Ts, 2)} ngày</b> = ${vn(Ts / To, 3)} năm hành tinh` +
+          ` · mỗi năm có ${vn(perYear, 2)} lần Mặt Trời mọc${note}`;
+      }
+    }
+
+    root.querySelectorAll('input').forEach((el) => el.addEventListener('input', draw));
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="mot-ngay-tren-sao-thuy-dai-bang-hai-nam"]').forEach(setup);
+</script>

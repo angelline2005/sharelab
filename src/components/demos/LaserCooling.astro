@@ -1,0 +1,178 @@
+---
+// Doppler slowing of a two-level atom by a counter-propagating resonant beam.
+//   v_rec = h/(mλ)        (recoil velocity per absorbed photon)
+//   R = (Γ/2)·s/(1+s)     (scattering rate on resonance, s = I/I_sat)
+//   a = v_rec·R           (deceleration), L = v₀²/2a, N = v₀/v_rec
+// Constants: NIST atomic-data D2 lines (Li-7 670,977 nm / Γ = 2π·5,872 MHz;
+// Na-23 589,158 nm / 2π·9,795 MHz; Rb-87 780,241 nm / 2π·6,067 MHz;
+// Cs-133 852,347 nm / 2π·5,223 MHz).
+// Valid only while the laser is held on resonance (Zeeman/chirp slower).
+// A free-running fixed-frequency beam falls out of resonance after Δv ≈ Γλ/4π.
+---
+
+<figure class="demo" data-demo="phanh-nguyen-tu-bang-anh-sang-92-nghin-g">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Vận tốc vào v₀ (m/s) <output data-out="v"></output>
+      <input type="range" data-in="v" min="50" max="1000" step="10" value="570" /></label>
+    <label>Cường độ laser s = I/I_bh <output data-out="s"></output>
+      <input type="range" data-in="s" min="0.1" max="10" step="0.1" value="10" /></label>
+    <label>Nguyên tử <output data-out="a"></output>
+      <input type="range" data-in="a" min="0" max="3" step="1" value="1" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Nguyên tử bay từ trái sang, chùm laser cộng hưởng rọi ngược lại. Đường
+    xanh là vận tốc còn lại sau mỗi centimét đường bay; đường cam đứt nét là
+    trường hợp laser mạnh vô hạn — quãng dừng ngắn nhất mà ánh sáng cho phép.
+    Trục phải đọc cùng một đường cong bằng đơn vị khác: số photon đã hấp thụ.
+    Vì thế tổng photon không hề đổi khi bạn kéo thanh cường độ — chỉ có chiều
+    dài buồng đổi.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const CURVE = '#2563eb', MARK = '#dc2626', IDEAL = '#f59e0b';
+  const H = 6.62607015e-34, U = 1.66053906660e-27, G0 = 9.80665;
+
+  type Sp = { name: string; m: number; lam: number; gam: number };
+  const SPECIES: Sp[] = [
+    { name: 'Li-7', m: 7.0160034 * U, lam: 670.977e-9, gam: 2 * Math.PI * 5.872e6 },
+    { name: 'Na-23', m: 22.9897693 * U, lam: 589.158e-9, gam: 2 * Math.PI * 9.7946e6 },
+    { name: 'Rb-87', m: 86.9091805 * U, lam: 780.241e-9, gam: 2 * Math.PI * 6.0666e6 },
+    { name: 'Cs-133', m: 132.905452 * U, lam: 852.347e-9, gam: 2 * Math.PI * 5.2227e6 },
+  ];
+
+  const SUP = ['⁰', '¹', '²', '³', '⁴', '⁵', '⁶', '⁷', '⁸', '⁹'];
+  const vn = (x: number, d: number) => x.toFixed(d).replace('.', ',');
+  const grp = (x: number) => Math.round(x).toLocaleString('vi-VN');
+  const sci = (x: number) => {
+    const e = Math.floor(Math.log10(x));
+    return `${vn(x / Math.pow(10, e), 2)}×10${String(e).split('').map((c) => SUP[+c]).join('')}`;
+  };
+  const len = (x: number) =>
+    x < 0.01 ? `${vn(x * 1000, 1)} mm` : x < 1 ? `${vn(x * 100, 1)} cm` : `${vn(x, 2)} m`;
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (k: string) => root.querySelector(`[data-in="${k}"]`) as HTMLInputElement;
+    const output = (k: string) => root.querySelector(`[data-out="${k}"]`) as HTMLOutputElement;
+
+    function draw() {
+      const v0 = Number(input('v').value);
+      const s = Number(input('s').value);
+      const sp = SPECIES[Number(input('a').value)];
+
+      const vrec = H / (sp.m * sp.lam);
+      const aMax = vrec * sp.gam / 2;
+      const a = aMax * s / (1 + s);
+      const L = (v0 * v0) / (2 * a);
+      const Lmin = (v0 * v0) / (2 * aMax);
+      const N = v0 / vrec;
+      const tms = (v0 / a) * 1000;
+
+      output('v').textContent = grp(v0);
+      output('s').textContent = vn(s, 1);
+      output('a').textContent = sp.name;
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.46);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+
+      const padL = 46, padR = 58, padT = 20, padB = 28;
+      const X = (x: number) => padL + (x / L) * (cssW - padL - padR);
+      const Y = (v: number) => padT + ((v0 - v) / v0) * (cssH - padB - padT);
+
+      ctx.font = '10px system-ui,sans-serif';
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.3;
+      ctx.beginPath();
+      ctx.moveTo(padL, padT); ctx.lineTo(padL, cssH - padB); ctx.lineTo(cssW - padR, cssH - padB);
+      ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(cssW - padR, padT); ctx.lineTo(cssW - padR, cssH - padB); ctx.stroke();
+
+      ctx.globalAlpha = 0.55; ctx.fillStyle = fg;
+      ctx.textAlign = 'center';
+      for (let i = 0; i <= 4; i++) ctx.fillText(len((L * i) / 4), X((L * i) / 4), cssH - padB + 14);
+      ctx.textAlign = 'right';
+      for (let i = 0; i <= 4; i++) {
+        const v = (v0 * i) / 4;
+        ctx.fillText(`${grp(v)}`, padL - 4, Y(v) + 3);
+      }
+      ctx.textAlign = 'left';
+      for (let i = 0; i <= 4; i++) {
+        const n = (N * i) / 4;
+        ctx.fillText(grp(n), cssW - padR + 5, Y(v0 - (v0 * i) / 4) + 3);
+      }
+      ctx.textAlign = 'left';
+      ctx.fillText('v (m/s)', padL - 40, padT - 8);
+      ctx.textAlign = 'right';
+      ctx.fillText('photon', cssW - 2, padT - 8);
+      ctx.globalAlpha = 1;
+
+      // 1 m reference: the scale of a real Zeeman slower.
+      if (L > 0.4 && L < 60) {
+        ctx.strokeStyle = fg; ctx.globalAlpha = 0.35;
+        ctx.setLineDash([3, 3]);
+        ctx.beginPath(); ctx.moveTo(X(1), padT); ctx.lineTo(X(1), cssH - padB); ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.fillStyle = fg; ctx.globalAlpha = 0.6; ctx.textAlign = 'left';
+        ctx.fillText('1 m', X(1) + 4, padT + 10);
+        ctx.globalAlpha = 1;
+      }
+
+      // Ideal profile at full saturation (s → ∞): the shortest chamber possible.
+      ctx.strokeStyle = IDEAL; ctx.lineWidth = 2; ctx.setLineDash([5, 4]);
+      ctx.beginPath();
+      for (let i = 0; i <= 200; i++) {
+        const x = (Lmin * i) / 200;
+        const v = Math.sqrt(Math.max(0, v0 * v0 - 2 * aMax * x));
+        i ? ctx.lineTo(X(x), Y(v)) : ctx.moveTo(X(x), Y(v));
+      }
+      ctx.stroke(); ctx.setLineDash([]);
+
+      // Actual profile at this laser intensity.
+      ctx.strokeStyle = CURVE;
+      ctx.beginPath();
+      for (let i = 0; i <= 200; i++) {
+        const x = (L * i) / 200;
+        const v = Math.sqrt(Math.max(0, v0 * v0 - 2 * a * x));
+        i ? ctx.lineTo(X(x), Y(v)) : ctx.moveTo(X(x), Y(v));
+      }
+      ctx.stroke(); ctx.lineWidth = 1;
+
+      ctx.fillStyle = MARK;
+      ctx.beginPath(); ctx.arc(X(L), Y(0), 6, 0, Math.PI * 2); ctx.fill();
+
+      const flag = L > 1
+        ? ' · <b>buồng dài hơn 1 m — vượt quy mô bàn thí nghiệm</b>'
+        : '';
+      readout.innerHTML =
+        `${sp.name} · v₀ = ${grp(v0)} m/s · s = ${vn(s, 1)} → gia tốc hãm ` +
+        `<b>${sci(a)} m/s² = ${grp(a / G0)} g</b> (trần bão hoà ${grp(aMax / G0)} g). ` +
+        `Dừng sau <b>${len(L)}</b> và ${vn(tms, 2)} ms, hết <b>${grp(N)} photon</b> ` +
+        `— mỗi photon lấy ${vn(vrec * 100, 2)} cm/s${flag}`;
+    }
+
+    root.querySelectorAll('input').forEach((el) => el.addEventListener('input', draw));
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="phanh-nguyen-tu-bang-anh-sang-92-nghin-g"]').forEach(setup);
+</script>

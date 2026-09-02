@@ -1,0 +1,94 @@
+---
+title: "Thả miếng thịt 200 g: mặt chảo nhôm tụt 126 °C, món áp chảo thành món luộc"
+seoTitle: "Chảo gang hay chảo nhôm: nhiệt dung của chảo quyết định miếng thịt"
+description: "Miếng thịt 200 g từ 5 °C lên 70 °C rút của chảo 45,5 kJ. Chảo nhôm 400 g chỉ có 360 J/K nên tụt 126 °C, xuống dưới cả điểm sôi; chảo gang 2 kg có 920 J/K, chỉ tụt 49 °C và vẫn còn 150 °C — toàn bộ khác biệt giữa cháy cạnh và ra nước nằm ở phép chia ấy."
+pubDate: 2026-09-02
+tags: ["vat-ly", "nhiet-hoc", "javascript"]
+translationId: "chao-mong-tut-126-do-khi-tha-mieng-thit"
+---
+
+import PanThermalMass from '../../../components/demos/PanThermalMass.astro';
+
+Bạn để chảo nóng già, thả miếng thịt vừa lấy từ tủ lạnh vào. Tiếng xèo
+kêu được đúng hai giây rồi tắt ngóm, và trong chảo là một vũng nước. Lửa
+vẫn để lớn, chảo vẫn là chảo tốt — thứ vừa đổi là một con số bạn không
+nhìn thấy:
+
+<PanThermalMass />
+
+## Miếng thịt rút 45,5 kJ, và chảo phải trả bằng tiền mặt
+
+Thịt nạc khoảng 72% là nước, nên nhiệt dung riêng của nó tới **3 500
+J/(kg·K)** — gần bằng nước, cao hơn mọi kim loại làm chảo. Đưa 200 g thịt
+từ 5 °C lên 70 °C tốn:
+
+```
+Q = 0,200 × 3 500 × (70 − 5) = 45 500 J = 45,5 kJ
+```
+
+Khoản ấy phải rút từ đâu đó, và trong vài giây đầu tiên nó chỉ có một
+nguồn duy nhất: kim loại dưới đáy chảo. Tài khoản của chảo là **nhiệt
+dung** C = m·c, đơn vị J/K — bao nhiêu joule để hâm nó lên một độ. Chảo
+nhôm 400 g: 0,4 × 900 = **360 J/K**. Chảo gang 2 kg: 2 × 460 = **920 J/K**.
+Chia ra là xong:
+
+```
+ΔT = 45 500 / 360 = 126 °C   (nhôm)
+ΔT = 45 500 / 920 =  49 °C   (gang)
+```
+
+Đặt sẵn chảo ở 200 °C thì chảo nhôm rơi xuống **74 °C**, chảo gang còn
+**150 °C**. Trớ trêu là nhôm giữ nhiệt giỏi hơn gang trên mỗi kilôgam
+(900 so với 460 J/kg·K) mà vẫn thua đậm: chảo gang mang gấp năm lần khối
+lượng ra bàn đàm phán, và trong một tích số, thừa số lớn hơn thắng.
+
+## 140 độ là lằn ranh giữa cháy cạnh và ra nước
+
+Phản ứng Maillard — thứ tạo vỏ nâu và mùi thơm — chỉ chạy đủ nhanh từ
+khoảng **140 °C**. Chảo gang ở 150 °C chưa bao giờ rời vùng đó. Chảo nhôm
+ở 74 °C thì rơi qua luôn mốc thứ hai, **100 °C**: nước thịt tiết ra không
+bay hơi được nữa, và miếng thịt của bạn giờ đang luộc trong chính nước
+của nó.
+
+Kéo thanh trượt khối lượng chảo và bạn gặp ngưỡng: để miếng 200 g không
+đẩy mặt chảo xuống dưới 140 °C, chảo nhôm phải nặng **0,85 kg** — chảo
+chống dính phổ thông có 400 g, thiếu một nửa. Nói ngược lại, chiếc chảo
+ấy chỉ gánh nổi **95 g** thức ăn lạnh mỗi lần, còn chảo gang 2 kg gánh
+được **240 g**.
+
+## Bếp mạnh không cứu được cú tụt, nó chỉ rút ngắn cái đuôi
+
+Đây là chỗ trực giác sai. Bếp 2 000 W phải hoàn đúng 45 500 J để chảo về
+200 °C, tức **23 giây** — *giống hệt nhau cho cả hai chảo*, và trong demo
+hai đường gặp lại nhau ở đúng một thời điểm. Công suất quyết định **độ
+dài** cú sụt, khối lượng quyết định **độ sâu**; nấu ăn thì chỉ độ sâu có
+ý nghĩa. Chảo nhôm nằm dưới ngưỡng Maillard suốt **12 giây** đầu — đúng
+quãng đáng lẽ dành cho lớp vỏ — còn chảo gang không xuống dưới ngưỡng lấy
+một giây. Đổi sang bếp [lửa 1 950
+°C](/vi/posts/nhiet-do-ngon-lua-bep-gas-1950-do) cũng không sửa nổi cú
+rơi thẳng đứng ở giây số không.
+
+Một dòng chữ nhỏ: phép chia trên giả thiết cả khối chảo cùng góp nhiệt.
+Trong 23 giây, nhiệt thật ra chỉ lan ngang được 4,7 cm trong nhôm và
+1,9 cm trong gang — nhôm [dẫn nhiệt nhanh
+hơn](/vi/posts/vi-sao-kim-loai-so-vao-thay-lanh) nên huy động vành rộng
+hơn và gỡ lại một phần. Nhưng lợi thế của gang nằm theo chiều đứng: 5
+milimét kim loại ngay dưới miếng thịt.
+
+## Trường hợp biên: 20 gam nước bay hơi tốn bằng cả miếng thịt
+
+Toàn bộ phép tính trên mới chỉ *hâm nóng* thức ăn. [Nhiệt hoá
+hơi](/vi/posts/nhiet-an-hai-quang-nhiet-ke-dung-im) của nước là 2 260
+kJ/kg, nên chỉ **20,1 g nước bốc hơi** đã ngốn đúng 45,5 kJ — bằng cả
+miếng thịt 200 g. Bếp 2 000 W bay hơi nổi 0,885 g mỗi giây, tức 20 g mất
+trọn 23 giây hết công suất. Đó là cái bẫy tự khoá: mặt chảo tụt dưới
+100 °C, nước tiết ra đọng thành vũng, và vũng nước ghim chảo ở đúng
+100 °C cho tới lúc cạn. Cho thịt vào từng mẻ nhỏ không phải phép lịch sự
+với cái chảo — đó là điều kiện để nó còn đường về.
+
+Và quán tính lớn cắt cả hai chiều. Chảo gang ở 150 °C còn giữ 920 × 50 =
+**46 kJ** trên mức điểm sôi — gần đúng khoản vừa tiêu cho miếng thịt đầu
+tiên. Tắt bếp không phải là tắt nhiệt: chiếc chảo vừa cứu món áp chảo của
+bạn thừa vốn nấu chín thêm một miếng nữa sau khi lửa đã tắt. Món cháy khi
+bếp đã nguội là đặc sản riêng của gang, và cách chữa là nhấc thịt ra khỏi
+chảo, không phải nhấc chảo ra khỏi bếp.

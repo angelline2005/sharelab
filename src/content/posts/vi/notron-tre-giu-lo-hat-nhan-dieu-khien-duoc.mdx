@@ -1,0 +1,92 @@
+---
+title: "0,65% số neutron đến muộn — và đó là toàn bộ lý do lò hạt nhân điều khiển được"
+seoTitle: "Neutron trễ và chu kỳ lò phản ứng: vì sao lò hạt nhân không bùng nổ"
+description: "Trong 1000 neutron sinh ra từ phân hạch U-235 có 6,5 hạt đến muộn vài giây thay vì tức thì. Chỉ 0,65% ấy kéo thời gian nhân đôi công suất từ 0,069 giây lên 49,8 giây — đủ chậm để bàn tay người kịp phản ứng. Vượt qua vạch đó là 'tới hạn tức thời'."
+pubDate: 2026-09-02
+tags: ["vat-ly", "hat-nhan", "javascript"]
+translationId: "notron-tre-giu-lo-hat-nhan-dieu-khien-duoc"
+---
+
+import ReactorPeriod from '../../../components/demos/ReactorPeriod.astro';
+
+Trong lõi lò phản ứng, mỗi thế hệ neutron sinh ra, bay đi và gây phân hạch
+mới trong khoảng **một phần mười nghìn giây**. Giữa hai nhịp tim của bạn, lò
+đi qua mười nghìn thế hệ. Vậy mà người vận hành lái nó bằng tay, và kịp:
+
+<ReactorPeriod />
+
+## Nếu mọi neutron đều tức thì, không ai lái nổi
+
+Phân hạch một hạt U-235 nhả trung bình 2,4 neutron và [khoảng 200
+MeV](/vi/posts/duong-cong-nang-luong-lien-ket-ngon-nui-sat). Lò tới hạn giữ
+đúng một neutron trong số đó nối tiếp dây chuyền: hệ số nhân k = 1, công
+suất đứng yên. Rút thanh điều khiển một nấc rất nhỏ cho k = 1,001 — thừa một
+phần nghìn mỗi thế hệ — nghe như chuyện vặt.
+
+Nhưng một giây có mười nghìn thế hệ: sau 693 thế hệ công suất đã gấp đôi —
+**0,069 giây**. Sau một giây trọn vẹn, gấp **22 000 lần**. Đó là đường cam
+trong demo — nó rời khung hình ở giây thứ 0,23, trước khi kim đồng hồ kịp
+nhúc nhích. Lò hạt nhân điều khiển được không nhờ kỹ thuật giỏi, mà nhờ một
+chi tiết của chính hạt nhân.
+
+## Sáu hạt rưỡi trong mỗi nghìn, đến muộn
+
+Trong 1000 neutron sinh ra từ phân hạch U-235, có 993,5 hạt bay ra *tức thì*
+— chừng 10⁻¹⁴ giây sau khi hạt nhân vỡ. Còn **6,5 hạt** thì không. Chúng
+không đến từ vụ vỡ mà từ mảnh vỡ: vài đồng vị con ra đời quá thừa neutron,
+phải phân rã beta cái đã, rồi hạt nhân cháu mới nhả neutron.
+
+Ngôi sao của nhóm là brom-87, [chu kỳ bán rã 55,6
+giây](/vi/posts/chu-ky-ban-ra-khong-hat-nao-biet-tuoi-minh): nó phân rã beta
+thành krypton-87 ở mức kích thích cao hơn ngưỡng tách neutron, và krypton
+bắn ngay một neutron ra — hạt ấy thuộc về một vụ phân hạch xảy ra cả phút
+trước. Gộp sáu nhóm tiền chất (bán rã 0,2 đến 55,6 giây) thành một nhóm hiệu
+dụng: λ = 0,0767 s⁻¹, **tuổi thọ trung bình 13 giây**. Tỉ lệ 0,65% ấy, ký
+hiệu β, là hằng số của U-235 — không kỹ sư nào đổi được.
+
+## Vì sao thiểu số 0,65% giành quyền quyết định nhịp
+
+Mấu chốt: khi lò chỉ vượt tới hạn một chút, dây chuyền neutron tức thì **tự
+nó không sống nổi**. Với k = 1,001, phần tức thì chỉ nhân được 1,001 ×
+0,9935 = 0,9945 mỗi thế hệ — hụt 0,55%, tắt dần trong vài phần trăm giây.
+Thứ gieo lại đợt sau là dòng neutron rỉ từ kho tiền chất — nên nhịp của cả
+lò là nhịp 13 giây của brom-87, không phải nhịp 10⁻⁴ giây của neutron.
+
+Viết thành chu kỳ lò — thời gian để công suất nhân lên e lần — với độ phản
+ứng ρ = k − 1:
+
+```
+T = (β − ρ) / (λ·ρ)        λ = 0,0767 s⁻¹
+```
+
+Với ρ = 0,1% và β = 0,65%: T = 71,8 giây, công suất **nhân đôi sau 49,8
+giây**. Hãy để ý thứ *không* có mặt: tuổi thọ neutron ℓ đã biến mất. Kéo
+thanh ℓ trong demo đi 100 lần, thời gian nhân đôi chỉ nhích từ 49,7 lên 50,5
+giây, trong khi đường cam quét loạn cả khung. Thiểu số 0,65% đã tịch thu
+đồng hồ của lò.
+
+## Đô la: đơn vị người vận hành thật sự đếm
+
+Vì β là ranh giới sinh tử, ngành hạt nhân đo ρ theo bội số của chính nó: **1
+đô la = β**. Với U-235, ρ = 0,1% mới chỉ là $0,15 — và mỗi xu thêm vào đắt
+dần lên rất nhanh. $0,08 cho thời gian nhân đôi **108,6 giây**; $0,15 →
+**49,8 giây**; $0,31 → **20,4 giây** (gấp đôi ρ chỉ rút ngắn 2,4 lần chứ
+không phải 2); $0,77 → **2,8 giây**. Nửa cuối đồng đô la đắt hơn nửa đầu rất
+nhiều.
+
+## Trường hợp biên: khi ρ chạm đúng β
+
+Đặt ρ = β = 0,65%: tử số về 0, T → 0, tốc độ tăng vô hạn. Công thức không
+hỏng vô cớ: giả thiết dựng nên nó vừa chết. Phần tức thì bây giờ tự nó đã đủ
+tới hạn, k × (1 − β) = 1; lò không cần nhóm trễ nữa và lấy lại đồng hồ 10⁻⁴
+giây. Nghiệm đầy đủ cho con số thật: **nhân đôi sau 0,32 giây**, còn ở $1,08
+thì 0,12 giây. Đó là "tới hạn tức thời", và không thanh điều khiển nào rơi
+kịp — thứ duy nhất kịp can thiệp là vật lý tự thân: nhiên liệu nóng lên
+trong mili giây, vạch cộng hưởng U-238 giãn ra nuốt neutron mạnh hơn, kéo ρ
+tụt. Chernobyl là mấy giây đồng hồ khi hiệu ứng ấy đến quá muộn.
+
+Biên an toàn ấy cũng không công bằng với mọi nhiên liệu: Pu-239 chỉ có β =
+0,21%, khoảng lái hẹp bằng **một phần ba**, cùng ρ = 0,1% đã là $0,48 và
+nhân đôi sau 10,1 giây thay vì 49,8. Khó chịu hơn, lò uranium tự trôi về
+phía đó: mỗi ngày vận hành, U-238 lại hoá thêm chút plutonium, β hiệu dụng
+tụt dần — đồng đô la cuối chu kỳ ngắn hơn đồng đô la hôm nạp.

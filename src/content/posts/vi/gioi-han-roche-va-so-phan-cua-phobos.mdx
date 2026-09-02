@@ -1,0 +1,93 @@
+---
+title: "Giới hạn Roche: Phobos đang bị xé, và Sao Hoả sẽ có vành đai"
+seoTitle: "Giới hạn Roche: công thức và vì sao Sao Thổ có vành còn Trái Đất không"
+description: "Dưới một khoảng cách nhất định, chênh lệch lực hút giữa hai đầu một vệ tinh vượt lực tự hút của chính nó. Với Sao Hoả ngưỡng ấy là 10 586 km — mà Phobos đang ở 9 376 km, tức đã nằm trong. Những rãnh song song trên bề mặt nó chính là vết nứt đang mở."
+pubDate: 2026-09-02
+tags: ["vat-ly", "thien-van", "co-hoc", "javascript"]
+translationId: "gioi-han-roche-va-so-phan-cua-phobos"
+---
+
+import RocheLimit from '../../../components/demos/RocheLimit.astro';
+
+Ảnh cận cảnh Phobos — mặt trăng lớn của Sao Hoả, dài 27 km — chằng chịt
+những rãnh song song đều đặn như vết cào của một cái lược khổng lồ. Suốt
+bốn mươi năm người ta đổ cho một vụ va chạm cổ. Lời giải đang được ưa
+chuộng hơn thì rùng rợn hơn nhiều: đó là vết nứt, và chúng đang mở rộng.
+
+<RocheLimit />
+
+## Cuộc so găng của hai lực trên cùng một hòn đá
+
+Sao Hoả kéo đầu gần của Phobos mạnh hơn đầu xa, đơn giản vì lực hấp dẫn
+giảm theo 1/d². Chênh lệch ấy — [lực triều, giảm theo
+1/d³](/vi/posts/thuy-trieu-mat-trang-thang-kien-mat-troi) — kéo giãn hòn
+đá dọc trục nối hai tâm. Chống lại nó chỉ có lực tự hút của chính
+Phobos. Khi vế thứ nhất thắng, vật thể bị xé ra.
+
+Cái hay của phép so sánh này là **khối lượng vệ tinh biến mất**. Cả hai vế
+đều tỉ lệ với nó nên nó triệt tiêu, chỉ còn lại mật độ và cỡ hành tinh:
+
+```
+d_Roche = 2,44 × R_hành tinh × (ρ_hành tinh / ρ_vệ tinh)^(1/3)
+```
+
+Hòn đá to bằng ngọn núi và hạt cát cùng mật độ gãy ở đúng cùng một khoảng
+cách. Với Sao Hoả (R = 3 389,5 km, ρ = 3 934 kg/m³) và thiên thể xốp mật
+độ 1 876 kg/m³ như Phobos, ngưỡng là **10 586 km**.
+
+## 0,886 — con số của một bản án
+
+Phobos quay quanh Sao Hoả ở 9 376 km tính từ tâm hành tinh. Chia cho
+ngưỡng trên: **0,886**. Nó đã ở bên trong.
+
+Nhưng "trong giới hạn Roche" không có nghĩa là nổ tung tức khắc. Gia tốc
+triều căng ngang thân Phobos là 1,15 mm/s², còn lực tự hút ở bề mặt nó là
+5,79 mm/s² — thuỷ triều mới mạnh bằng **20%** cái đang giữ nó lại. Hệ số
+2,44 được tính cho một khối chất lỏng *biến dạng được*, và biến dạng
+chính là cái tự đào hố chôn mình: giãn dài ra thì hai đầu càng xa tâm,
+chênh lệch lực càng lớn, lại giãn thêm.
+
+Phobos không phải chất lỏng, nhưng cũng chẳng phải đá liền khối. Nó gần
+như một đống gạch vụn phủ bụi, và cái giữ đống ấy lại yếu đến mức khó
+tin: áp suất ở tâm Phobos chỉ **60 kPa** — thấp hơn áp suất không khí bạn
+đang thở. Lớp vỏ bụi ngoài cùng chịu ứng suất triều rồi rạn thành những
+rãnh song song, đúng hướng mà mô hình dự đoán.
+
+Tệ hơn, nó đang đi vào. Phobos chạy một vòng hết 7 giờ 39 phút, nhanh hơn
+Sao Hoả tự quay (24 giờ 37 phút), nên búi triều nó nhào lên Sao Hoả bị bỏ
+lại phía sau và kéo ghì nó — [ngược hẳn Mặt Trăng của chúng
+ta](/vi/posts/mat-trang-lui-xa-va-nam-400-ngay), thứ đang bị đẩy ra xa
+3,83 cm mỗi năm. Phobos tụt 1,8 cm mỗi năm. Nghe chậm, nhưng tốc độ tụt
+tăng theo a^(−11/2): tích phân ra **khoảng 78 triệu năm** nữa là xong
+chuyện.
+
+## Vành đai bắt đầu đúng chỗ mặt trăng kết thúc
+
+Kéo demo sang Sao Thổ và cả hệ vành hiện ra ý nghĩa. Ngưỡng Roche cho hạt
+băng (ρ = 900 kg/m³) là 129 900 km, tức 2,23 lần bán kính Sao Thổ. Vành
+C, B và A nằm gọn bên trong; Mimas ở 185 500 km — bên ngoài, nguyên vẹn
+suốt bốn tỉ năm. Ranh giới giữa "vành đai" và "mặt trăng" không phải
+chuyện kích thước hay may rủi: **nó chính là giới hạn Roche**.
+
+Trái Đất thì sao? Với vật liệu đặc như Mặt Trăng, ngưỡng là 18 365 km.
+Mặt Trăng ở 384 400 km, xa gấp **20,9 lần** — chúng ta không có vành đai
+vì chẳng có gì nằm đủ gần để xé. Còn sao chổi Shoemaker-Levy 9 thì lĩnh
+đủ: năm 1992 nó lướt qua cách tâm Sao Mộc chừng 110 000 km — **0,50 lần
+ngưỡng** — và vỡ ngay tại chỗ thành 21 mảnh, chuỗi mảnh ấy đâm xuống Sao
+Mộc hai năm sau trước ống kính cả hành tinh.
+
+## Trường hợp biên: hệ số 2,44 chỉ đúng cho nước
+
+Đẩy công thức về phía vật rắn có sức bền thì hệ số tụt xuống 1,26, ngưỡng
+Sao Hoả co lại còn **5 466 km** — và Phobos ở 1,72 lần con số đó, tức an
+toàn tuyệt đối. Hai vạch cách nhau gần gấp đôi, sự thật nằm kẹp giữa: một
+đống gạch vụn có chút bụi kết dính không nổ tung, nó nứt dần.
+
+Đầu kia của thang đo còn lạ hơn. Mép ngoài vành A của Sao Thổ ở 136 775
+km — **1,05 lần** giới hạn Roche, tức đã vượt ngưỡng: ở đó vật chất *lẽ
+ra* phải tự tụ lại thành mặt trăng. Và nó đang làm thế thật — tàu Cassini
+chụp được những vệt "cánh quạt", dấu nhiễu của các cục băng cỡ trăm mét
+vừa thành hình. Chúng không kịp lớn: vệ tinh chăn cừu và cộng hưởng quỹ
+đạo liên tục khuấy chúng vỡ ra. Giới hạn Roche không phải bức tường mà là
+mép nước thuỷ triều: ngay trên đường ranh, mặt trăng cứ dâng lên rồi bị
+kéo tan, hết lượt này đến lượt khác.

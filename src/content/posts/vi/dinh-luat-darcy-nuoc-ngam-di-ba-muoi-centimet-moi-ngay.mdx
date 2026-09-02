@@ -1,0 +1,90 @@
+---
+title: "Nước giếng khoan bạn uống hôm nay là cơn mưa của ba mươi năm trước"
+seoTitle: "Định luật Darcy: nước ngầm chảy nhanh bao nhiêu trong lòng đất"
+description: "Trong tầng cát điển hình, nước ngầm nhích 0,288 mét mỗi ngày — đúng một chiều dài sân bóng mỗi năm. Giọt mưa thấm xuống cách giếng 3 km phải đi 28,5 năm mới tới vòi nhà bạn; đổi cát thành sét, cùng độ dốc ấy, nó đi 1 milimét mỗi năm."
+pubDate: 2026-09-02
+tags: ["vat-ly", "chat-luu", "javascript"]
+translationId: "dinh-luat-darcy-nuoc-ngam-di-ba-muoi-centimet-moi-ngay"
+---
+
+import DarcyFlow from '../../../components/demos/DarcyFlow.astro';
+
+Mưa rào chiều qua còn đọng trên sân, và cái giếng khoan sau nhà vẫn lên
+nước đều. Nhưng nước ấy không phải trận mưa hôm qua, cũng chẳng phải trận
+mưa mùa trước — nó rơi xuống hồi bạn chưa đi học:
+
+<DarcyFlow />
+
+## Nước ngầm không chảy — nó rỉ
+
+Dưới chân bạn hầu như không có dòng sông ngầm nào (trừ trường hợp cuối
+bài): chỉ có cát, sỏi, bùn, và nước len giữa các hạt. Năm 1856, Henry
+Darcy — kỹ sư cấp nước thành phố Dijon — cho nước qua ống cát và tìm ra
+một luật đơn giản đến khó tin: lưu lượng trên mỗi mét vuông tiết diện tỉ
+lệ thuận với độ dốc của mực nước.
+
+```
+q = K · i          v = q / n = K · i / n
+```
+
+`i` là gradient thuỷ lực — mực nước hạ bao nhiêu mét trên mỗi mét đường
+ngang; ở đồng bằng nó thường quanh **0,01**, tức thấp dần 30 m trên quãng
+3 km. `K` là hệ số thấm (m/s), gói toàn bộ cái "dễ đi" của tầng đất: cát
+cho K ≈ 10⁻⁴ m/s, nên q = 10⁻⁶ m/s.
+
+Nhưng q chưa phải tốc độ giọt nước. Nó tính trên **toàn** tiết diện, còn
+nước chỉ đi được qua lỗ rỗng — n = 30% chỗ ấy. Chen qua cửa hẹp hơn ba
+lần thì phải nhanh hơn đúng ba lần: v = **3,33 × 10⁻⁶ m/s = 0,288
+m/ngày**, tức **105 m mỗi năm, đúng một chiều dài sân bóng**. Giếng cách
+điểm thấm 3 km, vậy giọt nước bạn rót ra cốc sáng nay đã lên đường **28,5
+năm** trước. Quên phép chia cho n là sai 3,3 lần — và sai theo hướng lạc
+quan.
+
+## Bảy bậc mười nằm gọn trong một chữ K
+
+Giữ i = 0,01 và n = 0,30, chỉ kéo thanh K, và thang thời gian đổ nhào
+theo: sỏi (10⁻² m/s) đi **28,8 m/ngày**, tới giếng sau 104 ngày; cát
+(10⁻⁴) đi 105 m/năm, mất 28,5 năm; bùn (10⁻⁶) còn **1,05 m/năm**, 2 900
+năm; sét (10⁻⁹) rớt xuống **1,05 mm/năm** — quãng 3 km ấy mất 2,9 triệu
+năm.
+
+K một mình quyết định tất cả, vì trong tự nhiên i trải chừng 100 lần và n
+chưa nổi 10 lần, còn K trải **10 triệu lần**. Nó cũng không phải hằng số
+của nước mà của lỗ rỗng: ở cấp khe hạt đây vẫn là [dòng chảy tầng trong
+ống hẹp](/vi/posts/hep-ong-20-phan-tram-mat-59-luu-luong), nên hạt to gấp
+mười thì K gấp một trăm. Đầu chậm của thang mới là món quà: lớp sét dày
+**1 mét giữ nước lại 950 năm** — bãi rác hợp vệ sinh lót đáy bằng sét đầm
+chặt đúng vì thế.
+
+## Giếng cách chuồng bò bao xa thì an toàn
+
+Vi khuẩn đường ruột không sống mãi trong lòng đất; ngưỡng vệ sinh thông
+dụng lấy **50 ngày đi đường** làm mốc. Trong cát 0,288 m/ngày, vành đai
+ấy chỉ rộng **14,4 m** — mỏng đến giật mình, mà thực tế còn phải nới
+thêm: quanh giếng đang bơm, mực nước bị hút thành phễu nên i dốc hơn hẳn
+giá trị của cả vùng. Nitrat và kim loại nặng thì chẳng chết theo lịch
+nào, chúng đi trọn quãng đường — thứ đổ xuống đất hôm nay tới giếng sau
+ba chục năm, và rửa lại tầng cát tốn thêm chừng ấy nữa. Tầng cát tốt hay
+nằm sâu 40–70 m, nên giếng khoan phải thả bơm chìm xuống đáy: [khí quyển
+chỉ đẩy nước lên nổi
+10,3 m](/vi/posts/ap-suat-khi-quyen-va-tran-10-met-cua-moi-may-bom).
+
+## Trường hợp biên: ở Phong Nha, Darcy sai mười bảy nghìn lần
+
+Darcy chỉ đúng khi dòng trong lỗ rỗng còn chảy tầng — [số
+Reynolds](/vi/posts/so-reynolds-vi-khuan-boi-trong-mat-ong) tính trên
+đường kính hạt phải dưới chừng 10, và trên cả thang trượt của demo, Re
+cao nhất mới khoảng 5. Đá vôi karst thì xé luật làm đôi: ở Phong Nha hay
+cao nguyên đá Hà Giang, nước không thấm qua lỗ rỗng mà chảy trong hang và
+khe nứt rộng hàng mét — sông thật, chảy rối thật. Thả thuốc nhuộm vào một
+hố sụt, màu thường hiện ra ở con suối cách 5 km chỉ sau một ngày: 5 000
+m/ngày, **nhanh hơn 17 nghìn lần** con số Darcy cho tầng cát. Sai bốn bậc
+mười ấy có giá: vùng karst không có vành đai 50 ngày nào hết — phân bò
+trôi xuống hố sụt sáng nay có thể nằm trong bể nước ăn của bản dưới thung
+lũng vào tối mai.
+
+Đầu kia của thang hỏng lặng lẽ hơn: đẩy K về 10⁻⁹ và v tiến sát không,
+tới mức những cơ chế Darcy không thèm nhắc mới là thứ vận chuyển thật —
+thẩm thấu qua màng sét, khuếch tán phân tử, điện thẩm dưới hiệu điện thế
+tự nhiên của đất. Nước vẫn nhúc nhích, chỉ là không còn vì lý do mà Henry
+Darcy viết ra.

@@ -1,0 +1,89 @@
+---
+title: "Chu kỳ Saros: nhật thực lặp lại sau 18 năm 11 ngày — và lệch 116° về phía Tây"
+seoTitle: "Chu kỳ Saros: vì sao nhật thực lặp lại sau 6585 ngày"
+description: "223 tháng giao hội = 6 585,3211 ngày; 242 tháng giao điểm = 6 585,3575 ngày. Hai con số chỉ lệch nhau 52 phút, và chính sự trùng khớp suýt hoàn hảo ấy khiến nhật thực lặp lại. Nhưng 0,3211 ngày dư thành 7 giờ 42 phút Trái Đất quay tiếp: lần thực sau rơi xuống chỗ cách 116° kinh tuyến về phía Tây."
+pubDate: 2026-09-02
+tags: ["vat-ly", "thien-van", "javascript"]
+translationId: "saros-nhat-thuc-lap-lai-lech-116-do"
+---
+
+import SarosCycle from '../../../components/demos/SarosCycle.astro';
+
+Người Babylon không biết Mặt Trăng là quả cầu đá, chưa hề nghe tới quỹ
+đạo elip, vậy mà báo trước được nhật thực. Họ chỉ đếm, và bắt được một
+con số: cứ 6 585 ngày, trời lại tối theo đúng kiểu cũ. Chỗ hay nằm ở phần
+lẻ của con số ấy:
+
+<SarosCycle />
+
+## Ba cái "tháng" và không cái nào bằng cái nào
+
+Nhật thực đòi hai điều kiện cùng lúc. Một: Mặt Trăng ở pha sóc —
+**tháng giao hội, 29,530588 ngày**. Hai: đúng lúc ấy nó phải đi qua *nút*,
+một trong hai điểm quỹ đạo Mặt Trăng cắt mặt phẳng hoàng đạo — **tháng
+giao điểm, 27,212221 ngày**. Hai đồng hồ lệch nhau 2,32 ngày mỗi vòng,
+nên hầu hết các kỳ trăng mới, bóng Mặt Trăng quét trượt trên hoặc dưới
+Trái Đất.
+
+Muốn cảnh cũ lặp lại, phải tìm số nguyên N để N tháng giao hội trùng gần
+đúng M tháng giao điểm — [bài toán nhịp phách của hai chu kỳ lệch
+nhau](/vi/posts/mot-ngay-tren-sao-thuy-dai-bang-hai-nam). Kéo thanh trượt
+N: trong dải 1–300 có một đáy sâu hơn hẳn.
+
+**N = 223**: 223 × 29,530588 = 6 585,3211 ngày, còn 242 × 27,212221 =
+6 585,3575 ngày. Lệch **52 phút** sau mười tám năm. Á quân N = 270 lệch
+1 giờ 52 phút; chu kỳ Meton 19 năm (N = 235) lệch tới 13 giờ 43 phút —
+quá thô để đoán trước một lần thực.
+
+## 52 phút quy ra 0,48° trên bầu trời
+
+52 phút chỉ có nghĩa khi đổi sang góc: Mặt Trăng chạy 360° chia 27,212221
+= **13,23° mỗi ngày** so với đường nút, nên 0,0364 ngày lệch tương đương
+**0,48°**. Nhật thực vẫn còn xảy ra chừng nào pha sóc rơi trong khoảng
+**±18,5°** quanh nút — dải vàng trong demo, ứng với lệch dưới 1,4 ngày.
+Nửa độ so với ba mươi bảy độ: lần thực kế tiếp gần như bản sao của lần
+trước, và được xếp chung một "chuỗi Saros" có số hiệu riêng.
+
+## Phần lẻ 0,3211 ngày đẩy vệt bóng đi 116°
+
+Chỗ khó chịu là 6 585,3211 chứ không phải 6 585,0000. Sau 6 585 ngày
+tròn — **18 năm 11 ngày** nếu khoảng ấy chứa bốn năm nhuận, 10 ngày nếu
+chứa năm — Trái Đất về đúng tư thế cũ trước Mặt Trời; **0,3211 ngày dư**
+bắt nó quay thêm 7 giờ 42 phút nữa, tức **115,6°**. Hình học trên trời lặp
+lại y hệt; chỉ có mặt đất đã xoay đi dưới nó.
+
+Chuỗi Saros 145 là minh chứng: nhật thực 11/8/1999 quét Romania quanh
+24° kinh Đông; cộng 6 585 ngày ra đúng **21/8/2017** — lần thực vắt ngang
+nước Mỹ ở khoảng 88° kinh Tây, trượt 112°. Cộng một Saros nữa:
+**2/9/2035**, Nhật Bản. Ba lục địa, một hình học.
+
+Cộng ba lần thì phần lẻ thành 0,9634 vòng — chỉ thiếu 13,2° là khép kín.
+Đó là **exeligmos**: 19 756 ngày = 54 năm 33 ngày, chu kỳ đưa nhật thực
+về gần đúng chỗ cũ trên mặt đất — máy Antikythera có hẳn một vòng chia
+độ cho nó.
+
+## Cùng một chuỗi, nhưng dáng đổi dần
+
+Gạt thanh trượt thứ hai sang **tháng cận điểm** — 27,554550 ngày, thời
+gian Mặt Trăng trở lại điểm gần Trái Đất nhất. 239 tháng ấy dài
+6 585,537 ngày: lệch **5 giờ 12 phút**, thô hơn gấp sáu lần. Đủ để Mặt
+Trăng về xấp xỉ khoảng cách cũ, không đủ để nó đứng yên: mỗi vòng Saros,
+dị thường trôi 2,83° và khoảng cách đổi tới 1 041 km. Với biên độ mỏng
+manh 2,9% giữa đĩa Mặt Trời và đĩa Mặt Trăng, [chừng ấy kilômét chính là
+ranh giới giữa toàn phần và vành
+khuyên](/vi/posts/nhat-thuc-toan-phan-va-trung-hop-400-lan) — nên một
+chuỗi mở đầu bằng thực vành khuyên có thể kết thúc bằng thực toàn phần.
+
+## Trường hợp biên: chuỗi Saros chết ở đâu
+
+52 phút mỗi vòng không tự triệt tiêu: 0,48° mỗi lần, luôn về cùng một
+phía. Cửa sổ ăn thực rộng 2 × 18,5 = 37°, chia cho 0,48 ra **77 lần
+lặp**, khoảng **1 390 năm** — rồi nút trôi hết chỗ và cả chuỗi tắt. Danh
+mục thiên văn ghi 69–87 lần cho một chuỗi thật. Saros 145 mở màn năm 1639
+bằng vệt thực một phần bé xíu gần Bắc Cực, lần huy hoàng ở Mỹ năm 2017
+mới là **lần thứ 22**, và năm 3009 nó tắt gần Nam Cực.
+
+Mà cửa sổ 18,5° ấy cũng không vĩnh viễn: Mặt Trăng [đang lùi xa 3,83 cm
+mỗi năm](/vi/posts/mat-trang-lui-xa-va-nam-400-ngay), đĩa của nó teo dần,
+và chừng 600 triệu năm nữa nó không còn phủ nổi Mặt Trời. Chu kỳ 6 585
+ngày vẫn chạy chính xác từng phút — chỉ là không còn gì để lặp lại.

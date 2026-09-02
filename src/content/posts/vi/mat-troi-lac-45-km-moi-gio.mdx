@@ -1,0 +1,96 @@
+---
+title: "Sao Mộc kéo Mặt Trời lắc 45 km/h — và đó là cách ta tìm ngoại hành tinh"
+seoTitle: "Khối tâm hệ Mặt Trời và phương pháp vận tốc xuyên tâm 12,45 m/s"
+description: "Khối tâm Mặt Trời–Sao Mộc nằm cách tâm Mặt Trời 742 000 km, tức 1,067 lần bán kính Mặt Trời — ngoài bề mặt. Ngôi sao của chúng ta vẽ vòng quanh điểm ấy ở 12,45 m/s, đúng tốc độ một chiếc xe máy trong phố. Trái Đất chỉ làm nó lắc 8,94 cm/s, và đó là bức tường mọi máy quang phổ đang cố trèo qua."
+pubDate: 2026-09-02
+tags: ["vat-ly", "thien-van", "song", "javascript"]
+translationId: "mat-troi-lac-45-km-moi-gio"
+---
+
+import RadialVelocityWobble from '../../../components/demos/RadialVelocityWobble.astro';
+
+Trong hình vẽ sách giáo khoa, Mặt Trời đứng yên ở tâm còn hành tinh chạy
+vòng quanh. Sai — và sai theo một cách đo được: Sao Mộc kéo cả ngôi sao của
+chúng ta đi một vòng rộng hơn chính nó, ở tốc độ bạn gặp mỗi ngày ngoài phố.
+
+<RadialVelocityWobble />
+
+## Khối tâm nằm ngoài bề mặt Mặt Trời
+
+Hai vật hút nhau thì cả hai cùng quay — quanh **khối tâm chung**, điểm chia
+đoạn nối chúng theo tỉ lệ ngược với khối lượng. Sao Mộc nhẹ hơn Mặt Trời
+1 048 lần, nên điểm ấy nằm lệch hẳn về phía ngôi sao:
+
+```
+r_sao = a · m/(M+m) = 5,204 AU × 1/1 048,8 = 742 000 km
+```
+
+Bán kính Mặt Trời là 695 700 km. Tỉ số ra **1,067**: khối tâm Mặt Trời–Sao
+Mộc treo lơ lửng **ngoài bề mặt Mặt Trời**, cao hơn mặt quang cầu gần
+47 000 km. Ngôi sao không xoay tại chỗ quanh một điểm nằm trong ruột nó — nó
+vẽ hẳn một vòng ngoài trời, trong chân không.
+
+## Vòng 4,7 triệu kilômét đi trong 11,9 năm
+
+Chu vi vòng ấy là 2πr = **4,66 triệu km**, và Mặt Trời đi hết nó trong đúng
+chu kỳ của Sao Mộc, 11,87 năm ([định luật Kepler
+III](/vi/posts/dinh-luat-kepler-iii-va-duong-thang-cua-he-mat-troi)) — hai
+vật luôn ở hai phía khối tâm. Chia quãng cho thời gian:
+
+```
+K = 2π·r_sao / P = 4,664×10⁹ m / 3,745×10⁸ s = 12,45 m/s
+```
+
+**12,45 m/s = 44,8 km/h.** Một khối cầu 2×10³⁰ kg lắc lư đúng bằng tốc độ
+chiếc xe máy chở bạn đi làm sáng nay. Sao Thổ chồng thêm 2,75 m/s trên nhịp
+29,7 năm lệch pha, nên đường thật của Mặt Trời là một hoa thị rối chứ không
+phải vòng tròn.
+
+## Đọc con số ấy ra từ màu của ngôi sao
+
+Không ai đứng ngoài hệ để nhìn Mặt Trời lắc. Thứ đo được là **thành phần vận
+tốc dọc tia nhìn**, qua [hiệu ứng Doppler](/vi/posts/hieu-ung-doppler-nghe-duoc):
+sao tiến lại thì vạch phổ dịch về lam, lùi ra thì dịch về đỏ, theo Δλ/λ = v/c
+— ở đây là **1 phần 24,1 triệu**. Nghe như bất khả, nhưng phổ một ngôi sao có
+hàng nghìn vạch hấp thụ: khớp cả rừng vạch cùng lúc thì sai số chia cho căn bậc
+hai của số vạch.
+
+Tháng 10 năm 1995, Michel Mayor và Didier Queloz công bố một ngôi sao dao động
+**55 m/s với chu kỳ 4,2 ngày**: 51 Pegasi b, hành tinh đầu tiên tìm thấy quanh
+một sao giống Mặt Trời, giải Nobel 2019. Kéo demo về 149,4 khối lượng Trái Đất,
+0,0527 AU, sao nặng 1,11 — công thức trả về 55,2 m/s.
+
+## Vì sao "Sao Mộc nóng" bị bắt trước
+
+Rút gọn hai công thức trên khi m ≪ M, còn lại một tỉ lệ trần trụi: `K ∝ m` chia
+`căn bậc hai của (a·M)`. Khoảng cách chỉ vào mẫu qua **căn bậc hai** — dời hành
+tinh ra xa gấp đôi chỉ làm tín hiệu yếu đi 1,41 lần. Đem đúng Sao Mộc ấy đặt ở
+0,05 AU: K vọt lên **127 m/s**, gấp 10,2 lần, còn chu
+kỳ rơi từ 11,9 năm xuống 4,08 ngày. Cái lợi thứ hai mới là cái quyết định: bạn
+chốt trọn một chu kỳ sau hai tuần trực đài, thay vì chờ hết một nhiệm kỳ nghiên
+cứu. Danh sách ngoại hành tinh thập niên 1990 toàn khối khí khổng lồ nằm sát sao
+không phải vì vũ trụ được làm ra như thế, mà vì đó là thứ duy nhất phương pháp
+này nhìn thấy.
+
+Trái Đất thì kéo tâm Mặt Trời lệch **449 km** — mỏng hơn lớp quang cầu dày chừng
+500 km mà ta gọi là "bề mặt" — với K = **8,94 cm/s**, dịch bước sóng 1 phần 3,35
+tỉ. Máy tốt nhất hôm nay, ESPRESSO, mới đứng ở mốc 10 cm/s; nên một Trái Đất thứ
+hai, nếu có, nhiều khả năng bị bắt bằng [cái bóng của nó chứ không phải màu của
+nó](/vi/posts/do-sau-vach-mo-84-phan-trieu).
+
+## Trường hợp biên: hệ nằm ngửa, và ngôi sao tự run
+
+Vì chỉ đọc được vận tốc dọc tia nhìn, phương pháp nhân mọi thứ với sin của góc
+nghiêng i. Hệ nhìn thẳng từ trên xuống — mặt phẳng quỹ đạo vuông góc tia nhìn,
+i = 0 — cho K = 0 tuyệt đối: ngôi sao vẫn lắc mạnh y hệt, chỉ là lắc ngang, và
+máy quang phổ **mù hoàn toàn**. Mọi khối lượng in trong danh mục vì thế thật ra
+là m·sin i, một **cận dưới**; phải là hành tinh có đi ngang qua đĩa sao — điều
+bắt buộc i gần 90° — mới chốt nổi khối lượng thật.
+
+Ở đầu kia của thang nhạy, bức tường không còn nằm ở máy móc. Bề mặt sao là biển
+hạt đối lưu sôi sục cùng những vệt đốm trôi theo vòng tự quay; chúng bóp méo
+vạch phổ tương đương vài chục centimét trên giây, lúc sao hoạt động mạnh thì tới
+1 m/s. Tín hiệu 8,94 cm/s của Trái Đất nhỏ hơn cái nhiễu ấy **hơn mười một lần**
+— nó vẫn nằm nguyên trong dữ liệu, chỉ là bị chôn. Trận cuối của ngành săn Trái
+Đất thứ hai vì vậy không phải là chế máy nhạy hơn, mà là học đọc cho ra **thời
+tiết của chính ngôi sao đang bị theo dõi**, để trừ nó đi.

@@ -1,0 +1,172 @@
+---
+// Kelvin's cooling half-space (Thomson 1862): a body initially at uniform T0,
+// surface held at 0, cooling by conduction only:
+//   T(z,t) = T0 · erf( z / (2√(κt)) )
+// Surface gradient G = dT/dz|0 = T0 / √(π κ t)  ⇒  t = (T0/G)² / (π κ).
+// Valid while the cooled skin 2√(κt) stays ≪ Earth radius (here z ≤ 300 km,
+// so the flat half-space approximation holds over the whole slider range).
+// erf via Abramowitz & Stegun 7.1.26 (|error| < 1,5×10⁻⁷).
+---
+
+<figure class="demo" data-demo="kelvin-tinh-tuoi-trai-dat-va-cu-sai-bay-muoi-lan">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Nhiệt độ khởi đầu T₀ (K) <output data-out="t0"></output>
+      <input type="range" data-in="t0" min="800" max="3000" step="10" value="2000" /></label>
+    <label>Khuếch tán nhiệt κ (×10⁻⁶ m²/s) <output data-out="k"></output>
+      <input type="range" data-in="k" min="0.5" max="2" step="0.05" value="1" /></label>
+    <label>Gradient đo được ở mặt đất (°C/km) <output data-out="g"></output>
+      <input type="range" data-in="g" min="3" max="40" step="0.1" value="25" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Đường xanh: nhiệt độ theo độ sâu của một hành tinh chỉ nguội bằng dẫn
+    nhiệt, vẽ đúng ở tuổi mà gradient bạn chọn đòi hỏi. Đường đỏ đứt là tiếp
+    tuyến tại mặt đất — thứ duy nhất đo được từ hầm mỏ. Đường cam là cùng mô
+    hình ấy chạy đủ 4,54 tỉ năm: nó thoải hơn hẳn, tức là gradient thật sẽ
+    phải nhỏ hơn nhiều lần con số các mỏ than thế kỷ 19 đọc ra.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const CURVE = '#2563eb', MARK = '#dc2626', ALT = '#f59e0b';
+  const YR = 3.1557e7;          // Julian year, s
+  const TRUE_AGE = 4.54e9;      // tuổi Trái Đất, năm (Patterson 1956)
+  const ZMAX = 300;             // km hiển thị
+  const ERFINV_09 = 1.163087;   // erf(x) = 0,9
+
+  function erf(x: number): number {
+    const s = x < 0 ? -1 : 1, a = Math.abs(x);
+    const t = 1 / (1 + 0.3275911 * a);
+    const y = 1 - ((((1.061405429 * t - 1.453152027) * t + 1.421413741) * t
+      - 0.284496736) * t + 0.254829592) * t * Math.exp(-a * a);
+    return s * y;
+  }
+
+  const fmt = (x: number, d: number) => x.toFixed(d).replace('.', ',');
+  const group = (x: number) => String(Math.round(x)).replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+  const ageText = (yr: number) =>
+    yr < 1e9 ? `${fmt(yr / 1e6, 1)} triệu năm` : `${fmt(yr / 1e9, 2)} tỉ năm`;
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (k: string) => root.querySelector(`[data-in="${k}"]`) as HTMLInputElement;
+    const output = (k: string) => root.querySelector(`[data-out="${k}"]`) as HTMLOutputElement;
+
+    function draw() {
+      const T0 = Number(input('t0').value);
+      const kap = Number(input('k').value) * 1e-6;          // m²/s
+      const Gkm = Number(input('g').value);                 // °C/km
+      const G = Gkm / 1000;                                 // K/m
+      output('t0').textContent = group(T0);
+      output('k').textContent = fmt(Number(input('k').value), 2);
+      output('g').textContent = fmt(Gkm, 1);
+
+      // Tuổi mà mô hình dẫn nhiệt đòi hỏi để gradient tụt xuống còn G.
+      const tK = Math.pow(T0 / G, 2) / (Math.PI * kap);     // s
+      const ageYr = tK / YR;
+      const sqK = Math.sqrt(kap * tK);                      // √(κt), m
+      const sqT = Math.sqrt(kap * TRUE_AGE * YR);           // √(κt) ở tuổi thật
+      const gTrue = T0 / Math.sqrt(Math.PI * kap * TRUE_AGE * YR) * 1000; // °C/km
+      const zFront = 2 * ERFINV_09 * sqK / 1000;            // km, nơi T = 0,9·T0
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.46);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+
+      const padL = 48, padB = 26, padT = 14, padR = 12;
+      const yMax = Math.ceil(T0 * 1.1 / 500) * 500;
+      const X = (zkm: number) => padL + (zkm / ZMAX) * (cssW - padL - padR);
+      const Y = (T: number) => cssH - padB - (T / yMax) * (cssH - padB - padT);
+
+      ctx.font = '10px system-ui,sans-serif';
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.3;
+      ctx.beginPath();
+      ctx.moveTo(padL, padT); ctx.lineTo(padL, cssH - padB); ctx.lineTo(cssW - padR, cssH - padB);
+      ctx.stroke();
+      ctx.setLineDash([3, 4]);
+      ctx.beginPath(); ctx.moveTo(padL, Y(T0)); ctx.lineTo(cssW - padR, Y(T0)); ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.globalAlpha = 0.55; ctx.fillStyle = fg;
+      ctx.textAlign = 'center';
+      for (const z of [100, 200, 300]) ctx.fillText(`${z} km`, X(z), cssH - padB + 14);
+      ctx.textAlign = 'right';
+      for (let T = 500; T <= yMax; T += 500) ctx.fillText(`${group(T)} K`, padL - 4, Y(T) + 3);
+      ctx.textAlign = 'left';
+      ctx.fillText('T₀', padL + 4, Y(T0) - 4);
+      ctx.globalAlpha = 1;
+
+      // Cùng mô hình, chạy đủ tuổi thật của Trái Đất.
+      ctx.strokeStyle = ALT; ctx.lineWidth = 2; ctx.beginPath();
+      for (let i = 0; i <= 200; i++) {
+        const z = (ZMAX * 1000 * i) / 200;
+        const T = T0 * erf(z / (2 * sqT));
+        i ? ctx.lineTo(X(z / 1000), Y(T)) : ctx.moveTo(X(z / 1000), Y(T));
+      }
+      ctx.stroke();
+
+      // Mô hình ở tuổi mà gradient đo được đòi hỏi.
+      ctx.strokeStyle = CURVE; ctx.beginPath();
+      for (let i = 0; i <= 200; i++) {
+        const z = (ZMAX * 1000 * i) / 200;
+        const T = T0 * erf(z / (2 * sqK));
+        i ? ctx.lineTo(X(z / 1000), Y(T)) : ctx.moveTo(X(z / 1000), Y(T));
+      }
+      ctx.stroke(); ctx.lineWidth = 1;
+
+      // Tiếp tuyến tại mặt đất: độ dốc đúng bằng gradient đo được.
+      const zEnd = Math.min(ZMAX, yMax / Gkm);
+      ctx.strokeStyle = MARK; ctx.setLineDash([5, 4]); ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.moveTo(X(0), Y(0)); ctx.lineTo(X(zEnd), Y(Gkm * zEnd)); ctx.stroke();
+      ctx.setLineDash([]); ctx.lineWidth = 1;
+
+      // Mặt sóng lạnh của đường xanh (T = 0,9·T0).
+      if (zFront <= ZMAX) {
+        ctx.fillStyle = MARK;
+        ctx.beginPath(); ctx.arc(X(zFront), Y(0.9 * T0), 5, 0, Math.PI * 2); ctx.fill();
+      }
+
+      ctx.textAlign = 'right';
+      ctx.fillStyle = CURVE;
+      ctx.fillText(`nguội ${ageText(ageYr)}`, cssW - padR, Y(T0 * erf(ZMAX * 1000 / (2 * sqK))) - 7);
+      ctx.fillStyle = ALT;
+      ctx.fillText('nguội 4,54 tỉ năm', cssW - padR, Y(T0 * erf(ZMAX * 1000 / (2 * sqT))) + 15);
+      ctx.textAlign = 'left';
+      ctx.fillStyle = MARK;
+      ctx.fillText(`tiếp tuyến ${fmt(Gkm, 1)} °C/km`, X(0.45 * zEnd) + 7, Y(Gkm * 0.45 * zEnd) + 3);
+
+      const ratio = TRUE_AGE / ageYr;
+      const cmp = ratio >= 1
+        ? `trẻ hơn tuổi thật 4,54 tỉ năm <b>${fmt(ratio, ratio < 10 ? 1 : 0)} lần</b>`
+        : `già hơn tuổi thật <b>${fmt(1 / ratio, 1)} lần</b>`;
+      const flag = ageYr > 13.8e9 ? ' · <b>mô hình đòi hành tinh già hơn cả vũ trụ</b>' : '';
+      readout.innerHTML =
+        `T₀ = ${group(T0)} K · κ = ${fmt(kap * 1e6, 2)} ×10⁻⁶ m²/s · gradient ${fmt(Gkm, 1)} °C/km → ` +
+        `tuổi theo mô hình dẫn nhiệt <b>${ageText(ageYr)}</b>, ${cmp}${flag}. ` +
+        `Sóng lạnh mới ngấm tới ${fmt(zFront, 0)} km. ` +
+        `Chạy đủ 4,54 tỉ năm, cùng mô hình chỉ cho gradient <b>${fmt(gTrue, 2)} °C/km</b>.`;
+    }
+
+    root.querySelectorAll('input').forEach((el) => el.addEventListener('input', draw));
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="kelvin-tinh-tuoi-trai-dat-va-cu-sai-bay-muoi-lan"]').forEach(setup);
+</script>

@@ -1,0 +1,100 @@
+---
+title: "Ghép chu kỳ 8,02 ngày với chu kỳ 80 ngày, được 7,29 — ngắn hơn cả hai"
+seoTitle: "I-131 điều trị tuyến giáp: chu kỳ bán rã hiệu dụng và khoảng cách an toàn"
+description: "Hai đồng hồ chạy song song trong tuyến giáp: hạt nhân tự phân rã với chu kỳ 8,02 ngày, thận thải i-ốt với chu kỳ 80 ngày. Ghép lại không ra trung bình mà ra 7,29 ngày, vì nghịch đảo mới là thứ cộng được. Cùng phép cộng ấy quyết định bệnh nhân uống 3,7 GBq phải ngủ riêng mấy đêm — ở 1 m là 192 µSv mỗi giờ."
+pubDate: 2026-09-02
+tags: ["vat-ly", "hat-nhan", "javascript"]
+translationId: "i-131-chu-ky-ban-ra-hieu-dung"
+---
+
+import EffectiveHalfLife from '../../../components/demos/EffectiveHalfLife.astro';
+
+Viên nang i-ốt phóng xạ chữa ung thư tuyến giáp nhỏ bằng viên vitamin và
+chứa vỏn vẹn **0,8 microgram i-ốt**. Uống xong, bệnh nhân cầm về một tờ giấy
+dặn ngủ riêng, trên đó có con số 7,29 ngày — nhỏ hơn cả hai con số đã ghép
+nên nó:
+
+<EffectiveHalfLife />
+
+## Hai lối thoát chạy song song
+
+Một hạt nhân I-131 trong tuyến giáp có đúng hai cách biến khỏi sổ sách, và
+chúng chạy độc lập nhau: tự phân rã beta với chu kỳ **8,02 ngày** — [không
+hạt nào biết tuổi mình](/vi/posts/chu-ky-ban-ra-khong-hat-nao-biet-tuoi-minh),
+mỗi giây là một cú gieo xúc xắc mới — hoặc bị nhả ra khỏi tuyến và thải theo
+đường thận, chu kỳ sinh học **80 ngày**.
+
+Trực giác đòi lấy trung bình, ra 44 ngày. Trực giác sai vì thời gian không
+phải thứ cộng được — *tốc độ* mới là:
+
+```
+λ_hd = λ_vl + λ_sh = ln2/8,02 + ln2/80 = 0,0864 + 0,0087 = 0,0951 mỗi ngày
+T_hd = ln2/λ_hd = 7,29 ngày
+```
+
+Tổng của các nghịch đảo luôn nhỏ hơn số hạng nhỏ nhất — [đúng luật điện trở
+song song](/vi/posts/dien-tro-song-song-nho-hon-ca-nhanh-nho-nhat): mở thêm
+một lối ra thì đám đông thoát nhanh hơn, dù lối ấy hẹp đến đâu. Ở đây lối
+sinh học rất hẹp, chỉ chiếm **9,1%** tổng tốc độ thoát, kéo 8,02 ngày xuống
+7,29 — hụt vỏn vẹn 0,73 ngày. Trong mọi tổng nghịch đảo, đồng hồ nhanh nhất
+cầm trịch.
+
+## 192 microsievert mỗi giờ, ở đúng một mét
+
+Con số ấy đáng tiền vì bệnh nhân bây giờ *là* một nguồn bức xạ đi lại trong
+nhà. Hằng số suất liều gamma của I-131 là Γ = 0,052 µSv·m²/(MBq·h), nên
+người ở cách d mét hứng lấy:
+
+```
+suất liều(t) = Γ · A₀ · 2^(−t/T_hd) / d²
+```
+
+Liều 3,7 GBq (100 mCi) là mức xoá mô giáp thông thường. Ngay sau khi uống,
+người đứng cách **1 m nhận 192 µSv mỗi giờ** — gấp khoảng 700 lần phông
+phóng xạ tự nhiên (0,27 µSv/h). Giới hạn liều công chúng là 1 mSv mỗi năm;
+ở khoảng cách ấy, **5,2 giờ là hết hạn mức của cả năm**.
+
+Nhưng nguồn tắt dần theo đúng đường cong 7,29 ngày, nên thứ phải cộng là
+diện tích dưới nó. Người ở cạnh h giờ mỗi ngày, trong n ngày đầu:
+
+```
+D(n) = (h/24) · Γ·A₀/d² · (24·T_hd/ln2) · (1 − 2^(−n/T_hd))
+```
+
+Đây đúng là công thức cơ quan hạt nhân Mỹ dùng để quyết định cho bệnh nhân
+về nhà hay giữ lại viện. Người ngủ cách **1 m, 8 giờ mỗi đêm, 7 đêm liền**
+lĩnh **7,87 mSv** — bằng 3,3 năm phông tự nhiên.
+
+## Ba núm vặn, và chỉ một núm miễn phí
+
+Số giờ ở cạnh vào tuyến tính: giảm nửa số giờ, giảm nửa liều. Số ngày thì
+bão hoà, vì nguồn tự tắt — 3 ngày đầu đã gánh **24,8%** toàn bộ liều trọn
+đời, 7 ngày đầu gánh **48,6%**. Đó là lý do mọi khuyến cáo đều dồn về mấy
+ngày đầu: tránh mặt tuần đầu xoá được một nửa vấn đề, tránh mặt tuần thứ tư
+gần như chẳng xoá được gì.
+
+Còn khoảng cách vào theo bình phương, và nó không tốn đồng nào. Lùi từ 1 m
+ra 2 m, mặt cầu mà bức xạ trải lên [rộng gấp
+bốn](/vi/posts/wifi-5-ghz-nhanh-hon-nhung-di-gan-hon) và 7,87 mSv rơi thẳng
+xuống **1,97 mSv**. Kê hai giường cách nhau **2,8 m** thì 7 đêm ấy còn đúng
+**1,00 mSv**. Hoặc giữ 2 m mà chỉ chung phòng 3 đêm: cũng **1,00 mSv**. Cùng
+một mức an toàn, ba cách mua — và cách rẻ nhất là dịch cái giường.
+
+## Trường hợp biên: dưới 30 cm bệnh nhân không còn là một điểm
+
+Đẩy thanh trượt về 0,3 m, cỡ khoảng cách khi bế một đứa trẻ, và công thức
+trả về 2 138 µSv/h: hạn mức cả năm trong **28 phút**. Nhưng ở cự ly đó, luật
+1/d² nói dối theo cả hai chiều. Nó thổi phồng, vì tuyến giáp không phải một
+điểm — phần lớn cơ thể bệnh nhân ở xa hơn 30 cm và tự chắn cho nhau. Nó cũng
+bỏ sót, vì Γ chỉ đếm gamma: hạt beta 606 keV của I-131 bay 1,9 m trong không
+khí nhưng chỉ **2,3 mm trong mô**, nên nó vô hình với người đứng cách một
+mét và trút sạch năng lượng vào người áp má. Chính hạt beta ấy là thứ chữa
+bệnh, và ở khoảng cách ôm thì "gần hơn ba lần" không còn là một phép nhân.
+
+Bản thân con số 80 ngày cũng không phải hằng số: người đã cắt gần hết tuyến
+giáp thải i-ốt trong một hai ngày, người còn sót nhiều mô thì giữ lâu hơn và
+`T_hd` trườn ngược về phía 8,02 — nên bác sĩ đo hấp thu của từng người chứ
+không tra bảng. Và vì đồng hồ đổi được, chụp chẩn đoán dùng I-123: 13,2 giờ,
+phân rã bằng bắt electron nên không có beta, liều vào tuyến giáp nhỏ hơn
+khoảng trăm lần. Cùng một nguyên tố, cùng một đường đi trong cơ thể — chỉ
+khác đồng hồ nào chạy nhanh hơn.

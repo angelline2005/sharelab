@@ -1,0 +1,201 @@
+---
+// Manning (Gauckler–Manning–Strickler, SI): v = (1/n)·R^(2/3)·√S, R = A/P, Q = v·A.
+// Kênh hình thang cố định: đáy b = 2 m, mái 1:1. A = (b+y)y, P = b + 2y√2.
+// Công thức thực nghiệm, chỉ đúng cho dòng đều, chảy rối hoàn toàn nhám.
+// Ngoài vùng tin cậy khi R < ~0,10 m; readout cảnh báo khi rơi vào đó.
+// n: 0,010 (bê tông xoa) → 0,060 (kênh cỏ rậm) theo bảng Chow (1959).
+---
+
+<figure class="demo" data-demo="kenh-muong-lat-be-tong-chay-nhanh-gap-hai">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Chiều sâu nước y (m) <output data-out="y"></output>
+      <input type="range" data-in="y" min="0.1" max="2" step="0.05" value="0.6" /></label>
+    <label>Độ dốc đáy S <output data-out="s"></output>
+      <input type="range" data-in="s" min="0.0001" max="0.01" step="0.0001" value="0.0005" /></label>
+    <label>Hệ số nhám n <output data-out="n"></output>
+      <input type="range" data-in="n" min="0.010" max="0.060" step="0.001" value="0.030" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Mặt cắt ngang một con mương đáy 2 m, mái dốc 1:1. Vùng xanh là diện tích
+    ướt A — phần nước thật sự chở đi; nét đỏ là chu vi ướt P — phần nước cọ
+    vào lòng kênh và mất năng lượng. Bán kính thuỷ lực R = A/P là tỉ số giữa
+    hai thứ đó. Ba cột bên phải: cùng mặt cắt ấy, cùng độ dốc ấy, vận tốc
+    thay đổi ra sao khi chỉ đổi mỗi bề mặt lòng kênh.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const CURVE = '#2563eb', MARK = '#dc2626', LM = '#f59e0b';
+  const B = 2, SIDE = 1;              // đáy 2 m, mái 1:1
+  const BANK = 2.15, DOMW = 6.9, DOMH = 2.55;
+
+  const area = (y: number) => (B + SIDE * y) * y;
+  const perim = (y: number) => B + 2 * y * Math.sqrt(1 + SIDE * SIDE);
+  const vel = (n: number, R: number, S: number) => (1 / n) * Math.pow(R, 2 / 3) * Math.sqrt(S);
+
+  const BARS: Array<[number, string]> = [[0.013, 'bê tông'], [0.025, 'đá xây'], [0.030, 'kênh đất']];
+
+  const f = (x: number, d: number) => x.toFixed(d).replace('.', ',');
+  const grp = (x: number) => Math.round(x).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+
+  function niceStep(max: number) {
+    const raw = max / 4, p = Math.pow(10, Math.floor(Math.log10(raw))), c = raw / p;
+    return (c < 1.5 ? 1 : c < 3.5 ? 2 : c < 7.5 ? 5 : 10) * p;
+  }
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (k: string) => root.querySelector(`[data-in="${k}"]`) as HTMLInputElement;
+    const output = (k: string) => root.querySelector(`[data-out="${k}"]`) as HTMLOutputElement;
+
+    function draw() {
+      const y = Number(input('y').value), S = Number(input('s').value), n = Number(input('n').value);
+      output('y').textContent = f(y, 2);
+      output('s').textContent = `${f(S * 1000, 1)}‰`;
+      output('n').textContent = f(n, 3);
+
+      const A = area(y), P = perim(y), R = A / P;
+      const v = vel(n, R, S), Q = v * A;
+      const T = B + 2 * SIDE * y, Fr = v / Math.sqrt(9.81 * (A / T));
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32;
+      const cssH = Math.round(cssW * (cssW < 520 ? 0.58 : 0.44));
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+      ctx.font = '10px system-ui,sans-serif';
+
+      const padL = 8, padT = 10, padB = 24, padR = 8, gap = 16;
+      const inner = cssW - padL - padR - gap;
+      const wL = inner * 0.56, wR = inner - wL;
+      const xL0 = padL, xR0 = padL + wL + gap;
+      const panelH = cssH - padT - padB;
+      const baseY = padT + panelH;
+
+      // ---- Trái: mặt cắt ngang ----
+      const sc = Math.min(wL / DOMW, panelH / DOMH);
+      const cx = xL0 + wL / 2;
+      const PX = (mx: number) => cx + mx * sc;
+      const PY = (my: number) => baseY - my * sc;
+
+      // bờ kênh
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.35; ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(PX(-DOMW / 2), PY(BANK));
+      ctx.lineTo(PX(-(B / 2 + SIDE * BANK)), PY(BANK));
+      ctx.lineTo(PX(-B / 2), PY(0));
+      ctx.lineTo(PX(B / 2), PY(0));
+      ctx.lineTo(PX(B / 2 + SIDE * BANK), PY(BANK));
+      ctx.lineTo(PX(DOMW / 2), PY(BANK));
+      ctx.stroke();
+
+      // thước sâu
+      ctx.globalAlpha = 0.45; ctx.fillStyle = fg; ctx.textAlign = 'left';
+      for (const m of [0.5, 1, 1.5, 2]) {
+        ctx.beginPath(); ctx.moveTo(PX(-DOMW / 2), PY(m)); ctx.lineTo(PX(-DOMW / 2) + 5, PY(m)); ctx.stroke();
+        ctx.fillText(`${f(m, 1)} m`, PX(-DOMW / 2) + 7, PY(m) + 3);
+      }
+      ctx.globalAlpha = 1;
+
+      // diện tích ướt
+      ctx.fillStyle = CURVE; ctx.globalAlpha = 0.22;
+      ctx.beginPath();
+      ctx.moveTo(PX(-B / 2), PY(0)); ctx.lineTo(PX(B / 2), PY(0));
+      ctx.lineTo(PX(B / 2 + SIDE * y), PY(y)); ctx.lineTo(PX(-(B / 2 + SIDE * y)), PY(y));
+      ctx.closePath(); ctx.fill();
+      ctx.globalAlpha = 1;
+      ctx.strokeStyle = CURVE; ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(PX(-(B / 2 + SIDE * y)), PY(y)); ctx.lineTo(PX(B / 2 + SIDE * y), PY(y));
+      ctx.stroke();
+
+      // chu vi ướt
+      ctx.strokeStyle = MARK; ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(PX(-(B / 2 + SIDE * y)), PY(y));
+      ctx.lineTo(PX(-B / 2), PY(0)); ctx.lineTo(PX(B / 2), PY(0));
+      ctx.lineTo(PX(B / 2 + SIDE * y), PY(y));
+      ctx.stroke(); ctx.lineWidth = 1;
+
+      ctx.fillStyle = CURVE; ctx.textAlign = 'center';
+      ctx.fillText('A', PX(0), PY(y / 2) + 3);
+      ctx.fillStyle = MARK;
+      ctx.fillText('P', PX(0), PY(0) + 12);
+
+      const cap = `A ${f(A, 2)} m²  ·  P ${f(P, 2)} m  ·  R ${f(R, 3)} m`;
+      ctx.fillStyle = fg; ctx.globalAlpha = 0.7; ctx.textAlign = 'center';
+      ctx.fillText(wL > 210 ? cap : `R = ${f(R, 3)} m`, cx, padT + 9);
+      ctx.globalAlpha = 1;
+
+      // ---- Phải: ba cột vận tốc ----
+      const vs = BARS.map(([nn]) => vel(nn, R, S));
+      const vMax = Math.max(...vs, v) * 1.25;
+      const BY = (vv: number) => baseY - (vv / vMax) * panelH;
+
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.3;
+      ctx.beginPath(); ctx.moveTo(xR0, padT); ctx.lineTo(xR0, baseY); ctx.lineTo(xR0 + wR, baseY); ctx.stroke();
+      const st = niceStep(vMax);
+      ctx.textAlign = 'left';
+      for (let k = 1; k * st < vMax; k++) {
+        const yy = BY(k * st);
+        ctx.globalAlpha = 0.15;
+        ctx.beginPath(); ctx.moveTo(xR0, yy); ctx.lineTo(xR0 + wR, yy); ctx.stroke();
+        ctx.globalAlpha = 0.55; ctx.fillStyle = fg;
+        ctx.fillText(f(k * st, st < 1 ? 2 : 1), xR0 + 3, yy - 3);
+      }
+      ctx.globalAlpha = 0.55; ctx.fillStyle = fg; ctx.textAlign = 'right';
+      ctx.fillText('m/s', xR0 + wR, padT + 9);
+      ctx.globalAlpha = 1;
+
+      const slot = wR / BARS.length, bw = Math.min(slot * 0.5, 40);
+      BARS.forEach(([nn, lab], i) => {
+        const bx = xR0 + slot * (i + 0.5);
+        ctx.fillStyle = CURVE; ctx.globalAlpha = Math.abs(nn - n) < 0.0005 ? 1 : 0.55;
+        ctx.fillRect(bx - bw / 2, BY(vs[i]), bw, baseY - BY(vs[i]));
+        ctx.globalAlpha = 0.75; ctx.fillStyle = fg; ctx.textAlign = 'center';
+        ctx.fillText(lab, bx, baseY + 13);
+        ctx.fillText(f(vs[i], 2), bx, BY(vs[i]) - 4);
+        ctx.globalAlpha = 1;
+      });
+
+      // vạch vận tốc ứng với n đang chọn
+      ctx.strokeStyle = LM; ctx.lineWidth = 2; ctx.setLineDash([5, 4]);
+      ctx.beginPath(); ctx.moveTo(xR0, BY(v)); ctx.lineTo(xR0 + wR, BY(v)); ctx.stroke();
+      ctx.setLineDash([]); ctx.lineWidth = 1;
+      ctx.fillStyle = LM; ctx.textAlign = 'right';
+      ctx.fillText(`n = ${f(n, 3)}`, xR0 + wR, BY(v) - 4);
+
+      let note = '';
+      if (R < 0.1) note = ' · <b>R dưới 10 cm: Manning ra ngoài vùng đo đạc</b>';
+      else if (Fr >= 1) note = ` · <b>Fr = ${f(Fr, 2)}: dòng xiết</b>`;
+      else if (n >= 0.045) note = ' · lòng kênh cỏ rậm';
+
+      readout.innerHTML =
+        `R = <b>${f(R, 3)} m</b> · v = <b>${f(v, 2)} m/s</b> · ` +
+        `Q = <b>${grp(Q * 1000)} L/s</b> (${grp(Q * 3600)} m³/h)${note}`;
+    }
+
+    root.querySelectorAll('input').forEach((el) => el.addEventListener('input', draw));
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="kenh-muong-lat-be-tong-chay-nhanh-gap-hai"]').forEach(setup);
+</script>

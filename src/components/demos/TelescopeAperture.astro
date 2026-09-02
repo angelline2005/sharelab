@@ -1,0 +1,222 @@
+---
+// Telescope aperture vs magnification.
+//   thu sáng      = (D / d_mắt)²            — tỉ số diện tích hứng sáng
+//   cấp sao giới hạn m ≈ 2,7 + 5·log₁₀ D(mm) — quy tắc kinh nghiệm, bầu trời tối
+//   đồng tử ra    = D / M                    — hữu ích khi 0,5 mm ≤ D/M ≤ đồng tử mắt
+// Nguồn: quy tắc quan trắc phổ thông (Sidgwick, Observational Astronomy for
+// Amateurs; Norton's Star Atlas). Ngưỡng 0,5 mm tương đương M = 2·D(mm), là chỗ
+// đĩa nhiễu xạ 1,22λ/D được phóng thành 4,6 phút cung — gấp ~4,6 lần độ phân
+// giải mắt người (1′), nên phóng to thêm không lộ thêm chi tiết nào.
+// Miền hợp lệ: kính khẩu độ nhỏ/vừa 30–400 mm, quan sát bằng mắt, λ = 550 nm.
+// Cấp sao giới hạn là quy tắc ±0,5 cấp và giả định trời tối, không đèn thành phố.
+---
+
+<figure class="demo" data-demo="kinh-thien-van-khau-do-mua-anh-sang">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Khẩu độ D (mm) <output data-out="d"></output>
+      <input type="range" data-in="d" min="30" max="400" step="1" value="60" /></label>
+    <label>Độ phóng đại M (lần) <output data-out="m"></output>
+      <input type="range" data-in="m" min="20" max="700" step="1" value="675" /></label>
+    <label>Con ngươi người quan sát (mm) <output data-out="p"></output>
+      <input type="range" data-in="p" min="4" max="7" step="0.1" value="7" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Hàng trên: đĩa khẩu độ và đĩa con ngươi vẽ đúng tỉ lệ trên cùng một thước
+    milimét — diện tích chênh bao nhiêu lần thì thu sáng chênh bấy nhiêu.
+    Hàng dưới: đồng tử ra D/M trên trục lôgarit. Rơi xuống dưới 0,5 mm là phóng
+    đại rỗng — ảnh to thêm mà chi tiết thì không. Vượt quá con ngươi của bạn là
+    phần ánh sáng ngoài rìa bị mống mắt chặn lại, tức là phí đúng khẩu độ vừa mua.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const CURVE = '#2563eb', MARK = '#dc2626', WARN = '#f59e0b';
+  const D_MAX = 400, EXIT_MIN = 0.03, EXIT_MAX = 12, USEFUL = 0.5;
+
+  const gather = (D: number, d: number) => (D / d) ** 2;
+  const mlim = (D: number) => 2.7 + 5 * Math.log10(D);
+  const vi = (x: number, n: number) => x.toFixed(n).replace('.', ',');
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (k: string) => root.querySelector(`[data-in="${k}"]`) as HTMLInputElement;
+    const output = (k: string) => root.querySelector(`[data-out="${k}"]`) as HTMLOutputElement;
+
+    function draw() {
+      const D = Number(input('d').value);
+      const M = Number(input('m').value);
+      const pupil = Number(input('p').value);
+      output('d').textContent = String(D);
+      output('m').textContent = String(M);
+      output('p').textContent = vi(pupil, 1);
+
+      const ratio = gather(D, pupil);
+      const exit = D / M;
+      const mMax = D / USEFUL;
+      const mag = mlim(D);
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.62);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+      const F = Math.max(10, Math.min(12, cssW / 52));
+
+      // ---------- Hàng 1: đĩa khẩu độ vs đĩa con ngươi, đúng tỉ lệ ----------
+      const padL = 34, padR = 10, padT = 10;
+      const row1B = Math.round(cssH * 0.66);        // đáy hàng 1 = đường thước
+      const reserve = Math.min(190, cssW * 0.36);   // chỗ cho khối chữ bên phải
+      const diamMax = Math.max(40, Math.min(row1B - padT - 24, cssW - padL - padR - reserve));
+      const s = diamMax / D_MAX;                    // px trên mỗi mm
+      const base = row1B - 22;                      // đường thước (đáy hai đĩa)
+
+      // thước milimét
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.3;
+      ctx.beginPath(); ctx.moveTo(padL, base); ctx.lineTo(padL + diamMax, base); ctx.stroke();
+      ctx.globalAlpha = 0.55; ctx.fillStyle = fg; ctx.font = `${F}px system-ui,sans-serif`;
+      ctx.textAlign = 'center';
+      for (const mm of [0, 100, 200, 300, 400]) {
+        const x = padL + mm * s;
+        ctx.globalAlpha = 0.3;
+        ctx.beginPath(); ctx.moveTo(x, base); ctx.lineTo(x, base + 5); ctx.stroke();
+        ctx.globalAlpha = 0.55;
+        ctx.fillText(mm === 400 ? '400 mm' : String(mm), x, base + 5 + F + 3);
+      }
+      ctx.globalAlpha = 1;
+
+      // đĩa khẩu độ: bề ngang trải đúng từ 0 tới D trên thước
+      const rA = (D * s) / 2;
+      ctx.fillStyle = CURVE; ctx.globalAlpha = 0.18;
+      ctx.beginPath(); ctx.arc(padL + rA, base - rA, rA, 0, Math.PI * 2); ctx.fill();
+      ctx.globalAlpha = 1; ctx.strokeStyle = CURVE; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.arc(padL + rA, base - rA, rA, 0, Math.PI * 2); ctx.stroke();
+
+      // đĩa con ngươi: cùng gốc 0, cùng đáy — nằm lọt trong góc đĩa lớn
+      const rP = Math.max(1.2, (pupil * s) / 2);
+      ctx.fillStyle = MARK; ctx.globalAlpha = 0.85;
+      ctx.beginPath(); ctx.arc(padL + rP, base - rP, rP, 0, Math.PI * 2); ctx.fill();
+      ctx.globalAlpha = 1;
+      // đường chỉ tới đĩa con ngươi
+      ctx.strokeStyle = MARK; ctx.lineWidth = 1; ctx.globalAlpha = 0.7;
+      ctx.beginPath();
+      ctx.moveTo(padL + rP, base - 2 * rP);
+      ctx.lineTo(padL - 6, base - 2 * rP - 16);
+      ctx.stroke();
+      ctx.globalAlpha = 1; ctx.lineWidth = 1;
+
+      // khối chữ bên phải
+      const tx = padL + diamMax + 22;
+      let ty = padT + F + 6;
+      ctx.textAlign = 'left';
+      ctx.fillStyle = fg;
+      ctx.font = `bold ${Math.round(F * 1.7)}px system-ui,sans-serif`;
+      ctx.fillText(`thu sáng ×${Math.round(ratio).toLocaleString('vi-VN')}`, tx, ty + F);
+      ty += F * 2.4;
+      ctx.font = `${F}px system-ui,sans-serif`;
+      ctx.fillStyle = CURVE;
+      ctx.fillText(`khẩu độ ${D} mm`, tx, ty);
+      ty += F + 6;
+      ctx.fillStyle = MARK;
+      ctx.fillText(`con ngươi ${vi(pupil, 1)} mm`, tx, ty);
+      ty += F + 10;
+      ctx.fillStyle = fg; ctx.globalAlpha = 0.75;
+      ctx.fillText(`cấp sao giới hạn ${vi(mag, 1)}`, tx, ty);
+      ctx.globalAlpha = 1;
+
+      // ---------- Hàng 2: trục lôgarit của đồng tử ra ----------
+      const axY = row1B + Math.round((cssH - row1B) * 0.46);
+      const ax0 = padL + 6, ax1 = cssW - padR - 6;
+      const lo = Math.log10(EXIT_MIN), hi = Math.log10(EXIT_MAX);
+      const X = (e: number) =>
+        ax0 + ((Math.log10(Math.min(Math.max(e, EXIT_MIN), EXIT_MAX)) - lo) / (hi - lo)) * (ax1 - ax0);
+      const bandH = 14;
+
+      // ba vùng chế độ
+      const xUse = X(USEFUL), xEye = X(pupil);
+      ctx.globalAlpha = 0.14;
+      ctx.fillStyle = MARK; ctx.fillRect(ax0, axY - bandH, xUse - ax0, bandH);
+      ctx.fillStyle = CURVE; ctx.fillRect(xUse, axY - bandH, xEye - xUse, bandH);
+      ctx.fillStyle = WARN; ctx.fillRect(xEye, axY - bandH, ax1 - xEye, bandH);
+      ctx.globalAlpha = 1;
+
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.3;
+      ctx.beginPath(); ctx.moveTo(ax0, axY); ctx.lineTo(ax1, axY); ctx.stroke();
+      ctx.globalAlpha = 1;
+
+      // vạch mốc 0,5 mm và mốc con ngươi
+      ctx.strokeStyle = MARK; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.moveTo(xUse, axY - bandH - 6); ctx.lineTo(xUse, axY + 4); ctx.stroke();
+      ctx.strokeStyle = WARN;
+      ctx.beginPath(); ctx.moveTo(xEye, axY - bandH - 6); ctx.lineTo(xEye, axY + 4); ctx.stroke();
+      ctx.lineWidth = 1;
+
+      // nhãn vùng
+      ctx.font = `${F}px system-ui,sans-serif`; ctx.textAlign = 'center';
+      ctx.fillStyle = fg; ctx.globalAlpha = 0.75;
+      if (xUse - ax0 > 74) ctx.fillText('phóng đại rỗng', (ax0 + xUse) / 2, axY - bandH - 10);
+      if (xEye - xUse > 60) ctx.fillText('vùng hữu ích', (xUse + xEye) / 2, axY - bandH - 10);
+      if (ax1 - xEye > 70) ctx.fillText('phí khẩu độ', (xEye + ax1) / 2, axY - bandH - 10);
+      ctx.globalAlpha = 1;
+
+      // vạch chia lôgarit có số
+      ctx.globalAlpha = 0.55; ctx.fillStyle = fg; ctx.textAlign = 'center';
+      for (const e of [0.05, 0.1, 0.2, 0.5, 1, 2, 5, 10]) {
+        const x = X(e);
+        ctx.globalAlpha = 0.3; ctx.strokeStyle = fg;
+        ctx.beginPath(); ctx.moveTo(x, axY); ctx.lineTo(x, axY + 5); ctx.stroke();
+        ctx.globalAlpha = 0.55;
+        ctx.fillText(e < 1 ? vi(e, e < 0.1 ? 2 : 1) : String(e), x, axY + 5 + F + 3);
+      }
+      ctx.globalAlpha = 0.55;
+      ctx.textAlign = 'right';
+      ctx.fillText('đồng tử ra (mm)', ax1, axY + 5 + 2 * F + 8);
+      ctx.globalAlpha = 1;
+
+      // điểm đánh dấu đồng tử ra hiện tại
+      const col = exit < USEFUL ? MARK : exit > pupil ? WARN : CURVE;
+      const xe = X(exit);
+      ctx.fillStyle = col;
+      ctx.beginPath(); ctx.arc(xe, axY - bandH / 2, 6, 0, Math.PI * 2); ctx.fill();
+      ctx.font = `bold ${F}px system-ui,sans-serif`;
+      ctx.textAlign = exit < 0.2 ? 'left' : 'center';
+      ctx.fillText(`${vi(exit, exit < 1 ? 3 : 2)} mm`, exit < 0.2 ? xe + 10 : xe, axY - bandH - 22);
+
+      // ---------- dòng số ----------
+      const eTxt = vi(exit, exit < 1 ? 3 : 2);
+      let note: string;
+      if (exit < USEFUL) {
+        note = ` — <b>phóng đại rỗng</b> (trần hữu ích ${Math.round(mMax)}×)`;
+      } else if (exit > pupil) {
+        note = ` — <b>vượt con ngươi</b>: chỉ ${vi(M * pupil, 0)} mm khẩu độ thật sự vào mắt`;
+      } else {
+        note = ' — trong vùng hữu ích';
+      }
+      readout.innerHTML =
+        `D = ${D} mm · thu sáng <b>×${Math.round(ratio).toLocaleString('vi-VN')}</b> so với con ngươi ` +
+        `${vi(pupil, 1)} mm · M = ${M}× → đồng tử ra <b>${eTxt} mm</b>${note} · ` +
+        `cấp sao giới hạn <b>${vi(mag, 1)}</b>`;
+    }
+
+    root.querySelectorAll('input').forEach((el) => el.addEventListener('input', draw));
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="kinh-thien-van-khau-do-mua-anh-sang"]').forEach(setup);
+</script>

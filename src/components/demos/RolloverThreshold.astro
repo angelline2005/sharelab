@@ -1,0 +1,179 @@
+---
+// Rigid-body rollover threshold (static stability factor):
+//   SSF = t / (2h)          [t = track width, h = CG height]
+//   rollover when a_lat/g > SSF ; skid when a_lat/g > mu
+//   limit speed on a flat curve: v = sqrt(a/g · g · R)
+// Source: NHTSA rollover resistance rating (SSF), classic quasi-static
+// moment balance about the outer tyre contact patch.
+// Valid for: rigid body, flat (unbanked) road, steady cornering, no
+// suspension roll and no tripping obstacle. Tyre grip fixed at mu = 0,80
+// (dry asphalt). Real thresholds run 10–20% lower.
+---
+
+<figure class="demo" data-demo="xe-khach-lat-truoc-khi-lop-truot">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Chiều cao trọng tâm h (m) <output data-out="h"></output>
+      <input type="range" data-in="h" min="0.4" max="2" step="0.01" value="1.4" /></label>
+    <label>Vệt bánh t (m) <output data-out="t"></output>
+      <input type="range" data-in="t" min="1.3" max="2.2" step="0.05" value="2" /></label>
+    <label>Bán kính cua R (m) <output data-out="r"></output>
+      <input type="range" data-in="r" min="20" max="200" step="5" value="60" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Bên trái là mặt cắt nhìn từ sau, vẽ đúng tỉ lệ: đường nối trọng tâm với
+    mép bánh ngoài chính là hướng "trọng lực hiệu dụng" tại đúng ngưỡng lật —
+    nghiêng hơn thế là xe đi qua điểm không quay lại. Bên phải, đường xanh là
+    tốc độ lật, đường cam là tốc độ trượt của lốp bám 0,80 g. Đường nào thấp
+    hơn thì kết cục đó xảy ra trước; xe con nằm trên, xe khách nằm dưới.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const G = 9.81, MU = 0.8;
+  const CURVE = '#2563eb', MARK = '#dc2626', SKID = '#f59e0b';
+  const ssf = (t: number, h: number) => t / (2 * h);
+  const vLim = (a: number, R: number) => 3.6 * Math.sqrt(a * G * R);
+  const vn = (x: number, d: number) => x.toFixed(d).replace('.', ',');
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (k: string) => root.querySelector(`[data-in="${k}"]`) as HTMLInputElement;
+    const output = (k: string) => root.querySelector(`[data-out="${k}"]`) as HTMLOutputElement;
+
+    function draw() {
+      const h = Number(input('h').value), t = Number(input('t').value), R = Number(input('r').value);
+      output('h').textContent = vn(h, 2);
+      output('t').textContent = vn(t, 2);
+      output('r').textContent = String(R);
+
+      const S = ssf(t, h);
+      const deg = (Math.atan(S) * 180) / Math.PI;
+      const vRoll = vLim(S, R), vSkid = vLim(MU, R);
+      const rollsFirst = S < MU;
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.46);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+      ctx.font = '10px system-ui,sans-serif';
+      ctx.lineWidth = 1;
+
+      // ---------- left panel: rear-view cross section, drawn to scale ----------
+      const pw = Math.round(cssW * 0.4);
+      const gy = cssH - 24, topY = 12;
+      const sc = Math.min((pw - 18) / 2.9, (gy - topY) / 3.7);
+      const cx = pw / 2;
+      const PX = (m: number) => cx + m * sc, PY = (m: number) => gy - m * sc;
+
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.35;
+      ctx.beginPath(); ctx.moveTo(4, gy); ctx.lineTo(pw - 4, gy); ctx.stroke();
+      ctx.globalAlpha = 1;
+
+      const bodyTop = Math.max(2 * h - 0.3, 0.55);
+      ctx.fillStyle = fg; ctx.globalAlpha = 0.08;
+      ctx.fillRect(PX(-t / 2 - 0.06), PY(bodyTop), (t + 0.12) * sc, (bodyTop - 0.3) * sc);
+      ctx.globalAlpha = 0.5; ctx.strokeStyle = fg;
+      ctx.strokeRect(PX(-t / 2 - 0.06), PY(bodyTop), (t + 0.12) * sc, (bodyTop - 0.3) * sc);
+      ctx.globalAlpha = 0.45;
+      for (const s of [-1, 1]) ctx.fillRect(PX(s * t / 2 - 0.11), PY(0.5), 0.22 * sc, 0.5 * sc);
+      ctx.globalAlpha = 1;
+
+      // vertical through the CG + the tipping line to the outer contact patch
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.4; ctx.setLineDash([4, 4]);
+      ctx.beginPath(); ctx.moveTo(PX(0), PY(h)); ctx.lineTo(PX(0), PY(0)); ctx.stroke();
+      ctx.setLineDash([]); ctx.globalAlpha = 1;
+
+      ctx.strokeStyle = rollsFirst ? MARK : CURVE; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.moveTo(PX(0), PY(h)); ctx.lineTo(PX(t / 2), PY(0)); ctx.stroke();
+      ctx.lineWidth = 1;
+
+      ctx.fillStyle = MARK;
+      ctx.beginPath(); ctx.arc(PX(0), PY(h), 5, 0, Math.PI * 2); ctx.fill();
+
+      ctx.fillStyle = fg; ctx.globalAlpha = 0.75; ctx.textAlign = 'left';
+      ctx.fillText(`h = ${vn(h, 2)} m`, PX(0) + 8, PY(h) - 6);
+      ctx.fillText(`${vn(deg, 1)}°`, PX(t / 4) + 4, PY(h / 2) + 4);
+      ctx.textAlign = 'center';
+      ctx.fillText(`t = ${vn(t, 2)} m`, PX(0), gy + 17);
+      ctx.globalAlpha = 0.4;
+      ctx.beginPath(); ctx.moveTo(PX(-t / 2), gy + 5); ctx.lineTo(PX(t / 2), gy + 5); ctx.stroke();
+      ctx.globalAlpha = 1;
+
+      // ---------- right panel: limit speed vs curve radius ----------
+      const padL = pw + 34, padR = 8, padT = 12, padB = 26;
+      const plotW = cssW - padL - padR, plotH = cssH - padT - padB;
+      const yMax = 200;
+      const X = (r: number) => padL + ((r - 20) / 180) * plotW;
+      const Y = (v: number) => cssH - padB - (v / yMax) * plotH;
+
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.3;
+      ctx.beginPath(); ctx.moveTo(padL, padT); ctx.lineTo(padL, cssH - padB); ctx.lineTo(cssW - padR, cssH - padB); ctx.stroke();
+      ctx.globalAlpha = 0.55; ctx.fillStyle = fg;
+      ctx.textAlign = 'center';
+      for (const r of [20, 60, 100, 150, 200]) ctx.fillText(`${r}`, X(r), cssH - padB + 14);
+      ctx.fillText('bán kính cua (m)', (padL + cssW - padR) / 2, cssH - padB + 24);
+      ctx.textAlign = 'right';
+      for (const v of [50, 100, 150, 200]) ctx.fillText(`${v}`, padL - 4, Y(v) + 3);
+      ctx.textAlign = 'left';
+      ctx.fillText('km/h', padL + 4, padT + 9);
+      ctx.globalAlpha = 1;
+
+      ctx.save();
+      ctx.beginPath(); ctx.rect(padL, padT, plotW, plotH); ctx.clip();
+      for (const [a, col] of [[S, CURVE], [MU, SKID]] as Array<[number, string]>) {
+        ctx.strokeStyle = col; ctx.lineWidth = 2; ctx.beginPath();
+        for (let i = 0; i <= 180; i++) {
+          const r = 20 + i;
+          i ? ctx.lineTo(X(r), Y(vLim(a, r))) : ctx.moveTo(X(r), Y(vLim(a, r)));
+        }
+        ctx.stroke();
+      }
+      ctx.restore();
+      ctx.lineWidth = 1;
+
+      ctx.textAlign = 'left';
+      ctx.fillStyle = CURVE; ctx.fillText('ngưỡng lật', padL + 4, padT + 23);
+      ctx.fillStyle = SKID; ctx.fillText('ngưỡng trượt (0,80 g)', padL + 4, padT + 35);
+
+      const vGov = Math.min(vRoll, vSkid);
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.35; ctx.setLineDash([3, 3]);
+      ctx.beginPath(); ctx.moveTo(X(R), cssH - padB); ctx.lineTo(X(R), Y(vGov)); ctx.stroke();
+      ctx.setLineDash([]); ctx.globalAlpha = 1;
+      ctx.fillStyle = MARK;
+      ctx.beginPath(); ctx.arc(X(R), Y(vGov), 5, 0, Math.PI * 2); ctx.fill();
+      ctx.textAlign = X(R) > padL + plotW * 0.6 ? 'right' : 'left';
+      ctx.fillText(`${vn(vGov, 1)} km/h`, X(R) + (X(R) > padL + plotW * 0.6 ? -9 : 9), Y(vGov) - 7);
+
+      const verdict = rollsFirst
+        ? '<b>LẬT TRƯỚC</b> — bánh trong nhấc lên khi lốp vẫn còn bám'
+        : '<b>TRƯỢT TRƯỚC</b> — lốp buông tay trước, xe văng ngang chứ không lật';
+      readout.innerHTML =
+        `Trọng tâm ${vn(h, 2)} m · vệt bánh ${vn(t, 2)} m → SSF = <b>${vn(S, 2)}</b>` +
+        ` (lật khi mặt đường nghiêng ${vn(deg, 1)}°) · lốp cho 0,80 g ⇒ ${verdict}` +
+        ` · trên cua R = ${R} m: lật ở <b>${vn(vRoll, 1)} km/h</b>, trượt ở ${vn(vSkid, 1)} km/h.`;
+    }
+
+    root.querySelectorAll('input').forEach((el) => el.addEventListener('input', draw));
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="xe-khach-lat-truoc-khi-lop-truot"]').forEach(setup);
+</script>

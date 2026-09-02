@@ -1,0 +1,94 @@
+---
+title: "Ngọn lửa bếp gas 1 950 °C, nồi canh vẫn đúng 100 °C"
+seoTitle: "Nhiệt độ ngọn lửa bếp gas là bao nhiêu, và vì sao mở vòng gió lại làm lửa nguội đi"
+description: "Đốt 1 mol metan tỏa 802 kJ — nhưng nhiệt ấy phải hâm nóng 10,52 mol khí, mà 71,5% là nitơ chẳng phản ứng với gì. Mở vòng gió cho không khí gấp đôi: cùng khoản nhiệt chia cho 20,04 mol, lửa tụt từ 2 054 xuống 1 207 °C. Nóng hay nguội là chuyện chia phần."
+pubDate: 2026-09-02
+tags: ["vat-ly", "nhiet-hoc", "javascript"]
+translationId: "nhiet-do-ngon-lua-bep-gas-1950-do"
+---
+
+import AdiabaticFlame from '../../../components/demos/AdiabaticFlame.astro';
+
+Ngọn lửa xanh dưới đáy nồi khoảng **1 950 °C** — thừa sức làm chảy thanh
+sắt. Ngay trên nó vài centimét, nồi canh nằm đúng 100 °C và không nhích
+thêm một độ. Cả hai con số đến từ cùng một phép chia:
+
+<AdiabaticFlame />
+
+## 802 kJ chia cho 10,52 mol khí
+
+Đốt 1 mol metan (CH₄, thành phần chính của gas thành phố) tỏa ra **802
+kJ**. Nhưng câu hỏi "lửa nóng bao nhiêu độ" không hỏi *bao nhiêu nhiệt* —
+nó hỏi *nhiệt ấy phải hâm nóng bao nhiêu khí*.
+
+Muốn cháy hết, 1 mol metan cần 2 mol O₂ — và oxy ấy đến từ không khí, thứ
+luôn giao hàng kèm: mỗi mol O₂ kéo theo **3,76 mol nitơ**. Thứ bay ra
+khỏi ngọn lửa vì thế là 1 mol CO₂ + 2 mol H₂O + 7,52 mol N₂ = **10,52
+mol**, trong đó **71,5% là nitơ** — chất trơ không góp một joule nào, chỉ
+đến để được hâm nóng bằng tiền gas của bạn.
+
+Chia 802 kJ cho 10,52 mol ấy, với nhiệt dung thật của từng chất, ra
+**2 054 °C** — nhiệt độ ngọn lửa nếu không joule nào thoát ra ngoài.
+
+## Vòng gió dưới chân bếp là cái núm chia phần
+
+Vòng kim loại xoay được ở chân mọi bếp gas chính là núm chỉnh λ — hệ số
+không khí: λ = 1 là cấp vừa đủ oxy, λ = 2 là gấp đôi. Phần thừa không
+cháy, chỉ đi ngang qua ngọn lửa, nóng lên rồi bay lên trần bếp. Ở λ = 1,5,
+khói phồng thành 15,28 mol và nhiệt độ tụt còn **1 516 °C**; ở λ = 2 —
+20,04 mol — còn **1 207 °C**. Vẫn đúng 802 kJ ấy, mà lửa nguội đi **847
+độ**.
+
+Vậy sao không vặn kín vòng gió cho thật nóng? Vì trộn khí không bao giờ
+hoàn hảo — ngay ở tỉ lệ lý thuyết vẫn còn những túi thiếu oxy sinh CO và
+muội. Bếp dân dụng cố tình chạy λ ≈ 1,3–1,8: hy sinh vài trăm độ để mua
+sự cháy sạch, khoản thuế mà nhà máy nhiệt điện cũng nộp, vì mỗi độ nguồn
+nóng mất đi là một lát [hiệu suất
+Carnot](/vi/posts/hieu-suat-carnot-loai-thue-khong-ai-tron-duoc) bị cắt.
+
+## Đổi sang bình LPG: nhiệt gấp 3,3 lần, lửa nóng thêm 72 độ
+
+Kéo thanh trượt nhiên liệu từ metan sang butan (C₄H₁₀, thứ trong bình LPG)
+rồi chờ ngọn lửa vọt lên. Nó không vọt.
+
+Butan tỏa **2 658 kJ** mỗi mol, gấp **3,31 lần** metan — nhưng cần 6,5 mol
+O₂ thay vì 2, kéo theo 24,44 mol nitơ, nên khói thành 33,44 mol, gấp
+**3,18 lần**. Tử số nhân 3,31, mẫu số nhân 3,18: nhiệt độ chỉ nhích từ
+2 054 lên **2 126 °C**.
+
+Đây là điều đáng nhớ nhất: **nhiệt độ ngọn lửa là nhiệt trên mỗi mol khói,
+không phải trên mỗi mol nhiên liệu**. Mọi ankan đều kéo theo nitơ gần như
+tỉ lệ thuận với năng lượng của mình: bình LPG đun lâu hơn hẳn cùng thể
+tích gas ống, mà ngọn lửa nhìn y hệt.
+
+## Ngọn lửa xanh không phải màu của nhiệt độ
+
+Dưới λ = 1,47, lửa metan nóng hơn điểm chảy của sắt (1 538 °C), vậy mà nồi
+thép vẫn nguyên: nước bên trong nuốt mọi kilôwatt bạn rót vào để [đổi
+trạng thái chứ không đổi nhiệt
+độ](/vi/posts/nhiet-an-hai-quang-nhiet-ke-dung-im), ghim đáy nồi quanh
+100 °C. Cạn nước là mất lớp bảo vệ ấy, và chiếc chảo trả giá.
+
+Màu xanh cũng đánh lừa: vật ở 2 000 °C bức xạ nhiệt màu cam đỏ, nên ánh
+xanh ấy không phải [màu của nhiệt
+độ](/vi/posts/dinh-luat-wien-mau-cua-nhiet-do) mà là phát quang hóa học,
+từ các gốc CH và C₂ sống chưa tới một phần triệu giây. Ngọn vàng của bếp
+chỉnh sai mới *đúng là* màu của nhiệt độ — muội carbon nung sáng: trông
+ấm hơn, thực ra nguội hơn, và đang bôi đen đáy nồi bạn.
+
+## Trường hợp biên: công thức sai nhất đúng lúc nó tự tin nhất
+
+Con số 2 054 °C là trần lý thuyết, không phải phép đo: lửa metan thật
+trong không khí dừng ở **1 950 °C**, hụt 104 độ. Trên khoảng 2 000 K, CO₂
+và H₂O **phân li ngược** thành CO, H₂, O và OH — phản ứng thu nhiệt, ăn
+bớt chính khoản năng lượng vừa tỏa ra. Cân bằng năng lượng đơn giản không
+biết chuyện đó, nên sai số lớn dần theo nhiệt độ: chính xác nhất ở λ = 3
+nơi chẳng ai quan tâm, tệ nhất ở λ = 1 nơi ta muốn biết.
+
+Muốn thấy nó tệ đến đâu, hãy đuổi hết nitơ. Đốt metan bằng oxy nguyên
+chất: khói còn 3 mol thay vì 10,52, và 802 kJ dồn thành **267 kJ mỗi
+mol** — công thức hân hoan trả về **4 936 °C**, còn đèn xì oxy–metan thật
+chỉ đạt khoảng 2 800 °C: ở vùng ấy, mọi joule vượt ngưỡng đều bị đem bẻ
+gãy phân tử thay vì làm chúng chạy nhanh hơn. Đèn oxy–axetilen chạm
+3 100 °C, kỷ lục của lửa hóa học thông thường — tới đó không nhờ nhiên
+liệu mạnh hơn, mà nhờ đuổi 7,52 mol khách không mời khỏi bàn ăn.

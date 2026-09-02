@@ -1,0 +1,103 @@
+---
+title: "Cùng một góc 26,6°: kéo cái tủ nhẹ hơn đẩy nó đúng 40%"
+seoTitle: "Kéo hay đẩy vật nặng: góc tối ưu θ = arctan(μ)"
+description: "Kéo chếch lên nhấc bớt vật khỏi sàn nên ma sát nhẹ đi; đẩy chúc xuống làm điều ngược lại. Với μ = 0,50, góc kéo tối ưu là 26,6° — tiết kiệm 10,6% so với kéo ngang và nhẹ hơn 40% so với đẩy cùng góc ấy. Còn qua 63,4° thì không lực đẩy nào làm vật nhúc nhích nữa."
+pubDate: 2026-09-02
+tags: ["vat-ly", "co-hoc", "javascript"]
+translationId: "keo-hay-day-va-goc-toi-uu-arctan-mu"
+---
+
+import PullVsPush from '../../../components/demos/PullVsPush.astro';
+
+Cái tủ lạnh không chịu nhúc nhích. Bạn đổi tư thế: thay vì chồm người đẩy
+tới, bạn vòng ra phía trước, nắm mép tủ kéo chếch lên — và nó trượt. Vẫn
+bạn, vẫn cái tủ ấy, vẫn sức ấy; chỉ hướng của lực xoay đi vài chục độ:
+
+<PullVsPush />
+
+## Sợi dây chếch lên đã gánh hộ sàn nhà một phần cái tủ
+
+Ma sát trượt mặc kệ bạn đẩy mạnh cỡ nào theo phương ngang — nó chỉ đếm lực
+ép vuông góc xuống sàn: `F_ms = μN`. Kéo chếch lên góc θ, thành phần thẳng
+đứng `F·sinθ` **nhấc bớt vật khỏi sàn**, N tụt xuống và ma sát tụt theo.
+Giải hai phương trình cân bằng cùng lúc ra một dòng:
+
+```
+F_kéo = μW / (cosθ + μ·sinθ)
+```
+
+Cái tủ 100 kg (W = 981 N) trên nền gạch μ = 0,50: kéo ngang cần **491 N**;
+kéo chếch 26,6° chỉ còn **439 N**, vì phản lực pháp tuyến đã tụt từ 981 N
+xuống **785 N** — sợi dây đang đỡ hộ sàn 196 N, tức 20% cái tủ.
+
+## Vì sao lại là arctan μ chứ không phải 45°
+
+Muốn lực nhỏ nhất thì mẫu số phải lớn nhất, mà `cosθ + μ·sinθ` viết gọn
+được thành `√(1+μ²)·cos(θ − arctan μ)`. Cực đại khi ngoặc trong cos bằng 0:
+
+```
+θ* = arctan(μ)     →     F_min = μW / √(1+μ²)
+```
+
+Trong đó không có W: **góc tối ưu không phụ thuộc vật nặng bao nhiêu**, chỉ
+phụ thuộc cặp vật liệu chạm nhau. Con số ấy quen mặt: `arctan μ` cũng đúng
+là [góc mà mặt phẳng nghiêng bắt đầu cho vật
+trượt](/vi/posts/mat-phang-nghieng-va-goc-bat-dau-truot). Nghiêng dần tấm
+ván tới lúc vật buông tay rồi đọc góc: bạn vừa đo xong góc mình nên kéo.
+
+Phần thưởng thì khiêm tốn. Ở μ = 0,50, kéo đúng góc chỉ nhẹ hơn kéo ngang
+**10,6%**; ở μ = 0,20 chỉ còn 1,9%. Bù lại, cực tiểu **rất phẳng**: tỉ số
+`F(θ)/F_min = 1/cos(θ − θ*)`, nên lệch 10° chỉ đắt thêm **1,5%**, lệch 20°
+mới đắt 6,4%. Đừng mang thước đo góc ra chỗ cái tủ — "chếch lên chừng một
+phần ba góc vuông" là đã ăn gần trọn phần lời.
+
+## Đổi một dấu trừ, con số nhảy 67%
+
+Đẩy chúc xuống cùng góc θ thì `F·sinθ` đổi phe: `N = W + F·sinθ`, và cả bài
+toán chỉ đổi một dấu.
+
+```
+F_đẩy = μW / (cosθ − μ·sinθ)
+```
+
+Vẫn cái tủ ấy, vẫn 26,6°: **732 N** thay cho 439 N — nặng hơn **67%**, chênh
+293 N, đúng bằng nhấc bổng một bao xi măng 30 kg. Sàn giờ chịu 1 309 N thay
+vì 785 N.
+
+Tỉ số hai lực có dạng gọn `(1 − μ²)/(1 + μ²)`: sàn càng nhám thì khoảng
+cách càng ác — với μ = 0,80, đẩy ở góc tối ưu cần **2,85·W**, tức ép mạnh
+gần gấp ba trọng lượng chính cái vật mình định dời.
+
+Và đây là năng lượng thật:
+[đòn bẩy đổi lực lấy quãng đường](/vi/posts/don-bay-cho-toi-mot-diem-tua)
+nên không cho không ai cái gì, còn ở đây bạn thật sự tiêu ít hơn — mỗi mét
+đường, kéo tối ưu tốn **392 J**, kéo ngang 491 J, đẩy chúc xuống **654 J**.
+Khoản chênh ấy là nhiệt nung mặt sàn và mặt đáy tủ.
+
+## Có bánh xe thì cả bài toán này tan biến
+
+Toàn bộ trò chơi trên sống nhờ μ lớn. Lắp bánh xe vào, hệ số cản lăn rơi
+xuống cỡ **0,02**: góc tối ưu co lại còn **1,1°** — thực tế là kéo ngang —
+và phần tiết kiệm so với kéo ngang là **0,02%**, tức không có gì. Bạn kéo
+vali chếch 45° không phải để giảm ma sát, mà vì tay bạn ở độ cao đó; đổi
+lại, phần trọng lượng vali chuyển sang cánh tay bạn là có thật.
+Mẹo góc chỉ đáng nhớ khi mặt sàn còn ghì: thùng hàng trên nền xi măng, bao
+gạo lết trên sân.
+
+## Trường hợp biên: qua 63,4° thì không cú đẩy nào còn nghĩa lý
+
+Mẫu số `cosθ − μ·sinθ` tiến về 0 khi tanθ → 1/μ. Với μ = 0,50 đó là
+**63,4°**: lực đẩy cần thiết vọt lên vô hạn. Quá góc ấy mẫu số đổi dấu và
+nghiệm thành âm — cách vật lý nói rằng câu hỏi đã sai: mỗi newton bạn thêm
+vào chỉ ép vật chặt xuống sàn thêm, phần ma sát mọc ra luôn lớn hơn phần
+đẩy tới vừa cấp, nên vật **tự khoá**. Cơ chế ấy không phải lỗi mà là tính
+năng: ren ốc tự hãm được đúng vì góc nâng của đường ren nhỏ hơn `arctan μ`
+— nếu không, mọi con bulông trên đời đã tự tháo dưới rung động.
+
+Đầu kia của dải góc có một bức tường khác. Buộc dây ở độ cao a trên vật
+rộng b rồi kéo ngang: vật lật quanh cạnh trước thay vì trượt khi
+`a > b/(2μ)` — với μ = 0,50 nghĩa là **cao hơn đúng chiều sâu cái tủ**. Quàng
+dây ở 1,6 m để kéo cái tủ sâu 60 cm, và bài toán lặng lẽ đổi từ phương trình
+lực sang [phương trình
+mô-men](/vi/posts/thang-dua-tuong-leo-den-dau-thi-truot): cái tủ không trượt
+đi đâu cả — nó đổ về phía bạn.

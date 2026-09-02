@@ -1,0 +1,168 @@
+---
+// International Gravity Formula 1967 with the WGS84 equatorial constant:
+//   g(phi) = 9.780327·(1 + 0.0053024·sin²phi − 0.0000058·sin²2phi)   [m/s²]
+// plus the free-air altitude term −3.086e−6 m/s² per metre.
+// Checks: g(0°) = 9.780327, g(90°) = 9.832186 (WGS84 polar 9.8321849) ✓.
+// Free-air term valid only over air (no rock below) and up to a few km;
+// slider capped at Everest 8 848 m. Reference for the scale reading is
+// Paris at 48,9° and sea level: g = 9.809720 m/s².
+---
+
+<figure class="demo" data-demo="can-nang-cua-ban-doi-theo-vi-do-va-do-cao">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Vĩ độ (°) <output data-out="lat"></output>
+      <input type="range" data-in="lat" min="0" max="90" step="0.1" value="21" /></label>
+    <label>Độ cao so với mực biển (m) <output data-out="h"></output>
+      <input type="range" data-in="h" min="0" max="8848" step="1" value="10" /></label>
+    <label>Khối lượng vật đem cân (kg) <output data-out="m"></output>
+      <input type="range" data-in="m" min="1" max="200" step="1" value="100" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Đường xanh: g ở mực nước biển theo vĩ độ — thấp nhất ở xích đạo, cao
+    nhất ở cực, chênh 0,53%. Đường cam: cùng đường ấy nhưng ở độ cao bạn
+    chọn. Chấm đỏ là bạn. Hình bên trái là mặt cắt Trái Đất vẽ phóng đại
+    độ dẹt (thật ra chỉ 1/298). Cân điện tử đo lực chứ không đo khối lượng,
+    nên nó chia cho g nơi được hiệu chỉnh — ở đây là Paris.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const CURVE = '#2563eb', MARK = '#dc2626', LM = '#f59e0b';
+  const RAD = Math.PI / 180;
+
+  const gAt = (phi: number, h: number) => {
+    const r = phi * RAD;
+    return 9.780327 * (1 + 0.0053024 * Math.sin(r) ** 2 - 0.0000058 * Math.sin(2 * r) ** 2) - 3.086e-6 * h;
+  };
+  const G_REF = gAt(48.9, 0); // cân hiệu chỉnh ở Paris, mực biển
+  const MARKS: Array<[number, string]> = [
+    [1.4, 'Singapore'], [21, 'Hà Nội'], [48.9, 'Paris'], [90, 'cực Bắc'],
+  ];
+  const vi = (x: number, d: number) => x.toFixed(d).replace('.', ',');
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (k: string) => root.querySelector(`[data-in="${k}"]`) as HTMLInputElement;
+    const output = (k: string) => root.querySelector(`[data-out="${k}"]`) as HTMLOutputElement;
+
+    function draw() {
+      const lat = Number(input('lat').value);
+      const h = Number(input('h').value);
+      const m = Number(input('m').value);
+      output('lat').textContent = vi(lat, 1);
+      output('h').textContent = h.toLocaleString('vi-VN');
+      output('m').textContent = String(m);
+
+      const g = gAt(lat, h);
+      const ratio = g / G_REF;
+      const shown = m * ratio;
+      const deficit = (m - shown) * 1000; // gam
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.46);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+      ctx.font = '10px system-ui,sans-serif';
+
+      // ---- Bên trái: mặt cắt một phần tư Trái Đất, độ dẹt phóng đại ----
+      const eW = Math.min(120, cssW * 0.28);
+      const cx = 8, cy = cssH - 30, ra = eW - 14, rb = ra * 0.90;
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.35;
+      ctx.beginPath(); ctx.ellipse(cx, cy, ra, rb, 0, -Math.PI / 2, 0); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(cx, cy - rb - 4); ctx.lineTo(cx, cy + 4);
+      ctx.moveTo(cx - 4, cy); ctx.lineTo(cx + ra + 4, cy); ctx.stroke();
+      ctx.globalAlpha = 0.55; ctx.fillStyle = fg;
+      ctx.textAlign = 'left'; ctx.fillText('cực', cx + 4, cy - rb - 6);
+      ctx.textAlign = 'right'; ctx.fillText('xích đạo', cx + ra + 4, cy + 14);
+      ctx.globalAlpha = 1;
+      const px = cx + ra * Math.cos(lat * RAD), py = cy - rb * Math.sin(lat * RAD);
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.25;
+      ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(px, py); ctx.stroke();
+      ctx.globalAlpha = 1;
+      ctx.fillStyle = MARK;
+      ctx.beginPath(); ctx.arc(px, py, 4.5, 0, Math.PI * 2); ctx.fill();
+
+      // ---- Bên phải: g theo vĩ độ ----
+      const padL = eW + 46, padB = 26, padT = 26, padR = 12;
+      const yLo = 9.750, yHi = 9.838;
+      const X = (p: number) => padL + (p / 90) * (cssW - padL - padR);
+      const Y = (v: number) => padT + ((yHi - v) / (yHi - yLo)) * (cssH - padB - padT);
+
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.3;
+      ctx.beginPath(); ctx.moveTo(padL, padT); ctx.lineTo(padL, cssH - padB);
+      ctx.lineTo(cssW - padR, cssH - padB); ctx.stroke();
+      ctx.globalAlpha = 0.55; ctx.fillStyle = fg;
+      ctx.textAlign = 'center';
+      for (const p of [0, 30, 60, 90]) ctx.fillText(`${p}°`, X(p), cssH - padB + 14);
+      ctx.textAlign = 'right';
+      for (const v of [9.76, 9.78, 9.80, 9.82]) ctx.fillText(vi(v, 2), padL - 4, Y(v) + 3);
+      ctx.textAlign = 'left';
+      ctx.fillText('g (m/s²)', padL - 2, padT - 10);
+      ctx.globalAlpha = 1;
+
+      // Đường ở mực nước biển.
+      ctx.strokeStyle = CURVE; ctx.lineWidth = 2; ctx.beginPath();
+      for (let i = 0; i <= 180; i++) {
+        const p = (90 * i) / 180;
+        i ? ctx.lineTo(X(p), Y(gAt(p, 0))) : ctx.moveTo(X(p), Y(gAt(p, 0)));
+      }
+      ctx.stroke();
+
+      // Đường ở độ cao đang chọn.
+      if (h > 0) {
+        ctx.strokeStyle = LM; ctx.beginPath();
+        for (let i = 0; i <= 180; i++) {
+          const p = (90 * i) / 180;
+          i ? ctx.lineTo(X(p), Y(gAt(p, h))) : ctx.moveTo(X(p), Y(gAt(p, h)));
+        }
+        ctx.stroke();
+      }
+      ctx.lineWidth = 1;
+
+      // Mốc thành phố trên đường mực biển.
+      MARKS.forEach(([p, lab], k) => {
+        ctx.fillStyle = LM;
+        ctx.beginPath(); ctx.arc(X(p), Y(gAt(p, 0)), 3.5, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = fg; ctx.globalAlpha = 0.7;
+        ctx.textAlign = p > 70 ? 'right' : 'center';
+        ctx.fillText(lab, X(p) + (p > 70 ? 4 : 0), Y(gAt(p, 0)) - 8 - (k % 2) * 11);
+        ctx.globalAlpha = 1;
+      });
+
+      // Bạn.
+      ctx.fillStyle = MARK;
+      ctx.beginPath(); ctx.arc(X(lat), Y(g), 6, 0, Math.PI * 2); ctx.fill();
+
+      const flag = Math.abs(deficit) > m * 0.2
+        ? ' · <b>lệch hơn một vạch chia của cân thương mại</b>'
+        : '';
+      readout.innerHTML =
+        `Vĩ độ ${vi(lat, 1)}°, độ cao ${h.toLocaleString('vi-VN')} m → g = <b>${vi(g, 4)} m/s²</b>. ` +
+        `Cân hiệu chỉnh ở Paris (48,9°, mực biển) đọc ${m} kg thành <b>${vi(shown, 3)} kg</b>: ` +
+        `${deficit >= 0 ? 'thiếu' : 'dư'} ${vi(Math.abs(deficit), 1)} g${flag}`;
+    }
+
+    root.querySelectorAll('input').forEach((el) => el.addEventListener('input', draw));
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="can-nang-cua-ban-doi-theo-vi-do-va-do-cao"]').forEach(setup);
+</script>

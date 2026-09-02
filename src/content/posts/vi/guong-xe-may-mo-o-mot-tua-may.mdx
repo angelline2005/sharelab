@@ -1,0 +1,98 @@
+---
+title: "Gương xe máy chỉ mờ ở đúng một tua máy"
+seoTitle: "Cộng hưởng cần gương xe máy: tần số riêng dầm công-xôn và tua máy"
+description: "Cần gương là một dầm công-xôn: thép đường kính 8 mm dài 20 cm mang đầu gương 150 g có tần số riêng 50,5 Hz — đúng 3 028 vòng/phút của động cơ một xi-lanh, nơi rung được khuếch đại 9,9 lần. Rút cần còn 15 cm, tần số vọt lên 77,7 Hz và vùng mờ dời tới 4 662 vòng/phút."
+pubDate: 2026-09-02
+tags: ["vat-ly", "dao-dong", "co-hoc", "javascript"]
+translationId: "guong-xe-may-mo-o-mot-tua-may"
+---
+
+import MirrorStemResonance from '../../../components/demos/MirrorStemResonance.astro';
+
+Đi đều tay ga, ảnh trong gương chiếu hậu sắc nét. Vặn thêm một chút, tới
+đúng một khoảng tua máy, cái gương biến thành vũng cháo — rồi vặn tiếp
+nữa, nó lại nét như cũ. Không có gì lỏng ra rồi tự siết lại trong hai
+giây ấy:
+
+<MirrorStemResonance />
+
+## Cần gương là một cái lò xo 15 080 N/m
+
+Cần gương là **dầm công-xôn**: một đầu ngàm chặt vào tay lái, đầu kia
+mang cả khối gương. Thanh thép đặc đường kính 8 mm có mômen quán tính
+tiết diện I = πd⁴/64 = 2,01×10⁻¹⁰ m⁴; với E = 200 GPa và chiều dài
+20 cm, độ cứng ngang ở đầu tự do là k = 3EI/L³ = **15 080 N/m** — nghe
+to, nhưng đầu gương 150 g vẫn kéo nó võng 0,098 mm mà bạn chẳng bao giờ
+nhìn thấy.
+
+Ghép khối lượng vào lò xo là có ngay một tần số riêng:
+
+```
+f₀ = (1/2π)·√(3EI / mL³)      với I = πd⁴/64
+```
+
+Thay số: **f₀ = 50,5 Hz**. Nhân 60 để đổi sang ngôn ngữ đồng hồ tua máy —
+**3 028 vòng/phút**.
+
+## Vì sao chỉ đúng một tua máy chứ không phải mọi tua máy
+
+Động cơ một xi-lanh không quay êm. Piston lao lên rồi phanh lại mỗi vòng
+trục khuỷu, phần quán tính không cân bằng hết đẩy cả chiếc xe lắc **một
+nhịp mỗi vòng quay**. Ở 3 000 v/p, nhịp ấy là 50 Hz, lệch nửa hertz so
+với cần gương — và [cú hích nhỏ đúng nhịp thắng cú hích lớn sai
+nhịp](/vi/posts/cong-huong-vi-sao-day-nho-thang-luc-lon).
+
+Với hệ số cản ζ ≈ 0,05 của một khớp ren có đệm cao su, biên độ đầu cần
+bằng 1/√((1−r²)² + (2ζr)²) lần biên độ chân cần. Ở 3 000 v/p:
+**9,9 lần**; ở 2 000 v/p còn 1,8; ở 6 000 v/p còn 0,34 — chạy *nhanh hơn*
+tua cộng hưởng thì gương nét hơn cả lúc chạy chậm. Vùng khuếch đại quá 3
+lần trải từ 2 491 tới 3 469 v/p: chưa tới **1 000 vòng/phút**, một khe
+hẹp mà bạn vô tình đỗ vào mỗi khi giữ đều tay ga.
+
+## Từ nửa milimét rung thành mười lăm centimet nhoè
+
+Gương phản xạ **góc** chứ không phản xạ vị trí — đó là chỗ nửa milimét
+trở nên đáng sợ. Dạng uốn của dầm công-xôn có độ dốc ở đầu tự do bằng 1,5
+lần biên độ chia chiều dài: tay lái rung 0,05 mm, đầu cần rung 0,5 mm,
+mặt gương lắc 1,5 × 0,5/200 = 3,75 mrad, và tia phản xạ lệch gấp đôi góc
+gương — **7,5 mrad**.
+
+Đó là 26 phút cung, trong khi mắt người phân giải khoảng một phút cung:
+ảnh bị bôi ra gấp **26 lần** giới hạn nhìn của bạn, chiếc xe chạy sau
+cách 20 m kéo thành vệt dài 15 cm. Vì chuyện này lặp 50 lần mỗi giây,
+võng mạc không tách nổi từng khung — bạn không thấy gương rung, bạn thấy
+gương **mờ**.
+
+## Chiều dài là nút vặn duy nhất thật sự có tác dụng
+
+f₀ đi theo L^(−3/2): rút cần từ 20 xuống 15 cm — ngắn đi một phần tư —
+đẩy tần số riêng lên **77,7 Hz, tức 4 662 v/p**, ra hẳn khỏi khoảng tua
+chạy phố. Đường kính còn bạo hơn, I tỉ lệ d⁴ nên f₀ tỉ lệ d², [đúng luật
+lũy thừa bốn đang điều khiển mọi con lắc
+xoắn](/vi/posts/dao-dong-xoan-va-luat-luy-thua-bon). Khối lượng là nút
+yếu nhất, chỉ theo m^(−1/2): dán thêm 50 g vào đầu gương hạ f₀ còn
+43,7 Hz và dời vùng mờ về 2 622 v/p — đủ đổi khoảng tốc độ khó chịu,
+không đủ xoá nó.
+
+Công thức trên coi cần gương nhẹ không đáng kể, và đó là chỗ nó nói dối:
+thanh thép ấy nặng 78,9 g, mà dầm công-xôn góp vào đầu tự do 0,2427 phần
+khối lượng của chính nó — 19,2 g. Cộng vào 150 g, tần số riêng thật tụt
+còn **47,5 Hz = 2 851 v/p**, thấp hơn 6%.
+
+## Trường hợp biên: ba vùng mờ trên cùng một chiếc xe
+
+Động cơ không chỉ lắc một nhịp mỗi vòng. Cơ cấu tay quay sinh thêm lực
+quán tính **bậc hai** lắc gấp đôi tần số quay, còn động cơ bốn thì nổ một
+lần mỗi hai vòng nên có cả thành phần **bậc nửa**. Kích thích bậc n cộng
+hưởng ở 60f₀/n vòng/phút, nên cùng một cần gương 50,5 Hz cho ba vùng mờ
+trên một đồng hồ tua: **1 514, 3 028 và 6 055 v/p**. Hai vùng ngoài nông
+hơn vì nguồn lắc yếu hơn, nhưng chúng là lý do một chiếc xe mờ gương cả
+lúc bò trong phố lẫn lúc vượt trên quốc lộ.
+
+Thứ duy nhất không dời được vùng nào là **siết ốc chặt hơn**: siết không
+đổi E, I, L hay m — nó chỉ chống lỏng khớp, mà khớp không lỏng vẫn giữ
+nguyên tần số riêng cũ. Lót thêm cao su vào chân gương mới là canh bạc
+thật sự: đệm mềm kéo tần số riêng xuống, mà [dưới
+ngưỡng √2 lần tần số kích thích thì cách ly rung làm rung mạnh
+thêm](/vi/posts/de-cao-su-chong-rung-va-nguong-can-hai) — rất có thể bạn
+vừa dời đúng vùng mờ vào tua mình chạy nhiều nhất.

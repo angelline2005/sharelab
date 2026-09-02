@@ -1,0 +1,166 @@
+---
+// Hiệu ứng tiền phong (precedence / Haas effect).
+// Hình học ảnh-nguồn: nguồn và người nghe cùng cách một bức tường phẳng
+// khoảng w, cách nhau d. Đường phản xạ = sqrt(d² + 4w²).
+//   Δt = (sqrt(d² + 4w²) − d)/c,  c = 343 m/s (không khí 20 °C)
+// Ngưỡng tri giác (Haas 1951; Blauert, Spatial Hearing):
+//   Δt < 1 ms    → định vị cộng gộp (summing localization)
+//   1–35 ms      → luật người đến trước, giữ nếu ΔL < ~10 dB
+//   ΔL > ~10 dB  → âm phản xạ chiếm quyền định hướng
+//   Δt > ~35 ms  → tách thành tiếng vọng riêng (tiếng nói; ~5 ms với tiếng gõ)
+// Các ngưỡng là số tròn của tri giác, phụ thuộc loại tín hiệu — vẽ như vùng.
+// Miền trượt: w 0,2–12 m, d 0,5–10 m → Δt 0,023–68,5 ms, nằm trọn trong trục.
+---
+
+<figure class="demo" data-demo="hieu-ung-tien-phong-vong-hay-mot-tieng">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Phản xạ to hơn trực tiếp ΔL (dB) <output data-out="l"></output>
+      <input type="range" data-in="l" min="-20" max="20" step="0.5" value="6" /></label>
+    <label>Tường cách bạn (m) <output data-out="w"></output>
+      <input type="range" data-in="w" min="0.2" max="12" step="0.1" value="4" /></label>
+    <label>Bạn cách người nói (m) <output data-out="d"></output>
+      <input type="range" data-in="d" min="0.5" max="10" step="0.5" value="8" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Mặt phẳng quyết định của tai: trục ngang là độ trễ của âm phản xạ (thang
+    lôgarit), trục dọc là mức chênh so với âm trực tiếp. Chấm đỏ là tình
+    huống hiện tại; vạch cam là mức mà riêng hình học đường đi tạo ra, khi
+    không ai khuếch đại gì. Trong vùng xanh, não giao toàn bộ thông tin
+    hướng cho âm đến trước và lờ âm sau đi — trừ khi âm sau vượt lên quá
+    10 dB, lúc đó quyền định hướng đổi chủ.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const C = 343;
+  const PRIM = '#2563eb', MARK = '#dc2626', NAT = '#f59e0b';
+  const TMIN = 0.02, TMAX = 70, LMIN = -20, LMAX = 20;
+  const T_SUM = 1, T_ECHO = 35, L_CAP = 10;
+  const MINUS = '−';
+
+  const vn = (x: number, n = 1) => x.toFixed(n).replace('.', ',');
+  const sign = (x: number) => (x > 0 ? '+' : x < 0 ? MINUS : '');
+  const reflPath = (d: number, w: number) => Math.sqrt(d * d + 4 * w * w);
+  const delay = (d: number, w: number) => ((reflPath(d, w) - d) / C) * 1000;
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (k: string) => root.querySelector(`[data-in="${k}"]`) as HTMLInputElement;
+    const output = (k: string) => root.querySelector(`[data-out="${k}"]`) as HTMLOutputElement;
+
+    function draw() {
+      const dL = Number(input('l').value);
+      const w = Number(input('w').value);
+      const d = Number(input('d').value);
+      output('l').textContent = sign(dL) + vn(Math.abs(dL));
+      output('w').textContent = vn(w);
+      output('d').textContent = vn(d);
+
+      const L = reflPath(d, w);
+      const t = delay(d, w);
+      const natural = 20 * Math.log10(d / L);
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.5);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+
+      const padL = 48, padB = 28, padT = 12, padR = 12;
+      const span = Math.log10(TMAX / TMIN);
+      const X = (ms: number) =>
+        padL + (Math.log10(Math.min(Math.max(ms, TMIN), TMAX) / TMIN) / span) * (cssW - padL - padR);
+      const Y = (db: number) =>
+        padT + ((LMAX - Math.min(Math.max(db, LMIN), LMAX)) / (LMAX - LMIN)) * (cssH - padB - padT);
+
+      const xL = padL, xR = cssW - padR, yT = padT, yB = cssH - padB;
+      const x1 = X(T_SUM), x35 = X(T_ECHO), y10 = Y(L_CAP);
+
+      // Bốn vùng tri giác.
+      ctx.globalAlpha = 0.14;
+      ctx.fillStyle = MARK; ctx.fillRect(xL, yT, xR - xL, y10 - yT);
+      ctx.fillStyle = NAT; ctx.fillRect(xL, y10, x1 - xL, yB - y10);
+      ctx.fillStyle = PRIM; ctx.fillRect(x1, y10, x35 - x1, yB - y10);
+      ctx.fillStyle = fg; ctx.fillRect(x35, y10, xR - x35, yB - y10);
+      ctx.globalAlpha = 1;
+
+      ctx.font = '10px system-ui,sans-serif';
+      ctx.globalAlpha = 0.8; ctx.textAlign = 'center';
+      ctx.fillStyle = MARK;
+      ctx.fillText('phản xạ thắng — quay đầu về phía tường', (xL + xR) / 2, (yT + y10) / 2 + 3);
+      ctx.fillStyle = PRIM;
+      ctx.fillText('luật người đến trước', (x1 + x35) / 2, y10 + 16);
+      ctx.fillText('(chỉ nghe hướng người nói)', (x1 + x35) / 2, y10 + 28);
+      ctx.fillStyle = fg;
+      ctx.save(); ctx.translate((xL + x1) / 2, (y10 + yB) / 2); ctx.rotate(-Math.PI / 2);
+      ctx.fillText('cộng gộp — hướng lệch', 0, 3); ctx.restore();
+      ctx.save(); ctx.translate((x35 + xR) / 2, (y10 + yB) / 2); ctx.rotate(-Math.PI / 2);
+      ctx.fillText('tiếng vọng riêng', 0, 3); ctx.restore();
+      ctx.globalAlpha = 1;
+
+      // Biên vùng.
+      ctx.setLineDash([4, 3]); ctx.globalAlpha = 0.5; ctx.strokeStyle = fg;
+      ctx.beginPath(); ctx.moveTo(x1, y10); ctx.lineTo(x1, yB); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(x35, y10); ctx.lineTo(x35, yB); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(xL, y10); ctx.lineTo(xR, y10); ctx.stroke();
+
+      // Mức chênh mà riêng hình học đường đi tạo ra.
+      ctx.strokeStyle = NAT; ctx.globalAlpha = 0.9;
+      ctx.beginPath(); ctx.moveTo(xL, Y(natural)); ctx.lineTo(xR, Y(natural)); ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillStyle = NAT; ctx.textAlign = 'left';
+      ctx.fillText(`hình học trần: ${sign(natural)}${vn(Math.abs(natural))} dB`, xL + 5, Y(natural) - 5);
+      ctx.globalAlpha = 1;
+
+      // Trục và vạch chia.
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.35;
+      ctx.beginPath(); ctx.moveTo(xL, yT); ctx.lineTo(xL, yB); ctx.lineTo(xR, yB); ctx.stroke();
+      ctx.globalAlpha = 0.6; ctx.fillStyle = fg; ctx.textAlign = 'center';
+      const TICKS: Array<[number, string]> = [
+        [0.02, '0,02'], [0.1, '0,1'], [1, '1'], [10, '10'], [35, '35'], [70, '70 ms'],
+      ];
+      for (const [ms, lab] of TICKS) ctx.fillText(lab, X(ms), yB + 14);
+      ctx.fillText('độ trễ của âm phản xạ', (xL + xR) / 2, yB + 25);
+      ctx.textAlign = 'right';
+      for (const db of [-20, -10, 0, 10, 20])
+        ctx.fillText(`${sign(db)}${Math.abs(db)} dB`, xL - 4, Y(db) + 3);
+      ctx.globalAlpha = 1;
+
+      // Tình huống hiện tại.
+      ctx.fillStyle = MARK;
+      ctx.beginPath(); ctx.arc(X(t), Y(dL), 6, 0, Math.PI * 2); ctx.fill();
+
+      const regime =
+        dL > L_CAP ? '<b>phản xạ chiếm quyền — bạn quay đầu về phía tường</b>'
+        : t < T_SUM ? '<b>hai âm cộng gộp — hướng nghe bị kéo lệch</b>'
+        : t <= T_ECHO ? '<b>vẫn chỉ nghe hướng người nói</b>'
+        : '<b>tách ra thành một tiếng vọng riêng</b>';
+
+      readout.innerHTML =
+        `Đường phản xạ ${vn(L, 2)} m so với ${vn(d, 1)} m đường thẳng → chậm <b>${vn(t, 2)} ms</b>` +
+        ` · phản xạ ${dL >= 0 ? 'to hơn' : 'nhỏ hơn'} <b>${vn(Math.abs(dL))} dB</b> → ${regime}`;
+    }
+
+    root.querySelectorAll('input').forEach((el) => el.addEventListener('input', draw));
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="hieu-ung-tien-phong-vong-hay-mot-tieng"]').forEach(setup);
+</script>

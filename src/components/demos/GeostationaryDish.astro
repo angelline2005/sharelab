@@ -1,0 +1,216 @@
+---
+// Quỹ đạo địa tĩnh và góc ngẩng của chảo thu vệ tinh.
+//   Bán kính quỹ đạo:  r = (GM·T²/4π²)^(1/3)
+//     GM = 3,986 004 418e14 m³/s² (WGS-84), T = 86 164,0905 s (ngày sao)
+//     → r = 42 164,17 km, độ cao 35 786,03 km trên xích đạo.
+//   Góc tâm tới điểm dưới vệ tinh:  cos γ = cos(vĩ độ)·cos(chênh kinh độ)
+//   Góc ngẩng:  tan(ngẩng) = (cos γ − R/r) / sin γ,  R = 6 378,137 km (xích đạo)
+//   Khoảng cách xiên:  d = √(R² + r² − 2·R·r·cos γ)
+//   Trễ một chiều thoại = 2d/c (lên rồi xuống), khứ hồi = 4d/c; c = 299 792,458 km/s.
+// Mô hình: Trái Đất cầu, quỹ đạo tròn nằm đúng mặt phẳng xích đạo — sai số góc
+// ngẩng dưới 0,2° trên toàn dải trượt (độ dẹt của Trái Đất là hiệu ứng bậc 1/298).
+// Ngẩng < 0 khi γ > 81,30° (cos γ < R/r): vệ tinh nằm dưới chân trời. Dải trượt
+// cố tình đi qua vùng đó để thấy biên; công thức vẫn đúng, chỉ là góc âm.
+---
+
+<figure class="demo" data-demo="quy-dao-dia-tinh-va-cai-chao-huong-nam">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Vĩ độ người xem (°) <output data-out="lat"></output>
+      <input type="range" data-in="lat" min="0" max="85" step="0.1" value="21" /></label>
+    <label>Chênh kinh độ tới vệ tinh (°) <output data-out="dlon"></output>
+      <input type="range" data-in="dlon" min="0" max="80" step="0.1" value="26.1" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Mặt cắt theo mặt phẳng chứa cả bạn lẫn vệ tinh, vẽ đúng tỉ lệ: vành địa tĩnh
+    có bán kính gấp 6,61 lần Trái Đất. Chấm đỏ là chỗ bạn đứng, đường xanh là
+    hướng chảo, đường đứt nét là chân trời tại chỗ đó — góc kẹp giữa hai đường
+    chính là góc ngẩng của chảo. Thước dưới cùng đo khoảng cách thật từ tâm Trái
+    Đất; cột bên phải đọc thẳng góc ngẩng. Kéo vĩ độ lên quá 81,3° thì đường xanh
+    tụt xuống dưới chân trời và chảo hết việc.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const SIGHT = '#2563eb', MARK = '#dc2626', SAT = '#f59e0b';
+  const D2R = Math.PI / 180;
+  const GM = 3.986004418e14, TSID = 86164.0905, C = 299792.458;
+  const RE = 6378.137;
+  const RORB = Math.pow((GM * TSID * TSID) / (4 * Math.PI * Math.PI), 1 / 3) / 1000;
+  const RATIO = RE / RORB;
+  const SCALE = RORB / RE;
+
+  const NUM = (n: number) => Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+  const D1 = (x: number) => (Math.abs(x) < 0.05 ? 0 : x).toFixed(1).replace('.', ',').replace('-', '−');
+  const D2 = (x: number) => x.toFixed(2).replace('.', ',');
+
+  function geom(latDeg: number, dlonDeg: number) {
+    const cg = Math.cos(latDeg * D2R) * Math.cos(dlonDeg * D2R);
+    const g = Math.acos(Math.max(-1, Math.min(1, cg)));
+    const elev = Math.atan2(cg - RATIO, Math.sin(g));
+    const d = Math.sqrt(RE * RE + RORB * RORB - 2 * RE * RORB * cg);
+    return { g, elev, d };
+  }
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (k: string) => root.querySelector(`[data-in="${k}"]`) as HTMLInputElement;
+    const output = (k: string) => root.querySelector(`[data-out="${k}"]`) as HTMLOutputElement;
+
+    function draw() {
+      const lat = Number(input('lat').value), dlon = Number(input('dlon').value);
+      output('lat').textContent = D1(lat);
+      output('dlon').textContent = D1(dlon);
+      const { g, elev, d } = geom(lat, dlon);
+      const gDeg = g / D2R, eDeg = elev / D2R;
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.72);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+      ctx.font = '10px system-ui,sans-serif';
+      const narrow = cssW < 430;
+
+      const pad = 16, ruler = 30, gauge = narrow ? 42 : 54;
+      const availW = cssW - 2 * pad - gauge;
+      const availH = cssH - 2 * pad - ruler;
+      const Rr = Math.min(availW / 1.1513, availH / 1.469);
+      const Re = Rr / SCALE;
+      const cx = pad + (availW - (Rr + Re)) / 2 + Re;
+      const cy = pad + Rr;
+
+      // Vành địa tĩnh, vẽ đúng tỉ lệ với Trái Đất.
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.35;
+      ctx.setLineDash([4, 4]);
+      ctx.beginPath(); ctx.arc(cx, cy, Rr, -100 * D2R, 25 * D2R); ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.globalAlpha = 0.6;
+      ctx.fillStyle = fg; ctx.textAlign = 'left';
+      ctx.fillText('vành địa tĩnh', cx + (Rr + 9) * Math.cos(55 * D2R), cy - (Rr + 9) * Math.sin(55 * D2R));
+
+      // Trái Đất.
+      ctx.globalAlpha = 0.16; ctx.fillStyle = fg;
+      ctx.beginPath(); ctx.arc(cx, cy, Re, 0, Math.PI * 2); ctx.fill();
+      ctx.globalAlpha = 0.5; ctx.strokeStyle = fg;
+      ctx.beginPath(); ctx.arc(cx, cy, Re, 0, Math.PI * 2); ctx.stroke();
+      ctx.globalAlpha = 0.65; ctx.textAlign = 'center';
+      ctx.fillText('Trái Đất', cx, cy + Re + 12);
+
+      const sx = cx + Rr, sy = cy;
+      const ox = cx + Re * Math.cos(g), oy = cy - Re * Math.sin(g);
+
+      // Hai bán kính và cung góc tâm γ.
+      ctx.globalAlpha = 0.3; ctx.strokeStyle = fg;
+      ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(sx, sy); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(ox, oy); ctx.stroke();
+      ctx.globalAlpha = 0.55;
+      ctx.beginPath(); ctx.arc(cx, cy, Re + 14, -g, 0); ctx.stroke();
+      ctx.fillStyle = fg; ctx.textAlign = 'left';
+      ctx.fillText(`γ = ${D1(gDeg)}°`,
+        cx + (Re + 26) * Math.cos(g / 2) + 2, cy - (Re + 26) * Math.sin(g / 2) + 3);
+      ctx.globalAlpha = 1;
+
+      // Chân trời tại chỗ đứng: tiếp tuyến, hướng về phía vệ tinh là (sin γ, cos γ).
+      const hx = Math.sin(g), hy = Math.cos(g);
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.45; ctx.setLineDash([5, 4]);
+      ctx.beginPath();
+      ctx.moveTo(ox - 0.2 * Rr * hx, oy - 0.2 * Rr * hy);
+      ctx.lineTo(ox + 0.85 * Rr * hx, oy + 0.85 * Rr * hy);
+      ctx.stroke(); ctx.setLineDash([]); ctx.globalAlpha = 1;
+
+      // Đường ngắm tới vệ tinh.
+      const below = eDeg < 0;
+      ctx.strokeStyle = below ? MARK : SIGHT; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.moveTo(ox, oy); ctx.lineTo(sx, sy); ctx.stroke();
+      ctx.lineWidth = 1;
+
+      // Cung góc ngẩng giữa chân trời và đường ngắm.
+      const angH = Math.atan2(hy, hx), angS = Math.atan2(sy - oy, sx - ox);
+      const rArc = Math.max(18, Math.min(34, Rr * 0.11));
+      ctx.strokeStyle = below ? MARK : SIGHT; ctx.globalAlpha = 0.85;
+      ctx.beginPath(); ctx.arc(ox, oy, rArc, Math.min(angH, angS), Math.max(angH, angS)); ctx.stroke();
+      ctx.globalAlpha = 1;
+      const angM = (angH + angS) / 2;
+      ctx.fillStyle = below ? MARK : SIGHT; ctx.textAlign = 'left';
+      ctx.fillText(`${D1(eDeg)}°`,
+        ox + (rArc + 8) * Math.cos(angM), oy + (rArc + 8) * Math.sin(angM) + 3);
+
+      // Vệ tinh và người xem.
+      ctx.fillStyle = SAT;
+      ctx.fillRect(sx - 4, sy - 4, 8, 8);
+      ctx.fillStyle = fg; ctx.globalAlpha = 0.7; ctx.textAlign = 'center';
+      ctx.fillText('vệ tinh', sx, sy - 11);
+      ctx.globalAlpha = 1;
+      ctx.fillStyle = MARK;
+      ctx.beginPath(); ctx.arc(ox, oy, 4.5, 0, Math.PI * 2); ctx.fill();
+
+      // Thước khoảng cách từ tâm Trái Đất, đúng tỉ lệ hình vẽ.
+      const ry = cssH - 12;
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.35;
+      ctx.beginPath(); ctx.moveTo(cx, ry); ctx.lineTo(cx + Rr, ry); ctx.stroke();
+      ctx.globalAlpha = 0.6; ctx.fillStyle = fg; ctx.textAlign = 'center';
+      const ticks = narrow ? [0, 20000, 40000] : [0, 10000, 20000, 30000, 40000];
+      for (const t of ticks) {
+        const tx = cx + (t / RORB) * Rr;
+        ctx.globalAlpha = 0.35;
+        ctx.beginPath(); ctx.moveTo(tx, ry - 4); ctx.lineTo(tx, ry + 4); ctx.stroke();
+        ctx.globalAlpha = 0.6;
+        ctx.fillText(t === ticks[ticks.length - 1] ? `${NUM(t)} km` : NUM(t), tx, ry - 8);
+      }
+      ctx.globalAlpha = 1;
+
+      // Cột đọc góc ngẩng, thang 90° … −20°.
+      const gx = cssW - gauge / 2 - 2;
+      const gTop = pad + 14, gBot = gTop + availH * 0.86;
+      const GY = (a: number) => gTop + ((90 - a) / 110) * (gBot - gTop);
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.35;
+      ctx.beginPath(); ctx.moveTo(gx, gTop); ctx.lineTo(gx, gBot); ctx.stroke();
+      ctx.globalAlpha = 0.6; ctx.fillStyle = fg;
+      ctx.textAlign = 'right'; ctx.fillText('ngẩng', cssW - 2, gTop - 6);
+      for (const a of [90, 60, 30, 0]) {
+        ctx.globalAlpha = 0.35;
+        ctx.beginPath(); ctx.moveTo(gx - 3, GY(a)); ctx.lineTo(gx + 3, GY(a)); ctx.stroke();
+        ctx.globalAlpha = 0.6; ctx.textAlign = 'right';
+        ctx.fillText(`${a}°`, gx - 6, GY(a) + 3);
+      }
+      ctx.globalAlpha = 0.35;
+      ctx.beginPath(); ctx.moveTo(gx - 10, GY(0)); ctx.lineTo(gx + 10, GY(0)); ctx.stroke();
+      ctx.globalAlpha = 1;
+      ctx.fillStyle = below ? MARK : SIGHT;
+      ctx.beginPath(); ctx.arc(gx, GY(Math.max(-20, eDeg)), 5, 0, Math.PI * 2); ctx.fill();
+
+      const note = below
+        ? ' · <b>vệ tinh dưới chân trời — không chảo nào bắt được</b>'
+        : eDeg < 5
+          ? ' · <b>sát chân trời: nhà cửa, cây và mưa lớn đều chặn</b>'
+          : '';
+      readout.innerHTML =
+        `Quỹ đạo: r = <b>${NUM(RORB)} km</b> (cao ${NUM(RORB - RE)} km) · góc tâm γ = ${D1(gDeg)}°` +
+        ` → chảo ngẩng <b>${D1(eDeg)}°</b>, xa ${NUM(d)} km` +
+        ` · trễ thoại một chiều ${D1((2 * d) / C * 1000)} ms, khứ hồi <b>${D1((4 * d) / C * 1000)} ms</b>` +
+        ` (bằng ${D2((2 * d) / C * 1000 / 150)} lần ngưỡng dễ chịu 150 ms)${note}`;
+    }
+
+    root.querySelectorAll('input').forEach((el) => el.addEventListener('input', draw));
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="quy-dao-dia-tinh-va-cai-chao-huong-nam"]').forEach(setup);
+</script>

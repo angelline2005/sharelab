@@ -1,0 +1,189 @@
+---
+// Ống dây điện trở (resistive solenoid):
+//   B = µ₀·n·I                (ống dây dài, lớp dẫn mỏng)
+//   J = n·I / t               (mật độ dòng qua tiết diện dọc trục L×t)
+//   P = ρ·J²·V = ρ·(n·I)²·2π·r·L / t     với V = 2π·r·L·t
+// r = bán kính GIỮA lớp đồng, nên công thức thể tích là chính xác.
+// ρ = 1,72·10⁻⁸ Ω·m (đồng thương phẩm 20 °C, chuẩn 100% IACS); ρ_Cu = 8960 kg/m³.
+// Miền hợp lệ: L = 1,5 m cố định, r = 10–40 cm → L/2r = 1,9–7,5, sai số
+// hữu hạn chiều dài (hệ số L/√(L²+4r²)) từ 3% tới 12%; hệ số lấp đầy = 1;
+// t ≤ 100 mm nên t/r ≤ 1 (ở góc r = 10 cm thì B tại tâm sai thêm ~10%).
+// Vì vậy P tính ra là SÀN, thực tế cao hơn ~40–60%.
+// Đường ngang: máy lạnh cryo của một MRI siêu dẫn, ~7 kW (điện trở dây = 0).
+---
+
+<figure class="demo" data-demo="nam-cham-3-tesla-bang-day-dong-ton-megawatt">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Từ trường mục tiêu B (T) <output data-out="b"></output>
+      <input type="range" data-in="b" min="0.1" max="10" step="0.1" value="3" /></label>
+    <label>Bán kính lớp đồng r (cm) <output data-out="r"></output>
+      <input type="range" data-in="r" min="10" max="40" step="1" value="30" /></label>
+    <label>Bề dày lớp đồng t (mm) <output data-out="t"></output>
+      <input type="range" data-in="t" min="5" max="100" step="1" value="50" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Ống dây đồng dài 1,5 m. Trục tung là thang lôga: công suất phải đốt để
+    giữ từ trường đứng yên, tỉ lệ với bình phương B — nên đường cong dựng
+    đứng dù trục đã bị nén sáu bậc mười. Vòng tròn bên phải là mặt cắt
+    ngang: lỗ trống ở giữa, vành đồng màu cam. Đường nét đứt nằm sát đáy là
+    cả chi phí của một cuộn siêu dẫn: điện trở trong dây bằng 0, chỉ còn
+    máy lạnh cryo cỡ 7 kW.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const MU0 = 4 * Math.PI * 1e-7;
+  const RHO = 1.72e-8;      // Ω·m, đồng 20 °C
+  const RHO_CU = 8960;      // kg/m³
+  const CW = 4186;          // J/(kg·K), nước
+  const LEN = 1.5;          // m, chiều dài ống dây
+  const CRYO = 7000;        // W, máy lạnh cryo của một MRI siêu dẫn
+  const CURVE = '#2563eb', MARK = '#dc2626', COPPER = '#f59e0b';
+  const P_LO = 1e3, P_HI = 1e9;
+  const MARKS: Array<[number, string]> = [[1.5, 'MRI 1,5 T'], [3, 'MRI 3 T'], [7, 'MRI 7 T']];
+
+  const vi = (x: number, d: number) => x.toFixed(d).replace('.', ',');
+  const power = (B: number, r: number, t: number) =>
+    RHO * Math.pow(B / MU0, 2) * (2 * Math.PI * r * LEN) / t;
+
+  function fmtW(p: number) {
+    if (p >= 1e9) return `${vi(p / 1e9, 2)} GW`;
+    if (p >= 1e6) return `${vi(p / 1e6, 2)} MW`;
+    if (p >= 1e3) return `${vi(p / 1e3, 1)} kW`;
+    return `${vi(p, 0)} W`;
+  }
+  function tickLabel(e: number) {
+    if (e >= 9) return '1 GW';
+    if (e >= 6) return `${Math.pow(10, e - 6)} MW`;
+    return `${Math.pow(10, e - 3)} kW`;
+  }
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (k: string) => root.querySelector(`[data-in="${k}"]`) as HTMLInputElement;
+    const output = (k: string) => root.querySelector(`[data-out="${k}"]`) as HTMLOutputElement;
+
+    function draw() {
+      const B = Number(input('b').value);
+      const rCm = Number(input('r').value), tMm = Number(input('t').value);
+      const r = rCm / 100, t = tMm / 1000;
+      output('b').textContent = vi(B, 1);
+      output('r').textContent = String(rCm);
+      output('t').textContent = String(tMm);
+
+      const nI = B / MU0;
+      const P = power(B, r, t);
+      const massKg = 2 * Math.PI * r * LEN * t * RHO_CU;
+      const water = P / (CW * 10);
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.46);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+      ctx.font = '10px system-ui,sans-serif';
+
+      const secW = Math.min(148, cssW * 0.27);
+      const padL = 52, padR = secW + 14, padT = 14, padB = 28;
+      const plotW = cssW - padL - padR, plotH = cssH - padT - padB;
+      const eLo = Math.log10(P_LO), eHi = Math.log10(P_HI);
+      const X = (b: number) => padL + ((b - 0.1) / 9.9) * plotW;
+      const Y = (p: number) => padT + ((eHi - Math.log10(Math.max(p, P_LO * 0.4))) / (eHi - eLo)) * plotH;
+
+      // Trục
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.3;
+      ctx.beginPath();
+      ctx.moveTo(padL, padT); ctx.lineTo(padL, cssH - padB); ctx.lineTo(padL + plotW, cssH - padB);
+      ctx.stroke();
+      ctx.globalAlpha = 0.12;
+      for (let e = 4; e <= 9; e++) {
+        ctx.beginPath(); ctx.moveTo(padL, Y(Math.pow(10, e))); ctx.lineTo(padL + plotW, Y(Math.pow(10, e))); ctx.stroke();
+      }
+      ctx.globalAlpha = 0.55; ctx.fillStyle = fg;
+      ctx.textAlign = 'right';
+      for (let e = 3; e <= 9; e++) ctx.fillText(tickLabel(e), padL - 5, Y(Math.pow(10, e)) + 3);
+      ctx.textAlign = 'center';
+      for (const b of [2, 4, 6, 8, 10]) ctx.fillText(`${b} T`, X(b), cssH - padB + 14);
+      ctx.globalAlpha = 1;
+
+      // Ngưỡng siêu dẫn: chỉ còn máy lạnh cryo
+      ctx.strokeStyle = COPPER; ctx.setLineDash([5, 4]);
+      ctx.beginPath(); ctx.moveTo(padL, Y(CRYO)); ctx.lineTo(padL + plotW, Y(CRYO)); ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillStyle = COPPER; ctx.textAlign = 'left';
+      ctx.fillText('siêu dẫn: 0 W trong dây, ~7 kW máy lạnh', padL + 5, Y(CRYO) - 5);
+
+      // Đường cong P(B)
+      ctx.strokeStyle = CURVE; ctx.lineWidth = 2; ctx.beginPath();
+      for (let i = 0; i <= 220; i++) {
+        const b = 0.1 + (9.9 * i) / 220;
+        const y = Y(power(b, r, t));
+        i ? ctx.lineTo(X(b), y) : ctx.moveTo(X(b), y);
+      }
+      ctx.stroke(); ctx.lineWidth = 1;
+
+      // Mốc MRI
+      MARKS.forEach(([b, lab], k) => {
+        const p = power(b, r, t);
+        ctx.fillStyle = COPPER;
+        ctx.beginPath(); ctx.arc(X(b), Y(p), 4, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = fg; ctx.globalAlpha = 0.7; ctx.textAlign = 'center';
+        ctx.fillText(lab, X(b), Y(p) - 9 - (k % 2) * 11);
+        ctx.globalAlpha = 1;
+      });
+
+      // Điểm hiện tại
+      ctx.fillStyle = MARK;
+      ctx.beginPath(); ctx.arc(X(B), Y(P), 6, 0, Math.PI * 2); ctx.fill();
+
+      // Mặt cắt ngang ống dây
+      const cx = cssW - secW / 2 - 2, cy = padT + plotH / 2;
+      const scale = Math.min(secW / 2 - 12, plotH / 2 - 20) / 0.43;
+      const rIn = (r - t / 2) * scale, rOut = (r + t / 2) * scale;
+      ctx.fillStyle = COPPER; ctx.globalAlpha = 0.75;
+      ctx.beginPath();
+      ctx.arc(cx, cy, rOut, 0, Math.PI * 2);
+      ctx.arc(cx, cy, rIn, 0, Math.PI * 2, true);
+      ctx.fill(); ctx.globalAlpha = 1;
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.35;
+      ctx.beginPath(); ctx.arc(cx, cy, rIn, 0, Math.PI * 2); ctx.stroke();
+      ctx.beginPath(); ctx.arc(cx, cy, rOut, 0, Math.PI * 2); ctx.stroke();
+      ctx.globalAlpha = 0.6; ctx.fillStyle = fg; ctx.textAlign = 'center';
+      ctx.fillText('mặt cắt ngang', cx, padT + 8);
+      ctx.fillText(`lỗ Ø ${vi(2 * (rCm - tMm / 20), 0)} cm`, cx, cy + rOut + 14);
+      ctx.fillText(`đồng ${tMm} mm`, cx, cy + rOut + 26);
+      ctx.globalAlpha = 1;
+
+      const regime = P >= 3e7
+        ? ' · <b>vùng chỉ phòng thí nghiệm từ trường mạnh quốc gia nuôi nổi</b>'
+        : P <= 5e4 ? ' · <b>vùng nam châm để bàn, quạt thổi là đủ</b>' : '';
+      const mass = massKg >= 1000 ? `${vi(massKg / 1000, 2)} tấn` : `${vi(massKg, 0)} kg`;
+      readout.innerHTML =
+        `B = ${vi(B, 1)} T → n·I = ${vi(nI / 1e6, 2)}·10⁶ A/m, J = ${vi(nI / t / 1e6, 1)} A/mm²` +
+        ` · ống r = ${rCm} cm, dài 1,5 m, đồng dày ${tMm} mm (${mass}) → <b>${fmtW(P)}</b>` +
+        ` · nước làm mát ${vi(water, water < 10 ? 2 : 0)} lít/giây cho ΔT = 10 K${regime}`;
+    }
+
+    root.querySelectorAll('input').forEach((el) => el.addEventListener('input', draw));
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="nam-cham-3-tesla-bang-day-dong-ton-megawatt"]').forEach(setup);
+</script>

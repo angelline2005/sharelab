@@ -1,0 +1,149 @@
+---
+// Chi phí năng lượng ròng của di chuyển, J/(kg·m).
+// Chạy + đi bộ theo độ dốc: đa thức Minetti et al. 2002 (J Appl Physiol 93:1039),
+//   Cr(i) = 155,4i⁵ − 30,4i⁴ − 43,3i³ + 46,3i² + 19,5i + 3,6
+//   Cw(i) = 280,5i⁵ − 58,7i⁴ − 76,8i³ + 51,9i² + 19,6i + 2,5   (hiệu lực −45% ≤ i ≤ +45%)
+// Phụ thuộc tốc độ của đi bộ: công suất ròng ≈ (1,6 + 1,1·v²) W/kg (khớp bậc hai kiểu
+//   Ralston) → C = (1,6 + 1,1v²)/v, đáy tại v = √(1,6/1,1) = 1,206 m/s = 4,34 km/h.
+//   Khớp này chỉ vẽ tới 8 km/h; trên đó nó ước lượng thiếu chi phí đi bộ.
+// Chạy lấy là bất biến theo tốc độ trong 8–18 km/h (Margaria 1963; Minetti 2002).
+// Độ dốc cộng vào theo số gia Minetti, độc lập tốc độ — xấp xỉ bậc nhất.
+---
+
+<figure class="demo" data-demo="chay-mot-km-dot-bao-nhieu-calo">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Cân nặng (kg) <output data-out="m"></output>
+      <input type="range" data-in="m" min="40" max="100" step="1" value="60" /></label>
+    <label>Tốc độ (km/h) <output data-out="v"></output>
+      <input type="range" data-in="v" min="2" max="18" step="0.1" value="10" /></label>
+    <label>Độ dốc (%) <output data-out="g"></output>
+      <input type="range" data-in="g" min="-20" max="15" step="1" value="0" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Trục đứng là chi phí ròng cho mỗi kilôgam cơ thể trên mỗi mét đường — tức
+    là giá của một kilômét, không phải công suất mỗi giây. Đường đi bộ có
+    hình chữ U với một tốc độ rẻ nhất; đường chạy nằm ngang, nghĩa là một
+    kilômét chạy có giá gần như nhau ở mọi tốc độ. Khớp bậc hai của đi bộ chỉ
+    vẽ tới 8 km/h vì trên đó nó bắt đầu ước lượng thiếu.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const RUN = '#2563eb', MARK = '#dc2626', WALK = '#f59e0b';
+  const KCAL = 4184, MARATHON = 42195, PHO = 420;
+  const VSPLIT = 8, VOPT = 3.6 * Math.sqrt(1.6 / 1.1); // 4,342 km/h
+  const CFLAT = 3.6;
+
+  const mr = (i: number) => 155.4*i**5 - 30.4*i**4 - 43.3*i**3 + 46.3*i**2 + 19.5*i + 3.6;
+  const mw = (i: number) => 280.5*i**5 - 58.7*i**4 - 76.8*i**3 + 51.9*i**2 + 19.6*i + 2.5;
+  const walk = (k: number, i: number) => (1.6 + 1.1*(k/3.6)**2) / (k/3.6) + mw(i) - mw(0);
+  const run = (_k: number, i: number) => mr(i);
+  const cost = (k: number, i: number) => (k < VSPLIT ? walk(k, i) : run(k, i));
+
+  const n = (x: number, d: number) => x.toFixed(d).replace('.', ',');
+  const grp = (x: number) => Math.round(x).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+  const pct = (g: number) => (g < 0 ? '−' + Math.abs(g) : String(g)) + '%';
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (k: string) => root.querySelector(`[data-in="${k}"]`) as HTMLInputElement;
+    const output = (k: string) => root.querySelector(`[data-out="${k}"]`) as HTMLOutputElement;
+
+    function draw() {
+      const m = Number(input('m').value);
+      const v = Number(input('v').value);
+      const g = Number(input('g').value);
+      const i = g / 100;
+      output('m').textContent = String(m);
+      output('v').textContent = n(v, 1);
+      output('g').textContent = pct(g);
+
+      const C = cost(v, i);
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.46);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+
+      const padL = 40, padB = 26, padT = 14, padR = 12;
+      const yHi = 8;
+      const X = (k: number) => padL + ((k - 2) / 16) * (cssW - padL - padR);
+      const Y = (c: number) => cssH - padB - (c / yHi) * (cssH - padB - padT);
+
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.3;
+      ctx.beginPath(); ctx.moveTo(padL, padT); ctx.lineTo(padL, cssH - padB); ctx.lineTo(cssW - padR, cssH - padB); ctx.stroke();
+      ctx.globalAlpha = 0.55; ctx.fillStyle = fg; ctx.font = '10px system-ui,sans-serif';
+      ctx.textAlign = 'center';
+      for (const k of [2, 6, 10, 14, 18]) ctx.fillText(`${k} km/h`, X(k), cssH - padB + 14);
+      ctx.textAlign = 'right';
+      for (const c of [2, 4, 6, 8]) ctx.fillText(String(c), padL - 4, Y(c) + 3);
+      ctx.textAlign = 'left';
+      ctx.fillText('J/kg/m', padL + 4, padT + 9);
+      ctx.globalAlpha = 1;
+
+      // Đường đi bộ (chữ U), 2–8 km/h.
+      ctx.strokeStyle = WALK; ctx.lineWidth = 2; ctx.beginPath();
+      for (let s = 0; s <= 120; s++) {
+        const k = 2 + (6 * s) / 120;
+        s ? ctx.lineTo(X(k), Y(walk(k, i))) : ctx.moveTo(X(k), Y(walk(k, i)));
+      }
+      ctx.stroke();
+
+      // Đường chạy (nằm ngang), 8–18 km/h.
+      ctx.strokeStyle = RUN; ctx.beginPath();
+      ctx.moveTo(X(VSPLIT), Y(run(VSPLIT, i))); ctx.lineTo(X(18), Y(run(18, i)));
+      ctx.stroke(); ctx.lineWidth = 1;
+
+      // Đáy chữ U của đi bộ.
+      const cOpt = walk(VOPT, i);
+      ctx.fillStyle = WALK;
+      ctx.beginPath(); ctx.arc(X(VOPT), Y(cOpt), 4, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = fg; ctx.globalAlpha = 0.75; ctx.textAlign = 'center';
+      ctx.fillText('rẻ nhất 4,3 km/h', X(VOPT), Y(cOpt) + 16);
+      ctx.textAlign = 'left';
+      const lab = (c: number) => Math.max(padT + 20, Y(c) - 8);
+      ctx.fillText('đi bộ', X(2.4), lab(walk(2.4, i)));
+      ctx.fillText('chạy', X(13), lab(run(13, i)));
+      ctx.globalAlpha = 1;
+
+      ctx.fillStyle = MARK;
+      ctx.beginPath(); ctx.arc(X(v), Y(C), 6, 0, Math.PI * 2); ctx.fill();
+
+      const walking = v < VSPLIT;
+      const kcalKm = (C * m) / 4.184;
+      const mar = (C * m * MARATHON) / KCAL;
+      let note = '';
+      if (walking && Math.abs(v - VOPT) <= 0.2) note = ' · <b>đáy chữ U: tốc độ đi bộ rẻ nhất</b>';
+      else if (!walking && C / CFLAT >= 2) note = ' · <b>đắt gấp đôi chạy trên đường bằng</b>';
+      else if (!walking && C / CFLAT <= 0.55) note = ' · <b>kiểu chạy rẻ nhất tồn tại</b>';
+
+      readout.innerHTML =
+        `${walking ? 'Đi bộ' : 'Chạy'} ${n(v, 1)} km/h, dốc ${pct(g)} → <b>${n(C, 2)} J/kg/m</b>` +
+        ` = ${n(C / 4.184, 2)} kcal cho mỗi kg mỗi km · người ${m} kg: <b>${n(kcalKm, 0)} kcal mỗi km</b>,` +
+        ` ${grp(mar)} kcal cho cả marathon (${n(mar / PHO, 1)} tô phở)${note}`;
+    }
+
+    root.querySelectorAll('input').forEach((el) => el.addEventListener('input', draw));
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="chay-mot-km-dot-bao-nhieu-calo"]').forEach(setup);
+</script>

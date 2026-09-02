@@ -1,0 +1,88 @@
+---
+title: "Cột đá Hạ Long 392 tấn có thể đứng trên cái eo 29 cm — nếu chỉ bị đè"
+seoTitle: "Vì sao cột đá vôi Hạ Long bị thắt eo và đổ: ứng suất nén và ứng suất kéo"
+description: "Sóng khoét đá vôi đúng ở mực triều, để lại những cột thắt eo. Cột cao 12 m, đường kính 4 m nặng 392 tấn, mà đá vôi chịu nén 60 MPa thì chỉ cần cái eo 29 cm là đủ đứng. Nhưng đá vôi chịu kéo yếu gấp 12 lần: trọng tâm lệch quá 19 cm là mép eo chuyển sang bị bẻ, và cột gãy vì bẻ chứ không vì đè."
+pubDate: 2026-09-02
+tags: ["vat-ly", "co-hoc", "javascript"]
+translationId: "cot-da-ha-long-va-cai-eo-29-cm"
+---
+
+import SeaStackNeck from '../../../components/demos/SeaStackNeck.astro';
+
+Mọi tấm ảnh Hạ Long đều có một hòn đá đứng trên cái chân mỏng đến vô lý — hòn
+Đỉnh Hương trên tờ 200 000 đồng là bản ai cũng cầm trong ví. Nhìn thì tưởng nó
+sắp bị đè gãy. Thật ra chỗ bị đè là chỗ an toàn nhất của cả khối đá:
+
+<SeaStackNeck />
+
+## Sóng không mài đều — nó chỉ ăn đúng một tầng
+
+Đá vôi tan trong nước có CO₂, và tan nhanh nhất ở đúng dải nước lên xuống — chỗ
+luân phiên ướt–khô, lại là mặt bàn ăn của hà, ốc và tảo khoan đá. Kết quả là một
+vành khuyết nằm ngang cao đúng bằng biên độ triều, ở Hạ Long chừng 3–4 m [do Mặt
+Trăng cầm nhịp](/vi/posts/thuy-trieu-mat-trang-thang-kien-mat-troi). Tốc độ
+khoét cỡ **1 mm mỗi năm**: cột đường kính 4 m thắt lại còn 1,5 m mất **hơn một
+nghìn năm** — và suốt nghìn năm ấy nó không hề nao núng.
+
+## 392 tấn đứng vừa trên một cái đĩa ăn cơm
+
+Lấy một cột tiêu biểu: cao 12 m, đường kính 4,0 m, đá vôi 2 600 kg/m³ — 150,8 m³,
+**392 tấn**, trọng lượng 3,85 MN. Đá vôi đặc chịu nén khoảng **60 MPa**, nên
+diện tích tối thiểu đỡ nổi chừng ấy là 0,064 m²: **một hình tròn đường kính 29
+cm**, đúng cỡ chiếc đĩa ăn cơm — 641 cm², mỗi centimét vuông cõng 612 kg.
+
+Cái eo thật rộng 1,5 m, gấp 27,6 lần diện tích ấy: ứng suất nén thực tế chỉ
+**2,18 MPa**, chưa tới 4% sức chịu nén. Theo lối tính này sóng phải khoét thêm
+**600 năm** mới bóp chết nổi nó — chẳng hòn đá nào ở Hạ Long chờ đến lúc đó.
+
+## Đá vôi khoẻ khi bị đè, yếu gấp mười hai lần khi bị bẻ
+
+Con số 60 MPa chỉ đúng cho một kiểu tải. Kéo đá vôi ra, nó đứt ở khoảng **5
+MPa** — một phần mười hai. Vật liệu giòn nào cũng lệch vậy: nén thì các hạt tì
+vào nhau, kéo thì mọi vết nứt sẵn có há miệng cùng lúc.
+
+Mà cột đá không bao giờ được nén đúng tâm. Thân trên hơi nghiêng, một bên đá dày
+hơn bên kia — trọng tâm lệch khỏi trục cái eo một đoạn e, và trọng lực thôi đè
+thẳng: nó **vừa đè vừa bẻ**. Ứng suất trên tiết diện eo nghiêng thành hình thang:
+
+```
+σ = N/A ± N·e·(d/2)/I    với   A = π·d²/4,   I = π·d⁴/64
+```
+
+Cân hai số hạng ấy ra một ngưỡng hình học gọn đến mức dân kết cấu đặt tên riêng —
+**lõi kern**, bán kính đúng d/8. Trọng lực rơi trong vòng tròn ấy thì cả tiết
+diện chịu nén; ló ra khỏi nó là mép đối diện lập tức chịu kéo. Với eo 1,5 m,
+kern chỉ rộng **±0,19 m**, một phần tư bán kính — mà trọng tâm cột ở 6 m phía
+trên, nên **nghiêng 1,8°** là đủ bước ra ngoài.
+
+## Nghìn năm bình yên rồi đổ trong một đêm
+
+Kéo tiếp: để mép eo chạm 5 MPa cần lệch tâm **0,62 m**, tức cột nghiêng **5,9°**.
+Nhìn phía bên kia tiết diện đúng lúc đó — mép nén mới tới **9,3 MPa**, 16% sức
+chịu nén. Cột đá không được phép chết theo cách nó khoẻ nhất: kiểu hỏng do hình
+học chọn giùm chứ không do vật liệu, y như
+[xe khách lật trước khi lốp kịp trượt](/vi/posts/xe-khach-lat-truoc-khi-lop-truot).
+
+Bão góp nốt phần lệch tâm còn thiếu mà không cần trọng tâm dịch đi thật: sóng
+đập ngang ngay trên cái eo sinh mô men y hệt. Một lực **481 kN** đặt cách eo
+1,5 m là đủ đẩy hợp lực ra khỏi kern — trải trên 12 m² mặt cột hứng sóng thì đó
+chỉ là **40 kPa**, trong tầm một cú đập sóng bão, dù cả năm biển lặng không
+sinh nổi một phần mười. Nên đá không mòn dần rồi từ từ oằn xuống: nó nén thảnh
+thơi hàng thế kỷ rồi gãy ngang trong một đêm — cổng đá vôi Azure Window ở Malta
+biến mất sáng 8/3/2017 sau một đêm biển động.
+
+## Trường hợp biên: cái eo 29 cm không bao giờ kịp ra đời
+
+Thu cái eo về đúng 29 cm trên demo rồi nhìn dải cam: kern tụt xuống bán kính
+**3,6 cm**. Khối 392 tấn có trọng tâm cao 6 m ấy chỉ cần lệch chừng đó — cột
+nghiêng **0,34°**, chưa tới nửa độ — là mép eo đã sang chịu kéo. Vậy 29 cm
+không phải giới hạn của đá vôi; nó là giới hạn của một giả thiết.
+
+Dưới cỡ decimét còn một tầng sụp nữa: tiết diện thôi là "vật liệu". Đá vôi Hạ
+Long nứt theo mặt lớp và khe kiến tạo cách nhau vài chục centimét — eo mỏng hơn
+khoảng ấy thì nó không còn là khối đặc mà là mấy viên đá xếp chồng, sức chịu kéo
+bằng đúng **không**. Kern lúc đó thôi làm cảnh báo và thành bản án: trọng lực ló
+ra ngoài d/8, khe há, phần đá còn dính hẹp lại, ứng suất dồn vào đó, khe há
+thêm. Vẫn là luật trọng-tâm-phải-nằm-trên-chân-đế định đoạt [chồng sách nhô được
+bao xa khỏi mép bàn](/vi/posts/chong-sach-nho-ra-khoi-mep-ban-bao-xa) — chỉ khác
+là ở mép bàn bạn còn kịp rút tay về.

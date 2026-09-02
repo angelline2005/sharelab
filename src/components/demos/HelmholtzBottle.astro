@@ -1,0 +1,217 @@
+---
+// Cộng hưởng Helmholtz (mô hình khối tập trung, khối khí cổ chai = quả cân,
+// khí trong bụng chai = lò xo):
+//   f = (c / 2π) · √( A / (V · L') ),  A = π r²,  L' = L + 1,7 r
+// tương đương m = ρ·A·L' và k = ρ·c²·A²/V rồi f = (1/2π)√(k/m).
+// Nguồn: Rayleigh, "Theory of Sound" §303; hiệu chỉnh đầu cổ 1,7 r ≈ 0,85 r
+// mỗi đầu (một đầu loe vào bụng chai, một đầu hở ra ngoài).
+// c = 343,2 m/s (không khí khô, 20 °C).
+// Chỉ đúng khi bước sóng lớn hơn nhiều mọi kích thước chai (mô hình khối tập
+// trung). Slider giới hạn V 100–2000 ml, Ø cổ 8–32 mm, dài cổ 15–120 mm; ở
+// góc cực đoan nhất (100 ml, cổ Ø32 mm dài 15 mm) tỉ số λ/cỡ chai tụt còn
+// 7,9 và readout tự cảnh báo.
+---
+
+<figure class="demo" data-demo="cong-huong-helmholtz-chai-bia-keu-not-gi">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Thể tích khí trong chai V (ml) <output data-out="v"></output>
+      <input type="range" data-in="v" min="100" max="2000" step="10" value="500" /></label>
+    <label>Đường kính cổ chai (mm) <output data-out="d"></output>
+      <input type="range" data-in="d" min="8" max="32" step="1" value="18" /></label>
+    <label>Chiều dài cổ chai (mm) <output data-out="l"></output>
+      <input type="range" data-in="l" min="15" max="120" step="1" value="60" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Bên trái là cái chai bổ đôi: nút khí trong cổ (đỏ) là quả cân, cả khối
+    khí trong bụng chai (xanh nhạt) là lò xo bị nén — chỉ hai thứ đó quyết
+    định nốt. Bên phải, trục log–log biến quan hệ f ∝ V<sup>−1/2</sup> thành
+    một đường thẳng; ba vạch cam là ba cái chai khổng lồ chạy cùng công thức.
+    Đổi hình dáng bụng chai mà giữ nguyên thể tích thì đường cong không nhúc
+    nhích — đó là toàn bộ điều bất ngờ của cộng hưởng Helmholtz.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const C = 343.2, RHO = 1.204;
+  const CURVE = '#2563eb', MARK = '#dc2626', REF = '#f59e0b';
+  const NOTES = ['Đô', 'Đô♯', 'Rê', 'Rê♯', 'Mi', 'Fa', 'Fa♯', 'Sol', 'Sol♯', 'La', 'La♯', 'Si'];
+  const REFS: Array<[number, string]> = [
+    [100, 'lỗ đàn guitar ~100 Hz (đo thực tế)'],
+    [45, 'cổng thùng loa bass reflex 45 Hz'],
+    [18, 'khoang xe hé cửa sổ 18 Hz'],
+  ];
+
+  // V in ml, d and L in mm.
+  const freq = (V: number, d: number, L: number) => {
+    const r = d / 2000, A = Math.PI * r * r, Lp = L / 1000 + 1.7 * r;
+    return (C / (2 * Math.PI)) * Math.sqrt(A / (V * 1e-6 * Lp));
+  };
+  const vi = (x: number, n: number) => x.toFixed(n).replace('.', ',');
+
+  function noteOf(f: number) {
+    const semi = 12 * Math.log2(f / 440);
+    const n = Math.round(semi);
+    const cents = Math.round((semi - n) * 100);
+    const idx = ((((n + 9) % 12) + 12) % 12);
+    const oct = 4 + Math.floor((n + 9) / 12);
+    return { name: `${NOTES[idx]} quãng ${oct}`, cents };
+  }
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (k: string) => root.querySelector(`[data-in="${k}"]`) as HTMLInputElement;
+    const output = (k: string) => root.querySelector(`[data-out="${k}"]`) as HTMLOutputElement;
+
+    function draw() {
+      const V = Number(input('v').value), d = Number(input('d').value), L = Number(input('l').value);
+      output('v').textContent = V.toLocaleString('vi-VN');
+      output('d').textContent = String(d);
+      output('l').textContent = String(L);
+
+      const f = freq(V, d, L);
+      const r = d / 2000, A = Math.PI * r * r, Lp = L / 1000 + 1.7 * r;
+      const mass = RHO * A * Lp;                    // kg
+      const k = RHO * C * C * A * A / (V * 1e-6);   // N/m
+      const lam = C / f;
+      const Dbot = 2 * Math.cbrt(3 * (V * 1e-6) / (4 * Math.PI)); // cỡ chai đặc trưng
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.46);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+      ctx.font = '10px system-ui,sans-serif';
+
+      // ---------- Bên trái: mặt cắt cái chai ----------
+      const boxW = Math.max(96, cssW * 0.3);
+      const cx = boxW / 2 + 4, base = cssH - 22;
+      const bodyW = 26 + 36 * (Math.cbrt(V) - Math.cbrt(100)) / (Math.cbrt(2000) - Math.cbrt(100));
+      const bodyH = bodyW * 1.45;
+      const neckW = 5 + 15 * (d - 8) / 24;
+      const neckH = 12 + 40 * (L - 15) / 105;
+      const shH = bodyW * 0.5;                       // vai chai
+      const bodyTop = base - bodyH, neckBot = bodyTop - shH, neckTop = neckBot - neckH;
+
+      // Lò xo khí trong bụng chai.
+      ctx.fillStyle = CURVE; ctx.globalAlpha = 0.13;
+      ctx.beginPath();
+      ctx.moveTo(cx - bodyW / 2, base); ctx.lineTo(cx - bodyW / 2, bodyTop);
+      ctx.lineTo(cx - neckW / 2, neckBot); ctx.lineTo(cx + neckW / 2, neckBot);
+      ctx.lineTo(cx + bodyW / 2, bodyTop); ctx.lineTo(cx + bodyW / 2, base);
+      ctx.closePath(); ctx.fill(); ctx.globalAlpha = 1;
+
+      // Hình lò xo cuộn.
+      ctx.strokeStyle = CURVE; ctx.lineWidth = 1.4; ctx.globalAlpha = 0.75; ctx.beginPath();
+      const turns = 5, sTop = bodyTop + 8, sBot = base - 8;
+      for (let i = 0; i <= 60; i++) {
+        const t = i / 60, y = sTop + (sBot - sTop) * t;
+        const x = cx + Math.sin(t * turns * 2 * Math.PI) * bodyW * 0.28;
+        i ? ctx.lineTo(x, y) : ctx.moveTo(x, y);
+      }
+      ctx.stroke(); ctx.globalAlpha = 1;
+
+      // Thành chai.
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.55; ctx.lineWidth = 1.6;
+      ctx.beginPath();
+      ctx.moveTo(cx - neckW / 2, neckTop); ctx.lineTo(cx - neckW / 2, neckBot);
+      ctx.lineTo(cx - bodyW / 2, bodyTop); ctx.lineTo(cx - bodyW / 2, base);
+      ctx.lineTo(cx + bodyW / 2, base); ctx.lineTo(cx + bodyW / 2, bodyTop);
+      ctx.lineTo(cx + neckW / 2, neckBot); ctx.lineTo(cx + neckW / 2, neckTop);
+      ctx.stroke(); ctx.globalAlpha = 1; ctx.lineWidth = 1;
+
+      // Nút khí trong cổ = quả cân.
+      ctx.fillStyle = MARK; ctx.globalAlpha = 0.85;
+      ctx.fillRect(cx - neckW / 2, neckTop, neckW, neckH);
+      ctx.globalAlpha = 1;
+
+      // Mũi tên dao động lên–xuống.
+      ctx.strokeStyle = MARK; ctx.fillStyle = MARK;
+      const ax = cx + neckW / 2 + 9, ay = neckTop + neckH / 2;
+      ctx.beginPath(); ctx.moveTo(ax, ay - 13); ctx.lineTo(ax, ay + 13); ctx.stroke();
+      for (const s of [-1, 1]) {
+        ctx.beginPath();
+        ctx.moveTo(ax, ay + s * 17); ctx.lineTo(ax - 3.5, ay + s * 11); ctx.lineTo(ax + 3.5, ay + s * 11);
+        ctx.closePath(); ctx.fill();
+      }
+
+      ctx.fillStyle = fg; ctx.globalAlpha = 0.75; ctx.textAlign = 'center';
+      ctx.fillText(`quả cân ${vi(mass * 1e6, 1)} mg`, cx, neckTop - 6);
+      ctx.fillText(`lò xo ${vi(k, 1)} N/m`, cx, base + 13);
+      ctx.globalAlpha = 1;
+
+      // ---------- Bên phải: f theo V, trục log–log ----------
+      const padL = boxW + 46, padR = 8, padT = 14, padB = 26;
+      const vLo = 100, vHi = 2000, fLo = 15, fHi = 800;
+      const X = (v: number) => padL + (Math.log(v / vLo) / Math.log(vHi / vLo)) * (cssW - padL - padR);
+      const Y = (y: number) => cssH - padB - (Math.log(y / fLo) / Math.log(fHi / fLo)) * (cssH - padB - padT);
+
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.3;
+      ctx.beginPath(); ctx.moveTo(padL, padT); ctx.lineTo(padL, cssH - padB); ctx.lineTo(cssW - padR, cssH - padB); ctx.stroke();
+      ctx.globalAlpha = 0.55; ctx.fillStyle = fg;
+      ctx.textAlign = 'center';
+      for (const v of [100, 200, 500, 1000, 2000]) ctx.fillText(`${v.toLocaleString('vi-VN')}`, X(v), cssH - padB + 14);
+      ctx.textAlign = 'right';
+      for (const y of [20, 50, 100, 200, 500]) ctx.fillText(`${y} Hz`, padL - 4, Y(y) + 3);
+      ctx.globalAlpha = 1;
+
+      // Ba vạch tham chiếu.
+      ctx.setLineDash([4, 3]);
+      REFS.forEach(([y, lab]) => {
+        ctx.strokeStyle = REF; ctx.globalAlpha = 0.8;
+        ctx.beginPath(); ctx.moveTo(padL, Y(y)); ctx.lineTo(cssW - padR, Y(y)); ctx.stroke();
+        ctx.fillStyle = fg; ctx.globalAlpha = 0.65; ctx.textAlign = 'left';
+        ctx.fillText(lab, padL + 5, Y(y) - 4);
+        ctx.globalAlpha = 1;
+      });
+      ctx.setLineDash([]);
+
+      // Đường cong f(V) với cổ chai hiện tại.
+      ctx.strokeStyle = CURVE; ctx.lineWidth = 2; ctx.beginPath();
+      for (let i = 0; i <= 200; i++) {
+        const v = vLo * Math.pow(vHi / vLo, i / 200);
+        i ? ctx.lineTo(X(v), Y(freq(v, d, L))) : ctx.moveTo(X(v), Y(freq(v, d, L)));
+      }
+      ctx.stroke(); ctx.lineWidth = 1;
+
+      ctx.fillStyle = MARK;
+      ctx.beginPath(); ctx.arc(X(V), Y(f), 6, 0, Math.PI * 2); ctx.fill();
+
+      ctx.fillStyle = fg; ctx.globalAlpha = 0.55; ctx.textAlign = 'center';
+      ctx.fillText('thể tích khí (ml)', (padL + cssW - padR) / 2, cssH - 3);
+      ctx.globalAlpha = 1;
+
+      // ---------- Readout ----------
+      const nt = noteOf(f);
+      const sign = nt.cents >= 0 ? 'trên' : 'dưới';
+      const warn = lam / Dbot < 10
+        ? ` · <b>λ chỉ gấp ${vi(lam / Dbot, 1)} lần cỡ chai — mô hình khối tập trung bắt đầu hỏng</b>`
+        : ` · λ = ${vi(lam, 2)} m, gấp ${Math.round(lam / Dbot)} lần cỡ chai`;
+      readout.innerHTML =
+        `V = ${V.toLocaleString('vi-VN')} ml · cổ Ø${d} mm dài ${L} mm → <b>${vi(f, 1)} Hz</b>` +
+        ` (${Math.abs(nt.cents)} cent ${sign} nốt ${nt.name})<br />` +
+        `nút khí ${vi(mass * 1e6, 1)} mg trên lò xo khí ${vi(k, 1)} N/m${warn}`;
+    }
+
+    root.querySelectorAll('input').forEach((el) => el.addEventListener('input', draw));
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="cong-huong-helmholtz-chai-bia-keu-not-gi"]').forEach(setup);
+</script>

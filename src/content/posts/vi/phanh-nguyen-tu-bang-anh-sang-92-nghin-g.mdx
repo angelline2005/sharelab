@@ -1,0 +1,99 @@
+---
+title: "Ánh sáng phanh nguyên tử với gia tốc 92 000 g"
+seoTitle: "Làm lạnh bằng laser: ánh sáng hãm nguyên tử như thế nào"
+description: "Một nguyên tử natri bay 570 m/s lao vào chùm laser ngược chiều sẽ đứng khựng sau 18 cm, với gia tốc hãm 9,07×10⁵ m/s² — tức 92 400 g. Mỗi photon chỉ lấy đi 2,95 cm/s, nhưng nguyên tử nuốt 31 triệu photon mỗi giây, và 19 348 cú hích là đủ."
+pubDate: 2026-09-02
+tags: ["vat-ly", "luong-tu", "quang-hoc", "javascript"]
+translationId: "phanh-nguyen-tu-bang-anh-sang-92-nghin-g"
+---
+
+import LaserCooling from '../../../components/demos/LaserCooling.astro';
+
+Rọi đèn pin vào quả bóng bàn cả ngày, nó không nhúc nhích một milimét. Rọi
+một chùm laser vào dòng nguyên tử natri đang bay 570 m/s, chúng **đứng
+khựng sau 18 centimét** — gia tốc hãm gấp 92 400 lần trọng lực. Cùng một
+thứ ánh sáng; khác nhau ở chỗ ai bị đẩy:
+
+<LaserCooling />
+
+## Mỗi photon chỉ hích được 2,95 cm/s
+
+Photon không có khối lượng nhưng có động lượng `p = h/λ`. Ở vạch D2 của
+natri — đúng cái màu vàng cam của đèn cao áp bên đường, λ = 589 nm — mỗi
+photon mang 1,13×10⁻²⁷ kg·m/s; nguyên tử natri nặng 3,82×10⁻²⁶ kg, nuốt
+trọn một photon ngược chiều thì chậm đi:
+
+```
+v_giật = h/(mλ) = 2,95 cm/s
+```
+
+Đó là toàn bộ vốn liếng của ánh sáng: hạ 570 m/s về 0 cần **19 348
+photon** — như hãm xe tải bằng cách ném bóng bàn, chỉ khác là ta có đủ
+bóng. Phép cộng chạy được vì nguyên tử hấp thụ *luôn từ một phía* nhưng
+phát ra ngẫu nhiên mọi hướng, nên hàng chục nghìn cú giật lúc phát tự
+triệt tiêu. Còn lại là [áp suất bức
+xạ](/vi/posts/anh-sang-day-duoc-thuyen-ap-suat-buc-xa) thuần tuý, thứ chỉ
+tồn tại vì [ánh sáng đến theo từng gói
+nguyên](/vi/posts/hieu-ung-quang-dien-anh-sang-tra-tien-le).
+
+## Sức mạnh nằm ở nhịp, không ở cú hích
+
+Nguyên tử không nuốt photon nhanh tuỳ ý: nuốt xong phải nhả ra mới nuốt
+tiếp, mà trạng thái kích thích của natri sống 16,2 ns. Dội laser mạnh đến
+đâu nó cũng chỉ bị kích thích tối đa nửa thời gian, nên nhịp hấp thụ có
+**trần cứng** Γ/2 = 3,08×10⁷ — 31 triệu cú hích mỗi giây.
+
+```
+a = (h/mλ)·(Γ/2) = 9,07×10⁵ m/s² = 92 400 g
+L = v₀²/2a = 18 cm,  t = 0,63 ms
+```
+
+Viên đạn súng trường tăng tốc lên 900 m/s trong nòng 60 cm mới chịu
+69 000 g. Và trong 0,63 ms bay đó, trọng lực kéo nguyên tử tụt xuống vỏn
+vẹn **1,9 micromét**.
+
+## Vặn laser mạnh lên cũng không đổi được 19 348
+
+Gia tốc bám theo hệ số bão hoà `s/(1+s)`: ở s = 1 bạn mới được nửa trần,
+46 200 g, buồng phải dài 36 cm; s = 10 cho 84 000 g và 20 cm; đẩy nữa cũng
+chỉ dí sát trần. Nhưng **số photon đứng im ở 19 348** suốt hành trình
+thanh trượt: đó là một phép cộng động lượng, còn công suất laser chỉ quyết
+định bạn giao chỗ động lượng ấy *nhanh* đến đâu. Bản chất trò này nằm ở
+đấy — 19 348 photon vàng mang tổng cộng 6,5×10⁻¹⁵ J, trong khi động năng
+cần lấy đi chỉ có 6,2×10⁻²¹ J. Ánh sáng đổ vào **gấp một triệu lần** năng
+lượng nó lấy ra, phần thừa bay đi dưới dạng photon tán xạ. Mẹo động lượng,
+không phải mẹo năng lượng.
+
+## Natri dễ hãm, caesi thì ì
+
+Trần gia tốc ghét ba thứ: nặng, bước sóng dài, vạch hẹp. Đổi thanh nguyên
+tử là thấy ngay: liti-7 chịu **159 000 g** và dừng trong 10 cm; natri
+92 400 g; rubidi-87 tụt còn 11 400 g; caesi-133 chỉ 5 900 g, cần buồng
+chân không dài **2,8 m** cùng 161 818 photon. Nhưng bảng xếp hạng đảo
+chiều ở cuối đường: caesi giật yếu (0,35 cm/s mỗi photon) nên lúc đã chậm
+nó cũng run ít hơn — sàn giật lùi 0,20 µK, so với 2,40 µK của natri.
+Nguyên tử khó phanh nhất lại dễ làm lạnh sâu nhất.
+
+## Trường hợp biên: chậm lại là tuột khỏi cộng hưởng
+
+Cả bài giả định laser luôn đúng tần số cộng hưởng. Nhưng nguyên tử đang
+lao tới nghe laser bị dịch tần theo [hiệu ứng
+Doppler](/vi/posts/hieu-ung-doppler-nghe-duoc): ở 570 m/s độ dịch là
+v/λ = **968 MHz**, trong khi vạch hấp thụ chỉ rộng 9,79 MHz — lệch tông
+gần 99 bề rộng vạch. Chỉnh khớp lúc xuất phát thì được, nhưng nguyên tử
+chậm đi 2,9 m/s là lực hãm đã rơi một nửa: **2,9 m/s tức 98 photon**, 0,5%
+chặng đường. Nên không bộ hãm nào để yên tần số: hoặc quét laser bám theo
+nguyên tử, hoặc dựng từ trường thon dần dọc ống cho độ dịch Zeeman bù phần
+Doppler đang mất — natri cần 0,069 T, tức 691 gauss. Đó là lý do bộ hãm
+Zeeman thật dài cả mét chứ không phải 18 cm.
+
+Đầu kia của thang cũng có sàn. Photon phát ra ngẫu nhiên nghĩa là nguyên
+tử liên tục nhận những cú đá 2,95 cm/s vô hướng — bước đi ngẫu nhiên trong
+không gian vận tốc, cân bằng với lực hãm ở **giới hạn Doppler** `ħΓ/2k_B`
+= 235 µK cho natri, tức vẫn còn giật mình ở 29 cm/s, đúng mười cú giật
+lùi. Muốn xuống nano-kelvin phải bỏ hẳn bức tranh hai mức mà chuyển sang
+làm lạnh Sisyphus rồi bay hơi cưỡng bức — con đường đưa rubidi tới 170 nK
+và ngưng tụ Bose–Einstein đầu tiên năm 1995. Ánh sáng phanh nguyên tử ở
+92 400 g, nhưng chỉ trong một cửa sổ 2,9 m/s mà bạn phải khiêng theo suốt
+đường bay; và khi nguyên tử gần đứng hẳn, chính cú hích từng phanh nó lại
+là thứ không cho nó đứng yên.

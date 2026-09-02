@@ -1,0 +1,97 @@
+---
+title: "Ngắt một cuộn dây 12 vôn, nó đá ngược lại 2 500 vôn"
+seoTitle: "Sức điện động tự cảm khi ngắt cuộn dây: vì sao cần diode dập xung"
+description: "Cuộn rơ-le 0,5 H đang mang 50 mA, tiếp điểm mở trong 10 micro giây: V = L·ΔI/Δt cho ra 2 500 V — gấp 208 lần nguồn nuôi nó. Cả gói năng lượng chỉ 0,63 mili-jun, nhưng thừa sức đục thủng transistor và ăn mòn tiếp điểm."
+pubDate: 2026-09-02
+tags: ["vat-ly", "dien-tu", "javascript"]
+translationId: "cuon-day-ngat-dong-va-cu-da-2500-von"
+---
+
+import InductiveKick from '../../../components/demos/InductiveKick.astro';
+
+Cuộn rơ-le trong hộp cầu chì chạy bằng 12 vôn. Kẹp dao động ký lên hai đầu
+nó rồi ngắt nguồn: vệt sáng vọt lên **2 500 vôn** rồi tắt. Không máy biến
+áp, không mạch nhân áp — chỉ một cuộn dây và một tiếp điểm vừa nhấc lên:
+
+<InductiveKick />
+
+## Cuộn dây là quán tính của dòng điện
+
+Tụ điện ghét đổi áp; cuộn dây ghét đổi dòng. Dòng chạy trong cuộn nghĩa là
+có từ trường tích trong lõi, mà từ trường không biến mất tức thời được —
+[dấu trừ của Lenz](/vi/posts/cam-ung-faraday-hai-cu-hich-nguoc-dau) buộc
+cuộn dựng lên một điện áp chống lại đúng cái thay đổi bạn vừa ép nó:
+
+```
+V = L · ΔI/Δt = 0,5 H × 0,05 A / 0,000 01 s = 2 500 V
+```
+
+Cái nguy hiểm nằm ở mẫu số. Nguồn 12 V mất cả *mili giây* mới bơm nổi
+50 mA vào cuộn; tiếp điểm cơ khí thì nhấc lên trong **10 micro giây**. Cuộn
+dây không phản đối chuyện bị đòi lại năng lượng — nó phản đối tốc độ, và
+giá của tốc độ trả bằng vôn.
+
+## Hệ số nhân chính là tỉ số của hai khoảng thời gian
+
+Cuộn rơ-le 12 V ăn 50 mA nên điện trở của nó là 240 Ω, và hằng số thời gian
+riêng của mạch là τ = L/R = **2,08 ms**. Chia gai cho nguồn thì mọi thứ rút
+gọn sạch sẽ:
+
+```
+V_gai / V_nguồn = (L·I/Δt) / (I·R) = τ / Δt = 2,08 ms / 10 µs = 208
+```
+
+Đúng bằng 2 500 chia 12. **Hệ số nhân không phải hằng số vật liệu nào — nó
+là tỉ số giữa thời gian cuộn dây muốn và thời gian bạn cho.** Đẩy cả ba
+thanh trượt tới hạn — 1 H, 500 mA, ngắt trong 0,1 µs — tỉ số thành 417 000
+và công thức thản nhiên trả về **5 triệu vôn**.
+
+## 2 500 vôn mà chỉ có 0,63 mili-jun
+
+Toàn bộ kho hàng cuộn dây đang giữ là W = ½·L·I² = **0,625 mJ**, nhỏ hơn
+27 lần cú [giật tay nắm cửa mùa
+hanh](/vi/posts/cu-giat-tay-nam-cua-hai-muoi-nghin-von-vo-hai) mà bạn phủi
+tay bỏ qua.
+
+Con transistor thì không chết vì jun. Cực góp của nó bị đẩy lên
+12 + 2 500 = **2 512 V** trên một tiếp giáp chịu 40 V — gấp 63 lần: lớp bán
+dẫn đánh thủng thác lũ trước khi kịp nóng lên, và chỗ năng lượng tí hon ấy
+đổ trọn vào một vệt thủng vài micromét. Chia cho 10 µs, công suất tức thời
+là **62,5 oát**. Vì thế cạnh mọi cuộn rơ-le hay van điện từ luôn có một
+linh kiện trông thừa thãi.
+
+## Con diode một xu, và cái giá của nó
+
+Nó mắc ngược song song với cuộn dây nên bình thường không dẫn. Đúng khoảnh
+khắc tiếp điểm hở, dòng 50 mA cần một vòng kín để chảy tiếp — diode mở ra
+cho nó vòng ấy, ghim điện áp trên cuộn ở sụt áp thuận **0,7 V**:
+transistor thấy 12,7 V thay vì 2 512 V.
+
+Năng lượng vẫn phải đi đâu đó. Giờ nó quay vòng và đốt dần trong chính
+240 Ω của cuộn: dòng tắt theo hàm mũ với τ = 2,08 ms, về 0 sau **6,0 ms**
+— chậm hơn cú ngắt trần **604 lần**, công suất trung bình 104 mili-oát thay
+cho 62,5 oát. Đó là cái giá: rơ-le nhả trễ gần 6 mili giây, đủ thành lỗi
+thật với động cơ bước. Nên dân thiết kế hay thay bằng Zener 50 V:
+chịu gai 50 V thì dòng về 0 sau 0,44 ms, **nhanh gấp 14 lần** — vẫn đúng
+tỉ số τ/Δt ở trên, chỉ là đọc ngược.
+
+## Trường hợp biên: gai không bao giờ tới 2 500 vôn
+
+Hỏi ngược: khoảnh khắc tiếp điểm hở, dòng 50 mA chảy vào *cái gì*? Vào
+điện dung ký sinh giữa các vòng dây, vài chục picô-fara. Cuộn dây cộng chỗ
+điện dung ấy thành mạch cộng hưởng LC trở kháng đặc trưng √(L/C) = 129 kΩ
+ở 30 pF: đỉnh lý thuyết 0,05 A × 129 kΩ = 6,5 kV, đạt sau một phần tư chu
+kỳ tức 6,1 µs. Nói cách khác, "Δt = 10 µs" không phải con số chọn cho tiện
+— chính mạch LC ký sinh ấn định nó.
+
+Nhưng cả 6,5 kV lẫn 2 500 V đều không xảy ra, vì không khí thua trước. Đáy
+đường cong Paschen nằm ở **khoảng 330 V** với khe hở cỡ vài micromét —
+đúng độ hở của tiếp điểm một micro giây sau khi nó bắt đầu nhấc. Hồ quang
+đánh xuyên, ghim gai lại quanh 300–500 V, và mỗi lần lại bốc đi một ít kim
+loại: tiếp điểm rơ-le chết vì rỗ chứ hiếm khi chết vì mòn cơ. Cùng hiện
+tượng ấy làm có chủ đích là bô-bin xe máy — một [máy biến áp tỉ số
+1:100](/vi/posts/may-bien-ap-doi-ap-lay-dong-va-nguoc-lai) với sơ cấp 5 mH
+mang 4 A, tức 40 mJ, gấp 64 lần cuộn rơ-le: ngắt ra 400 V bên sơ cấp, nhân
+trăm thành 40 kV bên thứ cấp, đủ nhảy qua khe bugi mỗi vòng quay. Cùng một
+dấu trừ của Lenz — đặt nhầm chỗ thì đục thủng linh kiện, đặt đúng chỗ thì
+nổ máy xe cho bạn.

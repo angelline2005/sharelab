@@ -1,0 +1,193 @@
+---
+// Vật treo chính giữa một sợi dây căng giữa hai điểm cùng độ cao.
+// Cân bằng lực tại điểm treo: 2·T·sinθ = W, với tanθ = 2d/L (d = độ võng, L = nhịp).
+//   T = W·√(L² + 4d²) / (4d)            (dạng đúng, dùng để vẽ)
+//   T ≈ W·L/(4d)                        (giới hạn võng nhỏ, sai < 1 % khi d < L/14)
+// Nguồn: tĩnh học điểm vật — Halliday & Resnick, Fundamentals of Physics, ch. 12.
+// Vùng hợp lệ: dây coi như không khối lượng và không giãn — đúng khi W ≫ w·L
+// (áo 1 kg trên dây phơi 20 g/m: w·L = 0,8 N so với W = 9,8 N). d > 0; T → ∞ khi d → 0.
+---
+
+<figure class="demo" data-demo="day-phoi-vi-sao-khong-the-cang-that-thang">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Khối lượng vật treo (kg) <output data-out="m"></output>
+      <input type="range" data-in="m" min="0.2" max="20" step="0.1" value="1" /></label>
+    <label>Nhịp dây L (m) <output data-out="l"></output>
+      <input type="range" data-in="l" min="2" max="20" step="0.5" value="4" /></label>
+    <label>Độ võng d (cm) <output data-out="d"></output>
+      <input type="range" data-in="d" min="1" max="50" step="0.5" value="5" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Trái trên: hình chiếu cạnh hai cọc phơi, trục đứng được phóng đại (hệ số ghi
+    ngay trên hình) vì độ võng thật quá nhỏ để thấy. Trái dưới: tam giác lực tại
+    điểm treo, vẽ đúng góc thật và đúng tỉ lệ độ lớn — dây càng thẳng, tam giác
+    càng bẹt và cạnh T càng chạy dài ra ngoài khung. Phải: lực căng theo độ võng,
+    một nhánh hyperbol dựng đứng khi độ võng tiến về 0.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const CURVE = '#2563eb', MARK = '#dc2626', THIRD = '#f59e0b';
+  const G = 9.81, KGF = 9.80665;
+
+  // T = W·√(L² + 4d²)/(4d) — lực căng mỗi bên, d và L tính bằng mét.
+  const tension = (W: number, L: number, d: number) => (W * Math.hypot(L, 2 * d)) / (4 * d);
+  const vi = (x: number, n: number) => x.toFixed(n).replace('.', ',');
+  const fmtF = (n: number) => (n >= 2000 ? `${vi(n / 1000, 1)} kN` : `${Math.round(n)} N`);
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (k: string) => root.querySelector(`[data-in="${k}"]`) as HTMLInputElement;
+    const output = (k: string) => root.querySelector(`[data-out="${k}"]`) as HTMLOutputElement;
+
+    function draw() {
+      const m = Number(input('m').value);
+      const L = Number(input('l').value);
+      const dcm = Number(input('d').value);
+      const d = dcm / 100;
+      output('m').textContent = vi(m, 1);
+      output('l').textContent = vi(L, 1);
+      output('d').textContent = vi(dcm, 1);
+
+      const W = m * G;
+      const T = tension(W, L, d);
+      const theta = Math.atan((2 * d) / L);
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.5);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+      ctx.font = '10px system-ui,sans-serif';
+
+      const leftW = Math.round(cssW * 0.44);
+
+      // ---------- Trái trên: hình chiếu cạnh ----------
+      const sideTop = 16, sideH = Math.round(cssH * 0.34);
+      const spanPx = leftW - 34, x0 = 20, cx = x0 + spanPx / 2;
+      const pxPerM = spanPx / L;
+      const truePx = d * pxPerM;
+      const maxSag = sideH - 16;
+      const wantPx = maxSag * Math.sqrt(Math.min(1, d / L / 0.25));
+      const sagPx = Math.min(maxSag, Math.max(truePx, wantPx));
+      const exag = sagPx / truePx;
+
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.45; ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(x0, sideTop); ctx.lineTo(x0, sideTop + sideH);
+      ctx.moveTo(x0 + spanPx, sideTop); ctx.lineTo(x0 + spanPx, sideTop + sideH);
+      ctx.stroke();
+      ctx.globalAlpha = 1;
+
+      ctx.strokeStyle = CURVE; ctx.beginPath();
+      ctx.moveTo(x0, sideTop + 6); ctx.lineTo(cx, sideTop + 6 + sagPx); ctx.lineTo(x0 + spanPx, sideTop + 6);
+      ctx.stroke(); ctx.lineWidth = 1;
+
+      ctx.fillStyle = MARK;
+      ctx.fillRect(cx - 7, sideTop + 6 + sagPx, 14, 16);
+      ctx.fillStyle = fg; ctx.globalAlpha = 0.65; ctx.textAlign = 'center';
+      ctx.fillText(`${vi(m, 1)} kg`, cx, sideTop + 6 + sagPx + 32);
+      ctx.fillText(`nhịp ${vi(L, 1)} m — võng ${vi(dcm, 1)} cm`, cx, sideTop - 4);
+      ctx.textAlign = 'left';
+      ctx.fillText(exag >= 1.05 ? `trục đứng phóng đại ${vi(exag, 1)}×` : 'trục đứng đúng tỉ lệ', x0, sideTop + sideH + 12);
+      ctx.globalAlpha = 1;
+
+      // ---------- Trái dưới: tam giác lực, góc thật, tỉ lệ thật ----------
+      const triTop = Math.round(cssH * 0.56), triBoxH = cssH - triTop - 26;
+      const apexY = triTop + Math.min(triBoxH - 10, 34);
+      const scale = 22 / W;                 // px trên mỗi newton: W luôn vẽ cao 22 px
+      const tPx = T * scale;
+      ctx.save();
+      ctx.beginPath(); ctx.rect(4, triTop, leftW - 12, triBoxH); ctx.clip();
+      ctx.strokeStyle = CURVE; ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(cx - tPx * Math.cos(theta), apexY - tPx * Math.sin(theta));
+      ctx.lineTo(cx, apexY);
+      ctx.lineTo(cx + tPx * Math.cos(theta), apexY - tPx * Math.sin(theta));
+      ctx.stroke();
+      ctx.strokeStyle = MARK; ctx.beginPath();
+      ctx.moveTo(cx, apexY); ctx.lineTo(cx, apexY + 22); ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(cx - 4, apexY + 16); ctx.lineTo(cx, apexY + 22); ctx.lineTo(cx + 4, apexY + 16);
+      ctx.stroke(); ctx.lineWidth = 1;
+      ctx.restore();
+
+      ctx.fillStyle = MARK; ctx.textAlign = 'left';
+      ctx.fillText(`W = ${vi(W, 1)} N`, cx + 6, apexY + 22);
+      ctx.fillStyle = CURVE;
+      ctx.fillText(`T = ${fmtF(T)} mỗi bên`, 8, triTop + triBoxH + 2);
+      ctx.fillStyle = fg; ctx.globalAlpha = 0.65;
+      ctx.fillText(`góc dây với phương ngang: ${vi((theta * 180) / Math.PI, 2)}°`, 8, triTop + triBoxH + 15);
+      ctx.globalAlpha = 1;
+
+      // ---------- Phải: T theo độ võng ----------
+      const padL = leftW + 52, padR = 8, padT = 18, padB = 26;
+      const Tmax = tension(W, L, 0.01);
+      const X = (cm: number) => padL + ((cm - 1) / 49) * (cssW - padL - padR);
+      const Y = (t: number) => cssH - padB - (t / Tmax) * (cssH - padB - padT);
+
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.3;
+      ctx.beginPath();
+      ctx.moveTo(padL, padT); ctx.lineTo(padL, cssH - padB); ctx.lineTo(cssW - padR, cssH - padB);
+      ctx.stroke();
+      ctx.globalAlpha = 0.55; ctx.fillStyle = fg;
+      ctx.textAlign = 'center';
+      for (const k of [10, 20, 30, 40, 50]) ctx.fillText(`${k}`, X(k), cssH - padB + 14);
+      ctx.fillText('độ võng (cm)', (padL + cssW - padR) / 2, cssH - 3);
+      ctx.textAlign = 'right';
+      for (const f of [0.25, 0.5, 0.75, 1]) ctx.fillText(fmtF(Tmax * f), padL - 4, Y(Tmax * f) + 3);
+      ctx.textAlign = 'left';
+      ctx.fillText('lực căng mỗi bên', padL + 2, padT - 6);
+      ctx.globalAlpha = 1;
+
+      // Đường trọng lượng vật để so sánh độ lớn.
+      ctx.strokeStyle = THIRD; ctx.setLineDash([4, 3]);
+      ctx.beginPath(); ctx.moveTo(padL, Y(W)); ctx.lineTo(cssW - padR, Y(W)); ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillStyle = THIRD; ctx.textAlign = 'right';
+      ctx.fillText(`W = ${vi(W, 1)} N`, cssW - padR, Y(W) - 4);
+
+      ctx.strokeStyle = CURVE; ctx.lineWidth = 2; ctx.beginPath();
+      for (let i = 0; i <= 240; i++) {
+        const cm = 1 + (49 * i) / 240;
+        const y = Y(tension(W, L, cm / 100));
+        i ? ctx.lineTo(X(cm), y) : ctx.moveTo(X(cm), y);
+      }
+      ctx.stroke(); ctx.lineWidth = 1;
+
+      ctx.fillStyle = MARK;
+      ctx.beginPath(); ctx.arc(X(dcm), Y(T), 6, 0, Math.PI * 2); ctx.fill();
+
+      const gain = T / W;
+      const note = gain >= 20
+        ? ` · <b>vùng nhân lực: mỗi cọc bị kéo nghiêng vào trong bằng ${vi(T / KGF, 0)} kgf</b>`
+        : '';
+      readout.innerHTML =
+        `Vật ${vi(m, 1)} kg · dây ${vi(L, 1)} m · võng ${vi(dcm, 1)} cm → ` +
+        `T = <b>${fmtF(T)} = ${vi(T / KGF, 1)} kgf</b> mỗi bên, gấp <b>${vi(gain, 1)} lần</b> trọng lượng vật ` +
+        `(góc dây ${vi((theta * 180) / Math.PI, 2)}°)${note}`;
+    }
+
+    root.querySelectorAll('input').forEach((el) => el.addEventListener('input', draw));
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="day-phoi-vi-sao-khong-the-cang-that-thang"]').forEach(setup);
+</script>

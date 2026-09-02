@@ -1,0 +1,93 @@
+---
+title: "Lúc bạn thấy Mặt Trời chạm chân trời, nó đã lặn xong từ hai phút rưỡi trước"
+seoTitle: "Khúc xạ khí quyển: vì sao Mặt Trời lặn muộn hơn thực tế 2,5 phút"
+description: "Khí quyển nâng ảnh Mặt Trời lên 34,5 phút cung ngay tại chân trời — lớn hơn cả đường kính biểu kiến 32,0 phút cung của nó. Nghĩa là cả đĩa đã nằm dưới chân trời hình học khi bạn còn đang ngắm; và vì mép dưới được nâng nhiều hơn mép trên 5,2 phút cung, đĩa bị ép dẹt 16%."
+pubDate: 2026-09-02
+tags: ["vat-ly", "quang-hoc", "khi-hau", "javascript"]
+translationId: "mat-troi-lan-roi-ban-moi-thay-no-lan"
+---
+
+import SunsetRefraction from '../../../components/demos/SunsetRefraction.astro';
+
+Chiều nào cũng có khoảnh khắc ấy: đĩa Mặt Trời nằm gọn trên vạch chân trời,
+đỏ au, nhìn thẳng vào được mà không chói. Khoảnh khắc ấy không có thật — vật
+thể bạn đang ngắm đã chìm hẳn, cái còn nổi lên chỉ là tấm ảnh khí quyển nâng
+hộ:
+
+<SunsetRefraction />
+
+## Khí quyển nâng ảnh 34,5 phút cung, mà đĩa chỉ rộng 32
+
+Không khí lên cao thì loãng, loãng thì chiết suất giảm. Tia sáng đi xiên qua
+chồng lớp mật độ ấy bị bẻ liên tục về phía đặc hơn —
+[đúng luật Snell](/vi/posts/khuc-xa-va-phan-xa-toan-phan), chỉ khác là không
+có mặt phân cách nào, chỉ một gradient trơn. Tia tới mắt bạn thành cung cong
+lõm xuống, còn bạn thì quy vật về phía cuối tiếp tuyến: **cao hơn chỗ nó thật
+sự đứng**.
+
+Mức nâng tỉ lệ với quãng đường tia đi trong khí quyển, nên lớn nhất đúng tại
+chân trời. Công thức Bennett 1982 cho **34,5 phút cung** ở độ cao biểu kiến
+0°, khí quyển tiêu chuẩn (1 010 hPa, 10 °C). Đĩa Mặt Trời rộng **32,0 phút
+cung**: mức nâng lớn hơn cả bề rộng của vật được nâng.
+
+Đọc thẳng ra: lúc bạn thấy mép dưới chạm vạch, mép trên *thật* đã ở dưới chân
+trời hình học 2,5 phút cung, cả đĩa lặn xong từ 11 giây trước. Mặt Trời hạ 15
+phút cung mỗi phút dọc cung nhật động, nhưng ở vĩ độ Hà Nội (21°) thành phần
+thẳng đứng chỉ còn 15 × cos 21° = 14,0. Vậy 34,5 phút cung ứng với **2 phút
+28 giây**: cảnh hoàng hôn bạn đang xem là bản phát lại.
+
+## Đĩa dẹt 16%, bằng chứng nằm sẵn trong điện thoại bạn
+
+Gradient mật độ nằm theo phương đứng, nên khúc xạ nâng chứ không ép ngang: bề
+rộng đĩa giữ nguyên 32,0 phút cung. Nhưng nửa độ sát chân trời là quãng rất
+đắt — mép dưới được nâng nhiều hơn mép trên **5,2 phút cung**, đường kính
+đứng tụt còn **26,8 phút cung**, tức 84% bề ngang.
+
+Mọi ảnh chụp lúc đĩa chạm chân trời đều cho một quả trứng nằm chứ không phải
+hình tròn. Mặt Trăng mọc dẹt y hệt, chỉ là [ảo giác kích
+thước](/vi/posts/mat-trang-o-chan-troi-nho-hon-that) chiếm hết chú ý. Còn màu
+đỏ thì không liên quan — đó là [tán xạ
+Rayleigh](/vi/posts/vi-sao-bau-troi-xanh-va-hoang-hon-do) chạy song song.
+
+## Hai phút rưỡi được cộng vào ngày của bạn, hai lần
+
+Bình minh diễn lại kịch bản ngược, cũng 2 phút 28 giây. Cộng hai đầu, khúc xạ
+**tặng Hà Nội 4 phút 55 giây ban ngày, mỗi ngày** — và món quà lớn dần theo
+vĩ độ vì thành phần thẳng đứng co theo cos φ: Reykjavík ở 64° được **10 phút
+32 giây**. Nó cũng đã đi vào định nghĩa: bảng giờ mọc–lặn in trên lịch lấy mốc
+tâm Mặt Trời ở độ cao *thật* **−50 phút cung** — 34 phút cung khúc xạ cộng 16
+phút cung bán kính đĩa, chưa bao giờ là hình học thuần tuý.
+
+## Nóng hay lạnh kéo con số đi gần 11 phút cung
+
+Bennett nhân thêm hệ số (P/1010) × (283/(273+T)): khí quyển đặc hơn thì bẻ
+mạnh hơn. Hai đầu thanh trượt — 1 040 hPa với −20 °C cho **39,7 phút cung**,
+950 hPa với 45 °C còn **28,9** — cách nhau 10,9 phút cung, tức 47 giây đồng
+hồ ở Hà Nội.
+
+Đầu nóng có chi tiết phá hoại: ở 1 010 hPa, vượt **32,2 °C** là khúc xạ tụt
+xuống dưới 32,0 phút cung. Chiều hè Hà Nội 33 °C cho 31,9, và câu mở bài hỏng
+nhẹ — mép trên của đĩa thật vẫn nhô trên chân trời. "Cả đĩa đã lặn" là mệnh
+đề có mùa.
+
+## Trường hợp biên: khi khí quyển thành ống dẫn sáng
+
+Bennett giả định khí quyển phân tầng đều, gradient chuẩn −6,5 °C/km. Khi đó
+tia sáng ngang cong theo bán kính 37 600 km — **5,9 lần bán kính Trái Đất**,
+đủ thoải để nó vẫn tụt khỏi mặt đất và bạn vẫn có chân trời. Nhưng
+nghịch nhiệt trên mặt biển băng đạt **0,13 °C mỗi mét** thì bán kính cong của
+tia bằng đúng bán kính Trái Đất: ánh sáng chạy vòng theo mặt cầu, khí quyển
+thành ống dẫn. Đoàn Barents kẹt ở Novaya Zemlya mùa đông 1596–97 thấy Mặt
+Trời mọc lại sớm hai tuần so với lịch — báo cáo bị nghi là bịa suốt hàng thế
+kỷ.
+
+Đổi dấu gradient thì lật ngược. Trưa hè trên nhựa đường, lớp khí sát đất nóng
+hơn lớp trên; qua ngưỡng **−3,4 °C mỗi 100 m** — gấp 3,5 lần [gradient đoạn
+nhiệt khô 9,8 °C/km](/vi/posts/vi-sao-len-nui-thi-lanh-du-gan-mat-troi-hon) —
+chiết suất *tăng* theo độ cao, tia cong ngược lên, và bạn thấy vũng nước
+không có thật.
+
+Còn đầu kia thanh trượt thì công thức không hỏng, nó chỉ tàng hình: ở 45°
+khúc xạ còn **1,0 phút cung**, đúng bằng giới hạn phân giải của mắt người.
+Trên đỉnh đầu, bầu trời trả ảnh về gần đúng chỗ — nó chỉ nói dối ở rìa, nơi
+bạn nhìn lâu nhất.

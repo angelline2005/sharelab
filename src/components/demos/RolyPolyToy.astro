@@ -1,0 +1,276 @@
+---
+// Con lật đật: điều kiện cân bằng bền của vật đáy chỏm cầu lăn trên mặt phẳng.
+//   y_G = Σ(m·y)/Σm  (chiều cao trọng tâm, đo từ điểm chạm đất khi đứng thẳng)
+//   τ(θ) = M·g·(R − y_G)·sinθ   — dương là mô-men hồi phục, âm là mô-men lật
+//   T = 2π·√((I_G + M·y_G²)/(M·g·(R − y_G)))   — chu kỳ lắc biên độ nhỏ
+// Nguồn: cơ học vật rắn cổ điển, lăn không trượt trên mặt cầu bán kính R;
+// tâm cong C giữ nguyên độ cao R với mọi góc nghiêng, nên τ đúng ở MỌI θ
+// (không cần xấp xỉ góc nhỏ) — miễn là mặt cầu còn chạm đất, tức θ ≤ nửa góc
+// chỏm; demo lấy chỏm 60° nên slider góc dừng ở 60°. Chu kỳ T dùng mô hình
+// hai khối lượng điểm nằm trên trục và chỉ đúng ở biên độ nhỏ.
+// Cố định: thân 80 g ở 6,0 cm, bán kính đáy R = 5,0 cm, thân cao 10 cm.
+---
+
+<figure class="demo" data-demo="con-lat-dat-va-40-gam-chi">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Khối lượng chì (g) <output data-out="m"></output>
+      <input type="range" data-in="m" min="0" max="80" step="1" value="40" /></label>
+    <label>Chì đặt cao bao nhiêu (cm) <output data-out="y"></output>
+      <input type="range" data-in="y" min="0" max="5" step="0.1" value="1" /></label>
+    <label>Góc nghiêng θ (°) <output data-out="a"></output>
+      <input type="range" data-in="a" min="0" max="60" step="1" value="30" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Trái: mặt cắt đứng con lật đật đang nghiêng, thân 80 g ở 6,0 cm và đáy
+    chỏm cầu R = 5,0 cm. Tâm cong C luôn nằm đúng độ cao R dù nghiêng bao
+    nhiêu — đặc quyền của mặt cầu lăn. Trọng tâm G treo dưới C một đoạn
+    R − y_G, nên nghiêng là G bị nhấc lên và trọng lực có cánh tay đòn để kéo
+    về. Phải: mô-men theo góc nghiêng, đường cam là thân trần không chì. Dấu
+    của đường cong là toàn bộ câu chuyện.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const CURVE = '#2563eb', MARK = '#dc2626', ALT = '#f59e0b';
+  const GA = 9.81;
+  const MB = 80, YB = 6.0;   // thân 80 g, trọng tâm ở 6,0 cm
+  const R = 5.0;             // bán kính đáy chỏm cầu (cm)
+  const HT = 10;             // chiều cao đồ chơi (cm)
+  const CAP = Math.PI / 3;   // nửa góc chỏm cầu = 60°
+
+  const yG = (ml: number, yl: number) => (MB * YB + ml * yl) / (MB + ml);
+
+  // mô-men quanh điểm chạm, đơn vị mN·m
+  const torque = (ml: number, yl: number, deg: number) =>
+    ((MB + ml) / 1000) * GA * ((R - yG(ml, yl)) / 100) * Math.sin((deg * Math.PI) / 180) * 1000;
+
+  const period = (ml: number, yl: number) => {
+    const M = (MB + ml) / 1000, yc = yG(ml, yl) / 100, a = R / 100 - yc;
+    if (a <= 2e-4) return NaN;
+    const IG = (MB / 1000) * (YB / 100 - yc) ** 2 + (ml / 1000) * (yl / 100 - yc) ** 2;
+    return 2 * Math.PI * Math.sqrt((IG + M * yc * yc) / (M * GA * a));
+  };
+
+  const f = (x: number, d: number) => x.toFixed(d).replace('.', ',');
+
+  const niceStep = (range: number) => {
+    const raw = range / 5;
+    const p = Math.pow(10, Math.floor(Math.log10(raw)));
+    const n = raw / p;
+    return (n <= 1 ? 1 : n <= 2 ? 2 : n <= 2.5 ? 2.5 : n <= 5 ? 5 : 10) * p;
+  };
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (k: string) => root.querySelector(`[data-in="${k}"]`) as HTMLInputElement;
+    const output = (k: string) => root.querySelector(`[data-out="${k}"]`) as HTMLOutputElement;
+
+    function draw() {
+      const ml = Number(input('m').value);
+      const yl = Number(input('y').value);
+      const deg = Number(input('a').value);
+      output('m').textContent = String(ml);
+      output('y').textContent = f(yl, 1);
+      output('a').textContent = String(deg);
+
+      const yc = yG(ml, yl);             // cm
+      const arm = R - yc;                // cm, dương ⇒ bền
+      const th = (deg * Math.PI) / 180;
+      const tau = torque(ml, yl, deg);
+      const T = period(ml, yl);
+      const stable = arm > 0;
+      const hue = stable ? CURVE : MARK;
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.44);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+      ctx.font = '10px system-ui,sans-serif';
+      ctx.lineJoin = 'round';
+
+      const gap = 16;
+      const pw = Math.round((cssW - gap) * 0.5), ph = cssH;
+      const qx = pw + gap;
+
+      // ================= KHUNG TRÁI: mặt cắt đứng =================
+      const SC = Math.min((pw - 28) / 13.6, ph / 12.6);
+      const ox = 28 + (pw - 28) / 2, oy = ph - 1.1 * SC;
+      const PX = (x: number) => ox + x * SC;
+      const PY = (y: number) => oy - y * SC;
+
+      // toạ độ thân: gốc ở tâm cong C, trục y hướng lên dọc trục vật
+      const TX = (xl: number, ylo: number) => PX(xl * Math.cos(th) + ylo * Math.sin(th));
+      const TY = (xl: number, ylo: number) => PY(-xl * Math.sin(th) + ylo * Math.cos(th) + R);
+
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.35; ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(0, PY(0)); ctx.lineTo(pw, PY(0)); ctx.stroke();
+
+      // thước độ cao (cm)
+      ctx.beginPath(); ctx.moveTo(12, PY(0)); ctx.lineTo(12, PY(11)); ctx.stroke();
+      ctx.fillStyle = fg; ctx.textAlign = 'left';
+      for (const h of [0, 2, 4, 6, 8, 10]) {
+        ctx.globalAlpha = 0.35;
+        ctx.beginPath(); ctx.moveTo(8, PY(h)); ctx.lineTo(12, PY(h)); ctx.stroke();
+        ctx.globalAlpha = 0.6; ctx.fillText(`${h}`, 14, PY(h) + 3);
+      }
+      ctx.globalAlpha = 0.6; ctx.fillText('cm', 8, PY(11) - 4);
+      ctx.globalAlpha = 1;
+
+      // đường ngang ở độ cao R và ở độ cao hiện thời của G
+      const hG = R - arm * Math.cos(th);
+      ctx.setLineDash([4, 4]); ctx.globalAlpha = 0.45; ctx.strokeStyle = fg;
+      ctx.beginPath(); ctx.moveTo(26, PY(R)); ctx.lineTo(pw - 4, PY(R)); ctx.stroke();
+      ctx.strokeStyle = hue;
+      ctx.beginPath(); ctx.moveTo(26, PY(hG)); ctx.lineTo(pw - 4, PY(hG)); ctx.stroke();
+      ctx.setLineDash([]); ctx.globalAlpha = 1;
+
+      // thân con lật đật
+      const rx = R * Math.sin(CAP), ry = -R * Math.cos(CAP), ty = -R + HT;
+      const cy = ry + 0.55 * (ty - ry);
+      ctx.beginPath();
+      for (let i = 0; i <= 48; i++) {
+        const phi = -CAP + (2 * CAP * i) / 48;
+        const xl = R * Math.sin(phi), ylo = -R * Math.cos(phi);
+        i ? ctx.lineTo(TX(xl, ylo), TY(xl, ylo)) : ctx.moveTo(TX(xl, ylo), TY(xl, ylo));
+      }
+      ctx.quadraticCurveTo(TX(rx * 1.15, cy), TY(rx * 1.15, cy), TX(0, ty), TY(0, ty));
+      ctx.quadraticCurveTo(TX(-rx * 1.15, cy), TY(-rx * 1.15, cy), TX(-rx, ry), TY(-rx, ry));
+      ctx.closePath();
+      ctx.fillStyle = CURVE; ctx.globalAlpha = 0.1; ctx.fill();
+      ctx.globalAlpha = 0.75; ctx.strokeStyle = fg; ctx.lineWidth = 1.5; ctx.stroke();
+      ctx.globalAlpha = 1; ctx.lineWidth = 1;
+
+      // khối lượng thân (rỗng) và cục chì
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.55;
+      ctx.beginPath(); ctx.arc(TX(0, YB - R), TY(0, YB - R), 4, 0, Math.PI * 2); ctx.stroke();
+      ctx.textAlign = 'left'; ctx.fillStyle = fg; ctx.globalAlpha = 0.65;
+      ctx.fillText('thân 80 g', TX(0, YB - R) + 7, TY(0, YB - R) + 3);
+      if (ml > 0) {
+        const rr = 2.5 + 4.5 * (ml / 80);
+        ctx.fillStyle = fg; ctx.globalAlpha = 0.6;
+        ctx.beginPath(); ctx.arc(TX(0, yl - R), TY(0, yl - R), rr, 0, Math.PI * 2); ctx.fill();
+        ctx.globalAlpha = 0.65;
+        ctx.fillText(`chì ${ml} g`, TX(0, yl - R) + rr + 5, TY(0, yl - R) + 3);
+      }
+      ctx.globalAlpha = 1;
+
+      // trục vật: C → G
+      ctx.strokeStyle = hue; ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.moveTo(TX(0, 0), TY(0, 0)); ctx.lineTo(TX(0, yc - R), TY(0, yc - R)); ctx.stroke();
+      ctx.lineWidth = 1;
+
+      // tâm cong C
+      ctx.fillStyle = fg; ctx.globalAlpha = 0.85;
+      ctx.beginPath(); ctx.arc(TX(0, 0), TY(0, 0), 3.5, 0, Math.PI * 2); ctx.fill();
+      ctx.textAlign = 'right';
+      ctx.fillText('C · R = 5,0 cm', TX(0, 0) - 7, TY(0, 0) - 4);
+      ctx.globalAlpha = 1;
+
+      // trọng tâm G + dây dọi + cánh tay đòn
+      const gx = TX(0, yc - R), gy = TY(0, yc - R);
+      ctx.strokeStyle = hue; ctx.setLineDash([3, 3]); ctx.globalAlpha = 0.7;
+      ctx.beginPath(); ctx.moveTo(gx, gy); ctx.lineTo(gx, PY(0)); ctx.stroke();
+      ctx.setLineDash([]); ctx.globalAlpha = 1; ctx.lineWidth = 2.5;
+      ctx.beginPath(); ctx.moveTo(gx, PY(0)); ctx.lineTo(PX(0), PY(0)); ctx.stroke();
+      ctx.lineWidth = 1;
+      ctx.fillStyle = hue;
+      ctx.beginPath(); ctx.arc(gx, gy, 5, 0, Math.PI * 2); ctx.fill();
+      ctx.textAlign = 'right';
+      ctx.fillText(`G · ${f(yc, 2)} cm`, gx - 8, gy + 3);
+
+      // điểm chạm đất + cánh tay đòn
+      ctx.fillStyle = fg; ctx.globalAlpha = 0.9;
+      ctx.beginPath(); ctx.arc(PX(0), PY(0), 3, 0, Math.PI * 2); ctx.fill();
+      ctx.globalAlpha = 0.65; ctx.textAlign = 'center';
+      ctx.fillText('điểm chạm', PX(0), PY(0) + 15);
+      const armMm = Math.abs(arm * 10 * Math.sin(th));
+      if (armMm > 0.05) {
+        ctx.fillStyle = hue; ctx.globalAlpha = 1;
+        ctx.fillText(`đòn ${f(armMm, 1)} mm`, (gx + PX(0)) / 2, PY(0) + 27);
+      }
+      ctx.globalAlpha = 1;
+
+      // ================= KHUNG PHẢI: mô-men theo góc =================
+      const padL = qx + 44, padR = 8, padT = 16, padB = 26;
+      let hi = 0;
+      for (const [m, y] of [[ml, yl], [0, yl]]) hi = Math.max(hi, Math.abs(torque(m, y, 60)));
+      hi = Math.max(hi, 1);
+      const step = niceStep(2 * hi);
+      const yHi = Math.ceil(hi / step) * step, yLo = -yHi;
+      const QX = (d: number) => padL + (d / 60) * (cssW - padL - padR);
+      const QY = (t: number) => padT + ((yHi - t) / (yHi - yLo)) * (ph - padT - padB);
+
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.3;
+      ctx.beginPath(); ctx.moveTo(padL, padT); ctx.lineTo(padL, ph - padB); ctx.lineTo(cssW - padR, ph - padB); ctx.stroke();
+      ctx.globalAlpha = 0.5;
+      ctx.beginPath(); ctx.moveTo(padL, QY(0)); ctx.lineTo(cssW - padR, QY(0)); ctx.stroke();
+      ctx.globalAlpha = 0.55; ctx.fillStyle = fg; ctx.textAlign = 'center';
+      for (const d of [0, 15, 30, 45, 60]) ctx.fillText(`${d}°`, QX(d), ph - padB + 14);
+      ctx.textAlign = 'right';
+      const dec = step < 1 ? 2 : step % 1 === 0 ? 0 : 1;
+      const nTick = Math.round((yHi - yLo) / step);
+      for (let i = 0; i <= nTick; i++) ctx.fillText(f(yLo + i * step, dec), padL - 4, QY(yLo + i * step) + 3);
+      ctx.textAlign = 'left';
+      ctx.fillText('mN·m', padL - 40, padT + 2);
+      ctx.globalAlpha = 1;
+
+      // đường cam: thân trần, không chì
+      ctx.strokeStyle = ALT; ctx.lineWidth = 1.5; ctx.setLineDash([5, 4]); ctx.beginPath();
+      for (let i = 0; i <= 120; i++) {
+        const d = (60 * i) / 120;
+        i ? ctx.lineTo(QX(d), QY(torque(0, yl, d))) : ctx.moveTo(QX(d), QY(torque(0, yl, d)));
+      }
+      ctx.stroke(); ctx.setLineDash([]);
+
+      // đường xanh: cấu hình hiện tại
+      ctx.strokeStyle = hue; ctx.lineWidth = 2; ctx.beginPath();
+      for (let i = 0; i <= 120; i++) {
+        const d = (60 * i) / 120;
+        i ? ctx.lineTo(QX(d), QY(torque(ml, yl, d))) : ctx.moveTo(QX(d), QY(torque(ml, yl, d)));
+      }
+      ctx.stroke(); ctx.lineWidth = 1;
+
+      ctx.fillStyle = MARK;
+      ctx.beginPath(); ctx.arc(QX(deg), QY(tau), 6, 0, Math.PI * 2); ctx.fill();
+
+      ctx.fillStyle = ALT; ctx.textAlign = 'right';
+      ctx.fillText('thân trần 0 g chì', cssW - padR, QY(torque(0, yl, 60)) - 8);
+      ctx.globalAlpha = 0.65; ctx.fillStyle = fg; ctx.textAlign = 'left';
+      ctx.fillText('trên trục 0: hồi phục', padL + 6, QY(0) - 6);
+      ctx.fillText('dưới trục 0: lật đổ', padL + 6, QY(0) + 14);
+      ctx.globalAlpha = 1;
+
+      // ---------- dòng số ----------
+      const cmp = arm > 0 ? '&lt;' : arm === 0 ? '=' : '&gt;';
+      const verdict = arm > 0 ? '<b>BỀN</b>' : arm === 0 ? '<b>PHIẾM ĐỊNH</b>' : '<b>ĐỔ</b>';
+      const wob = Number.isFinite(T) ? ` · chu kỳ lắc <b>${f(T, 2)} s</b>` : '';
+      readout.innerHTML =
+        `Thân 80 g @ 6,0 cm + chì ${ml} g @ ${f(yl, 1)} cm → y_G = <b>${f(yc, 2)} cm</b>` +
+        ` ${cmp} R = 5,0 cm ⇒ ${verdict} · nghiêng ${deg}° cho mô-men ${stable ? 'hồi phục' : 'lật'}` +
+        ` <b>${f(Math.abs(tau), 2)} mN·m</b>${wob}`;
+    }
+
+    root.querySelectorAll('input').forEach((el) => el.addEventListener('input', draw));
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="con-lat-dat-va-40-gam-chi"]').forEach(setup);
+</script>

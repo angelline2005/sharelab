@@ -1,0 +1,99 @@
+---
+title: "Không tia nước nào dài vô hạn: mọi tia đều phải vỡ thành giọt"
+seoTitle: "Bất ổn định Plateau–Rayleigh: vì sao tia nước vỡ thành giọt"
+description: "Sức căng bề mặt chọn sẵn một bước sóng — λ bằng 4,51 lần đường kính tia — nên tia ⌀2 mm luôn vỡ thành giọt ⌀3,78 mm, rộng gần gấp đôi chính nó. Không kiểu vòi nào lách được, vì mọi bước sóng khác đều lớn chậm hơn."
+pubDate: 2026-09-02
+tags: ["vat-ly", "chat-luu", "javascript"]
+translationId: "vi-sao-khong-co-tia-nuoc-dai-vo-han"
+---
+
+import JetBreakup from '../../../components/demos/JetBreakup.astro';
+
+Vặn vòi thật nhỏ rồi nhìn kỹ: đoạn nước ngay dưới miệng vòi trong veo như
+một que thuỷ tinh, nhưng chỉ một gang tay bên dưới nó đã thành chuỗi hạt
+rời. Không có gì chạm vào, không có gió. Và bạn không sửa được: không kiểu
+vòi nào cho ra một tia liền mạch dài vô hạn.
+
+<JetBreakup />
+
+## Nước đứt không phải vì rơi, mà vì tiết kiệm da
+
+Mặt nước là [tấm da căng luôn co về diện tích nhỏ
+nhất](/vi/posts/nhen-nuoc-di-tren-mat-ho-va-luat-choi-cua-kich-thuoc), và
+hình trụ *không* phải hình ít da nhất ở cùng thể tích. Lấy đúng một bước
+sóng 9,01 mm của tia ⌀2 mm: mặt ngoài đoạn trụ ấy rộng 56,6 mm²; gom lượng
+nước đó thành một giọt cầu thì còn 44,9 mm² — **bớt 21% diện tích**, tức
+21% năng lượng bề mặt. Thiên nhiên tính tiền theo mét vuông da, và giọt rẻ
+hơn tia.
+
+Nhưng không phải gợn nào cũng có lãi. Một gợn hình sin trên mặt tia chỉ
+làm giảm diện tích khi bước sóng của nó **dài hơn chu vi tia**, 2πr =
+6,28·r. Ngắn hơn thế, chỗ thắt cong theo phương vòng nhiều hơn phần lãi
+thu được theo phương dọc, và sức căng bề mặt đứng hẳn về phe san phẳng.
+Kéo thanh bước sóng trong demo xuống dưới 6,28·r: tia trong veo trở lại.
+
+## Một bước sóng thắng cuộc, và nó thắng bằng hàm mũ
+
+Trên ngưỡng ấy mọi bước sóng đều lớn lên, nhưng không cùng tốc độ.
+Rayleigh giải bài toán năm 1878 và tìm ra cực đại nằm tại k·r = 0,697:
+
+```
+λ nhanh nhất = 9,014 · r = 4,507 · d
+```
+
+Với tia ⌀2 mm, gợn ấy nhân biên độ lên e lần sau mỗi **10,8 ms**, tức
+**2,31 lần trên mỗi bước sóng mà tia đi được**. Chỗ quyết định nằm ở chữ
+"hàm mũ": chênh lệch tốc độ nhỏ biến thành chênh lệch biên độ khổng lồ.
+Đến lúc mode nhanh nhất đã nở 163 000 lần và bóp đứt tia, mode ở λ = 6,3·r
+— chậm hơn 7,1 lần — mới nở được 5,5 lần, vẫn vô hình. Tia không "chọn"
+bước sóng nào cả; hàm mũ chọn hộ nó.
+
+## Vì sao giọt luôn to hơn cái lỗ đẻ ra nó
+
+Phần còn lại là số học bảo toàn thể tích: một bước sóng nước hình trụ gom
+lại thành một giọt cầu.
+
+```
+π r² λ = π D³ / 6   →   D = (6 r² λ)^(1/3) = 1,891 · d
+```
+
+Tia ⌀2 mm cho giọt **⌀3,78 mm**, thể tích 28,3 mm³ — **rộng hơn chính tia
+89%**. Tỉ số 1,89 không có chỗ lách: khoan lỗ nhỏ đi một nửa thì giọt cũng
+nhỏ đi đúng một nửa chứ không mịn hơn.
+
+## Đoạn tia còn liền dài đúng bao nhiêu
+
+Bất ổn định cần thời gian, mà tia thì đang chạy: đoạn liền chỉ là quãng
+đường nó đi được trong thời gian ấy, L = v·t. Biên độ xuất phát là mức ồn
+nhiệt cộng rung vòi, cỡ 10⁻⁵ bán kính, nên t = ln(r/δ₀)/ω ≈ 12/ω. Tia ⌀2
+mm chảy 1 m/s có ω = 92,7 s⁻¹, ra **L = 12,9 cm**. Mở mạnh lên 2 m/s thì L
+thành 25,9 cm: dòng mạnh trông "mượt" hơn dòng yếu không vì nó ổn định
+hơn, mà vì nó bay xa hơn trong cùng chừng ấy mili-giây (tốc độ tia lại do
+[mực nước phía trên quyết
+định](/vi/posts/torricelli-thoi-gian-can-cua-mot-be-nuoc)).
+
+Cái logarit là chỗ tử tế: nhiễu ban đầu to gấp 10 lần thì L chỉ ngắn đi
+19%. Con số vì thế rất bền — và cũng vì thế máy in phun công nghiệp không
+thèm chờ nhiễu tự nhiên: vòi ⌀60 µm phun 20 m/s được rung cưỡng bức đúng ở
+λ = 0,27 mm, tức **74 000 lần mỗi giây**, để mọi giọt ra đời cùng cỡ
+⌀0,113 mm và cùng nhịp, đủ đều để in chữ lên vỏ hộp sữa đang chạy.
+
+## Trường hợp biên: mật ong không thoát án, nó chỉ được hoãn thi hành
+
+Độ nhớt vào cuộc qua số Ohnesorge `Oh = μ/√(ργr)`. Nước ở bán kính 1 mm có
+Oh = 0,0037 — nhỏ tới mức bỏ hẳn độ nhớt vẫn ra đúng số. Glycerine Oh =
+5,0 **không chặn được** bất ổn định (lập luận diện tích không có ngoại
+lệ), chỉ làm nó chậm: bước sóng thắng cuộc giãn thành 15,1 lần đường kính,
+thời gian nhân e lên 146 ms thay vì 10,8, đoạn liền ở 1 m/s dài **1,75 m**.
+Mật ong Oh = 34: đoạn liền hơn **12 m**. Thìa mật của bạn cách bát 20 cm,
+nên sợi mật hạ cánh nguyên vẹn — không phải vì nó bền, mà vì nó [chảy
+trong thế giới do độ nhớt cầm
+trịch](/vi/posts/so-reynolds-vi-khuan-boi-trong-mat-ong) và bản án tới quá
+muộn.
+
+Đầu kia của thang thì ngược hẳn. Tích điện cho tia (electrospray) hoặc
+thổi ngang một luồng khí đủ mạnh, và cơ chế xé không còn là
+Plateau–Rayleigh: lực điện và lực khí động cắt tia theo cỡ của riêng chúng
+— bình xịt sương lấy hạt 10 µm ra từ lỗ 0,5 mm, nhỏ hơn 1,89·d tới 95 lần.
+Nên nếu bạn muốn giọt mịn hơn, đừng khoan lỗ bé hơn — hãy thôi để sức căng
+bề mặt cầm dao.

@@ -1,0 +1,210 @@
+---
+// Saros: commensurability of the synodic month (29,530588 d) with the
+// draconic month (27,212221 d) and the anomalistic month (27,554550 d).
+// Residual r(N) = N·SYN − round(N·SYN/P)·P, plotted for N = 1…300.
+// Node offset in longitude = |r|·360/DRA; solar-eclipse window ≈ ±18,5°
+// (⇒ |r| ≤ 1,398 d). Longitude shift of the repeat = frac(N·SYN)·360°.
+// Mean elements (Meeus, Astronomical Algorithms); valid for the present
+// epoch only — all three months drift by ~1e-7 d per century.
+---
+
+<figure class="demo" data-demo="saros-nhat-thuc-lap-lai-lech-116-do">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Số tháng giao hội N <output data-out="n"></output>
+      <input type="range" data-in="n" min="1" max="300" step="1" value="223" /></label>
+    <label>So với chu kỳ <output data-out="p"></output>
+      <input type="range" data-in="p" min="0" max="1" step="1" value="0" /></label>
+    <label>Số lần thực vẽ trên vòng Trái Đất <output data-out="k"></output>
+      <input type="range" data-in="k" min="1" max="6" step="1" value="3" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Trên: sau N tháng giao hội, Mặt Trăng còn cách nút quỹ đạo bao xa (tính
+    bằng ngày). Đáy càng sâu, nhật thực lặp lại càng giống lần trước —
+    N = 223 là đáy tuyệt đối trong khoảng 1–300. Dưới: vòng xích đạo nhìn
+    từ cực Bắc, chấm đỏ là vệt bóng lần đầu, các chấm vàng là những lần
+    lặp sau, mỗi lần trượt thêm một góc về phía Tây.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const SYN = 29.530588, DRA = 27.212221, ANO = 27.554550;
+  const CURVE = '#2563eb', MARK = '#dc2626', LM = '#f59e0b';
+  const NMAX = 300, YMAX = 14;
+  const WINDOW = 18.5 * DRA / 360;      // ±18,5° khỏi nút → 1,398 ngày
+  const AE2 = 2 * 384400 * 0.0549;      // 2·a·e (km) cho biên độ khoảng cách
+
+  const resid = (N: number, P: number) => {
+    const d = N * SYN;
+    return d - Math.round(d / P) * P;
+  };
+  const vi = (x: number, n: number) => {
+    const s = Math.abs(x) >= 1000
+      ? x.toFixed(n).replace(/\B(?=(\d{3})+(?!\d))/, ' ')
+      : x.toFixed(n);
+    return s.replace('.', ',');
+  };
+  const mins = (d: number) => {
+    if (d >= 1) return `${vi(d, 2)} ngày`;
+    const t = Math.round(d * 1440);
+    if (t < 90) return `${t} phút`;
+    return `${Math.floor(t / 60)} giờ ${t % 60} phút`;
+  };
+  function records(P: number) {
+    const out: number[] = [];
+    let best = Infinity;
+    for (let N = 1; N <= NMAX; N++) {
+      const r = Math.abs(resid(N, P));
+      if (r < best - 1e-9) { best = r; out.push(N); }
+    }
+    return out;
+  }
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (k: string) => root.querySelector(`[data-in="${k}"]`) as HTMLInputElement;
+    const output = (k: string) => root.querySelector(`[data-out="${k}"]`) as HTMLOutputElement;
+
+    function draw() {
+      const N = Number(input('n').value);
+      const mode = Number(input('p').value);
+      const K = Number(input('k').value);
+      const P = mode ? ANO : DRA;
+      const name = mode ? 'cận điểm' : 'giao điểm';
+      output('n').textContent = String(N);
+      output('p').textContent = `${name} ${vi(P, 6)} d`;
+      output('k').textContent = String(K);
+
+      const days = N * SYN;
+      const M = Math.round(days / P);
+      const r = Math.abs(resid(N, P));
+      const frac = days - Math.floor(days);
+      const shift = frac * 360;
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.7);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+      ctx.font = '10px system-ui,sans-serif';
+
+      const padL = 40, padR = 10, padT = 22;
+      const axisY = Math.round(cssH * 0.52);
+      const X = (n: number) => padL + ((n - 1) / (NMAX - 1)) * (cssW - padL - padR);
+      const Y = (d: number) => axisY - (d / YMAX) * (axisY - padT);
+
+      // Vùng còn ăn thực (chỉ có nghĩa khi so với tháng giao điểm).
+      if (!mode) {
+        ctx.fillStyle = LM; ctx.globalAlpha = 0.16;
+        ctx.fillRect(padL, Y(WINDOW), cssW - padL - padR, axisY - Y(WINDOW));
+        ctx.globalAlpha = 0.75; ctx.fillStyle = fg; ctx.textAlign = 'left';
+        ctx.fillText('vùng còn ăn thực: lệch < 1,4 ngày', padL + 6, Y(WINDOW) - 4);
+        ctx.globalAlpha = 1;
+      }
+
+      // Trục.
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.3;
+      ctx.beginPath(); ctx.moveTo(padL, padT); ctx.lineTo(padL, axisY); ctx.lineTo(cssW - padR, axisY); ctx.stroke();
+      ctx.globalAlpha = 0.55; ctx.fillStyle = fg;
+      ctx.textAlign = 'center';
+      for (const t of [50, 100, 150, 200, 250]) ctx.fillText(String(t), X(t), axisY + 14);
+      ctx.textAlign = 'right';
+      for (const d of [4, 8, 12]) ctx.fillText(String(d), padL - 4, Y(d) + 3);
+      ctx.textAlign = 'left';
+      ctx.fillText(`lệch khỏi ${name} (ngày)`, padL - 34, padT - 8);
+      ctx.textAlign = 'right';
+      ctx.fillText('N tháng giao hội', cssW - padR, axisY + 14);
+      ctx.globalAlpha = 1;
+
+      // Răng cưa.
+      ctx.strokeStyle = CURVE; ctx.lineWidth = 1.6; ctx.beginPath();
+      for (let n = 1; n <= NMAX; n++) {
+        const y = Y(Math.abs(resid(n, P)));
+        n === 1 ? ctx.moveTo(X(n), y) : ctx.lineTo(X(n), y);
+      }
+      ctx.stroke(); ctx.lineWidth = 1;
+
+      // Các kỷ lục liên tiếp: mỗi chấm vàng là một chu kỳ tốt hơn mọi chu kỳ ngắn hơn.
+      const recs = records(P);
+      ctx.fillStyle = LM;
+      for (const n of recs) {
+        ctx.beginPath(); ctx.arc(X(n), Y(Math.abs(resid(n, P))), 3.5, 0, Math.PI * 2); ctx.fill();
+      }
+      const champ = recs[recs.length - 1];
+      ctx.textAlign = champ > 240 ? 'right' : 'left';
+      ctx.fillText(`N=${champ}`, X(champ) + (champ > 240 ? -6 : 6), Y(Math.abs(resid(champ, P))) - 6);
+
+      // Điểm đang chọn.
+      ctx.strokeStyle = MARK; ctx.globalAlpha = 0.35;
+      ctx.beginPath(); ctx.moveTo(X(N), padT); ctx.lineTo(X(N), axisY); ctx.stroke();
+      ctx.globalAlpha = 1; ctx.fillStyle = MARK;
+      ctx.beginPath(); ctx.arc(X(N), Y(r), 5, 0, Math.PI * 2); ctx.fill();
+
+      // Vòng Trái Đất nhìn từ cực Bắc.
+      const top = axisY + 26;
+      const cx = cssW / 2, cy = top + (cssH - top) / 2;
+      const R = Math.max(24, Math.min((cssH - top) / 2 - 16, 74));
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.35; ctx.lineWidth = 1.2;
+      ctx.beginPath(); ctx.arc(cx, cy, R, 0, Math.PI * 2); ctx.stroke();
+      ctx.globalAlpha = 1; ctx.lineWidth = 1;
+
+      const step = frac * Math.PI * 2;
+      for (let k = K - 1; k >= 0; k--) {
+        const a = -Math.PI / 2 + k * step;
+        const px = cx + R * Math.cos(a), py = cy + R * Math.sin(a);
+        ctx.strokeStyle = k ? LM : MARK;
+        ctx.globalAlpha = k ? Math.max(0.3, 1 - k * 0.13) : 1;
+        ctx.beginPath();
+        ctx.moveTo(cx + R * 0.84 * Math.cos(a), cy + R * 0.84 * Math.sin(a));
+        ctx.lineTo(px, py); ctx.stroke();
+        ctx.fillStyle = k ? LM : MARK;
+        ctx.beginPath(); ctx.arc(px, py, k ? 3.5 : 5, 0, Math.PI * 2); ctx.fill();
+        ctx.globalAlpha = 0.85; ctx.fillStyle = fg; ctx.textAlign = 'center';
+        ctx.fillText(String(k + 1), cx + R * 1.2 * Math.cos(a), cy + R * 1.2 * Math.sin(a) + 3);
+        ctx.globalAlpha = 1;
+      }
+
+      // Cung góc lệch giữa lần 1 và lần 2.
+      if (K > 1) {
+        ctx.strokeStyle = LM; ctx.globalAlpha = 0.9;
+        ctx.beginPath(); ctx.arc(cx, cy, R * 0.6, -Math.PI / 2, -Math.PI / 2 + step); ctx.stroke();
+        const am = -Math.PI / 2 + step / 2;
+        ctx.fillStyle = fg; ctx.globalAlpha = 0.85; ctx.textAlign = 'center';
+        ctx.fillText(`${vi(shift, 1)}° về Tây`, cx + R * 0.36 * Math.cos(am), cy + R * 0.36 * Math.sin(am) + 3);
+        ctx.globalAlpha = 1;
+      }
+
+      // Readout.
+      const deg = r * 360 / DRA;
+      const dr = AE2 * Math.abs(Math.sin(Math.PI * r / ANO));
+      const head =
+        `N = ${N} tháng giao hội = <b>${vi(days, 4)} ngày</b> (${vi(days / 365.2425, 2)} năm) · ` +
+        `${M} tháng ${name} = ${vi(M * P, 4)} ngày → lệch <b>${mins(r)}</b>`;
+      const tail = mode
+        ? ` = ${vi(r * 360 / ANO, 2)}° dị thường → khoảng cách Mặt Trăng đổi tới <b>${vi(dr, 0)} km</b>`
+        : ` = ${vi(deg, 2)}° khỏi nút → <b>${r < WINDOW ? 'vẫn còn ăn thực' : 'quá xa nút, không còn thực'}</b>`;
+      readout.innerHTML = `${head}${tail} · lần sau rơi cách <b>${vi(shift, 1)}°</b> kinh tuyến về phía Tây.`;
+    }
+
+    root.querySelectorAll('input').forEach((el) => el.addEventListener('input', draw));
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="saros-nhat-thuc-lap-lai-lech-116-do"]').forEach(setup);
+</script>

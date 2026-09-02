@@ -1,0 +1,191 @@
+---
+// Nguyên lý Pascal trong phanh dầu đĩa (chất lỏng đứng yên, coi như không nén được):
+//   p = F_piston-chính / A₁ ;  F₂ = p·A₂  ⇒  F₂ = F_tay·k_đòn·(d₂/d₁)²
+//   bảo toàn thể tích:  A₁·s₁ = A₂·s₂  ⇒  s₂ = s₁·(d₁/d₂)²
+// Tỉ số đòn bẩy tay phanh cố định k = 5 và hành trình đầu ngón tay cố định
+// 20 mm ⇒ s₁ = 4 mm. Nhãn vùng quy đổi ra gia tốc phanh dùng: μ_bố = 0,40,
+// hai mặt ma sát, bán kính hiệu dụng đĩa 0,100 m (đĩa ⌀240 mm), bán kính lăn
+// bánh 0,293 m (lốp 110/70-17), xe + người 150 kg, một piston kẹp.
+// Chỉ đúng khi dầu đầy và không có bọt khí; bỏ qua giãn ống và biến dạng đĩa.
+// Nguồn: định luật Pascal; dải bore theo catalogue phanh xe máy phổ thông.
+---
+
+<figure class="demo" data-demo="phanh-dau-xe-may-hai-ngon-tay-170-kg">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Xi-lanh chính d₁ (mm) <output data-out="d1"></output>
+      <input type="range" data-in="d1" min="8" max="16" step="0.5" value="11" /></label>
+    <label>Piston kẹp d₂ (mm) <output data-out="d2"></output>
+      <input type="range" data-in="d2" min="20" max="45" step="1" value="32" /></label>
+    <label>Lực hai ngón tay (N) <output data-out="f"></output>
+      <input type="range" data-in="f" min="10" max="100" step="1" value="40" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Mặt cắt vẽ đúng tỉ lệ đường kính: dầu bị đẩy ra khỏi xi-lanh chính bên trái
+    chui sang piston kẹp bên phải. Áp suất trong dầu ở đâu cũng bằng nhau, nên
+    piston to nhận lực lớn hơn đúng theo tỉ số diện tích. Hai mũi tên là hành
+    trình thật của mỗi piston, vẽ cùng một hệ số phóng đại — lực nhân lên bao
+    nhiêu thì quãng đường chia đi bấy nhiêu. Hai cột dưới so lực tay và lực má
+    phanh trên cùng một trục newton. Giả định tay phanh có đòn bẩy 5:1 và đầu
+    ngón tay đi 20 mm.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const CURVE = '#2563eb', MARK = '#dc2626', OIL = '#f59e0b';
+  const LEVER = 5, FINGER = 20;                     // đòn bẩy tay phanh, hành trình ngón tay (mm)
+  const MU = 0.4, RE = 0.100, RW = 0.293, MASS = 150, G = 9.80665;
+
+  const vi = (x: number, n = 0) => x.toFixed(n).replace('.', ',');
+  const grp = (x: number) => String(Math.round(x)).replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+
+  function axisMax(v: number) {
+    const raw = v * 1.18;
+    const mag = Math.pow(10, Math.floor(Math.log10(raw)));
+    for (const m of [1, 1.5, 2, 2.5, 3, 4, 5, 6, 8]) if (mag * m >= raw) return mag * m;
+    return mag * 10;
+  }
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (k: string) => root.querySelector(`[data-in="${k}"]`) as HTMLInputElement;
+    const output = (k: string) => root.querySelector(`[data-out="${k}"]`) as HTMLOutputElement;
+
+    function draw() {
+      const d1 = Number(input('d1').value);
+      const d2 = Number(input('d2').value);
+      const fh = Number(input('f').value);
+      output('d1').textContent = vi(d1, 1);
+      output('d2').textContent = String(d2);
+      output('f').textContent = String(fh);
+
+      const A1 = Math.PI * (d1 / 2) ** 2, A2 = Math.PI * (d2 / 2) ** 2;   // mm²
+      const ratio = A2 / A1;                       // hệ số nhân thuỷ lực
+      const Fm = fh * LEVER;                       // lực đẩy piston chính (N)
+      const p = Fm / A1;                           // MPa = N/mm²
+      const F2 = p * A2;                           // lực tại má phanh (N)
+      const s1 = FINGER / LEVER;                   // 4 mm
+      const s2 = s1 / ratio;                       // hành trình piston kẹp (mm)
+      const accel = (2 * MU * F2 * RE) / (RW * MASS);
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.58);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+      ctx.font = '10px system-ui,sans-serif';
+
+      const padL = 46, padR = 12, padT = 12, padB = 24;
+      const bandTop = padT, bandBot = padT + (cssH - padT - padB) * 0.56;
+      const mid = (bandTop + bandBot) / 2;
+      const mmPx = (bandBot - bandTop - 30) / 48;   // px trên mỗi mm đường kính
+      const K = 12;                                 // px trên mỗi mm hành trình
+
+      // ---------- mặt cắt hai xi-lanh, đúng tỉ lệ đường kính ----------
+      const h1 = d1 * mmPx, h2 = d2 * mmPx;
+      const xD = cssW - padR - 7;                                   // đĩa phanh
+      const wC = Math.max(118, (cssW - padL - padR) * 0.28);
+      const xC = xD - 9 - wC;
+      const wM = Math.max(108, (cssW - padL - padR) * 0.25);
+      const xM = padL;
+
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.35; ctx.lineWidth = 1.5;
+      ctx.strokeRect(xM, mid - h1 / 2, wM, h1);
+      ctx.strokeRect(xC, mid - h2 / 2, wC, h2);
+      ctx.globalAlpha = 1; ctx.lineWidth = 1;
+
+      const restM = xM + 6, pM = restM + s1 * K;                    // piston chính
+      const restC = xC + wC - 54, pC = restC + s2 * K;              // piston kẹp
+
+      ctx.fillStyle = OIL; ctx.globalAlpha = 0.45;
+      ctx.fillRect(pM + 13, mid - h1 / 2 + 1.5, xM + wM - pM - 14.5, h1 - 3);
+      ctx.fillRect(xC + 1.5, mid - h2 / 2 + 1.5, pC - xC - 3, h2 - 3);
+      ctx.fillRect(xM + wM, mid - 4, xC - xM - wM, 8);
+      ctx.globalAlpha = 1;
+
+      ctx.fillStyle = CURVE; ctx.fillRect(pM, mid - h1 / 2 + 1.5, 13, h1 - 3);
+      ctx.fillStyle = MARK; ctx.fillRect(pC, mid - h2 / 2 + 1.5, 16, h2 - 3);
+
+      ctx.fillStyle = fg; ctx.globalAlpha = 0.5;
+      ctx.fillRect(xD, bandTop + 4, 7, bandBot - bandTop - 10);
+      ctx.globalAlpha = 1;
+
+      const arrow = (x0: number, len: number, y: number, col: string, lab: string) => {
+        const L = Math.max(len, 2);
+        ctx.strokeStyle = col; ctx.fillStyle = col; ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.moveTo(x0, y); ctx.lineTo(x0 + L, y); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(x0 + L, y); ctx.lineTo(x0 + L - 5, y - 3.5);
+        ctx.lineTo(x0 + L - 5, y + 3.5); ctx.closePath(); ctx.fill();
+        ctx.lineWidth = 1; ctx.textAlign = 'left';
+        ctx.fillText(lab, x0 + L + 6, y + 3.5);
+      };
+      arrow(restM, s1 * K, mid - h1 / 2 - 13, CURVE, `${vi(s1, 2)} mm`);
+      arrow(restC, s2 * K, mid - h2 / 2 - 13, MARK, `${vi(s2, 2)} mm`);
+
+      ctx.fillStyle = fg; ctx.globalAlpha = 0.65; ctx.textAlign = 'center';
+      ctx.fillText(`xi-lanh chính ⌀${vi(d1, 1)} mm`, xM + wM / 2, mid + h1 / 2 + 14);
+      ctx.fillText(`piston kẹp ⌀${d2} mm`, xC + wC / 2, mid + h2 / 2 + 14);
+      ctx.fillText(`dầu ${vi(p * 10, 1)} bar`, (xM + wM + xC) / 2, mid - 10);
+      ctx.fillText('đĩa', xD + 3.5, bandBot + 2);
+      ctx.globalAlpha = 1;
+
+      // ---------- hai cột lực trên cùng một trục newton ----------
+      const axY = cssH - padB, barTop = bandBot + 24;
+      const xMax = axisMax(F2);
+      const X = (n: number) => padL + (n / xMax) * (cssW - padL - padR);
+
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.3;
+      ctx.beginPath(); ctx.moveTo(padL, barTop - 6); ctx.lineTo(padL, axY); ctx.lineTo(cssW - padR, axY); ctx.stroke();
+      ctx.fillStyle = fg; ctx.textAlign = 'center';
+      for (let i = 0; i <= 5; i++) {
+        const n = (xMax * i) / 5;
+        ctx.globalAlpha = 0.3;
+        ctx.beginPath(); ctx.moveTo(X(n), axY); ctx.lineTo(X(n), axY + 4); ctx.stroke();
+        ctx.globalAlpha = 0.55;
+        ctx.fillText(i === 5 ? `${grp(n)} N` : grp(n), X(n), axY + 15);
+      }
+      ctx.globalAlpha = 1;
+
+      const bh = Math.max(11, (axY - barTop - 12) / 2);
+      ctx.fillStyle = CURVE; ctx.fillRect(padL, barTop, X(fh) - padL, bh);
+      ctx.fillStyle = OIL; ctx.globalAlpha = 0.75;
+      ctx.fillRect(X(fh), barTop, X(Fm) - X(fh), bh); ctx.globalAlpha = 1;
+      ctx.fillStyle = MARK; ctx.fillRect(padL, barTop + bh + 6, X(F2) - padL, bh);
+
+      ctx.fillStyle = fg; ctx.globalAlpha = 0.75; ctx.textAlign = 'left';
+      ctx.fillText(`tay ${fh} N → piston chính ${grp(Fm)} N (đòn bẩy 5:1)`, padL + 6, barTop + bh - 3);
+      ctx.fillText(`má phanh ${grp(F2)} N`, padL + 6, barTop + 2 * bh + 3);
+      ctx.globalAlpha = 1;
+
+      const flag = accel / G >= 0.8
+        ? ' · <b>quá trần bám của lốp trước — bó cứng hoặc bốc đuôi</b>'
+        : '';
+      readout.innerHTML =
+        `Nhân thuỷ lực <b>${vi(ratio, 2)}×</b>, cộng đòn bẩy 5:1 → tổng <b>${vi(ratio * LEVER, 1)}×</b>` +
+        ` · dầu ${vi(p * 10, 1)} bar · má phanh <b>${grp(F2)} N</b> = ${grp(F2 / G)} kg` +
+        ` · piston chính đi ${vi(s1, 2)} mm thì piston kẹp chỉ nhích ${vi(s2, 2)} mm` +
+        ` · giảm tốc ~${vi(accel, 2)} m/s² (${vi(accel / G, 2)} g)${flag}`;
+    }
+
+    root.querySelectorAll('input').forEach((el) => el.addEventListener('input', draw));
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="phanh-dau-xe-may-hai-ngon-tay-170-kg"]').forEach(setup);
+</script>

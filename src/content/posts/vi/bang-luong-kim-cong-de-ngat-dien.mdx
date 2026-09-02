@@ -1,0 +1,110 @@
+---
+title: "Băng lưỡng kim: chênh 0,0445 mm giãn nở, uốn thành 1,67 mm đủ bật aptomat"
+seoTitle: "Băng lưỡng kim hoạt động thế nào: bàn ủi, aptomat và công thức độ võng"
+description: "Hai lá kim loại dài 25 mm dán lưng nhau, nóng thêm 100 °C thì lá này chỉ dài hơn lá kia đúng 0,0445 mm. Hình học của cú uốn phóng đại con số ấy 37,5 lần thành 1,67 mm ở đầu tự do — quá đủ để đẩy một tiếp điểm và cắt dòng điện."
+pubDate: 2026-09-02
+tags: ["vat-ly", "nhiet-hoc", "dien-tu", "javascript"]
+translationId: "bang-luong-kim-cong-de-ngat-dien"
+---
+
+import BimetalStrip from '../../../components/demos/BimetalStrip.astro';
+
+Bàn ủi kêu "tách" rồi im, lát sau lại "tách" mà nóng tiếp. Aptomat tự gạt
+xuống mười phút sau khi bạn cắm thêm ấm siêu tốc. Không cảm biến, không vi
+mạch — chỉ hai lá kim loại dán lưng nhau, ngắn hơn đốt ngón tay:
+
+<BimetalStrip />
+
+## Hai lá kim loại cãi nhau 0,0445 milimét
+
+Cặp kinh điển là invar (thép niken 36%, α = 1,2 · 10⁻⁶ /K — hợp kim sinh ra
+chính vì nó gần như không giãn) dán lên đồng thau (α = 19,0 · 10⁻⁶ /K). Dải
+25 mm hâm thêm 100 °C: lá đồng thau dài thêm 0,0475 mm, lá invar 0,0030 mm.
+Chênh **0,0445 mm** — 44,5 micromét, chưa bằng hai phần ba đường kính sợi
+tóc.
+
+Nằm rời thì chuyện hết ở đó. Nhưng chúng bị cán dính lưng nhau: cách duy
+nhất để vừa dài hơn ở mặt này vừa ngắn hơn ở mặt kia là cong lại — đồng thau
+ra phía lồi, invar vào phía lõm, cả dải thành một cung tròn.
+
+## Cả dải chỉ cong 7,6 độ, mà đầu nó đi được 1,67 mm
+
+Timoshenko giải bài này năm 1925. Với hai lá dày bằng nhau, công thức rút về
+một dòng, `t` là tổng bề dày:
+
+```
+1/ρ = 3·Δα·ΔT / (2t)        δ = ρ·(1 − cos(L/ρ)) ≈ 3·L²·Δα·ΔT / (4t)
+```
+
+Với t = 0,5 mm và ΔT = 100 °C: bán kính cong **ρ = 187 mm**. Dải 25 mm nằm
+trên cung ấy chỉ ôm hết **7,6 độ** — nhìn nghiêng vẫn như thẳng. Vậy mà đầu
+tự do đã rời đường cũ **1,67 mm**.
+
+Chia hai con số cho nhau thì mọi thứ thuộc về vật liệu triệt tiêu, chỉ còn
+hình học:
+
+```
+δ / ΔL = 3L / (4t) = 3 · 25 / (4 · 0,5) = 37,5
+```
+
+**Hệ số phóng đại 37,5 lần không chứa Δα, không chứa ΔT, không chứa kim loại
+nào** — nó chỉ nói: càng dài và càng mỏng thì càng lãi.
+
+## Từ 1,67 mm tới cú "tách"
+
+Đặt một tiếp điểm cách đầu dải **0,7 mm**: kéo ΔT trong demo tới 42 °C là độ
+võng chạm ngưỡng, tiếp điểm bật, mạch đứt. Đó là bộ điều nhiệt của bàn ủi và
+bình nóng lạnh — cái núm "nhiệt độ" bạn xoay chỉ vặn vít đẩy tiếp điểm, đổi
+khe 0,7 mm thành 0,5 hay 1,0 mm.
+
+Khe hở cũng giải thích tiếng "tách... tách": nguội vài độ là dải tụt dưới
+ngưỡng, tiếp điểm đóng, điện vào, nóng lên, lại bật. Bàn ủi không giữ 180 °C
+— nó **dao động quanh 180 °C**, chu kỳ dài hàng chục giây vì nhiệt dung của
+cả đế gang, đúng kiểu [tường gạch trễ pha sóng nhiệt ban
+trưa](/vi/posts/tuong-day-22-cm-va-buoi-trua-den-cham).
+
+## Aptomat nhiệt chậm vài giây, và nó cố tình chậm
+
+Trong aptomat, dải lưỡng kim không nằm cạnh nguồn nhiệt — **chính dòng điện
+chạy qua nó** và đốt nó theo I²R: dòng gấp đôi thì nhiệt gấp bốn, nên bộ
+ngắt tự có đặc tuyến càng quá tải càng nhảy nhanh.
+
+IEC 60898 viết ngưỡng ấy thành số: aptomat 16 A phải chịu **18,08 A (1,13
+lần) suốt một giờ mà không nhảy, và phải nhảy trong một giờ ở 23,2 A (1,45
+lần)**. Chậm thế là có chủ ý: máy nén tủ lạnh khởi động rút dòng gấp năm bảy
+lần trong nửa giây, dây thừa sức chịu. Ngắn mạch là việc của cuộn hút điện
+từ bên cạnh, tác động ở 5–10 lần dòng định mức — lưỡng kim lo quá tải, nam
+châm lo chập.
+
+Nên aptomat không phải bùa hộ mệnh: nó bảo vệ sợi dây, còn [chỗ tiếp xúc
+lỏng trong ổ cắm lên vài trăm độ mà tiêu chưa tới một
+oát](/vi/posts/dien-tro-tiep-xuc-o-cam-long-gay-chay) nằm dưới ngưỡng quá xa
+để nó kịp biết.
+
+## Trường hợp biên: mỏng thì cong đẹp mà đẩy không nổi
+
+Công thức bảo càng mỏng càng võng nhiều: hạ t từ 0,5 xuống 0,25 mm thì độ
+võng gần gấp đôi, lên 3,32 mm, phóng đại lên 75. Nghe như bữa trưa miễn phí,
+cho tới khi hỏi dải đẩy bao mạnh: độ cứng uốn tỉ lệ t³, độ võng tỉ lệ 1/t,
+nên lực chặn ở đầu dải đi theo t²:
+
+```
+F = 3·E·w·t²·Δα·ΔT / (16·L)
+```
+
+Dải 0,5 mm rộng 5 mm (E ≈ 130 GPa) ở ΔT = 100 °C đẩy được **2,17 N**; dải
+0,25 mm còn **0,54 N** — võng gần gấp đôi, khoẻ bằng một phần tư. Mà tiếp
+điểm còn phải thắng lò xo giữ và lớp ôxy hoá bám mặt đồng: dải quá mỏng cong
+đẹp mà không bật nổi cái gì.
+
+Đẩy về phía dài thì công thức tự sập: L = 300 mm với cùng t và ΔT cho `L/ρ`
+= 91,8 độ — dải cuộn lại chứ không còn "hơi cong", δ hết nghĩa. Cuốn hẳn nó
+thành lò xo xoắn thì đại lượng còn dùng được là góc quay `θ = 3L·Δα·ΔT/(2t)`
+— **9,2 độ mỗi 10 °C**, đúng thứ làm kim nhiệt kế nướng thịt quay.
+
+Giới hạn cuối không nằm trong công thức nào: uốn qua lại vài trăm nghìn lần
+thì kim loại **rão**, điểm không trôi đi vài độ, và bàn ủi mười năm tuổi
+cháy áo ở đúng nấc từng an toàn. Muốn thoát cơ chế mỏi ấy thì phải bỏ hẳn
+chuyện uốn — [viên nam châm trong nồi cơm điện quên từ tính ở 103
+°C](/vi/posts/noi-com-dien-va-nam-cham-quen-tu-tinh) ngắt điện cũng dứt
+khoát như vậy, mà không cần biến dạng gì để nói ra.

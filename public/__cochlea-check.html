@@ -1,0 +1,298 @@
+<!doctype html><meta charset="utf-8"><title>CochlearMap check</title><style>body{font:16px/1.6 system-ui;max-width:760px;margin:2rem auto;color:#111827;background:#fff}h3{font-size:.9rem;opacity:.6}
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style><h3>1. La4 vs La5 (4,06 mm apart)</h3><figure class="demo" data-demo="ban-do-tan-so-oc-tai-muoi-chin-micromet">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Nốt thứ nhất <output data-out="n1"></output>
+      <input type="range" data-in="n1" min="-53" max="66" step="1" value="0" /></label>
+    <label>Nốt thứ hai <output data-out="n2"></output>
+      <input type="range" data-in="n2" min="-53" max="66" step="1" value="12" /></label>
+    <label>Chiều dài ốc tai L (mm) <output data-out="len"></output>
+      <input type="range" data-in="len" min="28" max="40" step="0.5" value="35" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Ốc tai duỗi thẳng: đỉnh (trái, đỏ) nhận âm trầm, đáy (phải, xanh) nhận âm
+    cao. Dải phím phía dưới là 88 phím piano đặt đúng chỗ chúng kích thích —
+    phím trầm bị dồn sát nhau, phím cao dàn đều. Ô phóng to bên dưới mở rộng
+    đúng 1 mm quanh nốt thứ nhất: vạch mờ là hàng tế bào lông trong cách nhau
+    10 µm, vệt đỏ là quãng dịch khi tần số tăng 0,3% — ngưỡng bạn còn nghe ra.
+  </figcaption>
+</figure><h3>2. La4 vs La#4 (0,32 mm apart - merged label)</h3><figure class="demo" data-demo="ban-do-tan-so-oc-tai-muoi-chin-micromet">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Nốt thứ nhất <output data-out="n1"></output>
+      <input type="range" data-in="n1" min="-53" max="66" step="1" value="0" /></label>
+    <label>Nốt thứ hai <output data-out="n2"></output>
+      <input type="range" data-in="n2" min="-53" max="66" step="1" value="1" /></label>
+    <label>Chiều dài ốc tai L (mm) <output data-out="len"></output>
+      <input type="range" data-in="len" min="28" max="40" step="0.5" value="35" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Ốc tai duỗi thẳng: đỉnh (trái, đỏ) nhận âm trầm, đáy (phải, xanh) nhận âm
+    cao. Dải phím phía dưới là 88 phím piano đặt đúng chỗ chúng kích thích —
+    phím trầm bị dồn sát nhau, phím cao dàn đều. Ô phóng to bên dưới mở rộng
+    đúng 1 mm quanh nốt thứ nhất: vạch mờ là hàng tế bào lông trong cách nhau
+    10 µm, vệt đỏ là quãng dịch khi tần số tăng 0,3% — ngưỡng bạn còn nghe ra.
+  </figcaption>
+</figure><h3>3. extremes: Mi0 vs the top of the slider</h3><figure class="demo" data-demo="ban-do-tan-so-oc-tai-muoi-chin-micromet">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Nốt thứ nhất <output data-out="n1"></output>
+      <input type="range" data-in="n1" min="-53" max="66" step="1" value="-53" /></label>
+    <label>Nốt thứ hai <output data-out="n2"></output>
+      <input type="range" data-in="n2" min="-53" max="66" step="1" value="66" /></label>
+    <label>Chiều dài ốc tai L (mm) <output data-out="len"></output>
+      <input type="range" data-in="len" min="28" max="40" step="0.5" value="35" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Ốc tai duỗi thẳng: đỉnh (trái, đỏ) nhận âm trầm, đáy (phải, xanh) nhận âm
+    cao. Dải phím phía dưới là 88 phím piano đặt đúng chỗ chúng kích thích —
+    phím trầm bị dồn sát nhau, phím cao dàn đều. Ô phóng to bên dưới mở rộng
+    đúng 1 mm quanh nốt thứ nhất: vạch mờ là hàng tế bào lông trong cách nhau
+    10 µm, vệt đỏ là quãng dịch khi tần số tăng 0,3% — ngưỡng bạn còn nghe ra.
+  </figcaption>
+</figure><script type="module">const A = 165.4, AEXP = 2.1, K = 0.88;
+const LOW = "#dc2626", MID = "#f59e0b", HIGH = "#2563eb";
+const NAMES = ["\u0110\xF4", "\u0110\xF4\u266F", "R\xEA", "R\xEA\u266F", "Mi", "Fa", "Fa\u266F", "Sol", "Sol\u266F", "La", "La\u266F", "Si"];
+const BLACK = [1, 3, 6, 8, 10];
+const TICKS = [
+  [20, "20 Hz"],
+  [100, "100"],
+  [200, "200"],
+  [500, "500"],
+  [1e3, "1 kHz"],
+  [2e3, "2 k"],
+  [5e3, "5 k"],
+  [1e4, "10 k"],
+  [2e4, "20 k"]
+];
+const freq = (n) => 440 * Math.pow(2, n / 12);
+const posN = (f) => Math.log10(f / A + K) / AEXP;
+const noteName = (n) => {
+  const m = 69 + n;
+  return NAMES[(m % 12 + 12) % 12] + String(Math.floor(m / 12) - 1);
+};
+const fmt = (v, d) => v.toFixed(d).replace(".", ",");
+const hz = (f) => f < 1e3 ? fmt(f, 1) : fmt(f, 0).replace(/\B(?=(\d{3})+(?!\d))/g, " ");
+function setup(root) {
+  const canvas = root.querySelector("canvas");
+  const ctx = canvas.getContext("2d");
+  const readout = root.querySelector("[data-readout]");
+  const input = (k) => root.querySelector(`[data-in="${k}"]`);
+  const output = (k) => root.querySelector(`[data-out="${k}"]`);
+  function draw() {
+    const n1 = Number(input("n1").value);
+    const n2 = Number(input("n2").value);
+    const L = Number(input("len").value);
+    const f1 = freq(n1), f2 = freq(n2);
+    const x1 = posN(f1) * L, x2 = posN(f2) * L;
+    const semi = (posN(f1 * Math.pow(2, 1 / 12)) - posN(f1)) * L;
+    const jnd = (posN(f1 * 1.003) - posN(f1)) * L;
+    output("n1").textContent = `${noteName(n1)} \xB7 ${hz(f1)} Hz`;
+    output("n2").textContent = `${noteName(n2)} \xB7 ${hz(f2)} Hz`;
+    output("len").textContent = fmt(L, 1);
+    const dpr = Math.min(devicePixelRatio || 1, 2);
+    const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.46);
+    canvas.width = cssW * dpr;
+    canvas.height = cssH * dpr;
+    canvas.style.height = `${cssH}px`;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.clearRect(0, 0, cssW, cssH);
+    const fg = getComputedStyle(root).color;
+    ctx.font = "10px system-ui,sans-serif";
+    const padL = 24, padR = 14;
+    const W = cssW - padL - padR;
+    const X = (mm) => padL + mm / L * W;
+    const yB1 = 0.2 * cssH, yB2 = 0.31 * cssH;
+    const yDelta = 0.375 * cssH;
+    const yK1 = 0.42 * cssH, yK2 = 0.56 * cssH;
+    const yRule = 0.665 * cssH;
+    const yZ1 = 0.79 * cssH, yZ2 = 0.945 * cssH;
+    const grad = ctx.createLinearGradient(X(0), 0, X(L), 0);
+    grad.addColorStop(0, LOW);
+    grad.addColorStop(0.45, MID);
+    grad.addColorStop(1, HIGH);
+    ctx.fillStyle = grad;
+    ctx.fillRect(X(0), yB1, W, yB2 - yB1);
+    ctx.strokeStyle = fg;
+    ctx.fillStyle = fg;
+    TICKS.forEach(([f, lab], i) => {
+      const px = X(posN(f) * L);
+      ctx.globalAlpha = 0.35;
+      ctx.beginPath();
+      ctx.moveTo(px, yB1 - 4);
+      ctx.lineTo(px, yB1);
+      ctx.stroke();
+      ctx.globalAlpha = 0.65;
+      ctx.textAlign = i === 0 ? "left" : "center";
+      ctx.fillText(lab, px, yB1 - 8 - i % 2 * 11);
+    });
+    ctx.globalAlpha = 1;
+    for (let m = 21; m <= 108; m++) {
+      const kl = X(posN(freq(m - 69.5)) * L), kr = X(posN(freq(m - 68.5)) * L);
+      const black = BLACK.indexOf((m % 12 + 12) % 12) >= 0;
+      ctx.fillStyle = black ? "#111827" : "#e5e7eb";
+      ctx.fillRect(kl, yK1, Math.max(kr - kl, 0.6), black ? (yK2 - yK1) * 0.62 : yK2 - yK1);
+    }
+    ctx.strokeStyle = fg;
+    ctx.globalAlpha = 0.35;
+    ctx.strokeRect(
+      X(posN(freq(-48.5)) * L),
+      yK1,
+      X(posN(freq(39.5)) * L) - X(posN(freq(-48.5)) * L),
+      yK2 - yK1
+    );
+    ctx.globalAlpha = 0.6;
+    ctx.fillStyle = fg;
+    ctx.textAlign = "center";
+    ctx.fillText(
+      "88 ph\xEDm piano (La0 \u2192 \u0110\xF48)",
+      (X(posN(freq(-48.5)) * L) + X(posN(freq(39.5)) * L)) / 2,
+      yK2 + 12
+    );
+    ctx.globalAlpha = 1;
+    ctx.strokeStyle = fg;
+    ctx.globalAlpha = 0.3;
+    ctx.beginPath();
+    ctx.moveTo(X(0), yRule);
+    ctx.lineTo(X(L), yRule);
+    ctx.stroke();
+    for (let mm = 0; mm <= L + 1e-9; mm += 1) {
+      ctx.beginPath();
+      ctx.moveTo(X(mm), yRule);
+      ctx.lineTo(X(mm), yRule + 3);
+      ctx.stroke();
+    }
+    ctx.globalAlpha = 0.65;
+    ctx.fillStyle = fg;
+    ctx.textAlign = "center";
+    for (let mm = 0; mm <= L + 1e-9; mm += 5) {
+      ctx.beginPath();
+      ctx.moveTo(X(mm), yRule);
+      ctx.lineTo(X(mm), yRule + 6);
+      ctx.stroke();
+      ctx.fillText(mm === 0 ? "\u0111\u1EC9nh" : String(mm), X(mm), yRule + 17);
+    }
+    ctx.textAlign = "right";
+    ctx.fillText(`${fmt(L, 1)} mm`, X(L), yRule - 4);
+    ctx.globalAlpha = 1;
+    const drawMark = (x, col) => {
+      ctx.strokeStyle = col;
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(X(x), yB1);
+      ctx.lineTo(X(x), yK2);
+      ctx.stroke();
+      ctx.lineWidth = 1;
+      ctx.fillStyle = col;
+      ctx.beginPath();
+      ctx.arc(X(x), (yB1 + yB2) / 2, 5, 0, Math.PI * 2);
+      ctx.fill();
+    };
+    drawMark(x2, MID);
+    drawMark(x1, LOW);
+    const lab1 = `${noteName(n1)} \xB7 ${fmt(x1, 2)} mm`;
+    const lab2 = `${noteName(n2)} \xB7 ${fmt(x2, 2)} mm`;
+    const w1 = ctx.measureText(lab1).width, w2 = ctx.measureText(lab2).width;
+    const yLab = yDelta + 4;
+    ctx.textAlign = "center";
+    if (Math.abs(X(x1) - X(x2)) > (w1 + w2) / 2 + 8) {
+      ctx.fillStyle = LOW;
+      ctx.fillText(lab1, X(x1), yLab);
+      ctx.fillStyle = MID;
+      ctx.fillText(lab2, X(x2), yLab);
+    } else {
+      const merged = `${lab1}  \u2192  ${lab2}`;
+      const wm = ctx.measureText(merged).width;
+      const cx = Math.min(Math.max((X(x1) + X(x2)) / 2, wm / 2 + 2), cssW - wm / 2 - 2);
+      ctx.fillStyle = fg;
+      ctx.fillText(merged, cx, yLab);
+    }
+    ctx.strokeStyle = fg;
+    ctx.globalAlpha = 0.5;
+    ctx.beginPath();
+    ctx.moveTo(X(x1), yDelta - 8);
+    ctx.lineTo(X(x2), yDelta - 8);
+    ctx.stroke();
+    ctx.globalAlpha = 0.8;
+    ctx.fillStyle = fg;
+    ctx.textAlign = "center";
+    ctx.fillText(`${fmt(Math.abs(x2 - x1), 2)} mm`, (X(x1) + X(x2)) / 2, yDelta - 11);
+    ctx.globalAlpha = 1;
+    const HW = 0.5;
+    const zx0 = padL, zw = W;
+    const XZ = (mm) => zx0 + (mm - x1 + HW) / (2 * HW) * zw;
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(zx0, yZ1, zw, yZ2 - yZ1);
+    ctx.clip();
+    ctx.fillStyle = fg;
+    ctx.globalAlpha = 0.09;
+    if (x1 - HW < 0) ctx.fillRect(zx0, yZ1, XZ(0) - zx0, yZ2 - yZ1);
+    if (x1 + HW > L) ctx.fillRect(XZ(L), yZ1, zx0 + zw - XZ(L), yZ2 - yZ1);
+    ctx.strokeStyle = fg;
+    ctx.globalAlpha = 0.28;
+    for (let t = Math.ceil((x1 - HW) / 0.01); t * 0.01 <= x1 + HW; t++) {
+      const px = XZ(t * 0.01);
+      ctx.beginPath();
+      ctx.moveTo(px, yZ2 - 9);
+      ctx.lineTo(px, yZ2 - 1);
+      ctx.stroke();
+    }
+    ctx.globalAlpha = 0.55;
+    ctx.setLineDash([3, 3]);
+    for (const d of [-1, 1]) {
+      const px = XZ(posN(f1 * Math.pow(2, d / 12)) * L);
+      ctx.beginPath();
+      ctx.moveTo(px, yZ1 + 2);
+      ctx.lineTo(px, yZ2 - 10);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillStyle = fg;
+      ctx.textAlign = "center";
+      ctx.fillText(d < 0 ? "\u22121 n\u1EEDa cung" : "+1 n\u1EEDa cung", px, yZ1 + 22);
+      ctx.setLineDash([3, 3]);
+    }
+    ctx.setLineDash([]);
+    ctx.globalAlpha = 1;
+    ctx.fillStyle = LOW;
+    ctx.globalAlpha = 0.75;
+    ctx.fillRect(XZ(x1), yZ1 + 2, Math.max(XZ(x1 + jnd) - XZ(x1), 1.5), yZ2 - yZ1 - 12);
+    ctx.globalAlpha = 1;
+    ctx.strokeStyle = LOW;
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(XZ(x1), yZ1);
+    ctx.lineTo(XZ(x1), yZ2);
+    ctx.stroke();
+    ctx.lineWidth = 1;
+    ctx.restore();
+    ctx.strokeStyle = fg;
+    ctx.globalAlpha = 0.3;
+    ctx.strokeRect(zx0, yZ1, zw, yZ2 - yZ1);
+    ctx.globalAlpha = 0.7;
+    ctx.fillStyle = fg;
+    ctx.textAlign = "left";
+    ctx.fillText(`ph\xF3ng to 1 mm quanh ${noteName(n1)} \xB7 +0,3% = ${fmt(jnd * 1e3, 1)} \xB5m`, zx0 + 6, yZ1 - 5);
+    ctx.textAlign = "right";
+    ctx.fillText("m\u1ED7i v\u1EA1ch = 1 t\u1EBF b\xE0o l\xF4ng trong (10 \xB5m)", zx0 + zw - 6, yZ1 - 5);
+    ctx.globalAlpha = 1;
+    const note = f1 > 4200 ? " \xB7 <b>tr\xEAn ng\u01B0\u1EE1ng kho\xE1 pha: ch\u1EC9 c\xF2n m\xE3 ho\xE1 b\u1EB1ng v\u1ECB tr\xED</b>" : "";
+    readout.innerHTML = `${noteName(n1)} (${hz(f1)} Hz) \u1EDF <b>${fmt(x1, 2)} mm</b> t\xEDnh t\u1EEB \u0111\u1EC9nh \xB7 ${noteName(n2)} (${hz(f2)} Hz) \u1EDF ${fmt(x2, 2)} mm \xB7 c\xE1ch nhau <b>${fmt(Math.abs(x2 - x1), 2)} mm</b> \xB7 n\u1EEDa cung t\u1EA1i \u0111\xE2y = ${fmt(semi, 2)} mm \xB7 ng\u01B0\u1EE1ng 0,3% = <b>${fmt(jnd * 1e3, 1)} \xB5m</b> (${fmt(jnd / 0.01, 1)} t\u1EBF b\xE0o l\xF4ng)${note}`;
+  }
+  root.querySelectorAll("input").forEach((el) => el.addEventListener("input", draw));
+  addEventListener("resize", draw);
+  draw();
+}
+document.querySelectorAll('[data-demo="ban-do-tan-so-oc-tai-muoi-chin-micromet"]').forEach(setup);
+</script>

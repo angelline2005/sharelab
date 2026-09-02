@@ -1,0 +1,106 @@
+---
+title: "Ngồi cách bếp than 30 cm: mặt bạn hứng 12,7 kW mỗi mét vuông"
+seoTitle: "Bức xạ nhiệt từ bếp than nướng và hệ số góc nhìn"
+description: "Than hồng 800 °C bức xạ 63,5 kW/m² ngay trên bề mặt — 63 lần nắng trưa. May là hình học cắt bớt: hệ số góc nhìn R²/(R²+h²) chỉ để lọt 20% ở khoảng cách 30 cm, tức 12,7 kW/m² vào mặt bạn — vẫn đủ bỏng độ hai sau chưa tới ba giây."
+pubDate: 2026-09-02
+tags: ["vat-ly", "nhiet-hoc", "quang-hoc", "javascript"]
+translationId: "bep-than-quan-nuong-va-buc-xa-nhiet"
+---
+
+import GrillRadiance from '../../../components/demos/GrillRadiance.astro';
+
+Quán nướng vỉa hè, bếp than đỏ đặt giữa bàn. Bạn cúi xuống trở miếng sườn,
+mặt cách than chừng một gang tay — và có một phản xạ kéo bạn ngửa ra sau
+trước khi kịp nghĩ. Da bạn vừa đo xong một con số mà nó không nói ra được:
+
+<GrillRadiance />
+
+## Mặt than sáng gấp 63 lần nắng giữa trưa
+
+Mọi vật đều bức xạ, và công suất phát tăng theo **luỹ thừa bốn của nhiệt
+độ tuyệt đối** — định luật Stefan–Boltzmann:
+
+```
+q_mặt than = ε · σ · (T⁴ − T_da⁴)
+ε ≈ 0,85 (than hồng)   σ = 5,670 × 10⁻⁸ W/(m²·K⁴)
+```
+
+Than quạt đượm khoảng 800 °C, tức **1 073 K**. Thay số: **63,5 kW/m²** rời
+khỏi mặt lớp than. Da bạn ở 33 °C cũng bức xạ ngược, nhưng chỉ 0,42 kW/m²
+— trừ hay không cũng không đổi chữ số nào. Để có chỗ neo: nắng giữa trưa
+trời quang rót xuống mặt đất **1 kW/m²**. Bề mặt lớp than ấy chói hơn Mặt
+Trời tại mặt đất **63 lần**.
+
+Mắt bạn không đọc được điều đó: ở 1 073 K đỉnh phổ nằm trong hồng ngoại
+quanh 2,7 µm, còn màu đỏ cam bạn thấy chỉ là mẩu đuôi thò sang phía ánh
+sáng ([nhiệt độ có màu](/vi/posts/dinh-luat-wien-mau-cua-nhiet-do)). Phần
+lớn "độ sáng" của bếp than chỉ da mới đọc được.
+
+## Thứ cứu bạn không phải khoảng cách, mà là hình học
+
+Da bạn không quan tâm mặt than phát ra bao nhiêu. Nó chỉ quan tâm **bao
+nhiêu phần bầu trời của nó bị than chiếm chỗ**. Với một mảnh da phẳng nằm
+ngang, cách tâm đĩa than bán kính R một đoạn h, phần ấy có tên riêng — hệ
+số góc nhìn:
+
+```
+F = R² / (R² + h²)
+```
+
+Bếp than quán nướng bán kính 15 cm, mặt bạn cách 30 cm: F = 225/(225+900)
+= **0,200** chẵn. Một phần năm. Nhân vào: **12,7 kW/m²** đập vào mặt bạn,
+tức **gấp 12,7 lần nắng trưa** — và đó là lý do bạn nheo mắt khi trở thịt.
+
+Để ý: đây không phải nghịch đảo bình phương. Ở cự ly gần, lùi ra gần như
+không giúp gì — chừng nào h chưa lớn so với R, mẫu số vẫn do R² chi phối.
+Đây cũng là cái trần mà [kính lúp đốt giấy không vượt
+qua](/vi/posts/kinh-lup-dot-giay-va-tran-5772-do-khong-the-vuot): đẩy F
+lên tối đa là 1, và khi ấy vật nhận đúng bằng thứ nguồn phát ra — không
+thiết bị nào nung được vật nóng hơn nguồn.
+
+## Da đếm giây, không đếm oát
+
+Ngưỡng đau khi phơi lâu của da người vào khoảng **1,4 kW/m²**. Trên
+2,5 kW/m² thì đồng hồ bắt đầu chạy, theo quan hệ thực nghiệm của an toàn
+cháy (ISO 13571): thời gian tới bỏng độ hai `t = 1,33·q^(−1,33)` phút,
+với q tính bằng kW/m².
+
+Ở 2,5 kW/m² bạn còn 23,6 giây. Ở 12,7 kW/m² — chỗ mặt bạn khi cúi trở
+thịt — bạn còn **2,7 giây**. Lùi ra 50 cm, F rơi xuống 0,083, thông lượng
+còn 5,2 kW/m² và bạn được 8,8 giây. Lùi ra tròn 1 mét, còn **1,40 kW/m²**:
+đúng ngưỡng đau, tức là ngồi cả bữa cũng chỉ thấy ấm mặt.
+
+Không ai trong quán nướng tính mấy con số đó, nhưng ai cũng chấp hành
+chúng, vì da không phải nhiệt kế mà là [máy đo dòng
+nhiệt](/vi/posts/vi-sao-kim-loai-so-vao-thay-lanh): nó báo động theo oát
+trên mét vuông, và báo đúng lúc.
+
+## Bếp to hun cả bàn bên, bếp nhỏ thì không
+
+Trong F chỉ có tỉ số h/R, nên **kích thước bếp quan trọng ngang khoảng
+cách**. Bếp nướng cá nhân bán kính 5 cm, ngồi cách 30 cm: F = 0,027,
+thông lượng 1,7 kW/m² — ấm mặt, không hơn. Bếp than lò quay bán kính
+40 cm, bạn ngồi tận 1 mét: F = 0,138, thông lượng **8,8 kW/m²** — gấp
+**5,1 lần** cái bếp nhỏ, dù bạn ngồi xa hơn gấp ba.
+
+Đó là lý do bàn cạnh lò quay vịt luôn là bàn ế, còn bếp mini trên bàn chỉ
+hun đúng người đang gắp. Muốn bớt nóng cho khách, chủ quán có cách rẻ hơn
+quạt: thu nhỏ miệng bếp và hạ nó xuống thấp — cả hai đều đánh vào F chứ
+không đánh vào nhiệt độ than.
+
+## Trường hợp biên: quạt thêm một trăm độ
+
+Luỹ thừa bốn là một bạo chúa. Quạt cho than từ 800 lên 900 °C nghe như
+chỉnh nhẹ, mà xét theo nhiệt độ tuyệt đối chỉ là **cộng 9,3%** — nhưng bức
+xạ tăng **43,1%**, lên 90,9 kW/m² tại mặt than. Chỗ bạn ngồi thành
+18,2 kW/m², và 2,7 giây rút xuống **1,7 giây**. Người quạt than tay trần
+không bị bỏng vì tay ở xa hơn mặt và cử động liên tục — đồng hồ bị bấm
+lại trước khi kịp chạy hết.
+
+Đầu bên kia, khi h ≫ R thì R² trong mẫu số biến mất và F suy biến thành
+R²/h²: luật nghịch đảo bình phương quen thuộc quay lại, đúng như mọi
+nguồn sáng điểm. Và cả bài này chỉ nói về bức xạ. Khói và khí nóng bốc lên
+là **kênh đối lưu riêng**, đi thẳng đứng chứ không đi theo góc nhìn: nó
+hun người cúi xuống bếp, tha người ngồi ngang tầm, và một cơn gió ngang
+xoá sạch được nó — trong khi chẳng làm suy suyển một phần trăm nào của
+12,7 kW/m² kia.

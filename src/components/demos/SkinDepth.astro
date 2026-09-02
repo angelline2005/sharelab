@@ -1,0 +1,231 @@
+---
+// Hiệu ứng bề mặt (skin effect) trong dây dẫn tròn.
+//
+// Độ sâu thấm:  δ = √( ρ / (π · f · µ) ),  µ = µr · µ0,  µ0 = 4π·10⁻⁷ H/m.
+// Nguồn: nghiệm phương trình khuếch tán từ trường trong vật dẫn (Ramo–Whinnery–
+// Van Duzer, "Fields and Waves in Communication Electronics", ch. 3).
+//
+// Mật độ dòng theo bán kính (nghiệm Bessel chính xác, viết bằng hàm Kelvin):
+//   |J(r)| / |J(a)| = M(√2·r/δ) / M(√2·a/δ),  M(x) = √(ber²x + bei²x)
+// Chuỗi Kelvin mất độ chính xác khi đối số lớn, nên với √2·a/δ > 15 dùng dạng
+// tiệm cận exp(−(a−r)/δ)·√(a/r) — ở vùng đó hai dạng khác nhau dưới 1% mật độ.
+//
+// Tỉ số điện trở xoay chiều / một chiều của dây tròn (công thức Kelvin đúng):
+//   Rac/Rdc = (q/2)·[ber(q)·bei'(q) − bei(q)·ber'(q)] / [ber'(q)² + bei'(q)²],  q = √2·a/δ
+// Với q > 15 dùng tiệm cận a/(2δ) + 1/4 + 3δ/(32a); hai nhánh khớp nhau tới 5 chữ số.
+//
+// Điện trở suất ở 20 °C: đồng ủ 1,72·10⁻⁸ (chuẩn IACS), nhôm 2,65·10⁻⁸,
+// thép carbon 1,6·10⁻⁷ Ω·m.
+//
+// PHẠM VI HIỆU LỰC: công thức đòi hỏi vật dẫn tốt (ωε ≪ 1/ρ) — thoả rộng rãi tới
+// 3 GHz với cả ba vật liệu. Nhưng µr của thép chỉ giữ cỡ vài trăm ở tần số điện
+// lực; trên ~1 MHz các đô-men từ không theo kịp và µr sụp về gần 1. Vì thế đường
+// cong thép chỉ vẽ tới 1 MHz và readout cảnh báo nếu kéo quá mốc đó.
+---
+
+<figure class="demo" data-demo="hieu-ung-be-mat-dong-dien-chay-o-vo">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Tần số <output data-out="f"></output>
+      <input type="range" data-in="f" min="0" max="76" step="1" value="6" /></label>
+    <label>Bán kính dây a (mm) <output data-out="a"></output>
+      <input type="range" data-in="a" min="0.5" max="60" step="0.1" value="0.7" /></label>
+    <label>Vật liệu <output data-out="m"></output>
+      <input type="range" data-in="m" min="0" max="2" step="1" value="0" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Bên trái là mặt cắt sợi dây: chỗ càng xanh đậm, dòng điện càng dày đặc.
+    Kéo tần số lên, phần lõi tối dần đi — dòng tự dồn ra một lớp vỏ dày δ.
+    Bên phải là δ theo tần số trên trục log kép, với ba mốc 50 Hz, 1 MHz và
+    2,4 GHz. Vòng tròn nét đứt trong mặt cắt là ranh giới cách mặt dây đúng
+    một δ: bên ngoài nó chứa 63% tổng dòng.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const CURVE = '#2563eb', MARK = '#dc2626', LM = '#f59e0b';
+  const MU0 = 4 * Math.PI * 1e-7;
+
+  const FREQ: number[] = [];
+  for (let e = 1; e <= 8; e++) for (const m of [1, 1.5, 2, 2.4, 3, 4, 5, 6, 8]) FREQ.push(m * Math.pow(10, e));
+  for (const m of [1, 1.5, 2, 2.4, 3]) FREQ.push(m * 1e9);
+
+  const MATS = [
+    { name: 'đồng', rho: 1.72e-8, mur: 1, fmax: 3e9 },
+    { name: 'nhôm', rho: 2.65e-8, mur: 1, fmax: 3e9 },
+    { name: 'thép', rho: 1.6e-7, mur: 200, fmax: 1e6 },
+  ];
+
+  const skin = (rho: number, mur: number, f: number) => Math.sqrt(rho / (Math.PI * f * mur * MU0));
+
+  function kelvin(q: number) {
+    const h = q / 2, h4 = h * h * h * h;
+    let ber = 1, bei = h * h, berp = 0, beip = h;
+    let tb = 1, ts = h * h, tp = 0, tq = h;
+    for (let k = 1; k <= 60; k++) {
+      tb *= -h4 / Math.pow(2 * k * (2 * k - 1), 2); ber += tb;
+      ts *= -h4 / Math.pow((2 * k + 1) * (2 * k), 2); bei += ts;
+      tp = k === 1 ? -h * h * h / 2 : tp * (k / (k - 1)) * (-h4 / Math.pow(2 * k * (2 * k - 1), 2));
+      berp += tp;
+      tq *= ((2 * k + 1) / (2 * k - 1)) * (-h4 / Math.pow((2 * k + 1) * (2 * k), 2)); beip += tq;
+    }
+    return { ber, bei, berp, beip };
+  }
+  const modK = (x: number) => { const k = kelvin(x); return Math.hypot(k.ber, k.bei); };
+
+  // Rac/Rdc của dây tròn đặc.
+  function rRatio(aOverD: number) {
+    const q = Math.SQRT2 * aOverD;
+    if (q > 15) return aOverD / 2 + 0.25 + 3 / (32 * aOverD);
+    const { ber, bei, berp, beip } = kelvin(q);
+    return (q / 2) * (ber * beip - bei * berp) / (berp * berp + beip * beip);
+  }
+
+  // Mật độ dòng chuẩn hoá về mặt dây, r tính theo cùng đơn vị với a và d.
+  function density(r: number, a: number, d: number) {
+    const qa = Math.SQRT2 * a / d;
+    if (qa <= 15) return modK(Math.SQRT2 * r / d) / modK(qa);
+    const rr = Math.max(r, a / 60);
+    return Math.min(1, Math.exp(-(a - rr) / d) * Math.sqrt(a / rr));
+  }
+
+  const vn = (x: number, n: number) => x.toFixed(n).replace('.', ',');
+
+  function fmtF(f: number) {
+    if (f < 1e3) return `${vn(f, 0)} Hz`;
+    if (f < 1e6) return `${vn(f / 1e3, f / 1e3 < 10 ? 1 : 0)} kHz`;
+    if (f < 1e9) return `${vn(f / 1e6, f / 1e6 < 10 ? 1 : 0)} MHz`;
+    return `${vn(f / 1e9, 1)} GHz`;
+  }
+  function fmtD(d: number) {
+    if (d >= 1e-3) return `${vn(d * 1e3, 2)} mm`;
+    if (d >= 1e-6) return `${(d * 1e6).toPrecision(3).replace('.', ',')} µm`;
+    return `${vn(d * 1e9, 0)} nm`;
+  }
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (k: string) => root.querySelector(`[data-in="${k}"]`) as HTMLInputElement;
+    const output = (k: string) => root.querySelector(`[data-out="${k}"]`) as HTMLOutputElement;
+
+    function draw() {
+      const f = FREQ[Number(input('f').value)];
+      const a = Number(input('a').value) * 1e-3;
+      const mat = MATS[Number(input('m').value)];
+      const d = skin(mat.rho, mat.mur, f);
+      output('f').textContent = fmtF(f);
+      output('a').textContent = vn(a * 1e3, 1);
+      output('m').textContent = mat.name;
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.46);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+      ctx.font = '10px system-ui,sans-serif';
+
+      // ---- Trái: mặt cắt dây ----
+      const discW = Math.min(cssH, cssW * 0.36);
+      const cx = discW / 2, cy = cssH / 2 - 6, R = Math.min(discW, cssH - 30) / 2 - 6;
+
+      const grad = ctx.createRadialGradient(cx, cy, 0, cx, cy, R);
+      for (let i = 0; i <= 24; i++) {
+        const t = i / 24;
+        grad.addColorStop(t, `rgba(37,99,235,${(0.05 + 0.95 * density(t * a, a, d)).toFixed(3)})`);
+      }
+      ctx.fillStyle = grad;
+      ctx.beginPath(); ctx.arc(cx, cy, R, 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.35;
+      ctx.beginPath(); ctx.arc(cx, cy, R, 0, Math.PI * 2); ctx.stroke();
+      ctx.globalAlpha = 1;
+
+      if (d < a) {
+        ctx.strokeStyle = MARK; ctx.setLineDash([4, 3]);
+        ctx.beginPath(); ctx.arc(cx, cy, R * (a - d) / a, 0, Math.PI * 2); ctx.stroke();
+        ctx.setLineDash([]);
+      }
+      ctx.fillStyle = fg; ctx.globalAlpha = 0.65; ctx.textAlign = 'center';
+      ctx.fillText(`mặt cắt · a = ${vn(a * 1e3, 1)} mm`, cx, cssH - 6);
+      ctx.globalAlpha = 1;
+
+      // ---- Phải: δ theo tần số, log–log ----
+      const padL = discW + 46, padR = 12, padT = 14, padB = 26;
+      const xLo = 1, xHi = Math.log10(3e9);
+      const yLo = Math.log10(5e-7), yHi = Math.log10(3e-2);
+      const X = (ff: number) => padL + ((Math.log10(ff) - xLo) / (xHi - xLo)) * (cssW - padL - padR);
+      const Y = (dd: number) => padT + ((yHi - Math.log10(dd)) / (yHi - yLo)) * (cssH - padB - padT);
+
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.3;
+      ctx.beginPath(); ctx.moveTo(padL, padT); ctx.lineTo(padL, cssH - padB); ctx.lineTo(cssW - padR, cssH - padB); ctx.stroke();
+      ctx.globalAlpha = 0.55; ctx.fillStyle = fg;
+      ctx.textAlign = 'center';
+      for (const [ff, lab] of [[10, '10 Hz'], [1e3, '1 kHz'], [1e5, '100 kHz'], [1e7, '10 MHz'], [1e9, '1 GHz']] as Array<[number, string]>)
+        ctx.fillText(lab, X(ff), cssH - padB + 14);
+      ctx.textAlign = 'right';
+      for (const [dd, lab] of [[1e-6, '1 µm'], [1e-5, '10 µm'], [1e-4, '100 µm'], [1e-3, '1 mm'], [1e-2, '10 mm']] as Array<[number, string]>)
+        ctx.fillText(lab, padL - 4, Y(dd) + 3);
+      ctx.globalAlpha = 1;
+
+      const fEnd = Math.min(3e9, mat.fmax);
+      ctx.strokeStyle = CURVE; ctx.lineWidth = 2; ctx.beginPath();
+      for (let i = 0; i <= 200; i++) {
+        const ff = Math.pow(10, 1 + (Math.log10(fEnd) - 1) * i / 200);
+        const y = Y(skin(mat.rho, mat.mur, ff));
+        i ? ctx.lineTo(X(ff), y) : ctx.moveTo(X(ff), y);
+      }
+      ctx.stroke(); ctx.lineWidth = 1;
+
+      [[50, '50 Hz'], [1e6, '1 MHz'], [2.4e9, '2,4 GHz']].forEach(([ff, lab], k) => {
+        if ((ff as number) > mat.fmax) return;
+        const dd = skin(mat.rho, mat.mur, ff as number);
+        ctx.fillStyle = LM;
+        ctx.beginPath(); ctx.arc(X(ff as number), Y(dd), 4, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = fg; ctx.globalAlpha = 0.7; ctx.textAlign = k === 2 ? 'right' : 'left';
+        ctx.fillText(`${lab}: ${fmtD(dd)}`, X(ff as number) + (k === 2 ? -7 : 7), Y(dd) + 3);
+        ctx.globalAlpha = 1;
+      });
+
+      ctx.fillStyle = MARK;
+      ctx.beginPath(); ctx.arc(X(f), Y(d), 6, 0, Math.PI * 2); ctx.fill();
+
+      // ---- Readout ----
+      const ratio = rRatio(a / d);
+      const frac = d >= a ? 1 : 1 - Math.pow(1 - d / a, 2);
+      const pct = 100 * frac;
+      const pctS = pct >= 99.5 ? '100' : pct >= 1 ? vn(pct, 1) : vn(pct, 2);
+      const rS = ratio < 10 ? vn(ratio, 2) : vn(ratio, 0);
+      let note = '';
+      if (ratio >= 10) note = ' · <b>dòng chỉ còn chạy trong một lớp vỏ</b>';
+      else if (ratio >= 1.5) note = ' · <b>lõi gần như thất nghiệp</b>';
+      else if (ratio < 1.01) note = ' · <b>dây coi như đặc</b>';
+      const warn = f > mat.fmax
+        ? ' <b>· ngoài vùng hiệu lực: µr của thép sụp về gần 1 trên ~1 MHz</b>'
+        : '';
+      readout.innerHTML =
+        `${mat.name[0].toUpperCase()}${mat.name.slice(1)}, f = ${fmtF(f)} → δ = <b>${fmtD(d)}</b>` +
+        ` · dây bán kính ${vn(a * 1e3, 1)} mm dùng <b>${pctS}%</b> tiết diện` +
+        ` · R xoay chiều / R một chiều = <b>${rS}</b>${note}${warn}`;
+    }
+
+    root.querySelectorAll('input').forEach((el) => el.addEventListener('input', draw));
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="hieu-ung-be-mat-dong-dien-chay-o-vo"]').forEach(setup);
+</script>

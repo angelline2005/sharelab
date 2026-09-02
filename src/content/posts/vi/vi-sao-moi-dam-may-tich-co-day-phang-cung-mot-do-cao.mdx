@@ -1,0 +1,96 @@
+---
+title: "Mọi đám mây tích đều có đáy phẳng — và cùng nằm trên một mặt kính vô hình"
+seoTitle: "Độ cao đáy mây: công thức 125 × (nhiệt độ − điểm sương)"
+description: "Khối khí bốc lên nguội 9,8 °C mỗi km, còn điểm sương của nó chỉ tụt 1,8 °C mỗi km. Hai đường đuổi nhau 8 độ mỗi km và gặp nhau ở đúng một độ cao: 125 mét cho mỗi độ chênh. Trưa Hà Nội 34 °C, điểm sương 25,5 °C — đáy mây ở 1 063 m, đo bằng nhiệt kế chứ không cần nhìn lên."
+pubDate: 2026-09-02
+tags: ["vat-ly", "nhiet-hoc", "khi-hau", "javascript"]
+translationId: "vi-sao-moi-dam-may-tich-co-day-phang-cung-mot-do-cao"
+---
+
+import CloudBase from '../../../components/demos/CloudBase.astro';
+
+Chiều hè ngước lên: chục đám mây bông rải khắp trời, đám to đám nhỏ, đỉnh
+nhấp nhô mỗi cái một kiểu — nhưng **đáy thì phẳng lì, và tất cả nằm trên
+cùng một mặt phẳng ngang**, như ai kê chúng lên tấm kính vô hình. Muốn
+biết tấm kính ấy cao bao nhiêu thì không cần ngước lên: hai nhiệt kế là đủ.
+
+<CloudBase />
+
+## Hai đường đuổi nhau, 8 độ mỗi kilômét
+
+Nắng hâm mặt đất, khối khí sát đất nhẹ hơn xung quanh và bốc lên. Lên cao
+thì áp suất giảm, khí nở ra, mà [nở thì phải tự trả giá bằng nội
+năng](/vi/posts/vi-sao-len-nui-thi-lanh-du-gan-mat-troi-hon): **9,8 °C mỗi
+kilômét**, không thương lượng, chừng nào chưa có giọt nước nào ngưng.
+
+Nhưng [điểm sương](/vi/posts/diem-suong-vi-sao-coc-bia-do-mo-hoi) của chính
+khối khí ấy cũng tụt theo. Số phân tử nước trên mỗi kilogram không khí giữ
+nguyên, nhưng thể tích nở ra nên hơi loãng đi, mà hơi càng loãng thì càng
+phải lạnh hơn mới chịu ngưng. Tính lại từ công thức Magnus cộng phương
+trình thuỷ tĩnh: **1,7–2,0 °C mỗi kilômét** trong dải thời tiết Việt Nam,
+gọi tròn 1,8.
+
+Hai đường trong demo vì thế khép lại **8,0 °C mỗi kilômét**. Chỗ chúng
+chạm nhau, không khí bão hoà và trong suốt hoá đục: đó là đáy mây — một
+*độ cao*, không phải một chỗ.
+
+## 125 mét cho mỗi độ chênh lệch
+
+```
+z = (T − Td) / (9,8 − 1,8) km = 125 × (T − Td)   [mét]
+```
+
+Trưa Hà Nội đầu hè: nhiệt kế 34 °C, điểm sương 25,5 °C — độ ẩm 61%. Chênh
+8,5 độ, nhân 125: **đáy mây ở 1 063 m**, nơi không khí còn 23,6 °C. Giải lại
+cho đủ (Magnus, đoạn nhiệt khô, thuỷ tĩnh) ra 1 081 m — phép nhân bỏ túi
+lệch 1,7%, và trên toàn dải slider không quá 3,1%.
+
+Giữ nguyên 34 °C mà kéo điểm sương lên 30,1 °C — độ ẩm 80%, đúng kiểu
+trước cơn giông — đáy mây tụt còn **488 m**: trời oi thì mây sà thấp,
+không phải ảo giác. Chiều ngược lại, sa mạc 42 °C với điểm sương 5 °C đẩy
+đáy lên 4 625 m, hơn Fansipan gần 1 500 mét.
+
+## Vì sao cả bầu trời cùng một đáy
+
+Độ cao ấy **không phải tính chất của đám mây, mà của khối khí bên dưới**:
+cả thành phố nằm trong một lớp khí đã trộn đều nên T và Td giống nhau ở
+mọi điểm, và mọi luồng khí nóng bốc lên — từ mái tôn hay từ ruộng lúa —
+đều chạm ngưỡng ngưng tụ ở đúng một cao độ. Đáy phẳng vì phép tính chỉ có
+một đáp số cho cả bầu trời.
+
+Đỉnh mây thì mỗi cái một kiểu, vì trên đáy luật chơi đổi: hơi ngưng nhả
+nhiệt ẩn ra, khối khí chỉ còn nguội ~6 °C/km nên vẫn ấm hơn xung quanh và
+tiếp tục nổi — chỗ đường xanh trong demo gãy khúc chính là chỗ đó. Nó leo
+được bao xa là chuyện [năng lượng nổi tích luỹ
+được](/vi/posts/cape-nang-luong-cua-cot-khi-va-tran-kich-thuoc-mua-da) của
+riêng từng luồng. Một mặt sàn chung, trăm cái nóc riêng.
+
+Mặt sàn ấy còn dâng theo giờ. Sáng 8 h Hà Nội 28 °C, điểm sương 25,5: đáy
+mây 313 m. Tới 13 h nhiệt độ lên 34 °C mà điểm sương gần như đứng yên —
+đáy lên 1 063 m, dâng **750 mét trong năm tiếng, 150 m mỗi giờ**.
+
+## Phi công tính nhẩm con số này trước khi cất cánh
+
+Trong bản tin METAR, T và Td luôn đứng cạnh nhau; hiệu của chúng có tên
+riêng: *spread*. Quy tắc nhẩm trong buồng lái là **400 foot cho mỗi độ**
+spread — 125 m đúng ra là 410 ft, lệch 2,5%, thừa chính xác cho phép tính
+trong đầu. Nguy hiểm nằm ở đầu kia của thang: trần mây tối thiểu
+để bay bằng mắt là 1 000 ft (305 m), ứng với spread vỏn vẹn **2,4 °C**.
+Chiều tối nhiệt độ tụt nhanh hơn điểm sương rất nhiều, spread co lại từng
+phút — sân bay quang đãng có thể đóng trong nửa giờ.
+
+## Trường hợp biên: khi đáy mây rơi xuống 0 mét
+
+Đẩy hai slider lại gần nhau tới khi T = Td, công thức trả về 0. Nó không
+hỏng: **mây đáy 0 mét chính là sương mù**, bạn đang đứng bên trong.
+Chỉ là cơ chế đã đổi phe — khối khí chẳng bốc lên đâu cả, nó nằm im và bị
+bức xạ đêm làm lạnh tại chỗ cho tới khi chạm điểm sương. Sa Pa "chìm trong
+mây" là chuyện ấy, và 125 mét không mô tả nó: đó không phải mây đối lưu.
+
+Biên thật sự thì nằm ở mẫu số. Nếu điểm sương cũng tụt đúng 9,8 °C mỗi
+kilômét, mẫu số hoá 0: hai đường song song, không bao giờ gặp, bầu trời
+vĩnh viễn không có lấy một đám mây tích. May là khoảng cách giữa hai độ
+dốc rất bền — kéo slider suốt dải 1,5–2,0 °C/km, hằng số chỉ nhúc nhích
+từ 120 tới 128 mét mỗi độ. Trên biển thì sai theo kiểu khác: lớp khí sát
+mặt nước ẩm hơn lớp mà nhiệt kế trong lều đo được, nên đáy mây thật luôn
+thấp hơn số bạn tính — và không thuỷ thủ nào sửa công thức, họ chỉ trừ bớt.

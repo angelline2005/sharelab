@@ -1,0 +1,91 @@
+---
+title: "Rã đông: cùng miếng thịt, chậu nước nhanh gấp bảy lần không khí"
+seoTitle: "Rã đông thịt mất bao lâu: phương trình Plank và mẹo ngâm nước"
+description: "Miếng thịt dày 2 cm để trên bàn bếp 20 °C cần 4,7 giờ mới tan; thả vào chậu nước cùng 20 °C chỉ 42 phút. Nước không hề ấm hơn — nhưng 92% thời gian rã đông trong không khí là để đưa nhiệt qua lớp màng mỏng sát bề mặt, và nước xoá gần hết chặng đó."
+pubDate: 2026-09-02
+tags: ["vat-ly", "nhiet-hoc", "javascript"]
+translationId: "ra-dong-thit-ngam-nuoc-nhanh-gap-bay-lan"
+---
+
+import ThawingTime from '../../../components/demos/ThawingTime.astro';
+
+Tối qua bạn để miếng thịt lên bàn bếp cho tan đá; sáng ra lõi vẫn cứng như
+đá. Trưa nay bạn thả một miếng y hệt vào chậu nước lã — cùng gian bếp, cùng
+20 °C — bốn mươi phút sau đã thái được. Nước không nóng hơn không khí lấy
+một phần mười độ:
+
+<ThawingTime />
+
+## Nút cổ chai không nằm trong miếng thịt
+
+Rã đông là hoá đơn năng lượng cố định. Thịt nạc chứa chừng 75% nước, nên
+làm tan hết đá trong 1 kg thịt tốn **250 kJ** — đủ đun 1 kg nước lên 60 độ,
+mà [nhiệt kế không nhúc nhích một vạch](/vi/posts/nhiet-an-hai-quang-nhiet-ke-dung-im).
+Hoá đơn ấy như nhau dù bạn để thịt ở đâu; khác nhau là **tốc độ chuyển
+tiền**, và năm 1913 Plank viết ra công thức vẫn đứng vững:
+
+```
+t = ρ·L_f/ΔT · ( a/(2h) + a²/(8k) )
+```
+
+Hai số hạng trong ngoặc là hai chặng nối tiếp mỗi joule phải đi qua:
+`a/(2h)` — chui qua lớp màng mỏng sát bề mặt; `a²/(8k)` — bò tiếp vào lõi,
+xuyên chính phần thịt đã tan. Với miếng dày 2 cm trong phòng 20 °C, Plank
+cho **4,7 giờ** — và cái lạ nằm ở tỉ lệ: **92% quãng thời gian ấy tiêu vào
+chặng đầu**, chặng vài milimét không khí. Miếng thịt gần như không tự cản
+gì; nó chỉ đứng chờ nhiệt được giao tới.
+
+## Nước chẳng ấm hơn không khí — nó chỉ bám dai hơn
+
+Hệ số h đo đúng một chuyện: mỗi mét vuông bề mặt nhận bao nhiêu oát cho
+mỗi độ chênh. Không khí lặng cho h ≈ 8 W/m²K; bật quạt lên 25; ngâm nước,
+h nhảy thẳng lên 100–200. Không khí thua vì nó rỗng — mỗi mét khối nước
+chở lượng nhiệt gấp **3 500 lần** cùng thể tích không khí và dẫn nhiệt tốt
+hơn **23 lần**. Ốp không khí lên mặt thịt là ốp tấm xốp, ốp nước là ốp tấm
+đồng: đúng cái lý do khiến [tay nắm cửa kim loại sờ vào buốt hơn mặt bàn
+gỗ](/vi/posts/vi-sao-kim-loai-so-vao-thay-lanh), chỉ đảo chiều dòng nhiệt.
+
+Kéo thanh h trong demo mà đọc: miếng 2 cm ấy còn **1 giờ 45** trước quạt
+máy — đúng trò gió làm với da bạn trong bài [cảm giác như mấy
+độ](/vi/posts/gio-lanh-cam-giac-nhu-la-do-cai-gi) — và còn **42 phút** khi
+nằm dưới nước, **nhanh gấp 6,6 lần** so với để trên bàn. Đảo tay cho nước
+khỏi tù thì h lên 200 và thời gian rút còn 32 phút: gấp 8,8 lần. Bảy lần
+là chỗ giữa của dải đó, và không một calo nhiệt nào đổi chủ — chỉ đổi cách
+giao hàng.
+
+## Tủ lạnh 4 độ: an toàn trả bằng thời gian
+
+Mẫu số ΔT nhắc rằng nhiệt độ vẫn giữ phần của nó. Rã đông trong ngăn mát
+4 °C nghĩa là ΔT chỉ còn 5 độ thay vì 21: miếng 2 cm cần **19,7 giờ**, còn
+tảng 5 cm thì **55 giờ — hơn hai ngày**. Đó là con số nằm sau lời dặn "lấy
+thịt xuống ngăn mát từ hôm trước" — và là lý do với tảng to thì hôm trước
+vẫn chưa đủ.
+
+Nghịch lý gọn ghẽ: cấp đông nhanh hơn rã đông. Vỏ ngoài của miếng thịt
+đang đông là đá, dẫn nhiệt 1,4 W/m·K; vỏ ngoài của miếng đang tan là thịt
+ướt, 0,48 — kém gần **ba lần**. Cùng tảng 5 cm, cùng h, cùng 21 độ chênh,
+phương trình cho 1,6 giờ chiều đông và 3,1 giờ chiều tan: lớp đã tan là
+tấm cách nhiệt tự mọc ra để chặn đường chính nó.
+
+## Trường hợp biên: dày gấp đôi không hề lâu gấp bốn
+
+Câu cửa miệng trong bếp — dày gấp đôi thì lâu gấp bốn — là câu của riêng
+số hạng `a²/(8k)`, chỉ đúng khi bề mặt chẳng cản gì. Trong không khí, số
+hạng tuyến tính `a/(2h)` chiếm tới 92%, nên đi từ 2 lên 4 cm thời gian chỉ
+tăng **2,15 lần**. Ngâm nước, chặng vào lõi mới lên ngôi và tỉ số bò lên
+**3,0 lần**, tiệm cận 4 nhưng không bao giờ tới. Cùng một công thức, hai
+luật lũy thừa, tuỳ bạn đang thua ở chặng nào.
+
+Đẩy tiếp cho h ra vô hạn — nước xoáy, khuấy không ngừng — số hạng mặt biến
+mất và lộ ra một cái sàn không ai vượt: miếng 2 cm ở 20 °C không bao giờ
+tan dưới **21,7 phút**, tảng 5 cm không bao giờ dưới **2,3 giờ**. Phần đó
+là việc của độ dẫn nhiệt trong thịt, thứ không mua được bằng cách khuấy
+mạnh tay hơn.
+
+Còn một biên nằm ngoài phương trình. Suốt 4,7 giờ trên bàn bếp, bề mặt
+miếng thịt không hề ở 0 độ: nó leo gần bằng nhiệt độ phòng ngay giờ đầu
+rồi nằm đó chờ cái lõi. Vi khuẩn đếm giờ trên bề mặt ấy, không đợi lõi
+tan. Nên ngâm nước chỉ là mẹo hay khi nước lạnh và được thay — nước 15 °C
+rã miếng 2 cm trong 56 phút, vẫn nhanh gấp năm lần bàn bếp, và quan trọng
+hơn: bề mặt chỉ nằm trong vùng ấm chưa tới một giờ thay vì gần năm. Vật lý
+biếu bạn bảy lần tốc độ; chọn đúng chậu nước là phần của bạn.

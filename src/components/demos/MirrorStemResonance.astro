@@ -1,0 +1,181 @@
+---
+// Cantilever (Euler–Bernoulli) with a dominant tip mass:
+//   I = pi*d^4/64 ; k = 3EI/L^3 ; f0 = (1/2pi)*sqrt(k/m)
+// Steel d = 8 mm, E = 200 GPa. Amplification of a base excitation:
+//   A = 1 / sqrt((1-r^2)^2 + (2*zeta*r)^2),  r = (rpm/60)/f0, zeta = 0.05
+// Valid while the tip mass dominates: the rod's own effective mass
+// (0.2427*m_rod = 19,2 g at L = 20 cm) is neglected, so f0 comes out
+// ~6% high there. Small deflections only; single-cylinder first order.
+---
+
+<figure class="demo" data-demo="guong-xe-may-mo-o-mot-tua-may">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Chiều dài cần gương L (cm) <output data-out="l"></output>
+      <input type="range" data-in="l" min="8" max="30" step="1" value="20" /></label>
+    <label>Khối lượng đầu gương (g) <output data-out="m"></output>
+      <input type="range" data-in="m" min="80" max="350" step="5" value="150" /></label>
+    <label>Tua máy (vòng/phút) <output data-out="n"></output>
+      <input type="range" data-in="n" min="800" max="8000" step="1" value="3000" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Trên: cần gương nhìn ngang, vẽ đúng dạng uốn bậc một của dầm công-xôn,
+    biên độ tỉ lệ với độ khuếch đại hiện tại. Dưới: độ khuếch đại theo tua
+    máy — đỉnh nhọn nằm ở tua máy mà động cơ lắc đúng tần số riêng của cần.
+    Vùng tô đỏ là nơi biên độ vượt 3 lần: mắt không còn đọc được ảnh.
+    Cần thép đặc d = 8 mm, E = 200 GPa, hệ số cản ζ = 0,05.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const CURVE = '#2563eb', MARK = '#dc2626', PEAK = '#f59e0b';
+  const E = 200e9, D = 0.008, ZETA = 0.05;
+  const INERTIA = (Math.PI * Math.pow(D, 4)) / 64;
+
+  const stiffness = (L: number) => (3 * E * INERTIA) / Math.pow(L, 3);
+  const freq = (L: number, m: number) => Math.sqrt(stiffness(L) / m) / (2 * Math.PI);
+  const gain = (rpm: number, f0: number) => {
+    const r = rpm / 60 / f0;
+    return 1 / Math.sqrt(Math.pow(1 - r * r, 2) + Math.pow(2 * ZETA * r, 2));
+  };
+  const vi = (x: number, n: number) => x.toFixed(n).replace('.', ',');
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (k: string) => root.querySelector(`[data-in="${k}"]`) as HTMLInputElement;
+    const output = (k: string) => root.querySelector(`[data-out="${k}"]`) as HTMLOutputElement;
+
+    function draw() {
+      const Lcm = Number(input('l').value);
+      const mg = Number(input('m').value);
+      const rpm = Number(input('n').value);
+      output('l').textContent = String(Lcm);
+      output('m').textContent = String(mg);
+      output('n').textContent = rpm.toLocaleString('vi-VN');
+
+      const L = Lcm / 100, m = mg / 1000;
+      const k = stiffness(L), f0 = freq(L, m), g = gain(rpm, f0);
+      const peakRpm = f0 * 60;
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.66);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+      ctx.font = '10px system-ui,sans-serif';
+
+      // ---------- panel 1: the stem, seen from the side ----------
+      const topH = Math.round(cssH * 0.34);
+      const clampX = 30, tipMax = cssW - 46;
+      const stemX = (s: number) => clampX + s * (Lcm / 30) * (tipMax - clampX);
+      const axisY = Math.round(topH * 0.55);
+      const swing = Math.min(g, 11) * (topH * 0.028);
+      const shape = (s: number) => (3 * s * s - s * s * s) / 2;
+
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.35;
+      ctx.beginPath(); ctx.moveTo(clampX, axisY - topH * 0.3); ctx.lineTo(clampX, axisY + topH * 0.3); ctx.stroke();
+      ctx.setLineDash([3, 3]);
+      ctx.beginPath(); ctx.moveTo(clampX, axisY); ctx.lineTo(stemX(1), axisY); ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.globalAlpha = 1;
+
+      for (const sign of [-1, 1]) {
+        ctx.strokeStyle = CURVE; ctx.lineWidth = sign > 0 ? 2.4 : 1.4;
+        ctx.globalAlpha = sign > 0 ? 1 : 0.4;
+        ctx.beginPath();
+        for (let i = 0; i <= 60; i++) {
+          const s = i / 60, y = axisY + sign * swing * shape(s);
+          i ? ctx.lineTo(stemX(s), y) : ctx.moveTo(stemX(s), y);
+        }
+        ctx.stroke();
+        // mirror head: tilted by the local slope 1,5·A/L of the bent stem
+        const yTip = axisY + sign * swing;
+        const slope = (sign * swing * 1.5) / (stemX(1) - clampX);
+        const a = Math.atan(slope), hx = Math.cos(a) * 5, hy = Math.sin(a) * 5;
+        ctx.strokeStyle = MARK; ctx.lineWidth = 4;
+        ctx.beginPath();
+        ctx.moveTo(stemX(1) + hy * 2.6 - hx, yTip - hx * 2.6 - hy);
+        ctx.lineTo(stemX(1) - hy * 2.6 - hx, yTip + hx * 2.6 - hy);
+        ctx.stroke();
+      }
+      ctx.globalAlpha = 1; ctx.lineWidth = 1;
+      ctx.fillStyle = fg; ctx.globalAlpha = 0.55; ctx.textAlign = 'left';
+      ctx.fillText(`cần ${Lcm} cm · đầu gương ${mg} g · biên độ ×${vi(Math.min(g, 11), 1)}`, clampX + 4, 14);
+      ctx.globalAlpha = 1;
+
+      // ---------- panel 2: gain vs engine speed ----------
+      const padL = 40, padR = 12, padB = 24, y0 = topH + 14;
+      const gHi = 11;
+      const X = (n: number) => padL + ((n - 800) / 7200) * (cssW - padL - padR);
+      const Y = (v: number) => cssH - padB - (Math.min(v, gHi) / gHi) * (cssH - padB - y0);
+
+      // blur band: gain >= 3
+      let lo = NaN, hi = NaN;
+      for (let n = 800; n <= 8000; n += 5) {
+        if (gain(n, f0) >= 3) { if (isNaN(lo)) lo = n; hi = n; }
+      }
+      if (!isNaN(lo)) {
+        ctx.fillStyle = MARK; ctx.globalAlpha = 0.12;
+        ctx.fillRect(X(lo), y0, X(hi) - X(lo), cssH - padB - y0);
+        ctx.globalAlpha = 1;
+      }
+
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.3;
+      ctx.beginPath(); ctx.moveTo(padL, y0); ctx.lineTo(padL, cssH - padB); ctx.lineTo(cssW - padR, cssH - padB); ctx.stroke();
+      ctx.globalAlpha = 0.55; ctx.fillStyle = fg;
+      ctx.textAlign = 'center';
+      for (const n of [2000, 4000, 6000, 8000]) ctx.fillText(n.toLocaleString('vi-VN'), X(n), cssH - padB + 14);
+      ctx.fillText('vòng/phút', X(1200), cssH - padB + 14);
+      ctx.textAlign = 'right';
+      for (const v of [1, 3, 5, 10]) ctx.fillText(`×${v}`, padL - 4, Y(v) + 3);
+      ctx.globalAlpha = 1;
+
+      ctx.strokeStyle = CURVE; ctx.lineWidth = 2; ctx.beginPath();
+      for (let i = 0; i <= 400; i++) {
+        const n = 800 + (7200 * i) / 400;
+        i ? ctx.lineTo(X(n), Y(gain(n, f0))) : ctx.moveTo(X(n), Y(gain(n, f0)));
+      }
+      ctx.stroke(); ctx.lineWidth = 1;
+
+      if (peakRpm >= 800 && peakRpm <= 8000) {
+        ctx.fillStyle = PEAK;
+        ctx.beginPath(); ctx.arc(X(peakRpm), Y(gain(peakRpm, f0)), 4, 0, Math.PI * 2); ctx.fill();
+        ctx.globalAlpha = 0.75; ctx.textAlign = 'center';
+        ctx.fillText(`f₀ = ${vi(f0, 1)} Hz`, X(peakRpm), Y(gHi) + 10);
+        ctx.globalAlpha = 1;
+      }
+
+      ctx.strokeStyle = MARK; ctx.globalAlpha = 0.8;
+      ctx.beginPath(); ctx.moveTo(X(rpm), y0); ctx.lineTo(X(rpm), cssH - padB); ctx.stroke();
+      ctx.globalAlpha = 1; ctx.fillStyle = MARK;
+      ctx.beginPath(); ctx.arc(X(rpm), Y(g), 5, 0, Math.PI * 2); ctx.fill();
+
+      const zone = g >= 3 ? ' — <b>gương mờ</b>' : g >= 1.5 ? ' — rung thấy được' : ' — gương nét';
+      readout.innerHTML =
+        `Cần thép d = 8 mm, L = ${Lcm} cm, đầu ${mg} g → k = <b>${Math.round(k).toLocaleString('vi-VN')} N/m</b>, ` +
+        `f₀ = <b>${vi(f0, 1)} Hz</b> = ${Math.round(peakRpm).toLocaleString('vi-VN')} v/p · ` +
+        `đang chạy ${rpm.toLocaleString('vi-VN')} v/p → khuếch đại <b>${vi(g, 1)} lần</b>${zone}`;
+    }
+
+    root.querySelectorAll('input').forEach((el) => el.addEventListener('input', draw));
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="guong-xe-may-mo-o-mot-tua-may"]').forEach(setup);
+</script>

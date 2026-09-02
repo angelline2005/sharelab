@@ -1,0 +1,92 @@
+---
+title: "Đo màu một con LED bằng vôn kế: hằng số 1240 giấu trong mọi cái đèn"
+seoTitle: "Vùng cấm và màu LED: bước sóng bằng 1240 chia cho điện áp mở"
+description: "LED đỏ mở ở 1,97 V, LED lam cần 2,67 V, LED hồng ngoại trong remote TV chỉ cần 1,32 V. Nhân điện áp với bước sóng, lần nào cũng ra 1240 — vì mỗi electron rơi qua vùng cấm đẻ đúng một photon, và hc/e = 1239,8 nm·V."
+pubDate: 2026-09-02
+tags: ["vat-ly", "quang-hoc", "dien-tu", "javascript"]
+translationId: "mau-cua-led-va-hang-so-1240"
+---
+
+import LedBandgap from '../../../components/demos/LedBandgap.astro';
+
+Ngăn kéo linh kiện có chục con LED vỏ trong suốt, chưa cắm điện thì con nào
+cũng như con nào. Vặn đồng hồ vạn năng sang thang đo diode rồi chấm hai chân:
+con này hiện 1,82; con kia 2,52. Cái vôn kế vừa đọc ra màu của chúng, bằng
+đúng một phép chia:
+
+<LedBandgap />
+
+## Mỗi electron rơi một bậc, đẻ đúng một photon
+
+Trong lớp tiếp giáp của LED, electron từ vùng dẫn rơi xuống lấp một lỗ trống
+ở vùng hoá trị. Chiều cao cú rơi ấy — **vùng cấm Eg** — là một con số cứng của
+tinh thể: giữa hai vùng không có mức năng lượng nào cho electron đậu lại nửa
+chừng. Nên cả cú rơi đi trọn vào một hạt ánh sáng duy nhất, vì [ánh sáng không
+nhận tiền lẻ](/vi/posts/hieu-ung-quang-dien-anh-sang-tra-tien-le) — năng lượng
+photon bằng đúng Eg.
+
+Nguồn điện bên ngoài trả tiền cho từng cú rơi ấy, nên điện áp mở `V_f ≈ Eg/e`.
+Ghép với E = hc/λ:
+
+```
+λ (nm) = (hc/e) / V_f = 1239,8 / V_f
+```
+
+Chất bán dẫn biến mất khỏi vế phải: **hc/e = 1239,84 nm·V** chỉ là hằng số
+Planck, tốc độ ánh sáng và điện tích electron nhân chia với nhau. Con LED đóng
+góp đúng một số, và số đó là màu của nó.
+
+## Bảng nhân của một ngăn kéo linh kiện
+
+Thử phép nhân trên những con LED có thật. Hồng ngoại trong remote TV: 940 nm ×
+1,32 V = 1241. Đỏ: 630 × 1,97 = 1241. Vàng hổ phách: 590 × 2,10 = 1239. Lục:
+525 × 2,36 = 1239. Lam: 465 × 2,67 = 1242. Tím: 405 × 3,06 = 1239. Sáu vật
+liệu, sáu nhà máy, **một con số**.
+
+Nó kéo theo chuyện rất đời. LED đỏ chạy 20 mA từ nguồn 5 V cần điện trở
+(5 − 2,13)/0,020 = **143,5 Ω**, nên cả thế giới bán kèm con 150 Ω. Pin cúc
+CR2032 3 V mở được LED lam 2,83 V nhưng chịu thua LED tím 3,22 V — và [nội trở
+của chính cục pin](/vi/posts/pin-het-voi-may-anh-nhung-song-voi-remote) đóng
+luôn vai điện trở hạn dòng, nên trò dán LED thẳng lên pin cúc chạy được mà
+không cháy.
+
+## Vì sao bóng dây tóc không có con số ấy
+
+Bóng sợi đốt cũng phát sáng nhưng chẳng có Eg nào: màu của nó do **nhiệt độ**
+quyết định, và dây tóc 2 700 K phát mạnh nhất ở [bước sóng 1 073
+nm](/vi/posts/dinh-luat-wien-mau-cua-nhiet-do) — sâu trong hồng ngoại, phần
+nhìn thấy chỉ là cái đuôi thừa của một phân bố trải rộng. LED không có phân bố
+nào để lãng phí: mọi electron đều rơi đúng một bậc, nên bề rộng phổ chỉ cỡ bề
+rộng nhiệt của đám hạt tải, 1,8·kT ≈ 46 meV — ở 630 nm là **15 nm**. Hiệu suất
+của LED không đến từ vật liệu phát sáng giỏi hơn, nó đến từ việc bỏ hẳn cái
+phân bố.
+
+## Hơ nóng con LED thì nó đổi màu
+
+Eg không phải hằng số tuyệt đối: mạng tinh thể nở ra và dao động mạnh hơn khi
+nóng, cả hai cùng kéo vùng cấm xuống — quan hệ Varshni, khoảng **0,45 meV mỗi
+độ** quanh nhiệt độ phòng. Đẩy nhiệt độ chip từ 25 lên 85 °C, Eg tụt 0,028 eV
+và LED đỏ chuyển từ 629,4 sang **638,3 nm**. Kéo cùng thanh trượt ấy khi đang
+ở LED lam: vẫn 0,028 eV, nhưng chỉ dịch **4,9 nm** — vì λ = 1240/Eg là
+hyperbol, dλ tỉ lệ với λ² nên bước sóng càng dài càng bị đẩy xa. Đèn LED công
+suất lớn phải tản nhiệt không chỉ để sống lâu, mà còn để giữ đúng cái màu ghi
+trên hộp.
+
+## Trường hợp biên: LED trắng phá luật, và cái vôn kế nói dối 0,15 V
+
+Chấm vôn kế vào một con LED trắng: kim dừng quanh 2,6 V — đúng vùng của màu
+lam, chẳng có gì trắng ở đó. Phép chia không sai: **không tồn tại vùng cấm nào
+cho ra ánh sáng trắng**, vì trắng đâu phải một bước sóng. LED trắng là chip lam
+450 nm (Eg = 2,76 eV) phủ phosphor vàng — lớp phủ nuốt một phần photon lam rồi
+nhả lại thành dải vàng rộng, mắt cộng hai thứ thành trắng. Vôn kế đo cái chip,
+không đo cái đèn.
+
+Mà ngay cả với LED một màu, phép đo cũng giấu con số 1240. Ở 1 mA của thang
+diode, con LED 1,97 eV chỉ hiện **1,824 V — thấp hơn Eg/e 146 mV**, vì hàm mũ
+chưa kịp dựng. Ở 20 mA nó hiện 2,130 V — **cao hơn 160 mV**, giờ đến lượt điện
+trở nối tiếp ăn phần chênh. Hai sai số ngược dấu nên quanh **7 mA** chúng
+triệt tiêu nhau. Cách trung thực hơn: lấy đoạn dốc 30–50 mA kéo đường thẳng
+ngược về dòng bằng 0 — demo cho 1,951 V, lệch 19 mV, sai 0,94%.
+Bằng đúng phép ấy, với một con LED và một cục pin, người ta đo được hằng số
+Planck trong vòng vài phần trăm — miễn là chịu nhớ rằng chiếc kim đồng hồ chưa
+bao giờ chỉ thẳng vào con số 1240.

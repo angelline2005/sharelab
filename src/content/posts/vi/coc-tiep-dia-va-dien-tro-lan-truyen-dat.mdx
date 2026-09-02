@@ -1,0 +1,95 @@
+---
+title: "Cọc tiếp địa dài gấp đôi chỉ giảm được 44% điện trở — đất không chịu mặc cả"
+seoTitle: "Điện trở nối đất của cọc tiếp địa: công thức tính và vì sao khó đạt 4 ôm"
+description: "Cọc 2,4 m trong đất 100 Ω·m cho 40,4 Ω, và 76% con số ấy nằm gọn trong vòng đất bán kính 80 cm quanh cọc. Đóng cọc dài gấp đôi chỉ còn 22,5 Ω — vì điện trở giảm theo logarit chứ không theo chiều dài."
+pubDate: 2026-09-02
+tags: ["vat-ly", "dien-hoc", "javascript"]
+translationId: "coc-tiep-dia-va-dien-tro-lan-truyen-dat"
+---
+
+import GroundRod from '../../../components/demos/GroundRod.astro';
+
+Biên bản nghiệm thu điện nhà bạn có một dòng nhỏ: *điện trở nối đất ≤ 4 Ω*.
+Thợ đóng cây cọc thép mạ đồng 2,4 m xuống vườn, kẹp đồng hồ, đọc lên:
+**40 ôm**. Cọc mới, đất ẩm, mối kẹp siết chặt — vẫn gấp mười lần yêu cầu.
+Chỗ hỏng không nằm ở tay nghề, mà ở hình học:
+
+<GroundRod />
+
+## Bốn mươi ôm ấy không nằm trong cây cọc
+
+Tính riêng thanh thép: tiết diện 2,01 cm², dài 2,4 m, điện trở suất thép
+cỡ 1,4·10⁻⁷ Ω·m → **0,0017 Ω**, nhỏ hơn con số đo được **24 000 lần**.
+Toàn bộ 40 ôm nằm ngoài kim loại. Nó là giá phải trả để dòng điện *toả*
+từ một cây cọc mảnh ra khối đất mênh mông — thứ mà Dwight viết thành công
+thức từ năm 1936:
+
+```
+R = (ρ / 2πL) · [ln(8L/d) − 1]
+```
+
+ρ là điện trở suất đất, L chiều dài cọc, d đường kính. Đất vườn ẩm ở đồng
+bằng cỡ **100 Ω·m**; cọc tiêu chuẩn d = 16 mm, L = 2,4 m cho đúng
+**40,4 Ω**. Khác với [điện trở tiếp xúc ở ổ cắm
+lỏng](/vi/posts/dien-tro-tiep-xuc-o-cam-long-gay-chay) — thứ siết ốc là
+xong — điện trở này không có mối nào để siết.
+
+## Một nửa số ôm nằm trong vòng 17 centimét
+
+Hình dung dòng rời cọc theo phương ngang, xuyên qua các lớp vỏ trụ đồng
+tâm. Lớp bán kính r dày dr có diện tích 2πrL, nên đóng góp
+dR = ρ·dr/(2πrL) — **tỉ lệ với 1/r**. Lớp sát cọc thì hẹp nhưng bóp nghẹt
+dòng; lớp ở xa rộng thênh thang, gần như miễn phí. Cộng từ mặt cọc ra
+(tích phân tới bán kính 4L/e = 3,53 m là ra đúng công thức trên): **50%**
+số ôm nằm trong bán kính **16,8 cm**, **76%** trong **0,8 m**, **97%**
+trong 3 m. Toàn bộ phần đất còn lại của hành tinh đóng góp chưa tới 3%.
+
+Đây chính là cái phễu thế 1/r đứng sau [điện áp
+bước](/vi/posts/dien-ap-buoc-vi-sao-phai-nhay-lo-co), chỉ đọc ngược chiều.
+Nó cũng giải thích hai kinh nghiệm trái ngược của thợ điện: đổ nước muối
+quanh gốc cọc hạ điện trở thấy rõ ngay, vì đó đúng là khối đất làm nên ba
+phần tư con số; còn cọc chèn đá dăm khô là cọc chết từ đầu — lớp quan
+trọng nhất đã thành vật liệu cách điện.
+
+## Vì sao gấp đôi chiều dài chỉ được 44%
+
+L nằm dưới mẫu số, nhưng cũng nằm trong dấu ln. Nhân đôi L thì thừa số
+1/L giảm nửa, còn ngoặc vuông *tăng* thêm ln 2 = 0,69, kéo lại một phần
+món hời. Cọc 4,8 m cho **22,5 Ω**: bớt được **44,3%**, không phải 50%.
+
+Đường kính còn bạc bẽo hơn, vì nó chỉ vào công thức qua ln(1/d): đổi cọc
+16 mm sang cọc 25 mm đắt hơn hẳn để đổi lấy **7,3%** — từ 40,4 xuống
+37,4 Ω. Và muốn một cây cọc đơn độc chạm mốc 4 Ω trong đất 100 Ω·m, bạn
+phải đóng nó sâu **34,9 m**.
+
+Lối thoát là chia ra. Hai cọc 2,4 m cách nhau 3 m cho **22,8 Ω**,
+đúng bằng một cọc 4,8 m nhưng dễ thi công hơn nhiều. Chỉ có điều không
+phải 20,2 Ω như phép chia đôi hứa hẹn: hai cọc đặt gần nhau tranh nhau
+cùng một khối đất, hiệu suất còn **88%**. Phép [song song điện
+trở](/vi/posts/dien-tro-song-song-nho-hon-ca-nhanh-nho-nhat) ở đây phải
+cộng thêm số hạng hỗ cảm ρ/2πs — với s = 3 m là 5,3 Ω — thứ mà mạch điện
+trên bàn không bao giờ có.
+
+## Trường hợp biên: 40 ôm và cái aptomat đứng nhìn
+
+Dây pha chạm vỏ máy giặt. Vỏ đã nối đất tử tế qua 40,4 Ω, nên dòng sự cố
+về nguồn qua đất là 220/40,4 = **5,4 A** — con số lạc quan, vì cọc tiếp
+địa của trạm biến áp (cỡ 4 Ω) nối tiếp vào, kéo xuống **5,0 A**.
+Aptomat 20 A cần dòng gấp 3,7 lần thế mới *chạm* mức danh
+định, mà mức danh định lại đúng là mức nó chịu được vĩnh viễn. Nó sẽ đứng
+nhìn, mãi mãi.
+
+Tệ hơn nữa: cái vỏ ấy không hề ở điện thế đất. Nó là điểm giữa của cầu
+phân áp 40,4 Ω trên 4 Ω, tức treo ở **200 V** so với đất thật. Sờ vào là
+sờ gần đủ 220 vôn, và [lần này thì vôn không còn vô
+hại](/vi/posts/cu-giat-tay-nam-cua-hai-muoi-nghin-von-vo-hai): nguồn phía
+sau có cả trăm ampe để cấp.
+
+Vậy nối đất để làm gì, nếu nó không làm aptomat nhảy? Để **5,4 A kia tồn
+tại** — con số ấy gấp 180 lần ngưỡng 30 mA của CB chống giật, thứ thật sự
+cắt mạch trong 30 mili-giây. Cọc tiếp địa không phải cái cầu dao; nó là cái
+cớ để cầu dao chống giật biết mà nhảy. Và cái cớ ấy trôi theo mùa: tháng
+khô, ρ đất tăng 5–10 lần, cọc 40 Ω lặng lẽ hoá **303 Ω**, vỏ máy leo lên
+217 V, dòng sự cố tụt còn 0,72 A. Nhà nào chỉ có cọc mà không có CB chống
+giật thì đúng tháng ấy đã mất sạch lớp bảo vệ — không một bóng đèn nào
+nhấp nháy để báo tin.

@@ -1,0 +1,90 @@
+---
+title: "Chạy 1 km tốn đúng chừng ấy calo — dù bạn chạy nhanh hay chậm"
+seoTitle: "Chạy bộ đốt bao nhiêu calo mỗi km: 1 kcal cho mỗi kg cân nặng"
+description: "Chi phí chạy bộ gần như là một hằng số: 3,6 J cho mỗi kg cơ thể trên mỗi mét, tức khoảng 1 kcal cho mỗi kg trên mỗi kilômét. Cùng 5 km ấy, chạy 14 km/h hay 8 km/h vẫn cùng một hoá đơn — chỉ khác 16 phút. Đi bộ thì ngược lại: có một tốc độ rẻ nhất ở 4,3 km/h và đắt dần cả khi nhanh hơn lẫn chậm hơn."
+pubDate: 2026-09-02
+tags: ["vat-ly", "co-hoc", "javascript"]
+translationId: "chay-mot-km-dot-bao-nhieu-calo"
+---
+
+import RunningCost from '../../../components/demos/RunningCost.astro';
+
+Bạn chạy hết vòng hồ 5 km trong 21 phút; người bên cạnh lết hết 37 phút.
+Đồng hồ hai bên báo gần như cùng một con số calo, và không cái nào hỏng.
+Cơ thể tính tiền theo mét chứ không theo giây:
+
+<RunningCost />
+
+## Chia cho quãng đường, đừng chia cho thời gian
+
+Từ Margaria (1963) tới Minetti (2002), phòng thí nghiệm nào cũng ra cùng
+một con số: chi phí ròng của chạy bộ là **3,6 J cho mỗi kilôgam cơ thể
+trên mỗi mét đường**, và nó gần như không nhúc nhích khi bạn kéo tốc độ từ
+8 lên 18 km/h. Chạy nhanh gấp đôi thì công suất tăng gấp đôi, nhưng bạn
+cũng về đích trong nửa thời gian — hai thứ nhân với nhau trả lại đúng một
+hoá đơn mỗi mét.
+
+Tiền chạy bộ không trả cho việc rẽ không khí, mà trả cho việc nhấc và hãm
+chính bạn: mỗi sải là một lần nâng trọng tâm rồi thả rơi, một lần phanh
+bàn chân trước rồi đạp bật lại. Chạy nhanh hơn thì sải chân dài ra gần
+đúng tỉ lệ, nên số lần "nhấc — hãm" trên mỗi kilômét gần như cố định. Sức
+cản không khí, ông vua tuyệt đối của [xe đạp ở chế độ
+v³](/vi/posts/dap-xe-nhanh-gap-doi-tra-gia-gap-tam), ở đây chỉ là khoản
+lặt vặt: **2%** hoá đơn ở 10 km/h, và ở 18 km/h vẫn chưa tới **7%**.
+
+## Đi bộ thì có một tốc độ rẻ nhất, và bạn đã chọn nó rồi
+
+Công suất ròng khi đi bộ khớp gọn vào `1,6 + 1,1·v²` W/kg: một khoản phí
+cố định để đứng thẳng và đưa chân, cộng một khoản tăng theo bình phương
+tốc độ. Chia cho v để ra giá mỗi mét, hai số hạng kéo về hai phía và để
+lại cái đáy mà demo đánh dấu:
+
+```
+C(v) = (1,6 + 1,1·v²)/v   →   đáy tại v = √(1,6/1,1) = 1,21 m/s
+```
+
+**4,3 km/h, 0,63 kcal cho mỗi kg mỗi km** — gần đúng tốc độ bạn tự chọn
+khi đi bộ mà không nghĩ ngợi gì. Lê bước 2 km/h đắt hơn **32%** mỗi km —
+dạo chậm không hề tiết kiệm, nó chỉ kéo dài. Và ngay tại đáy, đi bộ cũng
+chỉ rẻ hơn chạy **36%**, không phải một nửa như nhiều người nghĩ. Đẩy
+nhanh nữa thì số hạng v² thắng: quanh 7–8 km/h, một km đi bộ đã ngang giá
+một km chạy — cơ thể đổi sang chạy từ trước khi [con lắc ngược của chân hết
+đường](/vi/posts/so-froude-khi-nao-di-bo-thanh-chay) ở 10,7 km/h.
+
+## Hoá đơn quy ra phở, và chỗ chiếc đồng hồ nói quá
+
+Người 60 kg: 3,6 × 60 = 216 kJ mỗi kilômét, tức **52 kcal**; 10 km hết 516
+kcal; cả marathon 42,195 km là **2 178 kcal — hơn 5 tô phở bò** một chút.
+Đó là lý do giảm cân bằng chạy bộ là cuộc thương lượng chậm đến bực mình.
+
+Đồng hồ của bạn sẽ báo cao hơn thế, và nó không sai — nó cộng cả phần bạn
+đằng nào cũng đốt. Trao đổi chất nền chạy suốt ngày đêm ở khoảng 1,2 W/kg;
+trong một giờ chạy 10 km/h, khoản ấy góp thêm 0,43 J/kg/m, đẩy tổng lên
+**4,03 J/kg/m = 0,96 kcal cho mỗi kg mỗi km**. Đấy là gốc gác của quy tắc
+dân gian "**1 kcal mỗi kg mỗi km**": một con số gộp, không phải phần bạn
+kiếm thêm được.
+
+Trớ trêu là tính gộp thì chạy *chậm* lại nhỉnh hơn: 5 km ở 8 km/h là 297
+kcal, ở 14 km/h là 280 kcal — chậm hơn đốt nhiều hơn **5,9%**, chỉ vì bạn
+ở ngoài đường thêm 16 phút và vẫn phải sống trong 16 phút đó. Đòn bẩy chắc
+chắn duy nhất là **thêm kilômét**, không phải thêm tốc độ.
+
+## Trường hợp biên: dựng con dốc lên, rồi lật ngược xuống
+
+3,6 là hằng số của mặt phẳng, và chỉ của mặt phẳng. Minetti đo người chạy
+trên dốc từ −45% tới +45%, và số hạng độ dốc nuốt chửng phần còn lại: **dốc
+10% đẩy giá lên 5,97 J/kg/m — gấp 1,66 lần**; dốc 15% lên 7,42, đúng gấp
+đôi. Chia phần trội cho công cơ học *mgh* thật sự bỏ ra, ta được hiệu suất
+biểu kiến **41% ở dốc 10%**, cao hơn hẳn con số 25% kinh điển của cơ bắp
+làm công dương: gân Achilles trả lại một phần cú nảy bạn vốn đã phải mua
+trên đường bằng. (Vẫn hơn xa [động cơ xe máy, 15% chỗ
+xăng](/vi/posts/xe-may-muoi-lam-phan-tram-xang-huu-ich).)
+
+Lật con dốc xuống thì "càng đổ càng rẻ" chỉ đúng một đoạn. Kéo thanh dốc
+về phía âm: giá tụt dần, chạm đáy **1,78 J/kg/m tại −18%** — đúng một nửa
+giá đường bằng, kiểu chạy rẻ nhất cơ thể người biết làm — rồi *tăng trở
+lại*. Dốc hơn nữa, trọng lực cho nhiều năng lượng hơn mức bạn cần, và phần
+thừa phải bị cơ đùi hãm lại từng bước; hãm cũng đốt ATP, chỉ là mỗi joule
+hãm rẻ hơn mỗi joule đẩy chừng bốn lần. Tới quãng −45% thì phép khớp của
+Minetti dừng, và thứ tiếp quản không còn là sinh lý học nữa mà là ma sát
+của đế giày: ở đó bạn không chạy xuống dốc, bạn trượt xuống.

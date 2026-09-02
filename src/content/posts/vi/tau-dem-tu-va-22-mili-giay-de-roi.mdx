@@ -1,0 +1,97 @@
+---
+title: "Tàu đệm từ: 22 mili-giây để rơi hoặc dính chặt"
+seoTitle: "Định lý Earnshaw và tàu đệm từ: vì sao nam châm không thể tự lơ lửng"
+description: "Lực hút nam châm mạnh lên khi khe hở hẹp lại, nên mọi điểm cân bằng đều bất ổn. Ở khe 10 mm, sai lệch nhân e lần sau 22,6 mili-giây — không phụ thuộc con tàu nặng bao nhiêu — và đó là lý do tàu đệm từ phải đo khe hở hơn 2 200 lần mỗi giây, suốt hành trình."
+pubDate: 2026-09-02
+tags: ["vat-ly", "dien-tu", "co-hoc", "javascript"]
+translationId: "tau-dem-tu-va-22-mili-giay-de-roi"
+---
+
+import MaglevGap from '../../../components/demos/MaglevGap.astro';
+
+Tàu đệm từ lướt trên khe không khí dày **10 mm**, bằng bề dày một cây bút
+chì, giữa nam châm dưới toa và thanh ray thép ôm phía trên. Nó không tự giữ
+nổi khoảng cách ấy dù một phần mười giây: mỗi nam châm đang được cứu khỏi
+rơi, hàng nghìn lần mỗi giây.
+
+<MaglevGap />
+
+## Càng gần càng hút mạnh — và đó là bản án
+
+Nam châm điện hút thanh ray theo `F = k·I²/x²`, nghĩa là [khe hở hẹp đi thì
+lực vọt lên](/vi/posts/luc-hut-nam-cham-va-khe-ho-mot-milimet). Chính cái
+"vọt lên" ấy giết chết mọi hy vọng.
+
+Lò xo cứu bạn vì kéo càng xa nó càng níu mạnh — lực luôn chống lại chuyển
+động. Nam châm làm đúng chiều ngược: khe hẹp lại một chút thì lực hút mạnh
+thêm, khe hẹp tiếp, nam châm dính chặt vào ray; khe rộng ra một chút thì lực
+yếu đi, tàu rơi nhanh hơn. Hai mũi tên vàng trong demo đều chỉ ra xa điểm
+cân bằng — cân bằng ấy có thật, và vô dụng hệt quả bóng đặt trên đỉnh đồi.
+
+Độ dốc đọc thẳng từ công thức: `dF/dx = −2F/x`, tại cân bằng là −2mg/x. Một
+nam châm gánh 1 tấn ở khe 10 mm có độ dốc **−1,96 kN/mm** — ép sát thêm đúng
+một milimét là cộng thêm gần 2 kN lực hút, bằng một phần năm trọng lượng nó
+đang giữ.
+
+## 22,6 mili-giây, và con tàu nặng bao nhiêu không quan trọng
+
+Viết phương trình cho sai lệch δ của khe hở quanh điểm cân bằng, mọi thứ rút
+gọn đến mức khó tin:
+
+```
+δ'' = (2g/x)·δ   →   δ(t) = δ₀·e^(t/τ),   τ = √(x/2g)
+```
+
+Khối lượng biến mất. Dòng điện biến mất. Chỉ còn khe hở và gia tốc trọng
+trường. Ở x = 10 mm: **τ = 22,6 ms**. Tàu 20 tấn hay 200 tấn, cùng khe hở
+ấy, sai lệch đều nhân e lần sau đúng chừng đó: tàu nặng hơn thì độ dốc lực
+cũng lớn hơn đúng theo tỉ lệ, hai vế triệt tiêu.
+
+Phương trình vừa rồi chính là phương trình của con lắc ngược dài x/2 — tức
+**5 milimét**. Một cây gậy 1,5 m dựng ngược đổ với τ = 319 ms, chậm hơn 14
+lần, mà bạn đã phải căng mắt mới giữ nổi. Trong 250 ms phản xạ của một
+người, sai lệch khe hở nhân lên **hơn 64 000 lần**: một micromet rung ban
+đầu thành 6 cm, trong khi cả khe hở chỉ có 10 mm. Một cú xô lệch 0,1 mm chỉ
+cần **104 ms** để nuốt trọn phần còn lại.
+
+## Nới khe hở ra không mua được mấy thời gian
+
+τ đi theo căn bậc hai của khe hở, nên món hời này rất bạc bẽo. Kéo khe từ
+2 mm lên 20 mm — gấp mười — chỉ mua thêm **3,16 lần** thời gian: từ 10,1 ms
+lên 31,9 ms. Cái giá thì tuyến tính thẳng đuột: muốn giữ nguyên lực hút khi
+khe rộng gấp mười, dòng điện phải gấp mười, và tổn hao đồng theo I²R gấp
+**một trăm lần**. Đó là lý do khe hở là 10 mm chứ không phải 10 cm — và cũng
+là lý do nó không được nhỏ hơn nữa, vì 10 mm mới đủ nuốt gồ ghề của ray, độ
+võng của dầm và giãn nở nhiệt dọc tuyến.
+
+Từ τ ra thẳng yêu cầu kỹ thuật. Muốn sai lệch không kịp lớn quá 2% giữa hai
+lần đo, chu kỳ lấy mẫu phải dưới τ·ln(1,02) = 0,45 ms — tức **hơn 2 200 lần
+mỗi giây**, cho từng nam châm một, suốt hành trình. Kéo khe xuống 2 mm thì
+con số thành 5 000. Vòng điều khiển này không có quyền nghỉ một nhịp: mất
+điện là mất luôn lực nâng.
+
+## Trường hợp biên: ba lối thoát khỏi định lý Earnshaw
+
+Đây không phải lỗi thiết kế mà là **định lý Earnshaw** (1842): không cách
+sắp đặt tĩnh nào của các cực từ cố định cho ra cân bằng bền. Lý do gọn đến
+khắc nghiệt — trong vùng trống, thế năng thoả phương trình Laplace, mà
+nghiệm Laplace không có cực tiểu địa phương, chỉ có điểm yên ngựa: ghì chặt
+theo một phương thì nhất định hụt theo phương khác.
+
+Vẫn có lối ra, mỗi lối lách qua đúng một giả thiết. **Vật nghịch từ** nằm
+ngoài phạm vi định lý vì nó bị từ trường đẩy chứ không hút — nước nghịch từ
+đủ mạnh để năm 1997 Andre Geim treo lơ lửng một con ếch sống trong từ trường
+16 T. **Siêu dẫn** ghim thẳng đường sức vào vật liệu, biến điểm yên ngựa
+thành cái rãnh có thật. **Vật quay** mượn mô-men hồi chuyển để trục nam châm
+không kịp lật: con quay Levitron lơ lửng vài phút, tới khi ma sát hãm nó
+xuống dưới ngưỡng vòng quay — cùng mẹo "động thắng tĩnh" cho [cây đũa dựng
+ngược đứng vững khi chân đế rung đủ
+nhanh](/vi/posts/con-lac-nguoc-dung-vung-nho-rung-nhanh).
+
+Tàu đệm từ Nhật đi cửa cuối: cuộn dây trên thành ray sinh [dòng cảm ứng
+chống lại chuyển động](/vi/posts/cam-ung-faraday-hai-cu-hich-nguoc-dau) tự
+động mạnh lên khi tàu tụt xuống — ổn định thật, không cần máy tính. Cái giá
+là nó chỉ chạy khi từ thông đang biến thiên đủ nhanh: dưới khoảng 150 km/h
+chẳng có gì nâng ai. Con tàu nhanh nhất hành tinh vì thế vẫn phải mọc bánh
+cao su để rời ga, và chỉ rút bánh lên khi đã chạy nhanh hơn ô tô trên cao
+tốc.

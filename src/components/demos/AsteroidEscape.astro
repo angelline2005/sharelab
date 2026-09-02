@@ -1,0 +1,252 @@
+---
+// Uniform sphere, exact two-body: with M = (4/3)πρR³,
+//   g   = (4/3)πGρR
+//   v_orbit(surface) = R·sqrt(4πGρ/3)
+//   v_escape         = R·sqrt(8πGρ/3)
+//   T(vòng sát bề mặt) = sqrt(3π/(Gρ))  — không chứa R
+// Quỹ đạo vẽ bằng phương trình conic r(θ) = p/(1+e·cosθ), phóng ngang từ
+// độ cao 1,5 m (ngang vai) nên điểm phóng là một cận điểm của quỹ đạo.
+// Hợp lệ với vật thể tự hấp dẫn, không quay, mật độ đều; G = 6,674×10⁻¹¹.
+// Chấm thiên thể thật dùng bán kính trung bình và v_thoát đã công bố.
+---
+
+<figure class="demo" data-demo="thoat-ly-khoi-tieu-hanh-tinh-bang-buoc-nhay">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Bán kính thiên thể (km, thang log) <output data-out="r"></output>
+      <input type="range" data-in="r" min="-100" max="270" step="1" value="0" /></label>
+    <label>Mật độ khối ρ (kg/m³) <output data-out="d"></output>
+      <input type="range" data-in="d" min="400" max="5600" step="1" value="2000" /></label>
+    <label>Tốc độ phóng ngang (m/s) <output data-out="v"></output>
+      <input type="range" data-in="v" min="0.05" max="6" step="0.01" value="1.4" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Trên: mặt cắt thiên thể vẽ đúng tỉ lệ, kèm đường đi của vật ném ngang
+    từ ngang vai (1,5 m). Xanh là rơi lại xuống đất, vàng là quỹ đạo khép
+    kín sát bề mặt, đỏ là đường hở — đi luôn, không quay lại. Dưới: v_thoát
+    theo bán kính trên trục log-log (đường thẳng vì v_thoát tỉ lệ thuận với
+    R), vạch đỏ ngang là tốc độ bạn chọn, và các chấm là thiên thể thật với
+    số đo đã công bố.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const G = 6.674e-11, PI = Math.PI, G_EARTH = 9.81, SHOULDER = 1.5;
+  const CURVE = '#2563eb', MARK = '#dc2626', THIRD = '#f59e0b';
+
+  // [bán kính trung bình (km), v_thoát đã công bố (m/s), tên]
+  const BODIES: Array<[number, number, string]> = [
+    [0.245, 0.20, 'Bennu'],
+    [0.448, 0.37, 'Ryugu'],
+    [1.65, 1.0, '67P'],
+    [11.08, 11.4, 'Phobos'],
+    [469.7, 510, 'Ceres'],
+  ];
+
+  const SUP: Record<string, string> = {
+    '-': '⁻', '0': '⁰', '1': '¹', '2': '²', '3': '³',
+    '4': '⁴', '5': '⁵', '6': '⁶', '7': '⁷', '8': '⁸', '9': '⁹',
+  };
+  const nf = (x: number, d: number) => x.toFixed(d).replace('.', ',');
+  const grp = (x: number) => x.toLocaleString('vi-VN').replace(/\./g, ' ');
+  const vf = (x: number) => nf(x, x < 10 ? 3 : 1);   // m/s
+  function sci(x: number, d = 2) {
+    const [m, ex] = x.toExponential(d).split('e');
+    const e = ex.replace('+', '');
+    return m.replace('.', ',') + '×10' + e.split('').map((c) => SUP[c] ?? c).join('');
+  }
+  const fmtR = (km: number) =>
+    nf(km, km >= 100 ? 0 : km >= 10 ? 1 : km >= 1 ? 2 : 3);
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (k: string) => root.querySelector(`[data-in="${k}"]`) as HTMLInputElement;
+    const output = (k: string) => root.querySelector(`[data-out="${k}"]`) as HTMLOutputElement;
+
+    function draw() {
+      const Rkm = Math.pow(10, Number(input('r').value) / 100);
+      const rho = Number(input('d').value);
+      const v = Number(input('v').value);
+      const R = Rkm * 1000;
+
+      const kEsc = Math.sqrt((8 * PI * G * rho) / 3);   // v_thoát trên mỗi mét bán kính
+      const g = (4 / 3) * PI * G * rho * R;
+      const vOrb = R * Math.sqrt((4 * PI * G * rho) / 3);
+      const vEsc = R * kEsc;
+      const period = Math.sqrt((3 * PI) / (G * rho));   // giây, không phụ thuộc R
+      const tFall = Math.sqrt((2 * 1) / g);             // rơi 1 m
+      const rMaxKm = v / kEsc / 1000;                   // bán kính lớn nhất còn thoát được
+
+      output('r').textContent = `${fmtR(Rkm)} km`;
+      output('d').textContent = grp(rho);
+      output('v').textContent = nf(v, 2);
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.8);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+      ctx.font = '10px system-ui,sans-serif';
+
+      // ---------------- Bảng trên: mặt cắt thiên thể + đường bay ----------------
+      const topH = cssH * 0.46;
+
+      // Conic phóng ngang từ r0 = R + 1,5 m: điểm phóng là một cận/viễn điểm.
+      const mu = (4 / 3) * PI * G * rho * R * R * R;
+      const r0 = R + SHOULDER;
+      const hMom = r0 * v;
+      const en = (v * v) / 2 - mu / r0;
+      const p = (hMom * hMom) / mu;
+      const e = Math.sqrt(Math.max(0, 1 + (2 * en * hMom * hMom) / (mu * mu)));
+      const th0 = v < Math.sqrt(mu / r0) ? PI : 0;      // viễn điểm hay cận điểm
+      const escaping = v >= vEsc;
+      const lands = v < vOrb;
+
+      // Lượt 1: dựng đường bay theo đơn vị bán kính thiên thể.
+      const pts: Array<[number, number]> = [];
+      let landed = false, span = 1;
+      for (let i = 0; i <= 900; i++) {
+        const th = th0 + (2 * PI * i) / 900;
+        const den = 1 + e * Math.cos(th);
+        if (den <= 1e-9) break;                          // tiệm cận đường hở
+        const u = p / den / R;                           // r tính theo R
+        if (u > 3.2) break;
+        const phi = -PI / 2 + (th - th0);
+        pts.push([u * Math.cos(phi), u * Math.sin(phi)]);
+        if (u > span) span = u;
+        if (u < 1 && i > 0) { landed = true; break; }
+      }
+
+      // Lượt 2: chọn tỉ lệ sao cho cả quỹ đạo lọt khung, rồi vẽ.
+      const Rpx = (topH * 0.42) / Math.min(Math.max(span, 1), 2.9);
+      const cx = cssW / 2, cy = topH * 0.55;
+      const PX = (u: number) => cx + u * Rpx, PY = (u: number) => cy + u * Rpx;
+
+      ctx.save();
+      ctx.beginPath(); ctx.rect(0, 0, cssW, topH); ctx.clip();
+
+      ctx.fillStyle = fg; ctx.globalAlpha = 0.1;
+      ctx.beginPath(); ctx.arc(cx, cy, Rpx, 0, 2 * PI); ctx.fill();
+      ctx.globalAlpha = 0.45; ctx.strokeStyle = fg; ctx.lineWidth = 1.2;
+      ctx.beginPath(); ctx.arc(cx, cy, Rpx, 0, 2 * PI); ctx.stroke();
+      ctx.globalAlpha = 1;
+
+      ctx.strokeStyle = escaping ? MARK : lands ? CURVE : THIRD;
+      ctx.lineWidth = 2; ctx.beginPath();
+      pts.forEach(([ux, uy], i) => (i ? ctx.lineTo(PX(ux), PY(uy)) : ctx.moveTo(PX(ux), PY(uy))));
+      ctx.stroke(); ctx.lineWidth = 1;
+
+      ctx.fillStyle = MARK;
+      ctx.beginPath(); ctx.arc(cx, cy - Rpx, 3.5, 0, 2 * PI); ctx.fill();
+      if (landed && pts.length) {
+        const [ux, uy] = pts[pts.length - 1];
+        ctx.beginPath(); ctx.arc(PX(ux), PY(uy), 3.5, 0, 2 * PI); ctx.fill();
+      }
+
+      ctx.fillStyle = fg; ctx.globalAlpha = 0.75; ctx.textAlign = 'center';
+      ctx.fillText(`bán kính ${fmtR(Rkm)} km · ρ = ${grp(rho)} kg/m³`, cx, topH - 6);
+      ctx.textAlign = 'left';
+      ctx.fillText(
+        escaping ? 'đường hở: đi luôn' : lands ? 'rơi lại xuống đất' : 'quỹ đạo khép kín',
+        8, 14);
+      ctx.globalAlpha = 1;
+      ctx.restore();
+
+      // ---------------- Bảng dưới: v_thoát theo bán kính (log-log) ----------------
+      const bT = topH, bH = cssH - topH;
+      const padL = 46, padB = 24, padT = 16, padR = 12;
+      const xLo = -1, xHi = 2.7;                        // km, khớp đúng hai đầu thanh trượt
+      const yLo = -2, yHi = 3;                          // m/s
+      const X = (km: number) =>
+        padL + ((Math.log10(km) - xLo) / (xHi - xLo)) * (cssW - padL - padR);
+      const Y = (ms: number) =>
+        bT + bH - padB - ((Math.log10(ms) - yLo) / (yHi - yLo)) * (bH - padB - padT);
+
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.3;
+      ctx.beginPath();
+      ctx.moveTo(padL, bT + padT); ctx.lineTo(padL, bT + bH - padB);
+      ctx.lineTo(cssW - padR, bT + bH - padB); ctx.stroke();
+      ctx.globalAlpha = 0.55; ctx.fillStyle = fg;
+      ctx.textAlign = 'center';
+      for (const km of [0.1, 1, 10, 100]) ctx.fillText(`${fmtR(km)} km`, X(km), bT + bH - padB + 14);
+      ctx.textAlign = 'right';
+      for (const ms of [0.01, 0.1, 1, 10, 100, 1000])
+        ctx.fillText(`${nf(ms, ms < 1 ? 2 : 0)}`, padL - 4, Y(ms) + 3);
+      ctx.save();
+      ctx.translate(12, bT + bH / 2); ctx.rotate(-PI / 2);
+      ctx.textAlign = 'center'; ctx.fillText('m/s', 0, 0); ctx.restore();
+      ctx.globalAlpha = 1;
+
+      // v_quỹ đạo (nét đứt) rồi v_thoát (nét liền) — hai đường thẳng song song.
+      const clip = (fn: (km: number) => number, color: string, dash: number[]) => {
+        ctx.strokeStyle = color; ctx.lineWidth = 2; ctx.setLineDash(dash);
+        ctx.beginPath();
+        let on = false;
+        for (let i = 0; i <= 160; i++) {
+          const km = Math.pow(10, xLo + ((xHi - xLo) * i) / 160);
+          const s = fn(km);
+          if (s < Math.pow(10, yLo) || s > Math.pow(10, yHi)) { on = false; continue; }
+          on ? ctx.lineTo(X(km), Y(s)) : ctx.moveTo(X(km), Y(s));
+          on = true;
+        }
+        ctx.stroke(); ctx.setLineDash([]); ctx.lineWidth = 1;
+      };
+      clip((km) => (km * 1000 * kEsc) / Math.SQRT2, THIRD, [4, 3]);
+      clip((km) => km * 1000 * kEsc, CURVE, []);
+
+      // Vạch ngang: tốc độ phóng đang chọn.
+      ctx.strokeStyle = MARK; ctx.globalAlpha = 0.75; ctx.setLineDash([2, 3]);
+      ctx.beginPath(); ctx.moveTo(padL, Y(v)); ctx.lineTo(cssW - padR, Y(v)); ctx.stroke();
+      ctx.setLineDash([]); ctx.globalAlpha = 1;
+
+      // Giao điểm = bán kính lớn nhất còn thoát được ở tốc độ ấy.
+      if (rMaxKm >= 0.1 && rMaxKm <= 500) {
+        ctx.fillStyle = MARK;
+        ctx.beginPath(); ctx.arc(X(rMaxKm), Y(v), 5, 0, 2 * PI); ctx.fill();
+        ctx.globalAlpha = 0.85; ctx.textAlign = 'left';
+        ctx.fillText(`R tối đa ${fmtR(rMaxKm)} km`, X(rMaxKm) + 8, Y(v) - 6);
+        ctx.globalAlpha = 1;
+      }
+
+      BODIES.forEach(([km, ms, name], k) => {
+        ctx.fillStyle = THIRD;
+        ctx.beginPath(); ctx.arc(X(km), Y(ms), 4, 0, 2 * PI); ctx.fill();
+        ctx.fillStyle = fg; ctx.globalAlpha = 0.75; ctx.textAlign = 'center';
+        ctx.fillText(name, X(km), Y(ms) - 8 - (k % 2) * 11);
+        ctx.globalAlpha = 1;
+      });
+
+      const regime = escaping
+        ? ' · <b>vượt tốc độ thoát ly — đi luôn</b>'
+        : lands ? '' : ' · vào quỹ đạo sát bề mặt';
+      readout.innerHTML =
+        `R = ${fmtR(Rkm)} km, ρ = ${grp(rho)} kg/m³ → ` +
+        `g = <b>${sci(g)} m/s²</b> (1/${grp(Math.round(G_EARTH / g))} g Trái Đất) · ` +
+        `v_quỹ đạo = ${vf(vOrb)} m/s · v_thoát = <b>${vf(vEsc)} m/s</b> · ` +
+        `một vòng sát bề mặt ${nf(period / 60, 1)} phút · thả hòn đá từ 1 m rơi ${nf(tFall, 1)} s.<br />` +
+        `Phóng ngang ${nf(v, 2)} m/s${regime} — tốc độ ấy thoát được mọi thiên thể ` +
+        `mật độ này có bán kính dưới <b>${fmtR(rMaxKm)} km</b>.`;
+    }
+
+    root.querySelectorAll('input').forEach((el) => el.addEventListener('input', draw));
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="thoat-ly-khoi-tieu-hanh-tinh-bang-buoc-nhay"]').forEach(setup);
+</script>

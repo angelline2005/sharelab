@@ -1,0 +1,92 @@
+---
+title: "Con lắc Foucault ở Hà Nội cần 67 giờ mới quay hết một vòng"
+seoTitle: "Con lắc Foucault: tốc độ quay mặt phẳng dao động theo vĩ độ"
+description: "Ở Paris mặt phẳng dao động quay 11,33° mỗi giờ, trọn vòng sau 31,8 giờ. Ở Hà Nội chỉ 5,39°/giờ — 66,8 giờ; ở TP.HCM 2,82°/giờ — 127,7 giờ, tức năm ngày rưỡi. Ở xích đạo con lắc không quay một độ nào, mãi mãi."
+pubDate: 2026-09-02
+tags: ["vat-ly", "dao-dong", "thien-van", "javascript"]
+translationId: "con-lac-foucault-va-vi-do-cua-ban"
+---
+
+import FoucaultPendulum from '../../../components/demos/FoucaultPendulum.astro';
+
+Dưới mái vòm Panthéon ở Paris, một quả cầu đồng treo trên sợi dây 67 mét
+vẫn đung đưa như hồi 1851. Nó lắc mãi trong một mặt phẳng; thứ quay là
+sàn nhà bên dưới. Dựng đúng cái đó ở Hà Nội, bạn phải chờ gần ba ngày mới
+xem hết một vòng — ở Cà Mau thì gần bảy:
+
+<FoucaultPendulum />
+
+## Con lắc đứng yên, hành tinh trượt bên dưới
+
+Một con lắc đang lắc không có lý do gì đổi hướng: cả trọng lực lẫn lực
+căng dây đều nằm gọn trong mặt phẳng dao động, không cái nào đẩy nó sang
+bên. Mặt phẳng ấy giữ nguyên so với các vì sao, còn Trái Đất quay dưới
+chân nó — trọn vòng sau **86 164 giây**, tức ngày sao 23,93 giờ chứ không
+phải 24.
+
+Treo ở Bắc Cực thì sàn nhà quay hết 360° trong ngày sao ấy: **15,04° mỗi
+giờ**. Ở xích đạo, trục quay của Trái Đất nằm ngang so với sàn — không còn
+thành phần nào vặn quanh phương dây dọi, và mặt phẳng không nhích một độ.
+Ở giữa, chỉ hình chiếu của vectơ quay lên phương thẳng đứng là có nghĩa:
+
+```
+Ω = 15,041 °/giờ × sin φ      (thời gian trọn vòng = 360°/Ω)
+```
+
+Chính hệ số sin φ ấy cầm lái [hiệu ứng
+Coriolis](/vi/posts/hieu-ung-coriolis-va-huyen-thoai-bon-cau) — bão xoáy,
+đạn pháo lệch phải: con lắc Foucault chỉ là Coriolis cộng dồn nhiều giờ
+liền, cho tới khi mắt thường đọc được.
+
+## Vĩ độ của bạn ra giá bằng số ngày chờ
+
+Vĩ độ vốn đã lặng lẽ chỉnh [số trên bàn
+cân](/vi/posts/can-nang-cua-ban-doi-theo-vi-do-va-do-cao); ở đây nó ra giá
+bằng thời gian. Paris nằm ở 48,9°: **11,33°/giờ**, trọn vòng sau 31,8 giờ
+— Foucault trưng ra trước công chúng tháng 3 năm 1851 và cả châu Âu xếp
+hàng vào xem. Kéo xuống Việt Nam thì cái giá tăng vọt. Lũng Cú, cực Bắc
+của đất nước, ở 23,4°: 5,97°/giờ, 60,3 giờ. Hà Nội 21,0°: **5,39°/giờ,
+trọn vòng sau 66,8 giờ — 2,8 ngày**. TP.HCM 10,8°: 2,82°/giờ, 127,7 giờ,
+tức 5,3 ngày và **gấp 4,0 lần** Paris cho cùng một vòng.
+
+Nghe 5,39°/giờ tưởng không thấy được, nhưng đó là góc chứ không phải
+khoảng cách: với biên độ 2 mét, đầu mút cung lắc dịch **18,8 cm mỗi giờ**
+— nửa buổi sáng là quả cầu đã bỏ xa vạch phấn cả gang tay. Soi từng nhịp
+thì tuyệt vọng: dây 20 m cho chu kỳ 8,97 s, mỗi lượt quét mặt phẳng chỉ
+xoay 0,0067°, và cần hơn 800 lượt mới đủ một giờ.
+
+## Sau trọn một ngày, mặt phẳng vẫn thiếu 231 độ
+
+Kéo thanh thời gian về 24 giờ ở vĩ độ Hà Nội: mặt phẳng mới quay 129,4°.
+Trọn một ngày sao thì là 129,0° — thiếu **231,0°** so với một vòng. Khoản
+hụt ấy không tuỳ tiện: nó đúng bằng 360°(1 − sin φ), tức góc khối của chỏm
+cầu tính từ vĩ tuyến của bạn lên tới cực. Trái Đất mang con lắc đi dạo hết
+một vòng tròn trên mặt cầu rồi trả về chỗ cũ, và nó về với hướng lệch đi
+đúng bằng diện tích vùng chuyến đi ấy bao quanh: trên mặt phẳng đi vòng về
+là hướng cũ, trên mặt cong thì không. Ở Paris khoản hụt chỉ 88,7°; ở cực
+bằng 0, vì chỏm cầu co lại thành một điểm. Sợi dây trong nhà thờ đang đo
+độ cong của chính quả cầu nó treo lên trên.
+
+## Trường hợp biên: xích đạo, và cái elip rộng một milimét
+
+Ở xích đạo sin φ = 0: con lắc không quay chậm — nó không quay, mãi mãi.
+Singapore ở 1,3° vĩ Bắc còn 0,34°/giờ, trọn vòng sau 1 055 giờ tức **44
+ngày**; chẳng bảo tàng nào trưng một thí nghiệm phải ngồi xem một tháng
+rưỡi.
+
+Vùng vĩ độ thấp còn cái bẫy tệ hơn sự chậm chạp. Lỡ tay đẩy ngang một
+chút lúc thả, quỹ đạo không còn là đoạn thẳng mà hở thành elip dẹt — và
+elip ấy tự quay lấy, chẳng nhờ hành tinh nào. Thủ phạm đúng là cái phi
+tuyến làm [chu kỳ con lắc phụ thuộc biên
+độ](/vi/posts/chu-ky-con-lac-don-co-that-su-khong-phu-thuoc-bien-do): trục
+dài của elip lắc chậm hơn trục ngắn một nhịp tóc, nên cả hình xoay dần.
+Airy tính ra tốc độ giả mạo ấy bằng `(3/8)·(a·b/L²)·√(g/L)`.
+
+Thử với dây 5 m, biên độ 0,5 m và độ hở vỏn vẹn **1 mm**: 2,17°/giờ. Ở
+TP.HCM tín hiệu thật chỉ 2,82°/giờ — sai số bằng **77% thứ cần đo**, và
+không có cách nào tách ra xem phần nào là Trái Đất. Chính số hạng
+L^(−5/2) đó giải thích sợi dây dài đến vô lý: cùng 1 mm ấy ở Panthéon chỉ
+giả mạo 0,044°/giờ, chưa tới 0,4% của 11,33. Foucault treo dây 67 mét
+không phải để trông hoành tráng — ông treo dài để chôn sai số của chính
+bàn tay mình, và vẫn không dám buông tay: quả cầu được buộc bằng sợi chỉ,
+rồi đốt đứt.

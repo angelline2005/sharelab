@@ -1,0 +1,218 @@
+---
+// Màu LED từ vùng cấm:  λ(nm) = (hc/e)/Eg(eV) = 1239,842 / Eg
+//   hc/e = 1239,84198 nm·V (CODATA 2018).
+// Vùng cấm co theo nhiệt độ (Varshni 1967):
+//   Eg(T) = Eg(25 °C) − α·[T²/(T+β) − T₀²/(T₀+β)],  α = 0,5405 meV/K, β = 204 K
+//   (bộ tham số GaAs, Vurgaftman & Meyer 2001 — đại diện họ III–V; α thật đổi theo vật liệu,
+//   GaN có β ≈ 830 K nên dịch chậm hơn chút). Độ dốc ~0,45 meV/K quanh 300 K.
+// Đặc tuyến thuận (Shockley + điện trở nối tiếp, I_s ∝ T³·exp(−Eg/nkT)):
+//   V(I,T) = Eg(T)/e + n·(kT/e)·ln( I / (C·T³) ) + I·R_s,  n = 2, R_s = 8 Ω,
+//   C chuẩn hoá để số hạng log triệt tiêu tại 20 mA, 25 °C.
+//   Cho V_f đúng cỡ datasheet: đỏ 2,13 V, lam 2,83 V, hồng ngoại 1,48 V ở 20 mA.
+// Miền hợp lệ của demo: Eg 1,0–3,5 eV; nhiệt độ chip 20–120 °C; dòng thuận 1–50 mA.
+---
+
+<figure class="demo" data-demo="mau-cua-led-va-hang-so-1240">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Vùng cấm Eg ở 25 °C (eV) <output data-out="eg"></output>
+      <input type="range" data-in="eg" min="1" max="3.5" step="0.01" value="1.97" /></label>
+    <label>Nhiệt độ chip (°C) <output data-out="tc"></output>
+      <input type="range" data-in="tc" min="20" max="120" step="1" value="25" /></label>
+    <label>Dòng thuận I (mA) <output data-out="i"></output>
+      <input type="range" data-in="i" min="1" max="50" step="0.5" value="20" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Dải trên là quang phổ kéo dài sang hồng ngoại; con trỏ đỏ đứng ở bước sóng
+    mà vùng cấm đang chọn phát ra, ô vuông bên phải tô đúng màu con LED sẽ sáng.
+    Dưới là đặc tuyến thuận: dòng dựng đứng gần V = Eg/e (vạch cam), nhưng chấm đỏ
+    — điểm đo thật — luôn lệch khỏi vạch ấy. Đường đứt nét là phép ngoại suy đoạn
+    dốc 30–50 mA về dòng bằng 0, cách duy nhất để lôi con số 1240 ra khỏi phép đo.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const CURVE = '#2563eb', MARK = '#dc2626', ACC = '#f59e0b';
+  const HCE = 1239.841984;          // nm·V
+  const KB = 8.617333262e-5;        // eV/K
+  const ALPHA = 5.405e-4, BETA = 204;
+  const N_ID = 2, RS = 8, T25 = 298.15;
+  const CNORM = 0.020 / (T25 * T25 * T25);
+
+  const vn = (x: number, d: number) => x.toFixed(d).replace('.', ',');
+  const varshni = (T: number) => (T * T) / (T + BETA);
+  const egAt = (eg25: number, T: number) => eg25 - ALPHA * (varshni(T) - varshni(T25));
+  const vfwd = (eg25: number, T: number, Ia: number) =>
+    egAt(eg25, T) + N_ID * KB * T * Math.log(Ia / (CNORM * T * T * T)) + Ia * RS;
+
+  function hue(l: number): string {
+    if (l < 380) return 'rgba(150,120,200,0.34)';
+    if (l > 780) {
+      const t = Math.min(1, (l - 780) / 300);
+      return `rgba(${130 - 10 * t},${30 + 100 * t},${30 + 110 * t},${0.5 - 0.2 * t})`;
+    }
+    let r = 0, g = 0, b = 0;
+    if (l < 440) { r = -(l - 440) / 60; b = 1; }
+    else if (l < 490) { g = (l - 440) / 50; b = 1; }
+    else if (l < 510) { g = 1; b = -(l - 510) / 20; }
+    else if (l < 580) { r = (l - 510) / 70; g = 1; }
+    else if (l < 645) { r = 1; g = -(l - 645) / 65; }
+    else { r = 1; }
+    let f = 1;
+    if (l < 420) f = 0.3 + 0.7 * (l - 380) / 40;
+    else if (l > 700) f = 0.3 + 0.7 * (780 - l) / 80;
+    const ch = (x: number) => Math.round(255 * Math.pow(Math.max(0, x) * f, 0.8));
+    return `rgb(${ch(r)},${ch(g)},${ch(b)})`;
+  }
+
+  function tenMau(l: number): string {
+    if (l < 380) return 'tử ngoại';
+    if (l < 450) return 'tím';
+    if (l < 495) return 'lam';
+    if (l < 570) return 'lục';
+    if (l < 597) return 'vàng';
+    if (l < 622) return 'cam';
+    if (l <= 780) return 'đỏ';
+    return 'hồng ngoại';
+  }
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (k: string) => root.querySelector(`[data-in="${k}"]`) as HTMLInputElement;
+    const output = (k: string) => root.querySelector(`[data-out="${k}"]`) as HTMLOutputElement;
+
+    function draw() {
+      const eg25 = Number(input('eg').value);
+      const tc = Number(input('tc').value);
+      const ima = Number(input('i').value);
+      output('eg').textContent = vn(eg25, 2);
+      output('tc').textContent = String(tc);
+      output('i').textContent = vn(ima, 1);
+
+      const T = 273.15 + tc, Ia = ima / 1000;
+      const eg = egAt(eg25, T);
+      const lam = HCE / eg;
+      const vf = vfwd(eg25, T, Ia);
+      const v30 = vfwd(eg25, T, 0.030), v50 = vfwd(eg25, T, 0.050);
+      const slope = (v50 - v30) / 0.020;
+      const v0 = v30 - 0.030 * slope;
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.68);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+      ctx.font = '10px system-ui,sans-serif';
+
+      // ---------- dải phổ ----------
+      const padL = 46, padR = 12;
+      const swW = 38, sx0 = padL, sx1 = cssW - padR - swW - 10;
+      const sy0 = 12, sh = 32;
+      const LMIN = 340, LMAX = 1320;
+      const SX = (l: number) => sx0 + ((l - LMIN) / (LMAX - LMIN)) * (sx1 - sx0);
+
+      for (let x = sx0; x < sx1; x++) {
+        const l = LMIN + ((x - sx0) / (sx1 - sx0)) * (LMAX - LMIN);
+        ctx.fillStyle = hue(l);
+        ctx.fillRect(x, sy0, 1.4, sh);
+      }
+      ctx.fillStyle = fg; ctx.globalAlpha = 0.55; ctx.textAlign = 'center';
+      for (const l of [400, 600, 800, 1000]) ctx.fillText(`${l}`, SX(l), sy0 + sh + 13);
+      ctx.fillText('1200 nm', SX(1200), sy0 + sh + 13);
+      ctx.globalAlpha = 0.75;
+      ctx.fillText('hồng ngoại', SX(1030), sy0 + sh / 2 + 4);
+      ctx.globalAlpha = 1;
+
+      const lamX = Math.max(sx0, Math.min(sx1, SX(lam)));
+      ctx.strokeStyle = MARK; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.moveTo(lamX, sy0 - 3); ctx.lineTo(lamX, sy0 + sh + 3); ctx.stroke();
+      ctx.fillStyle = MARK;
+      ctx.beginPath();
+      ctx.moveTo(lamX, sy0 + sh + 3); ctx.lineTo(lamX - 4, sy0 + sh + 10); ctx.lineTo(lamX + 4, sy0 + sh + 10);
+      ctx.closePath(); ctx.fill();
+      ctx.lineWidth = 1;
+
+      // ô màu LED
+      ctx.fillStyle = (lam < 380 || lam > 780) ? 'rgba(128,128,138,0.35)' : hue(lam);
+      ctx.fillRect(cssW - padR - swW, sy0, swW, sh);
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.4;
+      ctx.strokeRect(cssW - padR - swW + 0.5, sy0 + 0.5, swW - 1, sh - 1);
+      ctx.globalAlpha = 1;
+
+      // ---------- đặc tuyến I–V ----------
+      const pT = 76, pB = cssH - 24;
+      const vLo = 0.6, vHi = 4.1, iHi = 55;
+      const X = (v: number) => padL + ((v - vLo) / (vHi - vLo)) * (cssW - padL - padR);
+      const Y = (i: number) => pB - (i / iHi) * (pB - pT);
+
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.3;
+      ctx.beginPath(); ctx.moveTo(padL, pT); ctx.lineTo(padL, pB); ctx.lineTo(cssW - padR, pB); ctx.stroke();
+      ctx.globalAlpha = 0.55; ctx.fillStyle = fg; ctx.textAlign = 'center';
+      for (const v of [1, 2, 3, 4]) ctx.fillText(`${v} V`, X(v), pB + 14);
+      ctx.textAlign = 'right';
+      for (const i of [10, 20, 30, 40, 50]) ctx.fillText(`${i} mA`, padL - 4, Y(i) + 3);
+      ctx.globalAlpha = 1;
+
+      // vạch Eg/e
+      ctx.strokeStyle = ACC; ctx.setLineDash([4, 3]);
+      ctx.beginPath(); ctx.moveTo(X(eg), pT); ctx.lineTo(X(eg), pB); ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillStyle = ACC; ctx.textAlign = 'left';
+      ctx.fillText(`Eg/e = ${vn(eg, 3)} V`, X(eg) + 4, pT + 10);
+
+      // đường ngoại suy đoạn dốc
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.5; ctx.setLineDash([5, 4]);
+      ctx.beginPath(); ctx.moveTo(X(v0), Y(0)); ctx.lineTo(X(v0 + slope * 0.055), Y(55)); ctx.stroke();
+      ctx.setLineDash([]); ctx.globalAlpha = 1;
+
+      // đặc tuyến
+      ctx.strokeStyle = CURVE; ctx.lineWidth = 2; ctx.beginPath();
+      let started = false;
+      for (let k = 0; k <= 260; k++) {
+        const ii = 0.0002 + (0.055 - 0.0002) * (k / 260);
+        const vv = vfwd(eg25, T, ii);
+        if (vv < vLo) { started = false; continue; }
+        const px = X(vv), py = Y(ii * 1000);
+        started ? ctx.lineTo(px, py) : ctx.moveTo(px, py);
+        started = true;
+      }
+      ctx.stroke(); ctx.lineWidth = 1;
+
+      // giao điểm ngoại suy và điểm làm việc
+      ctx.strokeStyle = ACC; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.arc(X(v0), Y(0), 4.5, 0, Math.PI * 2); ctx.stroke(); ctx.lineWidth = 1;
+      ctx.fillStyle = MARK;
+      ctx.beginPath(); ctx.arc(X(vf), Y(ima), 6, 0, Math.PI * 2); ctx.fill();
+
+      const mau = tenMau(lam);
+      const co = (lam > 780 || lam < 380) ? ' · <b>mắt không thấy</b>' : '';
+      const lech = (vf - eg) * 1000;
+      readout.innerHTML =
+        `Eg = <b>${vn(eg, 3)} eV</b> ở ${tc} °C → λ = <b>${vn(lam, 1)} nm</b> (${mau})${co}` +
+        ` · V<sub>f</sub> ở ${vn(ima, 1)} mA = <b>${vn(vf, 3)} V</b>` +
+        ` (${lech >= 0 ? '+' : '−'}${vn(Math.abs(lech), 0)} mV so với Eg/e)` +
+        ` · ngoại suy về I = 0: ${vn(v0, 3)} V → λ tính ra ${vn(HCE / v0, 0)} nm`;
+    }
+
+    root.querySelectorAll('input').forEach((el) => el.addEventListener('input', draw));
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="mau-cua-led-va-hang-so-1240"]').forEach(setup);
+</script>

@@ -1,0 +1,198 @@
+---
+// Đỉnh Gamow — tích của hai hàm mũ ngược chiều trên trục năng lượng:
+//   f(E) = exp(−E/kT) · exp(−sqrt(E_G/E))
+// Đây đúng là hàm dưới dấu tích phân của tốc độ phản ứng <σv> khi hệ số
+// thiên văn S(E) coi như hằng số (σ = S(E)/E · e^(−sqrt(E_G/E)) và phân bố
+// Maxwell theo thông lượng ∝ E·e^(−E/kT) dE — hai chữ E triệt tiêu nhau).
+// Năng lượng Gamow: E_G = 2·A_r·u·(π·α·Z₁Z₂)², u = 931 494,1 keV, α = 1/137,036.
+// Nguồn: Clayton, "Principles of Stellar Evolution and Nucleosynthesis", ch. 4;
+// Iliadis, "Nuclear Physics of Stars", §3.2.
+// Đỉnh E₀ = (E_G·(kT)²/4)^(1/3) là nghiệm CHÍNH XÁC của df/dE = 0, đúng với
+// mọi giá trị thanh trượt. Ngược lại, bề rộng ΔE = (4/√3)·sqrt(E₀·kT) và số mũ
+// nhiệt độ n = (3E₀/kT − 2)/3 là xấp xỉ điểm yên ngựa, chỉ tốt khi E₀ ≫ kT —
+// readout tự gắn cờ khi E₀/kT < 3.
+// e^(−sqrt(E_G/E)) là xấp xỉ WKB cho rào Coulomb thuần, hợp lệ khi E ≪ đỉnh rào;
+// trên toàn miền thanh trượt E₀ luôn nhỏ hơn rào Coulomb vài chục lần trở lên.
+---
+
+<figure class="demo" data-demo="mat-troi-chay-bang-xuyen-ham-dinh-gamow">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Nhiệt độ lõi T (triệu K) <output data-out="t"></output>
+      <input type="range" data-in="t" min="5" max="100" step="0.1" value="15.7" /></label>
+    <label>Tích điện tích Z₁Z₂ <output data-out="z"></output>
+      <input type="range" data-in="z" min="1" max="36" step="1" value="1" /></label>
+    <label>Khối lượng rút gọn A_r (u) <output data-out="a"></output>
+      <input type="range" data-in="a" min="0.5" max="6" step="0.01" value="0.5" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Đường xanh: tỉ lệ hạt có năng lượng E theo phân bố nhiệt, tụt như e^(−E/kT).
+    Đường cam: xác suất xuyên hầm qua rào Coulomb, leo như e^(−√(E_G/E)).
+    Đường đỏ là tích của hai đường — phản ứng hạt nhân chỉ xảy ra trong dải tô
+    đỏ, không ở năng lượng trung bình kT. Mỗi đường được chuẩn hoá riêng về đỉnh
+    1 (giá trị thật ghi trong dòng số bên dưới), nếu không thì đường đỏ sẽ nằm
+    bẹp dưới trục hàng trăm bậc độ lớn.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const BOLTZ = '#2563eb', PROD = '#dc2626', TUN = '#f59e0b';
+  const KB = 8.617333262e-5;      // eV/K
+  const U = 931494.10;            // keV cho 1 u
+  const ALPHA = 1 / 137.035999;
+
+  const kTof = (T6: number) => (KB * T6 * 1e6) / 1000;                                   // keV
+  const EGof = (Z: number, Ar: number) => 2 * Ar * U * Math.pow(Math.PI * ALPHA * Z, 2); // keV
+  const E0of = (eg: number, kT: number) => Math.pow((eg * kT * kT) / 4, 1 / 3);
+
+  const vi = (x: number, d: number) => x.toFixed(d).replace('.', ',');
+  function sci(x: number) {
+    const e = Math.floor(Math.log10(x));
+    const m = x / Math.pow(10, e);
+    return `${vi(m, 1)}×10<sup>${String(e).replace('-', '−')}</sup>`;
+  }
+  function niceUp(v: number) {
+    const e = Math.pow(10, Math.floor(Math.log10(v)));
+    const m = v / e;
+    const n = m <= 1 ? 1 : m <= 2 ? 2 : m <= 2.5 ? 2.5 : m <= 5 ? 5 : 10;
+    return n * e;
+  }
+  // 3 chữ số có nghĩa, dấu phẩy thập phân, nghìn cách bằng khoảng trắng.
+  function fmtE(v: number) {
+    if (v >= 1000) return Math.round(v).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+    let s = v.toFixed(v >= 100 ? 0 : v >= 10 ? 1 : 2);
+    if (s.includes('.')) s = s.replace(/0+$/, '').replace(/\.$/, '');
+    return s.replace('.', ',');
+  }
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (k: string) => root.querySelector(`[data-in="${k}"]`) as HTMLInputElement;
+    const output = (k: string) => root.querySelector(`[data-out="${k}"]`) as HTMLOutputElement;
+
+    function draw() {
+      const T6 = Number(input('t').value);
+      const Z = Number(input('z').value);
+      const Ar = Number(input('a').value);
+      output('t').textContent = vi(T6, 1);
+      output('z').textContent = String(Z);
+      output('a').textContent = vi(Ar, 2);
+
+      const kT = kTof(T6), eg = EGof(Z, Ar), E0 = E0of(eg, kT);
+      const boltz = (E: number) => Math.exp(-E / kT);
+      const tunnel = (E: number) => Math.exp(-Math.sqrt(eg / E));
+      const bPeak = boltz(E0), tPeak = tunnel(E0), pPeak = bPeak * tPeak;
+      const ratio = E0 / kT;
+      const dE = (4 / Math.sqrt(3)) * Math.sqrt(E0 * kT);
+      const nExp = (3 * ratio - 2) / 3;
+      const Emax = niceUp(Math.max(3 * E0, 5 * kT));
+      const tNorm = tunnel(Emax);
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.5);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+
+      const padL = 34, padB = 28, padT = 14, padR = 12;
+      const X = (E: number) => padL + (E / Emax) * (cssW - padL - padR);
+      const Y = (y: number) => cssH - padB - (y / 1.1) * (cssH - padB - padT);
+
+      // Dải đỉnh Gamow (bề rộng nửa chiều cao).
+      ctx.fillStyle = PROD; ctx.globalAlpha = 0.1;
+      const bandL = X(Math.max(0, E0 - dE / 2)), bandR = X(Math.min(Emax, E0 + dE / 2));
+      ctx.fillRect(bandL, padT, Math.max(1, bandR - bandL), cssH - padB - padT);
+      ctx.globalAlpha = 1;
+
+      // Trục và vạch chia.
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.3;
+      ctx.beginPath(); ctx.moveTo(padL, padT); ctx.lineTo(padL, cssH - padB); ctx.lineTo(cssW - padR, cssH - padB); ctx.stroke();
+      ctx.globalAlpha = 0.55; ctx.fillStyle = fg; ctx.font = '10px system-ui,sans-serif';
+      ctx.textAlign = 'center';
+      for (let k = 1; k <= 4; k++) ctx.fillText(fmtE((Emax * k) / 4), X((Emax * k) / 4), cssH - padB + 14);
+      ctx.fillText('năng lượng E (keV)', (padL + cssW - padR) / 2, cssH - 3);
+      ctx.textAlign = 'right';
+      for (const y of [0.5, 1]) ctx.fillText(vi(y, 1), padL - 4, Y(y) + 3);
+      ctx.globalAlpha = 1;
+
+      // Vạch đứng kT và E₀.
+      ctx.setLineDash([4, 3]);
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.45;
+      ctx.beginPath(); ctx.moveTo(X(kT), padT); ctx.lineTo(X(kT), cssH - padB); ctx.stroke();
+      ctx.globalAlpha = 0.7; ctx.fillStyle = fg; ctx.textAlign = 'left';
+      ctx.fillText('kT', X(kT) + 3, cssH - padB - 4);
+      ctx.strokeStyle = PROD; ctx.globalAlpha = 0.8;
+      ctx.beginPath(); ctx.moveTo(X(E0), padT); ctx.lineTo(X(E0), cssH - padB); ctx.stroke();
+      ctx.setLineDash([]); ctx.globalAlpha = 1;
+      ctx.fillStyle = PROD; ctx.textAlign = 'left';
+      ctx.fillText(`E₀ = ${fmtE(E0)} keV`, X(E0) + 4, padT + 9);
+
+      // Ba đường, mỗi đường chuẩn hoá riêng về 1.
+      const curve = (f: (E: number) => number, color: string) => {
+        ctx.strokeStyle = color; ctx.lineWidth = 2; ctx.beginPath();
+        for (let i = 0; i <= 260; i++) {
+          const E = (Emax * i) / 260 || Emax / 26000;
+          const y = Y(Math.min(1.1, f(E)));
+          i ? ctx.lineTo(X(E), y) : ctx.moveTo(X(E), y);
+        }
+        ctx.stroke(); ctx.lineWidth = 1;
+      };
+      curve(boltz, BOLTZ);
+      curve((E) => tunnel(E) / tNorm, TUN);
+      curve((E) => (boltz(E) * tunnel(E)) / pPeak, PROD);
+
+      ctx.fillStyle = PROD;
+      ctx.beginPath(); ctx.arc(X(E0), Y(1), 5, 0, Math.PI * 2); ctx.fill();
+
+      // Chú giải.
+      ctx.font = '10px system-ui,sans-serif'; ctx.textAlign = 'left';
+      const leg: Array<[string, string]> = [
+        [BOLTZ, 'nhiệt e^(−E/kT)'],
+        [TUN, 'xuyên hầm e^(−√(E_G/E))'],
+        [PROD, 'tích → đỉnh Gamow'],
+      ];
+      leg.forEach(([c, lab], i) => {
+        const ly = padT + 11 + i * 13, lx = cssW - padR - 152;
+        ctx.strokeStyle = c; ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.moveTo(lx, ly - 3); ctx.lineTo(lx + 14, ly - 3); ctx.stroke();
+        ctx.lineWidth = 1; ctx.fillStyle = fg; ctx.globalAlpha = 0.75;
+        ctx.fillText(lab, lx + 19, ly);
+        ctx.globalAlpha = 1;
+      });
+
+      const flag = ratio < 3
+        ? ' · <b>đỉnh đã tan vào phân bố nhiệt: bề rộng và số mũ chỉ còn ước lượng thô</b>'
+        : nExp > 15
+          ? ' · <b>siêu nhạy nhiệt độ: lõi sao buộc phải đối lưu</b>'
+          : '';
+      readout.innerHTML =
+        `T = ${vi(T6, 1)} triệu K → kT = <b>${fmtE(kT)} keV</b> · E_G = ${fmtE(eg)} keV → ` +
+        `đỉnh Gamow <b>${fmtE(E0)} keV = ${fmtE(ratio)} kT</b>, bề rộng ${fmtE(dE)} keV ` +
+        `(${fmtE(Math.max(0, E0 - dE / 2))}–${fmtE(E0 + dE / 2)} keV)<br />` +
+        `Tại đỉnh: nhiệt ${sci(bPeak)} × xuyên hầm ${sci(tPeak)} = <b>${sci(pPeak)}</b> · ` +
+        `tốc độ phản ứng ∝ T<sup>${vi(nExp, 1)}</sup> (lõi nóng thêm 5% → nhanh gấp ` +
+        `${vi(Math.pow(1.05, nExp), 2)} lần)${flag}`;
+    }
+
+    root.querySelectorAll('input').forEach((el) => el.addEventListener('input', draw));
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="mat-troi-chay-bang-xuyen-ham-dinh-gamow"]').forEach(setup);
+</script>

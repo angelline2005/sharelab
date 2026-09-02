@@ -1,0 +1,91 @@
+---
+title: "Đám mây trắng bồng bềnh nặng 500 tấn — và nó đang rơi thật, 1,2 cm mỗi giây"
+seoTitle: "Vì sao mây không rơi: tốc độ rơi Stokes của giọt mây 10 micromet"
+description: "Một đám mây tích cỡ kilômét khối chứa 500 tấn nước lỏng, chia thành 120 triệu giọt mỗi mét khối. Mỗi giọt 10 micromet rơi theo định luật Stokes ở 1,2 cm/s — cần 23 giờ mới hết một cây số, nên chỉ một dòng thăng cỡ centimét mỗi giây là mây treo mãi."
+pubDate: 2026-09-02
+tags: ["vat-ly", "chat-luu", "khi-hau", "javascript"]
+translationId: "dam-may-nam-tram-tan-roi-mot-centimet-moi-giay"
+---
+
+import CloudDroplet from '../../../components/demos/CloudDroplet.astro';
+
+Bạn ngước lên, thấy một khối bông trắng đứng yên giữa trời. Nó không đứng
+yên: từng giọt nước trong đó đang rơi, đều đặn, khoảng một centimét mỗi
+giây. Và cả khối bông ấy nặng chừng 500 tấn.
+
+<CloudDroplet />
+
+## Năm trăm tấn, mà không khí chẳng nặng thêm bao nhiêu
+
+Một đám mây tích cỡ khiêm tốn choán chừng **1 km³**, tức 10⁹ mét khối. Hàm
+lượng nước lỏng điển hình trong mây tích là 0,5 gram mỗi mét khối — nhân
+lên ra 5·10⁸ gram, tức **500 tấn**, nặng hơn một chiếc Boeing 747-8 chất
+đầy tải (448 tấn).
+
+Nghịch lý tan khi bạn đặt số đó cạnh khối lượng không khí đang chứa nó. Mỗi
+mét khối không khí ở mặt biển nặng 1 225 gram; nửa gram nước lơ lửng bên
+trong chỉ thêm **0,04%**. Và nửa gram ấy không nằm thành cục: nó là **120
+triệu giọt trong mỗi mét khối** — cỡ 120 giọt mỗi centimét khối, mỗi giọt
+bán kính 10 micromet, nặng 4·10⁻⁹ gram. Câu hỏi đúng vì thế không phải "làm
+sao không khí đỡ nổi 500 tấn", mà là "một hạt bụi nước 10 micromet tụt
+xuống nhanh cỡ nào".
+
+## Cả câu trả lời nằm trong chữ r bình phương
+
+Giọt nhỏ tới mức nó không rơi theo nghĩa quen thuộc: vừa buông ra đã đạt
+tốc độ tới hạn, trọng lực cân bằng đúng lực cản. Ở cỡ này dòng chảy quanh
+giọt là dòng nhớt thuần — [số Reynolds chỉ
+0,016](/vi/posts/so-reynolds-vi-khuan-boi-trong-mat-ong), thế giới không có
+đà — nên lực cản tỉ lệ tuyến tính với tốc độ, và cân bằng lực cho công thức
+Stokes:
+
+```
+v = 2 · ρ_nước · g · r² / (9 · η_không_khí)
+```
+
+Thay ρ = 1 000 kg/m³, g = 9,81 m/s², η = 1,81·10⁻⁵ Pa·s và r = 10 µm:
+**v = 1,20 cm/s**. Từ đỉnh mây xuống [đáy mây
+phẳng](/vi/posts/vi-sao-moi-dam-may-tich-co-day-phang-cung-mot-do-cao), một
+cây số, giọt cần **23 giờ** — mà không khí trong mây chưa bao giờ đứng yên
+lâu thế. Chỉ cần dòng thăng 1,2 cm/s là giọt đứng nguyên độ cao vĩnh viễn —
+chậm hơn ngưỡng khởi động của máy đo gió cầm tay (~0,5 m/s) **hơn bốn mươi
+lần**. Kéo thanh dòng thăng lên 2 cm/s: điểm đỏ chìm xuống dưới vạch đỏ, và
+đám mây treo vô hạn định.
+
+## Gấp mười bán kính là gấp trăm tốc độ — cho tới khi không còn thế
+
+Bình phương là một hàm tàn nhẫn. Từ 1 µm lên 10 µm, tốc độ rơi nhảy từ
+0,012 cm/s lên 1,20 cm/s: **đúng 100 lần**. Giọt 1 µm cần **96 ngày** mới
+rơi hết một cây số — với nó, "rơi" là khái niệm rỗng, nó chỉ trôi theo gió.
+
+Bậc thang kế thì hụt. Từ 10 lên 100 µm, Stokes hứa thêm 100 lần nữa, tức
+1,20 m/s; đường xanh trong demo chỉ cho **70 cm/s**, có 59 lần. Chỗ gãy có
+tên: khi giọt vừa đủ to vừa đủ nhanh, không khí phía sau nó không kịp khép
+lại êm ả mà cuộn thành xoáy, và xoáy ngốn thêm năng lượng. Ngưỡng ấy là
+Re = 1, rơi vào bán kính **39 µm** — đúng vạch dọc đứt nét trong demo. Bên
+trái vạch hai đường trùng khít; bên phải, chúng rời nhau và không bao giờ
+gặp lại.
+
+## Trường hợp biên: nếu Stokes vẫn đúng tới tận hạt mưa
+
+Đặt thanh bán kính ở 1 mm — hạt mưa rào cỡ trung bình, đường kính 2 mm —
+rồi đọc đường vàng: Stokes bảo nó rơi ở **120 m/s**, tức 434 km/h, mang
+30 milijoule động năng mỗi hạt. Một cơn mưa rào như thế là trận bắn cát.
+Đường xanh nói 6,9 m/s, còn bảng đo thật của Gunn và Kinzer năm 1949 nói
+6,5 m/s. Chênh **18 lần** tốc độ, tức **344 lần** động năng: toàn bộ khoảng
+cách giữa "mưa" và "vũ khí" nằm ở chỗ lực cản đổi từ tỉ lệ với v sang tỉ lệ
+với v² — cùng phép đổi đã cho người nhảy dù một [vận tốc tới
+hạn](/vi/posts/roi-tu-do-va-van-toc-toi-han) sống sót được.
+
+Nhưng chỗ khó nhất nằm giữa hai đầu thanh trượt. Để giọt mây 10 µm thành
+hạt mưa 1 mm, thể tích phải tăng **một triệu lần**, trong khi một ô mây
+tích thường chỉ sống chừng nửa giờ. Ngưng tụ hơi lên bề mặt giọt không kham
+nổi: giọt càng to thì diện tích trên khối lượng càng nhỏ, càng lớn chậm.
+Thiên nhiên xoay bằng hai mẹo. Một: giọt to rơi nhanh hơn nên đuổi kịp và
+nuốt giọt nhỏ, càng nuốt càng nặng càng nhanh. Hai: ở tầng mây dưới 0 °C,
+tinh thể băng nằm lẫn với giọt nước quá lạnh, mà áp suất hơi bão hoà trên
+mặt băng thấp hơn trên mặt nước lỏng — tinh thể hút đúng lượng hơi giọt
+lỏng bên cạnh vừa nhả ra, lớn lên bằng cách bào mòn hàng xóm. Quá trình
+Bergeron ấy sinh ra phần lớn lượng mưa ở vĩ độ ôn đới. Đám mây trắng bồng
+bềnh không tự hoá thành mưa — nó phải để vài triệu giọt ăn thịt vài tỉ
+giọt khác đã.

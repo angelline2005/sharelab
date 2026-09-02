@@ -1,0 +1,181 @@
+---
+// Tapered-whip speed model (standard energy-conservation estimate):
+//   mu(x) = mu0 * R^(-x/L)      exponential taper, R = mu(base)/mu(tip)
+//   v(x)  = v0 * sqrt(mu0/mu(x)) = v0 * R^(x/2L)
+// The travelling loop keeps its kinetic energy while the mass it moves
+// shrinks, so v ~ mu^(-1/2). Since mu ~ d^2 at constant density, v(x) is
+// also inversely proportional to the local diameter — the drawn silhouette
+// IS the speed curve, upside down.
+// Crack when v(x) >= c = 343 m/s (dry air, 20 °C).
+// Valid only for a smooth taper (no impedance reflection) and while drag is
+// negligible: above ~700 m/s (Mach 2) the readout flags the model as void.
+// Refs: Bernstein/Hall/Trent 1958 (high-speed photography of whips);
+// Goriely & McMillen, Phys. Rev. Lett. 88, 244301 (2002).
+---
+
+<figure class="demo" data-demo="tieng-chat-cua-roi-da-va-tuong-am-thanh">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Tốc độ vẩy tay ở gốc roi (m/s) <output data-out="v"></output>
+      <input type="range" data-in="v" min="3" max="35" step="0.05" value="12" /></label>
+    <label>Tỉ số thon (khối lượng gốc / ngọn) <output data-out="r"></output>
+      <input type="range" data-in="r" min="1" max="4" step="0.05" value="3" /></label>
+    <label>Chiều dài roi (m) <output data-out="l"></output>
+      <input type="range" data-in="l" min="1" max="6" step="0.1" value="2" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Trên: bóng chiếc roi, độ dày vẽ đúng tỉ lệ với căn bậc hai của khối lượng
+    trên mỗi mét. Dưới: tốc độ của khúc quặt khi nó chạy dọc chiều dài roi.
+    Khúc quặt giữ nguyên động năng nhưng khối lượng nó phải kéo cứ mỏng dần,
+    nên tốc độ tăng theo hàm mũ. Chỗ đường cong cắt vạch 343 m/s là chỗ tiếng
+    chát ra đời. Kéo tỉ số thon xuống thấp: đường cong nằm bẹp, roi câm.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const CURVE = '#2563eb', MARK = '#dc2626', SONIC = '#f59e0b';
+  const C_AIR = 343;
+
+  const vAt = (x: number, v0: number, R: number, L: number) =>
+    v0 * Math.pow(R, x / (2 * L));
+
+  const vi = (n: number, d = 1) => n.toFixed(d).replace('.', ',');
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (k: string) => root.querySelector(`[data-in="${k}"]`) as HTMLInputElement;
+    const output = (k: string) => root.querySelector(`[data-out="${k}"]`) as HTMLOutputElement;
+
+    function draw() {
+      const v0 = Number(input('v').value);
+      const R = Math.pow(10, Number(input('r').value));
+      const L = Number(input('l').value);
+
+      const Rround = R >= 1000 ? Math.round(R / 10) * 10 : Math.round(R);
+      output('v').textContent = vi(v0);
+      output('r').textContent = `${Rround.toLocaleString('vi-VN')}:1`;
+      output('l').textContent = vi(L);
+
+      const vTip = vAt(L, v0, R, L);
+      // Where the curve crosses the sound barrier (as a fraction of length).
+      const frac = (2 * Math.log(C_AIR / v0)) / Math.log(R);
+      const cracks = vTip >= C_AIR && frac >= 0 && frac <= 1;
+      const xCrack = frac * L;
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.62);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+      ctx.font = '10px system-ui,sans-serif';
+
+      const padL = 46, padR = 12, padT = 10, padB = 26;
+      const whipH = Math.round(cssH * 0.26);
+      const plotT = padT + whipH + 16;
+      const X = (xx: number) => padL + (xx / L) * (cssW - padL - padR);
+
+      // ---- Top panel: the whip silhouette, half-thickness ∝ sqrt(mu) ∝ 1/v.
+      const axisY = padT + whipH / 2;
+      const maxHalf = whipH / 2 - 2;
+      ctx.fillStyle = fg; ctx.globalAlpha = 0.45;
+      ctx.beginPath();
+      ctx.moveTo(X(0), axisY - maxHalf);
+      for (let i = 0; i <= 120; i++) {
+        const xx = (L * i) / 120;
+        ctx.lineTo(X(xx), axisY - Math.max(0.6, maxHalf * Math.pow(R, -xx / (2 * L))));
+      }
+      for (let i = 120; i >= 0; i--) {
+        const xx = (L * i) / 120;
+        ctx.lineTo(X(xx), axisY + Math.max(0.6, maxHalf * Math.pow(R, -xx / (2 * L))));
+      }
+      ctx.closePath(); ctx.fill();
+      ctx.globalAlpha = 0.6; ctx.textAlign = 'left';
+      ctx.fillText('gốc (tay cầm)', X(0), padT + whipH + 10);
+      ctx.textAlign = 'right';
+      ctx.fillText('ngọn', X(L), padT + whipH + 10);
+      ctx.globalAlpha = 1;
+
+      // ---- Bottom panel: speed vs position.
+      let yMax = Math.max(450, vTip * 1.15);
+      const stepY = yMax <= 600 ? 100 : yMax <= 1600 ? 300 : 1000;
+      yMax = Math.ceil(yMax / stepY) * stepY;
+      const Y = (v: number) => cssH - padB - (v / yMax) * (cssH - padB - plotT);
+
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.3;
+      ctx.beginPath();
+      ctx.moveTo(padL, plotT); ctx.lineTo(padL, cssH - padB); ctx.lineTo(cssW - padR, cssH - padB);
+      ctx.stroke();
+      ctx.globalAlpha = 0.55; ctx.fillStyle = fg;
+      ctx.textAlign = 'center';
+      const stepX = L <= 3 ? 0.5 : 1;
+      for (let xx = 0; xx <= L + 1e-9; xx += stepX) ctx.fillText(`${vi(xx)} m`, X(xx), cssH - padB + 14);
+      ctx.textAlign = 'right';
+      for (let vv = stepY; vv <= yMax + 1e-9; vv += stepY) ctx.fillText(`${vv}`, padL - 4, Y(vv) + 3);
+      ctx.save(); ctx.translate(11, plotT + (cssH - padB - plotT) / 2); ctx.rotate(-Math.PI / 2);
+      ctx.textAlign = 'center'; ctx.fillText('m/s', 0, 0); ctx.restore();
+      ctx.globalAlpha = 1;
+
+      // Sound barrier.
+      ctx.strokeStyle = SONIC; ctx.setLineDash([5, 4]);
+      ctx.beginPath(); ctx.moveTo(padL, Y(C_AIR)); ctx.lineTo(cssW - padR, Y(C_AIR)); ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillStyle = SONIC; ctx.textAlign = 'left';
+      ctx.fillText('343 m/s — tường âm thanh', padL + 6, Y(C_AIR) - 5);
+
+      // Speed curve.
+      ctx.strokeStyle = CURVE; ctx.lineWidth = 2; ctx.beginPath();
+      for (let i = 0; i <= 240; i++) {
+        const xx = (L * i) / 240;
+        const y = Y(vAt(xx, v0, R, L));
+        i ? ctx.lineTo(X(xx), y) : ctx.moveTo(X(xx), y);
+      }
+      ctx.stroke(); ctx.lineWidth = 1;
+
+      if (cracks) {
+        ctx.strokeStyle = MARK; ctx.globalAlpha = 0.5;
+        ctx.beginPath(); ctx.moveTo(X(xCrack), Y(C_AIR)); ctx.lineTo(X(xCrack), padT); ctx.stroke();
+        ctx.globalAlpha = 1;
+        ctx.fillStyle = MARK;
+        ctx.beginPath(); ctx.arc(X(xCrack), Y(C_AIR), 6, 0, Math.PI * 2); ctx.fill();
+        ctx.textAlign = X(xCrack) > cssW * 0.7 ? 'right' : 'left';
+        ctx.fillText('chỗ nổ', X(xCrack) + (X(xCrack) > cssW * 0.7 ? -9 : 9), Y(C_AIR) + 14);
+      }
+
+      const mach = vTip / C_AIR;
+      let note: string;
+      if (!cracks) {
+        note = ` · <b>chưa nổ</b> — đầu roi mới đạt Mach ${vi(mach, 2)}`;
+      } else if (vTip > 700) {
+        note = ` · nổ tại <b>${vi(xCrack, 2)} m</b> (${(100 * frac).toFixed(0)}% chiều dài)` +
+          ' · <b>ngoài vùng hiệu lực</b>: trên Mach 2 mô hình bảo toàn năng lượng hết đúng';
+      } else {
+        note = ` · <b>nổ tại ${vi(xCrack, 2)} m</b> (${(100 * frac).toFixed(0)}% chiều dài)`;
+      }
+
+      readout.innerHTML =
+        `Vẩy tay ${vi(v0)} m/s · thon ${Rround.toLocaleString('vi-VN')}:1 → đầu roi ` +
+        `<b>${vi(vTip)} m/s</b> = Mach ${vi(mach, 2)}${note}`;
+    }
+
+    root.querySelectorAll('input').forEach((el) => el.addEventListener('input', draw));
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="tieng-chat-cua-roi-da-va-tuong-am-thanh"]').forEach(setup);
+</script>

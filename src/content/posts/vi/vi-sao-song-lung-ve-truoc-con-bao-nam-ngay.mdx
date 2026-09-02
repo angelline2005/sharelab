@@ -1,0 +1,100 @@
+---
+title: "Sóng 15 giây về trước sóng 10 giây gần năm ngày — dù cùng ra đi từ một cơn bão"
+seoTitle: "Tán sắc sóng biển: vì sao sóng lừng dài về trước, tính vận tốc nhóm"
+description: "Trên biển sâu, sóng dài chạy nhanh hơn sóng ngắn: vận tốc nhóm bằng g·T/4π, tức 0,78 mét mỗi giây cho mỗi giây chu kỳ. Từ một cơn bão cách 10 000 km, sóng 15 giây tới sau 9,9 ngày còn sóng 10 giây phải 14,8 ngày — biển là một máy phân tích phổ dài mười nghìn cây số."
+pubDate: 2026-09-02
+tags: ["vat-ly", "song", "chat-luu", "javascript"]
+translationId: "vi-sao-song-lung-ve-truoc-con-bao-nam-ngay"
+---
+
+import SwellDispersion from '../../../components/demos/SwellDispersion.astro';
+
+Trời quang, không một ngọn gió, vậy mà mặt biển đổi tính: những con sóng
+dài, trơn, tròn đầu, dội vào bờ theo một nhịp chậm rãi đến mức đếm được.
+Cơn bão đẻ ra chúng ở cách đây mười nghìn cây số và đã tan từ lâu. Ai tới
+trước, ai tới sau, biển đã sắp xếp xong dọc đường:
+
+<SwellDispersion />
+
+## Sóng dài chạy nhanh hơn, đúng theo tỉ lệ chu kỳ
+
+Sóng ngoài khơi được trọng lực kéo về chỗ cân bằng, và sóng càng dài thì
+càng nhiều nước phải lắc: nó dựng lên sập xuống chậm hơn, nhưng đi xa hơn
+trong mỗi nhịp. Tốc độ vì thế tỉ lệ thẳng với chu kỳ, không hằng số nào
+phải tra bảng ngoài g:
+
+```
+λ      = g·T² / (2π)
+c_pha  = g·T  / (2π)
+c_nhóm = g·T  / (4π)  =  0,78 m/s cho mỗi giây chu kỳ
+```
+
+Năng lượng — tức là cái thực sự "tới nơi" — đi theo **vận tốc nhóm**. Sóng
+chu kỳ 15 s: bước sóng **351 m**, nhóm chạy **11,7 m/s tức 42 km/h**. Sóng
+10 s: bước sóng 156 m, nhóm chỉ 7,81 m/s (28 km/h). Nước sâu là môi trường
+**tán sắc** — hệt như lăng kính tách ánh sáng, có điều biển tách theo chu
+kỳ và tách trên quãng đường hàng nghìn cây số.
+
+## Mười nghìn cây số biến cơn bão thành một cái thang
+
+Gió bão quật hỗn loạn nên vùng bão phát ra đủ thứ chu kỳ từ 4 s tới 20 s
+cùng một lúc, và cái nồi lẩu ấy chỉ giữ hình dạng được vài trăm cây số
+đầu. Sau đó là phép chia đơn giản nhất: từ 10 000 km, sóng 15 s
+về tới sau **9,9 ngày**; sóng 10 s cùng cơn bão ấy phải mất **14,8
+ngày**. Chênh **4,9 ngày**. Tại trạm phao, chuyện đó hiện ra thành tín
+hiệu rất dễ nhận: sóng lừng mở màn bằng chu kỳ dài nhất, rồi tụt dần đều
+— **khoảng 1 giây mỗi ngày** cho một cơn bão xa chừng ấy.
+
+Đọc ngược lại còn hay hơn: đo hai thời điểm tới là ra khoảng cách.
+
+```
+D = g·(t₂ − t₁) / [ 4π·(1/T₂ − 1/T₁) ]
+```
+
+Thay 4,94 ngày cho cặp 15 s và 10 s, nó trả về đúng 10 000 km — một cái
+phao neo giữa biển, ghi chu kỳ tụt nhanh hay chậm, là đủ để chỉ tay về
+phía cơn bão đã tắt.
+
+## Bão còn cách nghìn cây, biển đã báo trước một ngày
+
+Một cơn bão trên Biển Đông cách bờ 1 000 km: sóng lừng 15 s của nó chạm
+bờ sau **23,7 giờ**, còn bản thân cơn bão bò với 20 km/h nên cần 50 giờ.
+Sóng về trước bão **hơn một ngày** — vì đoàn sóng đi nhanh gấp đôi kẻ
+sinh ra nó.
+
+Ngư dân gọi đó là "sóng lừng báo bão", và mô tả của họ chính xác đến mức
+kỹ thuật: biển lặng gió nhưng dềnh lên chậm rãi, sóng dài và đều, không
+có ngọn bạc đầu. Lời cảnh báo ấy đến trước cả lúc [gió đủ mạnh để bốc mái
+nhà](/vi/posts/bao-cap-12-de-len-cua-kinh-bao-nhieu) — nhưng nó chỉ hiệu
+lực khi bão đi chậm hơn sóng; một cơn bão phóng 45 km/h sẽ tự áp sát cùng
+lúc với sóng lừng của chính nó, và cảnh báo mất trắng.
+
+## Từng con sóng chạy nhanh gấp đôi cả đoàn
+
+Thừa số 2 giữa hai công thức không phải chi tiết kế toán. Với T = 15 s,
+một **đỉnh sóng riêng lẻ** chạy 23,4 m/s (84 km/h) trong khi **cả nhóm**
+chỉ nhích 11,7 m/s: các con sóng liên tục chạy xuyên qua chính đoàn của
+mình. Mỗi đỉnh hiện ra ở đuôi nhóm, lớn dần khi vào giữa, rồi teo đi và
+biến mất ở đầu nhóm — với một đoàn 20 con sóng dài 7,0 km, đỉnh ấy sống
+đúng **10 phút**. Bạn nhìn thấy sóng đi qua, nhưng thứ thật sự vượt đại
+dương là cái bao hình chậm hơn một nửa.
+
+## Trường hợp biên: biển nông kéo cả đoàn về cùng một chuyến
+
+Chuyển động của nước trong một con sóng tắt theo hàm mũ xuống dưới: sâu
+bằng nửa bước sóng thì chỉ còn **4,3%** — cùng cái hàm mũ khiến [lặn 60
+cm đã thoát gần hết lực cản tạo
+sóng](/vi/posts/boi-ngam-vi-sao-nhanh-hon-boi-noi). Vậy nên "nước sâu"
+không phải khái niệm tuyệt đối mà so với bước sóng: với T = 15 s, ngưỡng
+là **176 m**.
+
+Nông hơn thế, sóng bắt đầu chạm đáy, và ở nước thật nông công thức đổi
+hẳn dạng: c = √(g·h) — **chu kỳ biến mất khỏi biểu thức**. Mọi sóng đi
+cùng một tốc độ, sự tán sắc tắt ngấm. Kéo độ sâu trong demo xuống 5 m mà
+xem: khoảng cách giữa sóng 20 s và sóng 10 s co từ 7,4 ngày còn 1,4 ngày.
+
+Đó chính là chế độ của [sóng thần](/vi/posts/toc-do-song-than-va-can-bac-hai-cua-do-sau):
+bước sóng 238 km khiến cả Thái Bình Dương sâu 4 000 m vẫn là "nước nông"
+với nó. Sóng thần vì thế đi 713 km/h và **không hề tách đoàn** — nó tới
+nơi nguyên vẹn thành một cú, đúng giờ đã tính, không có màn dạo đầu êm ái
+nào báo trước.

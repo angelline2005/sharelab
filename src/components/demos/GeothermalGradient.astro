@@ -1,0 +1,148 @@
+---
+// Fourier conduction in the crust: dT/dz = q/k, T(z) = T0 + (q/k)·z.
+// q = surface heat flow (Pollack et al. 1993: global mean 87 mW/m²,
+// continents 65, oceans 101, mid-ocean ridges > 250); k = thermal
+// conductivity of crustal rock (1,5–6 W/m·K; granite ~2,5, quartzite ~6).
+// Valid only inside the conductive lithosphere (0–~100 km); below it the
+// mantle convects and the gradient collapses to the ~0,3 °C/km adiabat.
+// Global output P = q · 4πR², R = 6 371 km → A = 5,10·10^14 m².
+---
+
+<figure class="demo" data-demo="gradient-dia-nhiet-va-tam-muoi-bay-miliwatt-duoi-chan-ban">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Dòng nhiệt q (mW/m²) <output data-out="q"></output>
+      <input type="range" data-in="q" min="30" max="250" step="1" value="65" /></label>
+    <label>Độ dẫn nhiệt của đá k (W/m·K) <output data-out="k"></output>
+      <input type="range" data-in="k" min="1.5" max="6" step="0.1" value="2.5" /></label>
+    <label>Nhiệt độ mặt đất (°C) <output data-out="t"></output>
+      <input type="range" data-in="t" min="0" max="35" step="1" value="25" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Cột đá thẳng đứng từ mặt đất xuống 12,5 km, tô màu theo nhiệt độ mà
+    định luật Fourier dự đoán; đường xanh bên phải là chính T(z) ấy. Gradient
+    chỉ là thương của hai con số: dòng nhiệt rò lên chia cho độ dẫn nhiệt của
+    đá. Vạch đỏ là độ sâu nơi đá chạm 100 °C; hai chấm cam là mỏ vàng Mponeng
+    (3,9 km) và giếng khoan Kola (12,3 km).
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const CURVE = '#2563eb', MARK = '#dc2626', LM = '#f59e0b';
+  const ZMAX = 12500, TMAX = 400, AREA = 4 * Math.PI * 6371e3 * 6371e3;
+  const MARKS: Array<[number, string]> = [[3900, 'Mponeng 3,9 km'], [12262, 'Kola 12,3 km']];
+  const vi = (x: number, d = 1) => x.toFixed(d).replace('.', ',');
+
+  // Blue → amber → red across 0…TMAX °C, staying inside the site palette.
+  function shade(T: number) {
+    const stops = [[37, 99, 235], [245, 158, 11], [220, 38, 38]];
+    const u = Math.max(0, Math.min(1, T / TMAX)) * 2;
+    const i = u < 1 ? 0 : 1, f = u - i;
+    const a = stops[i], b = stops[i + 1];
+    return `rgb(${Math.round(a[0] + (b[0] - a[0]) * f)},${Math.round(a[1] + (b[1] - a[1]) * f)},${Math.round(a[2] + (b[2] - a[2]) * f)})`;
+  }
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (s: string) => root.querySelector(`[data-in="${s}"]`) as HTMLInputElement;
+    const output = (s: string) => root.querySelector(`[data-out="${s}"]`) as HTMLOutputElement;
+
+    function draw() {
+      const q = Number(input('q').value), k = Number(input('k').value), T0 = Number(input('t').value);
+      output('q').textContent = String(q);
+      output('k').textContent = vi(k);
+      output('t').textContent = String(T0);
+
+      const gPerM = q / 1000 / k;          // °C per metre
+      const gPerKm = gPerM * 1000;
+      const T = (z: number) => T0 + gPerM * z;
+      const zBoil = (100 - T0) / gPerM;    // depth of the 100 °C isotherm
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.6);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+
+      const padL = 40, colW = 30, gap = 14, padT = 24, padB = 14, padR = 12;
+      const plotL = padL + colW + gap;
+      const Y = (z: number) => padT + (z / ZMAX) * (cssH - padT - padB);
+      const X = (t: number) => plotL + (t / TMAX) * (cssW - plotL - padR);
+
+      // Rock column, recoloured by the current profile.
+      const bands = 70;
+      for (let i = 0; i < bands; i++) {
+        const z = (ZMAX * i) / bands;
+        ctx.fillStyle = shade(T(z + ZMAX / bands / 2));
+        ctx.fillRect(padL, Y(z), colW, (cssH - padT - padB) / bands + 1);
+      }
+
+      // Axes: depth down the left, temperature along the top.
+      ctx.font = '10px system-ui,sans-serif'; ctx.fillStyle = fg; ctx.strokeStyle = fg;
+      ctx.globalAlpha = 0.3;
+      ctx.beginPath(); ctx.moveTo(plotL, padT); ctx.lineTo(plotL, cssH - padB); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(plotL, padT); ctx.lineTo(cssW - padR, padT); ctx.stroke();
+      ctx.globalAlpha = 0.55; ctx.textAlign = 'right';
+      for (const km of [0, 2, 4, 6, 8, 10, 12]) ctx.fillText(`${km} km`, padL - 4, Y(km * 1000) + 3);
+      ctx.textAlign = 'center';
+      for (const t of [0, 100, 200, 300, 400]) ctx.fillText(`${t} °C`, X(t), padT - 8);
+      ctx.globalAlpha = 1;
+
+      // T(z), clipped where it leaves the 400 °C frame.
+      const zEnd = Math.min(ZMAX, (TMAX - T0) / gPerM);
+      ctx.strokeStyle = CURVE; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.moveTo(X(T0), Y(0)); ctx.lineTo(X(T(zEnd)), Y(zEnd)); ctx.stroke();
+      ctx.lineWidth = 1;
+
+      // The 100 °C isotherm.
+      if (zBoil > 0 && zBoil <= ZMAX) {
+        ctx.strokeStyle = MARK; ctx.setLineDash([4, 3]);
+        ctx.beginPath(); ctx.moveTo(padL, Y(zBoil)); ctx.lineTo(cssW - padR, Y(zBoil)); ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.fillStyle = MARK; ctx.textAlign = 'left';
+        ctx.fillText(`100 °C ở ${Math.round(zBoil).toLocaleString('vi-VN')} m`, plotL + 6, Y(zBoil) - 5);
+      }
+
+      // Mine and borehole.
+      MARKS.forEach(([z, lab]) => {
+        const inFrame = T(z) <= TMAX;
+        const px = inFrame ? X(T(z)) : cssW - padR;
+        ctx.fillStyle = LM;
+        ctx.beginPath(); ctx.arc(px, Y(z), 4.5, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = fg; ctx.globalAlpha = 0.75;
+        ctx.textAlign = px > cssW * 0.62 ? 'right' : 'left';
+        ctx.fillText(`${lab} · ${vi(T(z), 0)} °C`, px + (px > cssW * 0.62 ? -8 : 8), Y(z) + 3);
+        ctx.globalAlpha = 1;
+      });
+
+      const regime = gPerKm >= 40 ? ' · <b>ngưỡng dị thường: khoan là ra điện địa nhiệt</b>'
+        : gPerKm <= 12 ? ' · nền lục địa cổ, mát bất thường' : '';
+      readout.innerHTML =
+        `q = ${q} mW/m² · k = ${vi(k)} W/m·K → <b>${vi(gPerKm)} °C/km</b>` +
+        ` · ở 3 900 m: <b>${vi(T(3900), 0)} °C</b>` +
+        ` · mốc 100 °C ở ${zBoil > ZMAX ? 'sâu hơn 12,5 km' : `${Math.round(zBoil).toLocaleString('vi-VN')} m`}` +
+        ` · cả hành tinh ở mức này: ${vi(q / 1000 * AREA / 1e12)} TW${regime}`;
+    }
+
+    root.querySelectorAll('input').forEach((el) => el.addEventListener('input', draw));
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="gradient-dia-nhiet-va-tam-muoi-bay-miliwatt-duoi-chan-ban"]').forEach(setup);
+</script>

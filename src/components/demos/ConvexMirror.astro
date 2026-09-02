@@ -1,0 +1,216 @@
+---
+// Gương cầu lồi ô tô, xấp xỉ cận trục (paraxial):
+//   tầm nhìn  FOV = w·(1/L + 2/R)   (rad)   — gương phẳng: w/L
+//   độ thu nhỏ  m = (R/2)/(u + R/2) ; ảnh ảo nằm sau gương b = m·u
+//   khoảng cách biểu kiến  u_app = (L + m·u)/m − L = u·(1 + 2L/R)
+// L = 0,6 m (mắt lái xe tới gương cạnh cửa) cố định. Nguồn: quang hình gương
+// cầu (Hecht, Optics, ch. 5) + FMVSS 111 §S5.4.2 (R ≥ 889 mm), ECE R46 (Class III
+// R ≥ 1200 mm). Xấp xỉ cận trục: đối chiếu với phép phản xạ chính xác trên toàn
+// dải thanh trượt (R ≥ 0,4 m, w ≤ 22 cm), sai số góc nhìn dưới 0,5%.
+---
+
+<figure class="demo" data-demo="guong-cau-loi-doi-do-meo-lay-goc-nhin">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Bán kính cong gương R (m) <output data-out="r"></output>
+      <input type="range" data-in="r" min="0.4" max="6" step="0.1" value="1" /></label>
+    <label>Xe phía sau cách gương u (m) <output data-out="u"></output>
+      <input type="range" data-in="u" min="2" max="30" step="0.5" value="10" /></label>
+    <label>Bề rộng mặt gương w (cm) <output data-out="w"></output>
+      <input type="range" data-in="w" min="6" max="22" step="1" value="15" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Trái: vùng nhìn thấy trải phẳng, mắt cách gương 0,6 m — nét liền là gương
+    lồi, nét đứt là gương phẳng cùng bề rộng. Phải: kích thước góc của một
+    chiếc xe cao 1,5 m theo khoảng cách thật, trong gương lồi (xanh) và gương
+    phẳng (nét đứt). Kéo R về 0,4 m để thấy góc mở ra và chiếc xe teo lại cùng
+    một lúc — đó là cùng một hệ số.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const L = 0.6, CARH = 1.5, DEG = 180 / Math.PI;
+  const CURVE = '#2563eb', MARK = '#dc2626';
+
+  const fovConvex = (w: number, R: number) => w * (1 / L + 2 / R);
+  const fovPlane = (w: number) => w / L;
+  const mag = (R: number, u: number) => (R / 2) / (u + R / 2);
+  const uApp = (R: number, u: number) => u * (1 + 2 * L / R);
+  const angConvex = (R: number, u: number) => {
+    const m = mag(R, u);
+    return (m * CARH) / (L + m * u);
+  };
+  const angPlane = (u: number) => CARH / (L + u);
+  const vn = (x: number, d: number) => x.toFixed(d).replace('.', ',');
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (k: string) => root.querySelector(`[data-in="${k}"]`) as HTMLInputElement;
+    const output = (k: string) => root.querySelector(`[data-out="${k}"]`) as HTMLOutputElement;
+
+    function draw() {
+      const R = Number(input('r').value);
+      const u = Number(input('u').value);
+      const wcm = Number(input('w').value), w = wcm / 100;
+      output('r').textContent = vn(R, 1);
+      output('u').textContent = vn(u, 1);
+      output('w').textContent = String(wcm);
+
+      const fc = fovConvex(w, R) * DEG, fp = fovPlane(w) * DEG;
+      const gain = 1 + (2 * L) / R;
+      const inv = 1 + (2 * u) / R;
+      const ua = uApp(R, u);
+      const shrink = (L + ua) / (L + u);
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32;
+      const stack = cssW < 430;
+      const cssH = Math.round(stack ? cssW * 0.94 : cssW * 0.46);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+      ctx.font = '10px system-ui,sans-serif';
+
+      const Aw = stack ? cssW : cssW * 0.44;
+      const Ah = stack ? cssH * 0.5 : cssH;
+      const Bx = stack ? 0 : cssW * 0.48;
+      const By = stack ? cssH * 0.5 : 0;
+      const Bw = stack ? cssW : cssW * 0.52;
+      const Bh = stack ? cssH * 0.5 : cssH;
+
+      // ---- Panel A: hình quạt tầm nhìn (nhìn từ trên xuống, đã trải phẳng).
+      const cx = 34, cy = Ah / 2 + 4;
+      const Ra = Math.min(Aw - 80, (Ah / 2 - 24) / 0.72);
+      const half = fovConvex(w, R) / 2, halfP = fovPlane(w) / 2;
+
+      ctx.globalAlpha = 0.55; ctx.fillStyle = fg; ctx.textAlign = 'left';
+      ctx.fillText('vùng nhìn thấy phía sau', 2, 11);
+      ctx.globalAlpha = 1;
+
+      ctx.fillStyle = CURVE; ctx.globalAlpha = 0.15;
+      ctx.beginPath(); ctx.moveTo(cx, cy); ctx.arc(cx, cy, Ra, -half, half); ctx.closePath(); ctx.fill();
+      ctx.globalAlpha = 1;
+      ctx.strokeStyle = CURVE; ctx.lineWidth = 2;
+      for (const s of [-1, 1]) {
+        ctx.beginPath(); ctx.moveTo(cx, cy);
+        ctx.lineTo(cx + Ra * Math.cos(s * half), cy + Ra * Math.sin(s * half)); ctx.stroke();
+      }
+      ctx.lineWidth = 1;
+
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.8; ctx.setLineDash([5, 4]);
+      for (const s of [-1, 1]) {
+        ctx.beginPath(); ctx.moveTo(cx, cy);
+        ctx.lineTo(cx + Ra * Math.cos(s * halfP), cy + Ra * Math.sin(s * halfP)); ctx.stroke();
+      }
+      ctx.setLineDash([]);
+
+      // Thước góc có vạch chia.
+      const Rt = Ra + 10;
+      ctx.globalAlpha = 0.3;
+      ctx.beginPath(); ctx.arc(cx, cy, Rt, -45 / DEG, 45 / DEG); ctx.stroke();
+      ctx.globalAlpha = 0.6; ctx.fillStyle = fg;
+      ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+      for (const d of [-45, -30, -15, 0, 15, 30, 45]) {
+        const a = d / DEG;
+        ctx.beginPath();
+        ctx.moveTo(cx + Rt * Math.cos(a), cy + Rt * Math.sin(a));
+        ctx.lineTo(cx + (Rt + 4) * Math.cos(a), cy + (Rt + 4) * Math.sin(a));
+        ctx.stroke();
+        ctx.fillText(`${Math.abs(d)}°`, cx + (Rt + 7) * Math.cos(a), cy + (Rt + 7) * Math.sin(a));
+      }
+      ctx.textBaseline = 'alphabetic'; ctx.globalAlpha = 1;
+
+      // Mặt gương (độ phồng tỉ lệ 1/R) và mắt người lái.
+      const sag = Math.max(1, Math.min(11, (10 * 0.4) / R));
+      ctx.strokeStyle = CURVE; ctx.lineWidth = 2.5;
+      ctx.beginPath(); ctx.moveTo(cx, cy - 14);
+      ctx.quadraticCurveTo(cx - 2 * sag, cy, cx, cy + 14); ctx.stroke();
+      ctx.lineWidth = 1;
+      ctx.fillStyle = MARK;
+      ctx.beginPath(); ctx.arc(cx - 20, cy, 3.5, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = fg; ctx.globalAlpha = 0.6; ctx.textAlign = 'center';
+      ctx.fillText('mắt', cx - 20, cy - 9);
+      ctx.fillText('gương', cx, cy + 26);
+      ctx.globalAlpha = 1;
+
+      // ---- Panel B: kích thước góc của chiếc xe theo khoảng cách thật.
+      const padL = 40, padB = 24, padT = 22, padR = 12;
+      const uMax = 30, yMax = 35;
+      const X = (uu: number) => Bx + padL + (uu / uMax) * (Bw - padL - padR);
+      const Y = (dg: number) => By + Bh - padB - (dg / yMax) * (Bh - padB - padT);
+
+      ctx.globalAlpha = 0.55; ctx.fillStyle = fg; ctx.textAlign = 'left';
+      ctx.fillText('xe cao 1,5 m trông to bao nhiêu độ', Bx + 2, By + 11);
+      ctx.globalAlpha = 1;
+
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.3;
+      ctx.beginPath();
+      ctx.moveTo(Bx + padL, By + padT); ctx.lineTo(Bx + padL, By + Bh - padB);
+      ctx.lineTo(Bx + Bw - padR, By + Bh - padB); ctx.stroke();
+      ctx.globalAlpha = 0.55; ctx.fillStyle = fg;
+      ctx.textAlign = 'center';
+      for (const k of [10, 20, 30]) ctx.fillText(`${k} m`, X(k), By + Bh - padB + 14);
+      ctx.textAlign = 'right';
+      for (const k of [10, 20, 30]) ctx.fillText(`${k}°`, Bx + padL - 4, Y(k) + 3);
+      ctx.globalAlpha = 1;
+
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.8; ctx.setLineDash([5, 4]); ctx.beginPath();
+      for (let i = 0; i <= 160; i++) {
+        const uu = 2 + (28 * i) / 160;
+        i ? ctx.lineTo(X(uu), Y(angPlane(uu) * DEG)) : ctx.moveTo(X(uu), Y(angPlane(uu) * DEG));
+      }
+      ctx.stroke(); ctx.setLineDash([]); ctx.globalAlpha = 1;
+
+      ctx.strokeStyle = CURVE; ctx.lineWidth = 2; ctx.beginPath();
+      for (let i = 0; i <= 160; i++) {
+        const uu = 2 + (28 * i) / 160;
+        i ? ctx.lineTo(X(uu), Y(angConvex(R, uu) * DEG)) : ctx.moveTo(X(uu), Y(angConvex(R, uu) * DEG));
+      }
+      ctx.stroke(); ctx.lineWidth = 1;
+
+      ctx.globalAlpha = 0.6; ctx.fillStyle = fg; ctx.textAlign = 'left';
+      ctx.fillText('gương phẳng', X(11), Y(angPlane(11) * DEG) - 6);
+      ctx.fillStyle = CURVE; ctx.globalAlpha = 0.95;
+      ctx.fillText('gương lồi', X(11), Y(angConvex(R, 11) * DEG) + 13);
+      ctx.globalAlpha = 1;
+
+      ctx.strokeStyle = MARK; ctx.globalAlpha = 0.35;
+      ctx.beginPath(); ctx.moveTo(X(u), By + padT); ctx.lineTo(X(u), By + Bh - padB); ctx.stroke();
+      ctx.globalAlpha = 1;
+      ctx.fillStyle = MARK;
+      ctx.beginPath(); ctx.arc(X(u), Y(angConvex(R, u) * DEG), 5, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.arc(X(u), Y(angPlane(u) * DEG), 3.5, 0, Math.PI * 2); ctx.fill();
+
+      const invTxt = inv >= 10 ? vn(inv, 0) : vn(inv, 1);
+      const zone = R < 0.889
+        ? ' · <b>cong hơn mức tối thiểu 889 mm mà FMVSS 111 cho phép</b>'
+        : R < 1.2 ? ' · hợp lệ ở Mỹ, chưa đạt mức 1 200 mm của ECE R46' : ' · hợp lệ cả ECE R46';
+      readout.innerHTML =
+        `R = ${vn(R, 1)} m · tầm nhìn <b>${vn(fc, 1)}°</b> so với ${vn(fp, 1)}° của gương phẳng cùng cỡ` +
+        ` — rộng gấp <b>${vn(gain, 2)} lần</b>${zone}<br />` +
+        `Xe cách ${vn(u, 1)} m: ảnh nhỏ đi ${invTxt} lần, trông như đang cách <b>${vn(ua, 1)} m</b>` +
+        ` (kích thước góc ${vn(angConvex(R, u) * DEG, 2)}° thay vì ${vn(angPlane(u) * DEG, 2)}° — nhỏ ${vn(shrink, 2)} lần)`;
+    }
+
+    root.querySelectorAll('input').forEach((el) => el.addEventListener('input', draw));
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="guong-cau-loi-doi-do-meo-lay-goc-nhin"]').forEach(setup);
+</script>

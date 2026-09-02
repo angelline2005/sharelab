@@ -1,0 +1,159 @@
+---
+// Quy luật I²t của dây chảy (pre-arcing / melting integral, Meyer):
+//   I²·t = K²·A²   ⇒   t = (K·A / I)²
+// A: tiết diện dây chảy (mm²); K = √(δ·(c·ΔT + L_f)/ρ̄) (A·s^½/mm²).
+// K (Wright & Newbery, Electric Fuses; khớp với suy ra từ hằng số vật liệu
+// trong 4%): chì–thiếc 45, bạc 283, đồng 339.
+// Chỉ đúng ở chế độ ĐOẠN NHIỆT: t nhỏ hơn hẳn hằng số thời gian nhiệt của
+// dây chảy (τ = L²δc/(kπ²) ≈ 0,26 s cho dải bạc dài 20 mm). Vùng t > 0,1 s
+// được tô mờ vì công thức không còn đúng ở đó.
+---
+
+<figure class="demo" data-demo="cau-chi-va-quy-luat-i-binh-phuong-t">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Dòng sự cố (A) <output data-out="i"></output>
+      <input type="range" data-in="i" min="699" max="3301" step="1" value="2000" /></label>
+    <label>Tiết diện dây chảy (mm²) <output data-out="a"></output>
+      <input type="range" data-in="a" min="0.004" max="0.2" step="0.0002" value="0.0274" /></label>
+    <label>Vật liệu dây chảy <output data-out="m"></output>
+      <input type="range" data-in="m" min="0" max="2" step="1" value="1" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Đường thẳng dốc xuống là thời gian đứt của dây chảy trên trục log–log:
+    dòng gấp 10 thì thời gian đứt ngắn đi 100 lần. Vạch cam là nửa chu kỳ
+    điện lưới 50 Hz — nằm dưới nó nghĩa là cầu chì cắt xong trước khi dòng
+    ngắn mạch kịp lên tới đỉnh. Dải mờ phía trên là vùng quá tải chậm: nhiệt
+    kịp thoát ra hai nắp đồng, giả thiết đoạn nhiệt sụp đổ và công thức nói
+    dối — ở đó cầu chì thường không đứt chút nào.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const CURVE = '#2563eb', MARK = '#dc2626', LINE = '#f59e0b';
+  const MATS: Array<[string, number]> = [['chì–thiếc', 45], ['bạc', 283], ['đồng', 339]];
+  const I_LO = 5, I_HI = 2000, T_LO = 1e-5, T_HI = 100;
+  const HALF = 0.01;      // nửa chu kỳ 50 Hz
+  const SLOW = 0.1;       // trên mốc này giả thiết đoạn nhiệt hết hiệu lực
+
+  const vn = (x: number, d: number) => x.toFixed(d).replace('.', ',');
+  const fmtT = (t: number) =>
+    t < 1e-3 ? `${vn(t * 1e6, 1)} µs`
+      : t < 0.1 ? `${vn(t * 1e3, 1)} ms`
+        : t < 100 ? `${vn(t, 2)} s`
+          : `${vn(t, 0)} s`;
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (k: string) => root.querySelector(`[data-in="${k}"]`) as HTMLInputElement;
+    const output = (k: string) => root.querySelector(`[data-out="${k}"]`) as HTMLOutputElement;
+
+    function draw() {
+      // Con trượt dòng chạy theo log; làm tròn để rơi đúng vào 13, 100, 1000 A.
+      const raw = Math.pow(10, Number(input('i').value) / 1000);
+      const I = raw >= 10 ? Math.round(raw) : Math.round(raw * 10) / 10;
+      const A = Math.round(Number(input('a').value) * 10000) / 10000;
+      const [matName, K] = MATS[Number(input('m').value)];
+
+      const i2t = Math.pow(K * A, 2);
+      const t = i2t / (I * I);
+
+      output('i').textContent = I >= 10 ? String(I) : vn(I, 1);
+      output('a').textContent = vn(A, 4);
+      output('m').textContent = `${matName} · K = ${K}`;
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.5);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+
+      const padL = 54, padB = 26, padT = 14, padR = 12;
+      const x0 = padL, x1 = cssW - padR, y0 = padT, y1 = cssH - padB;
+      const lx0 = Math.log10(I_LO), lxs = Math.log10(I_HI) - lx0;
+      const ly1 = Math.log10(T_HI), lys = ly1 - Math.log10(T_LO);
+      const X = (ii: number) => x0 + ((Math.log10(ii) - lx0) / lxs) * (x1 - x0);
+      const Y = (tt: number) => y0 + ((ly1 - Math.log10(tt)) / lys) * (y1 - y0);
+      const clamp = (v: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, v));
+
+      ctx.font = '10px system-ui,sans-serif';
+
+      // Vùng quá tải chậm: công thức đoạn nhiệt không còn đúng.
+      ctx.fillStyle = fg; ctx.globalAlpha = 0.08;
+      ctx.fillRect(x0, y0, x1 - x0, Y(SLOW) - y0);
+      ctx.globalAlpha = 0.5; ctx.textAlign = 'left';
+      ctx.fillText('vùng quá tải chậm — nhiệt thoát ra kịp, công thức nói dối', x0 + 6, y0 + 12);
+
+      // Lưới thập phân.
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.12; ctx.beginPath();
+      for (const ii of [10, 100, 1000]) { ctx.moveTo(X(ii), y0); ctx.lineTo(X(ii), y1); }
+      for (let e = -5; e <= 2; e++) { ctx.moveTo(x0, Y(Math.pow(10, e))); ctx.lineTo(x1, Y(Math.pow(10, e))); }
+      ctx.stroke();
+
+      // Trục.
+      ctx.globalAlpha = 0.35; ctx.beginPath();
+      ctx.moveTo(x0, y0); ctx.lineTo(x0, y1); ctx.lineTo(x1, y1); ctx.stroke();
+
+      ctx.globalAlpha = 0.6; ctx.fillStyle = fg; ctx.textAlign = 'center';
+      for (const [ii, lab] of [[10, '10 A'], [100, '100 A'], [1000, '1 000 A']] as Array<[number, string]>)
+        ctx.fillText(lab, X(ii), y1 + 15);
+      ctx.textAlign = 'right';
+      for (const [tt, lab] of [[1e-5, '10 µs'], [1e-3, '1 ms'], [1e-2, '10 ms'], [1, '1 s'], [100, '100 s']] as Array<[number, string]>)
+        ctx.fillText(lab, x0 - 5, Y(tt) + 3);
+      ctx.globalAlpha = 1;
+
+      // Nửa chu kỳ 50 Hz.
+      ctx.strokeStyle = LINE; ctx.setLineDash([5, 4]); ctx.beginPath();
+      ctx.moveTo(x0, Y(HALF)); ctx.lineTo(x1, Y(HALF)); ctx.stroke(); ctx.setLineDash([]);
+      ctx.fillStyle = LINE; ctx.textAlign = 'right';
+      ctx.fillText('nửa chu kỳ 50 Hz = 10 ms', x1 - 4, Y(HALF) - 5);
+
+      // Đường t = (K·A/I)².
+      ctx.strokeStyle = CURVE; ctx.lineWidth = 2; ctx.beginPath();
+      let started = false;
+      for (let n = 0; n <= 240; n++) {
+        const ii = Math.pow(10, lx0 + (lxs * n) / 240);
+        const tt = i2t / (ii * ii);
+        if (tt > T_HI || tt < T_LO) { started = false; continue; }
+        started ? ctx.lineTo(X(ii), Y(tt)) : ctx.moveTo(X(ii), Y(tt));
+        started = true;
+      }
+      ctx.stroke(); ctx.lineWidth = 1;
+
+      // Điểm làm việc.
+      ctx.fillStyle = MARK;
+      ctx.beginPath(); ctx.arc(clamp(X(I), x0, x1), clamp(Y(t), y0, y1), 6, 0, Math.PI * 2); ctx.fill();
+
+      const ratio = HALF / t;
+      const note = t > SLOW
+        ? ' · <b>ngoài vùng đoạn nhiệt: thực tế cầu chì có thể không bao giờ đứt</b>'
+        : t < HALF
+          ? ` · cắt xong sớm hơn nửa chu kỳ 50 Hz <b>${vn(ratio, ratio < 10 ? 1 : 0)} lần</b>`
+          : '';
+      readout.innerHTML =
+        `Dây chảy ${matName} ${vn(A, 4)} mm² · I²t = <b>${vn(i2t, 1)} A²s</b>` +
+        ` → dòng ${I >= 10 ? String(I) : vn(I, 1)} A đứt sau <b>${fmtT(t)}</b>${note}`;
+    }
+
+    root.querySelectorAll('input').forEach((el) => el.addEventListener('input', draw));
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="cau-chi-va-quy-luat-i-binh-phuong-t"]').forEach(setup);
+</script>

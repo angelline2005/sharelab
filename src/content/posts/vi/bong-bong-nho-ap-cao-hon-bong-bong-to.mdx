@@ -1,0 +1,92 @@
+---
+title: "Bong bóng nhỏ căng hơn bong bóng to: nối hai cái, cái nhỏ tự xẹp"
+seoTitle: "Áp suất Laplace: công thức Δp = 4γ/R của bong bóng xà phòng"
+description: "Bong bóng đường kính 1 mm căng 200 Pa, đường kính 10 mm chỉ 20 Pa: nhỏ gấp mười thì căng gấp mười. Nối hai cái bằng một cái ống, trực giác nói chúng sẽ san bằng nhau — thực tế cái nhỏ thổi phồng cái to rồi tự xoá mình."
+pubDate: 2026-09-02
+tags: ["vat-ly", "chat-luu", "javascript"]
+translationId: "bong-bong-nho-ap-cao-hon-bong-bong-to"
+---
+
+import LaplacePressure from '../../../components/demos/LaplacePressure.astro';
+
+Thổi hai bong bóng xà phòng ở hai đầu một ống chữ T rồi mở van cho chúng
+thông nhau. Trực giác bảo áp suất sẽ san bằng và hai quả thành bằng nhau.
+Thực tế ngược hẳn: quả nhỏ teo lại, quả to phình ra — và càng teo càng nhanh.
+
+<LaplacePressure />
+
+## Cong gắt hơn thì bóp mạnh hơn
+
+Màng xà phòng là tấm da luôn muốn co về diện tích nhỏ nhất — cùng thứ sức
+căng đỡ được [con nhện nước](/vi/posts/nhen-nuoc-di-tren-mat-ho-va-luat-choi-cua-kich-thuoc).
+Bọc quanh một túi khí, nó bóp vào trong, và khí bên trong phải căng hơn khí
+ngoài đúng bằng phần bóp ấy:
+
+```
+Δp = 4γ / R
+```
+
+Số 4 chứ không phải 2, vì bong bóng có **hai mặt thoáng** — mặt trong và
+mặt ngoài của màng, mỗi mặt góp 2γ/R. (Lớp nước kẹp giữa chỉ dày cỡ
+micromet, mỏng tới mức [tự vẽ ra màu cầu
+vồng](/vi/posts/mang-mong-giao-thoa-mau-cua-bong-xa-phong).) Giọt nước hay
+bọt khí trong nước chỉ có một mặt, nên chúng dùng Δp = 2γ/R.
+
+Chỗ trực giác trượt chân là chữ R nằm dưới mẫu. Nước xà phòng có γ ≈ 0,025
+N/m (nước sạch: 0,073), nên bong bóng đường kính 1 mm căng **200 Pa** hơn
+không khí quanh nó, còn đường kính 10 mm chỉ **20 Pa**: nhỏ gấp mười thì
+căng gấp mười. Số tuyệt đối bé tí — 200 Pa bằng 1/507 áp suất khí quyển,
+đủ đẩy cột nước cao 2 cm — nhưng hai bong bóng nối nhau không so với khí
+quyển, chúng so với nhau.
+
+## Nối hai cái: bên nhỏ luôn là bên thua
+
+Mở van giữa quả A bán kính 5 mm (20,0 Pa) và quả B bán kính 15 mm (6,7 Pa):
+chênh **13,3 Pa**, khí chảy từ A sang B. Đến đây một hệ cân bằng tử tế sẽ
+tự sửa — nhưng A mất khí thì A nhỏ đi, mà nhỏ đi nghĩa là Δp *tăng*. Nó
+thổi mạnh hơn, rồi nhỏ hơn nữa. Phản hồi dương thuần tuý: **trên đường đi
+xuống không có bậc nào để dừng**.
+
+A không biến mất hẳn: nó tụt thành chỏm cầu nông trên miệng ống, cong đúng
+bằng bán kính của B — chỉ ở đó hai bên mới thật sự bằng áp. Còn B gần như
+chẳng hưởng gì: quả 5 mm chứa 0,52 mL khí, quả 15 mm chứa 14,14 mL, **gấp
+27 lần**. Nuốt trọn A xong, B nở từ 15,00 lên 15,18 mm — phình đúng
+**1,2%**. Kẻ thua mất sạch, kẻ thắng không kịp nhận ra mình vừa thắng.
+
+Kéo hai thanh trượt về cùng bán kính thì đúng là cân bằng — nhưng là cân
+bằng của hòn bi trên đỉnh đồi: lệch một phần trăm bán kính là bên nhỏ hơn
+bắt đầu cuộc trượt dài.
+
+## Cùng luật ấy, ở những cỡ khác
+
+Thổi bong bóng khó nhất ở hơi đầu, chưa bao giờ ở lúc nó đã to: với vòng
+thổi bán kính 2 mm, màng căng nhất đúng lúc vừa cong thành nửa cầu —
+4·0,025/0,002 = **50 Pa** — rồi nhẹ dần khi quả bóng lớn lên. Phổi bạn ép
+được cỡ 10 kPa, gấp 200 lần mức đó, nên bong bóng nhỏ nhất bạn thổi nổi có
+bán kính khoảng 10 µm.
+
+Đổi sang một mặt thoáng thì con số bùng nổ: hạt sương mù bán kính 5 µm
+giam nước ở áp cao hơn xung quanh **29 kPa**, gần 0,3 atm. Áp ấy đẩy nước
+bay hơi dễ hơn, nên hạt bé bốc hơi để nuôi hạt lớn — bọt bia thô dần sau
+vài phút, sương mù gom lại thành mưa phùn. Vẫn là quả nhỏ nuôi quả to, chỉ
+khác ở chỗ hàng đi xuyên chất lỏng thay vì qua ống; còn trong ống mao dẫn,
+chính độ cong ấy [kéo nước leo ngược trọng
+lực](/vi/posts/mao-dan-nuoc-leo-cao-va-bi-mat-cua-cay-100-met).
+
+## Trường hợp biên: lá phổi lẽ ra đã sập từ hơi thở đầu tiên
+
+Phổi bạn là 300 triệu phế nang bán kính cỡ 0,1 mm nối chung một đường thở:
+đúng cấu hình ống chữ T, nhân lên 300 triệu lần. Nếu màng nước lót trong
+nang có γ của nước sạch, mỗi nang căng 2γ/R = **1 456 Pa** (khoảng 15 cm
+nước) và mọi nang nhỏ phải xẹp vào nang lớn — sau hơi thở đầu tiên, phổi
+chỉ còn vài cái bọng khổng lồ.
+
+Lối thoát không nằm ở công thức mà ở chữ γ: **nó không phải hằng số**.
+Chất hoạt động bề mặt phổi tiết ra là lớp phân tử trải trên màng nước —
+nang co lại thì lớp ấy bị dồn đặc và γ tụt từ 0,025 xuống cỡ 0,005 N/m: ở
+cùng bán kính 0,1 mm, Δp rơi từ 500 xuống **100 Pa**. Nang càng nhỏ càng
+*bớt* căng — dấu của phản hồi đảo ngược, cái nhỏ từ chỗ chắc chết thành ra
+bền nhất. Trẻ sinh non trước tuần 34 chưa sản xuất đủ chất ấy: đó là hội
+chứng suy hô hấp sơ sinh, và cách chữa là bơm surfactant nhân tạo vào
+đường thở. Δp = 2γ/R không sai chữ nào; sự sống chỉ phát hiện sớm rằng
+muốn thắng một công thức thì đừng cãi mẫu số — hãy mua chuộc tử số.

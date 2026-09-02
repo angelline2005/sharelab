@@ -1,0 +1,104 @@
+---
+title: "Trợ lực hấp dẫn: mượn tốc độ của Sao Mộc mà không tốn một giọt nhiên liệu"
+seoTitle: "Gravity assist là gì: công thức góc quay và trần 2 lần tốc độ hành tinh"
+description: "Trong khung của hành tinh, tàu vũ trụ vào và ra cùng một tốc độ — chỉ đổi hướng. Nhưng Sao Mộc đang chạy 13,06 km/s, nên nhìn từ Mặt Trời cú bay ngang ấy lãi tới 17,97 km/s, và không bao giờ được quá 26,12. Sao Mộc trả khoản đó bằng 7,6×10⁻²¹ m/s."
+pubDate: 2026-09-02
+tags: ["vat-ly", "thien-van", "co-hoc", "javascript"]
+translationId: "tro-luc-hap-dan-muon-toc-do-hanh-tinh"
+---
+
+import GravityAssist from '../../../components/demos/GravityAssist.astro';
+
+Ném quả bóng tennis vào bức tường, nó bật lại đúng bằng tốc độ ném. Ném
+vào đầu xe tải đang lao tới, nó bật lại nhanh hơn hẳn — mà xe tải không
+chậm đi chút nào bạn đo được. Tàu vũ trụ mượn tốc độ của hành tinh bằng
+đúng trò ấy, chỉ thay bức tường bằng hấp dẫn:
+
+<GravityAssist />
+
+## Trong khung của hành tinh, bạn không lãi lấy một mét trên giây
+
+Đứng trên Sao Mộc mà nhìn, cú bay ngang sòng phẳng đến phát chán: tàu rơi
+vào giếng thế, đổi thế năng lấy tốc độ, rồi leo ngược ra và trả lại đúng
+khoản vừa vay. Tốc độ lúc vào và lúc ra bằng nhau
+tuyệt đối — cùng một giá trị v∞. **Thứ duy nhất thay đổi là hướng**, và
+hướng thì không có giá.
+
+Góc bẻ δ giữa hai đường tiệm cận của nhánh hyperbol chỉ phụ thuộc hai
+thứ: tàu đi nhanh cỡ nào và nó sà xuống sát cỡ nào.
+
+```
+sin(δ/2) = 1 / (1 + r_p·v∞² / GM)
+```
+
+Với v∞ = 10 km/s, sà xuống cận điểm cách tâm Sao Mộc 2 bán kính, hyperbol
+bẻ tàu **127,9°** — gần như quay đầu. Cùng tốc độ ấy, cùng 2 bán kính, mà
+là Trái Đất thì chỉ được **27,6°**: khối lượng Sao Mộc gấp 318 lần, nên
+cái móc của nó khoẻ hơn hẳn. Kéo cận điểm ra xa thì góc tụt chậm hơn bạn
+tưởng: ở 7,34 bán kính (525 000 km) vẫn đúng **90°**, ở 20 bán kính vẫn
+còn 56°.
+
+## Cái lãi nằm ở chỗ hành tinh không đứng yên
+
+Chuyển sang khung Mặt Trời thì mọi thứ lật: vận tốc nhật tâm của tàu là
+vận tốc hành tinh cộng vectơ v∞. Hai vectơ v∞ vào và ra dài bằng nhau nên
+cùng nằm trên một vòng tròn quanh mũi vectơ hành tinh — bảng phải của demo
+vẽ đúng vòng đó. **Xoay một vectơ trên vòng
+tròn không đổi độ dài của nó, nhưng đổi độ dài của tổng.** Đấy là toàn bộ
+mánh khoé.
+
+Độ dài đoạn đỏ nối hai mũi vectơ là khoản chênh, và nó có công thức gọn:
+Δv = 2·v∞·sin(δ/2) — với cú bay ngang ở trên là **17,97 km/s**. Trong
+hình học tiếp cận có lợi nhất, con tàu đi vào với 3,3 km/s so với Mặt Trời
+và đi ra với 21,3 km/s. Bay vòng sau lưng hành tinh thì lãi, bay cắt mặt
+trước thì lỗ đúng bằng chừng ấy — cùng một hình vẽ, đổi dấu.
+
+Để thấy 17,97 km/s ấy đắt thế nào, hãy đi mua nó bằng nhiên liệu. Tầng
+hydro–ôxy tốt nhất phun khí ra 4,41 km/s, và [phương trình tên
+lửa](/vi/posts/phuong-trinh-ten-lua-che-do-doc-tai-cua-logarit) tính tiền
+theo hàm mũ: bạn phải đốt **59 kg tầng đẩy đầy ắp cho mỗi kilôgam đưa
+tới đích**. Sao Mộc cho không khoản đó, đổi lại chỉ đòi bạn có mặt đúng
+chỗ đúng ngày.
+
+## Sao Mộc trả tiền, và không cách nào biết mình vừa trả
+
+Không có bữa trưa miễn phí: động lượng phải cân. Con tàu 800 kg lãi 17,97
+km/s thì Sao Mộc phải chậm đi đúng phần đối ứng — chia cho khối lượng
+1,90×10²⁷ kg, ra **7,6×10⁻²¹ m/s**. Với mức hụt ấy, Sao Mộc cần **4,2 tỉ
+năm** để tụt lại đúng một milimét trên quỹ đạo của mình.
+
+Đó là cuốn sổ mà [Mặt Trăng vẫn rút của vòng quay Trái
+Đất](/vi/posts/mat-trang-lui-xa-va-nam-400-ngay), chỉ khác tỉ lệ khối
+lượng: bên kia đủ lớn để san hô kỷ Devon chép lại, bên này nhỏ hơn mọi
+phép đo loài người từng nghĩ ra.
+
+## Trần cứng: hai lần tốc độ hành tinh, không hơn một mét
+
+Vòng tròn v∞ cũng đặt ra giới hạn. Tốc độ nhật tâm của tàu
+luôn nằm giữa |v_hành tinh − v∞| và v_hành tinh + v∞, nên khoản lãi lớn
+nhất mà một lần bay ngang có thể sinh ra là **2 lần giá trị nhỏ hơn trong
+hai số ấy** — với Sao Mộc, tuyệt đối không quá 2 × 13,06 = **26,12 km/s**.
+Cú bay ngang tốt nhất còn khả thi (sượt 1,05 bán kính, và v∞ đúng bằng
+13,06 km/s — tàu tiếp cận nhanh y hệt tốc độ hành tinh) lấy được 23,7
+km/s, tức 91% của trần.
+
+Trần đó là lý do mọi chuyến liên hành tinh đều xếp lịch tham lam như nhau:
+mượn Trái Đất, mượn Sao Kim, rồi mới dám hẹn Sao Mộc — mỗi lần là một lần
+[đổi tốc độ lấy khoảng
+cách](/vi/posts/sao-choi-halley-luc-phong-54-km-moi-giay-luc-bo-di-bo)
+trong sổ của Mặt Trời.
+
+## Trường hợp biên: khi trợ lực chạy ngược, để phanh vào Mặt Trời
+
+Công thức hỏng theo hai kiểu. Sà quá sát: δ đẹp, nhưng dưới 1 bán kính là
+khí quyển và vành đai bức xạ Sao Mộc, nơi liều xạ giết điện tử trước khi
+giết người. Đi quá nhanh: v∞ lớn thì e lớn và δ → 0 — với một con tàu đủ
+nhanh, mọi trợ lực hấp dẫn đều tắt về không.
+
+Nhưng lối thoát thú vị nhất là đảo dấu. Parker Solar Probe không cần
+nhanh, nó cần **rơi**: muốn tới sát Mặt Trời thì phải vứt bỏ chính 29,8
+km/s mà Trái Đất tặng nó lúc phóng. Nên nó bay cắt mặt trước Sao Kim
+**bảy lần liên tiếp**, mỗi lần tự phanh một khoản, hạ dần cận nhật xuống
+6,9 triệu km. Nghịch lý đúng chất quỹ đạo: chính chuỗi phanh ấy làm nó
+thành vật thể nhân tạo nhanh nhất lịch sử — **192 km/s** ở điểm sát Mặt
+Trời, nơi nó rơi trở lại đúng khoản đã tiêu.

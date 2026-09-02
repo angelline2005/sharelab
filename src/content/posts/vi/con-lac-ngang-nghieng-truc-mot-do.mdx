@@ -1,0 +1,102 @@
+---
+title: "Nghiêng bản lề đúng một độ: cần 50 cm, chu kỳ 10,7 giây"
+seoTitle: "Con lắc ngang: kéo dài chu kỳ bằng cách nghiêng trục quay"
+description: "Muốn một con lắc chu kỳ gần 11 giây, sách vở bảo phải treo dây dài 28,6 mét. Có lối tắt: đặt cần nằm ngang rồi nghiêng trục quay lệch 1° khỏi phương thẳng đứng — trọng lực chỉ còn góp 0,171 m/s², và cái cần 50 cm cho đúng 10,74 giây."
+pubDate: 2026-09-02
+tags: ["vat-ly", "dao-dong", "co-hoc", "javascript"]
+translationId: "con-lac-ngang-nghieng-truc-mot-do"
+---
+
+import HorizontalPendulum from '../../../components/demos/HorizontalPendulum.astro';
+
+Cánh cổng sắt ở quê: bạn đẩy nó mở, buông tay, và nó tự trôi về khung —
+chậm rãi, uy nghi, mất mấy giây cho một mét đường. Không lò xo, không bản
+lề thuỷ lực. Người thợ chỉ hàn hai bản lề lệch khỏi phương thẳng đứng
+chừng một độ:
+
+<HorizontalPendulum />
+
+## Trọng lực chỉ được góp một lát mỏng
+
+Trục quay thẳng đứng, cần nằm ngang: bạn có cái mâm xoay. Đẩy tới đâu nó
+nằm đó, vì quay không nâng quả nặng lên một milimét nào.
+
+Nghiêng trục đi góc α thì mặt phẳng cần quét cũng nghiêng α, và lệch khỏi
+cân bằng một góc θ là quả nặng dâng đúng `L·sinα·(1−cosθ)` — trong khi con
+lắc dây thường dâng `L·(1−cosθ)`. Cùng một bài toán, chỉ khác g bị thay
+bằng **g·sinα**: đúng cái lát mỏng của trọng lực còn sót lại dọc [một mặt
+nghiêng](/vi/posts/mat-phang-nghieng-va-goc-bat-dau-truot).
+
+```
+T = 2π · √( L / (g · sin α) )
+```
+
+Ở α = 90° trục nằm ngang, sin bằng 1, công thức rơi về [T = 2π√(L/g) quen
+thuộc](/vi/posts/chu-ky-con-lac-don-co-that-su-khong-phu-thuoc-bien-do):
+cần 50 cm cho **1,42 giây**. Nghiêng trục về 1°, trọng lực chỉ còn góp
+`g·sin1° = 0,171 m/s²` — **1,7% của g** — và vẫn cái cần 50 cm ấy đu đưa
+với chu kỳ **10,74 giây**, chậm đi 7,57 lần mà không thêm một centimét vật
+liệu.
+
+## Cần 50 cm giả làm sợi dây 28,6 mét
+
+Con lắc ngang nghiêng α hành xử y hệt con lắc dây dài **L/sinα**:
+
+| Góc nghiêng trục | g hiệu dụng | T (cần 50 cm) | Dây tương đương |
+|---|---|---|---|
+| 90° | 9,81 m/s² | 1,42 s | 0,50 m |
+| 5° | 0,855 m/s² | 4,80 s | 5,74 m |
+| 1° | 0,171 m/s² | 10,74 s | 28,6 m |
+| 0,5° | 0,0856 m/s² | 15,18 s | 57,3 m |
+
+Muốn 10,74 giây theo lối treo dây, bạn cần **28,6 mét** thông tầng — một
+giếng trời bảy tầng lầu. Con lắc ngang nhét từng ấy chu kỳ vào một hộp
+giày.
+
+Hai thanh trượt nói rõ ai mới là ông chủ: L nằm dưới dấu căn nên gấp đôi
+chiều dài cần chỉ mua thêm 1,41 lần chu kỳ — đường đứt màu cam (cần 1 m)
+vì thế gần như dán vào đường xanh — còn đi từ 5° xuống 1° đã nhân chu kỳ
+**2,23 lần**. Hình học của bản lề quyết định tất cả, kích thước chỉ đứng
+xem.
+
+Cánh cổng đầu bài là tấm phẳng chứ không phải quả nặng đầu cần, nên quán
+tính của nó tương đương một cần điểm dài **2/3 bề rộng**: cổng 1 m ứng với
+L = 0,67 m, bản lề nghiêng 1° cho chu kỳ 12,4 giây. Quãng từ lúc buông tay
+tới lúc chạm khung là một phần tư chu kỳ, **3,1 giây** — đúng cái nhịp bạn
+vẫn thấy.
+
+## Cỗ máy này sinh ra để nghe động đất
+
+Hengler mô tả nó năm 1832, Zöllner hoàn thiện năm 1869, và cả một thế kỷ
+địa chấn học dựng trên nó. Nguyên tắc của mọi máy đo rung: khối lượng chỉ
+chịu đứng yên cho đất trượt bên dưới khi chu kỳ riêng của máy **dài hơn**
+chu kỳ sóng cần đo. Sóng mặt của [những trận động đất
+xa](/vi/posts/thang-do-dong-dat-moi-bac-la-31-lan-nang-luong) có chu kỳ
+15–40 giây; con lắc dây 20 giây đòi 99 mét. Nghiêng bản lề xuống 0,3° thì
+cần 50 cm đã cho 19,6 giây.
+
+Nhưng chính hình học đẻ ra khoản chu kỳ ấy cũng đẻ ra một tật: nền nhà
+nghiêng đi ε thì vị trí cân bằng của cần không lệch ε mà lệch **ε/sinα**,
+ở 1° là gấp **57 lần**. Nền nghiêng 1 micro-radian — 0,21 giây cung, độ
+dốc của một sàn dài 1 km có đầu này cao hơn đầu kia 1 mm — đẩy đầu cần 50
+cm đi **28,6 µm**. Con lắc ngang vừa là địa chấn kế ngang tốt nhất từng
+có, vừa là máy đo nghiêng tốt nhất từng có, và bạn không được chọn hôm nay
+nó làm nghề gì.
+
+## Trường hợp biên: khi trục thẳng đứng hoàn toàn
+
+Hai con số ấy không độc lập. Khử sinα giữa chúng ra một quan hệ trần trụi:
+hệ số khuếch đại nghiêng nền `= g·T²/(4π²·L)` — chu kỳ mua bằng hình học
+luôn phải trả bằng độ nhạy nền tỉ lệ với **bình phương** chu kỳ. Về chân
+thang trượt, 0,2°: cần 50 cm đạt 24,0 giây và hệ số khuếch đại lên **286
+lần**, trong khi giãn nở nhiệt của móng nhà làm nền trôi vài micro-radian
+mỗi ngày chỉ vì nắng chiếu một bức tường.
+
+Tới α = 0 thì mẫu số biến mất. Cái còn lại không phải con lắc chu kỳ vô
+hạn mà là cái mâm xoay ban đầu: cần nằm im ở đâu bạn bỏ nó, và độ nghiêng
+vặt vãnh của nền — thứ trước đó là nhiễu — giờ là toàn bộ trường lực. Máy
+thôi đo mặt đất và bắt đầu bị mặt đất định nghĩa. Nên địa chấn kế dải rộng
+ngày nay dừng phần hình học ở vài độ rồi mua nốt chu kỳ bằng phản hồi lực:
+một cuộn dây giữ khối lượng đứng yên, và thứ được ghi lại là dòng điện
+phải bơm vào. Các trạm hiện đại đạt 360 giây theo lối đó — sợi dây làm nổi
+việc ấy sẽ dài **32 kilômét**.

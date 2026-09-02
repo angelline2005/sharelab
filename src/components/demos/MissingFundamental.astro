@@ -1,0 +1,215 @@
+---
+// Hoạ âm gốc bị thiếu (missing fundamental).
+// Nguồn: chuỗi hoạ âm A_n = 1/n, n = 1..40 (mô hình phổ áp suất bức xạ của
+// thanh môn: nguồn ~1/n², bức xạ ở môi +6 dB/quãng tám → ~1/n).
+// Tổng Σ A_n·sin(2π·n·f₀·t) tuần hoàn với chu kỳ 1/(g·f₀), g = ƯCLN của tập n
+// còn lại — không phụ thuộc việc n = 1 có mặt hay không.
+// Năng lượng ∝ A_n² = 1/n². Băng thoại chuẩn ITU 300–3400 Hz.
+// Hợp lệ khi f₀ > 0 và các thành phần là bội nguyên của f₀ (xem trường hợp biên).
+---
+
+<figure class="demo" data-demo="hoa-am-goc-bi-thieu-va-loa-dien-thoai">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Tần số cơ bản f₀ (Hz) <output data-out="f"></output>
+      <input type="range" data-in="f" min="60" max="400" step="1" value="110" /></label>
+    <label>Cắt dưới của kênh (Hz) <output data-out="lo"></output>
+      <input type="range" data-in="lo" min="50" max="1200" step="10" value="300" /></label>
+    <label>Cắt trên của kênh (Hz) <output data-out="hi"></output>
+      <input type="range" data-in="hi" min="1000" max="8000" step="100" value="3400" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Trên: phổ vạch của giọng nói — mỗi vạch là một hoạ âm n·f₀, cao 1/n.
+    Vùng sáng là băng thông kênh truyền; vạch đỏ mờ là vạch bị vứt, kèm
+    thanh đo phần năng lượng đã mất. Dưới: dạng sóng tổng — vàng là giọng
+    gốc đủ 40 hoạ âm, xanh là phần còn sót lại sau kênh. Kéo "cắt dưới" qua
+    khỏi f₀: hình dạng sóng đổi hẳn, nhưng các vạch đỏ đánh dấu chu kỳ
+    không nhúc nhích một pixel.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const CURVE = '#2563eb', MARK = '#dc2626', FULL = '#f59e0b';
+  const NSRC = 40;
+  const vn = (x: number, d: number) => x.toFixed(d).replace('.', ',');
+  const gcd2 = (a: number, b: number): number => (b ? gcd2(b, a % b) : a);
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (k: string) => root.querySelector(`[data-in="${k}"]`) as HTMLInputElement;
+    const output = (k: string) => root.querySelector(`[data-out="${k}"]`) as HTMLOutputElement;
+
+    function draw() {
+      const f0 = Number(input('f').value);
+      const lo = Number(input('lo').value);
+      const hi = Number(input('hi').value);
+      output('f').textContent = String(f0);
+      output('lo').textContent = String(lo);
+      output('hi').textContent = String(hi);
+
+      // Phổ nguồn và phần lọt qua kênh.
+      const kept: number[] = [];
+      let eTot = 0, eKept = 0;
+      for (let n = 1; n <= NSRC; n++) {
+        const e = 1 / (n * n);
+        eTot += e;
+        const f = n * f0;
+        if (f >= lo && f <= hi) { kept.push(n); eKept += e; }
+      }
+      const cut = 100 * (1 - eKept / eTot);
+      const g = kept.length ? kept.reduce(gcd2) : 0;
+
+      // Dạng sóng trên 3 chu kỳ của f₀.
+      const T0 = 1 / f0, win = 3 * T0, NS = 480;
+      const yFull: number[] = [], yCut: number[] = [];
+      let peak = 1e-9;
+      for (let i = 0; i <= NS; i++) {
+        const t = (win * i) / NS;
+        let a = 0, b = 0;
+        for (let n = 1; n <= NSRC; n++) {
+          const s = Math.sin(2 * Math.PI * n * f0 * t) / n;
+          a += s;
+          if (n * f0 >= lo && n * f0 <= hi) b += s;
+        }
+        yFull.push(a); yCut.push(b);
+        peak = Math.max(peak, Math.abs(a));
+      }
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.74);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+      ctx.font = '10px system-ui,sans-serif';
+
+      const padL = 44, padR = 12, padT = 14, padB = 24;
+      const yA0 = padT + Math.round(cssH * 0.36);          // đáy phổ
+      const barY = yA0 + 26, barH = 9;
+      const yBt = barY + 26, yBb = cssH - padB;            // khung dạng sóng
+      const yB0 = (yBt + yBb) / 2;
+      const plotW = cssW - padL - padR;
+
+      // ---- Phổ vạch ----
+      const fMax = Math.max(NSRC * f0, hi) * 1.04;
+      const XA = (f: number) => padL + (f / fMax) * plotW;
+      const YA = (a: number) => yA0 - a * (yA0 - padT);
+
+      ctx.fillStyle = fg; ctx.globalAlpha = 0.08;
+      const bx0 = XA(Math.min(lo, fMax)), bx1 = XA(Math.min(hi, fMax));
+      if (bx1 > bx0) ctx.fillRect(bx0, padT, bx1 - bx0, yA0 - padT);
+      ctx.globalAlpha = 1;
+
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.3;
+      ctx.beginPath(); ctx.moveTo(padL, padT); ctx.lineTo(padL, yA0); ctx.lineTo(cssW - padR, yA0); ctx.stroke();
+      ctx.globalAlpha = 0.55; ctx.fillStyle = fg;
+      ctx.textAlign = 'right';
+      for (const a of [1, 0.5]) ctx.fillText(vn(a, 1), padL - 4, YA(a) + 3);
+      ctx.fillText('0', padL - 4, yA0 + 3);
+      ctx.textAlign = 'center';
+      const st = fMax > 12000 ? 4000 : fMax > 6000 ? 2000 : fMax > 3000 ? 1000 : 500;
+      for (let f = st; f < fMax; f += st) {
+        if (XA(f) > cssW - padR) break;
+        ctx.fillText(st >= 1000 ? `${f / 1000} kHz` : `${f} Hz`, XA(f), yA0 + 13);
+      }
+      ctx.textAlign = 'left';
+      ctx.fillText('biên độ 1/n', padL + 4, padT + 8);
+      ctx.globalAlpha = 1;
+
+      for (let n = 1; n <= NSRC; n++) {
+        const f = n * f0, x = XA(f);
+        if (x > cssW - padR) continue;
+        const inB = f >= lo && f <= hi;
+        ctx.strokeStyle = inB ? CURVE : MARK;
+        ctx.globalAlpha = inB ? 1 : 0.35;
+        ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.moveTo(x, yA0); ctx.lineTo(x, YA(1 / n)); ctx.stroke();
+        if (n <= 3) {
+          ctx.globalAlpha = inB ? 0.9 : 0.5; ctx.fillStyle = inB ? CURVE : MARK;
+          ctx.textAlign = 'center'; ctx.fillText(String(n), x, YA(1 / n) - 4);
+        }
+      }
+      ctx.globalAlpha = 1; ctx.lineWidth = 1;
+
+      // ---- Thanh đo năng lượng bị cắt ----
+      const barW = Math.round(plotW * 0.42);
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.35;
+      ctx.strokeRect(padL, barY, barW, barH);
+      ctx.globalAlpha = 1; ctx.fillStyle = MARK;
+      ctx.fillRect(padL + 0.5, barY + 0.5, (barW - 1) * cut / 100, barH - 1);
+      ctx.fillStyle = fg; ctx.globalAlpha = 0.7; ctx.textAlign = 'left';
+      ctx.fillText(`${vn(cut, 1)}% năng lượng bị kênh vứt`, padL + barW + 8, barY + barH - 1);
+      ctx.globalAlpha = 1;
+
+      // ---- Dạng sóng ----
+      const XB = (t: number) => padL + (t / win) * plotW;
+      const half = (yBb - yBt) / 2 - 4;
+      const YB = (v: number) => yB0 - (v / peak) * half;
+
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.3;
+      ctx.beginPath(); ctx.moveTo(padL, yB0); ctx.lineTo(cssW - padR, yB0); ctx.stroke();
+      ctx.globalAlpha = 1;
+
+      ctx.setLineDash([4, 4]); ctx.strokeStyle = MARK; ctx.globalAlpha = 0.75; ctx.lineWidth = 1.5;
+      for (let k = 0; k <= 3; k++) {
+        const x = XB(k * T0);
+        ctx.beginPath(); ctx.moveTo(x, yBt); ctx.lineTo(x, yBb); ctx.stroke();
+      }
+      ctx.setLineDash([]); ctx.globalAlpha = 1; ctx.lineWidth = 1;
+
+      ctx.fillStyle = fg; ctx.globalAlpha = 0.55; ctx.textAlign = 'center';
+      for (let k = 0; k <= 3; k++) ctx.fillText(`${vn(k * T0 * 1000, 2)} ms`, XB(k * T0), yBb + 13);
+      ctx.textAlign = 'left';
+      ctx.fillText('vàng: giọng gốc · xanh: sau kênh · đỏ: mốc chu kỳ 1/f₀', padL + 4, yBt + 9);
+      ctx.globalAlpha = 1;
+
+      const path = (arr: number[], col: string, wdt: number, alpha: number) => {
+        ctx.strokeStyle = col; ctx.lineWidth = wdt; ctx.globalAlpha = alpha; ctx.beginPath();
+        for (let i = 0; i <= NS; i++) {
+          const x = XB((win * i) / NS), y = YB(arr[i]);
+          i ? ctx.lineTo(x, y) : ctx.moveTo(x, y);
+        }
+        ctx.stroke(); ctx.globalAlpha = 1; ctx.lineWidth = 1;
+      };
+      path(yFull, FULL, 1.5, 0.6);
+      path(yCut, CURVE, 2, 1);
+
+      // ---- Readout ----
+      let msg: string;
+      if (!kept.length) {
+        msg = '<b>không hoạ âm nào lọt qua — kênh câm</b>';
+      } else if (kept.length === 1) {
+        msg = `<b>chỉ còn một vạch: hết chu kỳ chung, tai nghe đúng ${kept[0] * f0} Hz</b>`;
+      } else if (g > 1) {
+        msg = `<b>tập còn lại có ước chung ${g}: tổng lặp lại ${vn(1000 / (g * f0), 2)} ms một lần, cao độ nhảy lên ${g * f0} Hz</b>`;
+      } else if (kept[0] === 1) {
+        msg = `hoạ âm gốc vẫn còn trong băng · chu kỳ ${vn(1000 / f0, 2)} ms`;
+      } else {
+        msg = `chu kỳ của tổng vẫn <b>${vn(1000 / f0, 2)} ms</b> → tai vẫn nghe nốt ở <b>${f0} Hz</b> dù vạch ấy không tồn tại`;
+      }
+      const range = kept.length ? `giữ hoạ âm ${kept[0]}–${kept[kept.length - 1]} (${kept.length} vạch)` : 'không giữ vạch nào';
+      readout.innerHTML =
+        `f₀ = ${f0} Hz · băng ${lo}–${hi} Hz ${range} · cắt <b>${vn(cut, 1)}%</b> năng lượng · ${msg}`;
+    }
+
+    root.querySelectorAll('input').forEach((el) => el.addEventListener('input', draw));
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="hoa-am-goc-bi-thieu-va-loa-dien-thoai"]').forEach(setup);
+</script>

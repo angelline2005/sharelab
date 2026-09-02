@@ -1,0 +1,189 @@
+---
+// Tổn hao dòng Foucault cổ điển trong lá thép kỹ thuật điện:
+//   p = π²·B²·f²·t² / (6·ρ)   [W/m³]
+// (Bozorth, Ferromagnetism; mọi giáo trình máy điện). ρ = 4,7·10⁻⁷ Ω·m
+// cho thép silic ~3% Si; khối lượng riêng 7 650 kg/m³.
+// Điều kiện đúng: t nhỏ hơn độ sâu thấm δ = √(ρ/(π·f·μ₀·μr)) — demo vẽ
+// luôn đường δ (lấy μr = 5 000) và tô mờ vùng bên phải, nơi từ thông
+// không còn vào đều khắp bề dày và công thức t² quá đà.
+// Bỏ qua tổn hao từ trễ và tổn hao dị thường (vách đômen) — hai thứ này
+// làm tổn hao đo thật ở 50 Hz cao hơn con số dưới đây vài lần.
+---
+
+<figure class="demo" data-demo="loi-bien-ap-phai-cat-thanh-la-mong">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Bề dày mỗi lá t (mm) <output data-out="t"></output>
+      <input type="range" data-in="t" min="0" max="31" step="1" value="10" /></label>
+    <label>Tần số f (Hz) <output data-out="f"></output>
+      <input type="range" data-in="f" min="50" max="2000" step="50" value="50" /></label>
+    <label>Từ thông cực đại B (T) <output data-out="b"></output>
+      <input type="range" data-in="b" min="0.3" max="1.8" step="0.1" value="1.5" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Trái: mặt cắt lõi 50 mm được chia thành n lá, mỗi lá nhốt một vòng dòng
+    Foucault riêng — lá mỏng thì vòng nhỏ, sức điện động nhỏ. Phải: tổn hao
+    theo bề dày lá trên thang log–log, luôn là đường thẳng dốc 2 (gấp đôi bề
+    dày là gấp bốn tổn hao); kéo f hoặc B thì cả đường trượt lên xuống. Dải
+    cam là mức tổn hao lõi mà thiết kế thực tế chấp nhận được. Bên phải vạch
+    đứt là vùng lá dày hơn độ sâu thấm — ở đó công thức t² không còn đúng.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const CURVE = '#2563eb', MARK = '#dc2626', BAND = '#f59e0b';
+  const RHO = 4.7e-7, DENS = 7650, MU0 = 4 * Math.PI * 1e-7, MUR = 5000;
+  const STACK = 50; // bề dày cả xấp lõi, mm
+
+  // Bề dày lá: thang log rời rạc, cố ý chứa đúng 0,27 / 0,35 / 0,50 / 5 / 50 mm.
+  const TS = [0.1, 0.12, 0.15, 0.18, 0.2, 0.23, 0.27, 0.3, 0.35, 0.4, 0.5,
+    0.6, 0.7, 0.8, 1, 1.2, 1.5, 2, 2.5, 3, 4, 5, 6.5, 8, 10, 12.5, 16, 20, 25, 32, 40, 50];
+
+  // t tính bằng mét
+  const loss = (B: number, f: number, t: number) => (Math.PI ** 2 * B * B * f * f * t * t) / (6 * RHO);
+  const skin = (f: number) => Math.sqrt(RHO / (Math.PI * f * MU0 * MUR)) * 1000; // mm
+  const vn = (x: number, d: number) => x.toFixed(d).replace('.', ',');
+  const fmt = (p: number) =>
+    p >= 1e6 ? `${vn(p / 1e6, p >= 1e7 ? 0 : 1)} MW/m³`
+      : p >= 1e3 ? `${vn(p / 1e3, p >= 1e4 ? 0 : 1)} kW/m³`
+        : `${vn(p, 1)} W/m³`;
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (k: string) => root.querySelector(`[data-in="${k}"]`) as HTMLInputElement;
+    const output = (k: string) => root.querySelector(`[data-out="${k}"]`) as HTMLOutputElement;
+
+    function draw() {
+      const t = TS[Number(input('t').value)];
+      const f = Number(input('f').value), B = Number(input('b').value);
+      output('t').textContent = vn(t, t < 1 ? 2 : t < 10 ? 1 : 0);
+      output('f').textContent = String(f);
+      output('b').textContent = vn(B, 1);
+
+      const p = loss(B, f, t / 1000);
+      const pSolid = loss(B, f, STACK / 1000);
+      const d = skin(f);
+      const n = STACK / t;
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.44);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+      ctx.font = '10px system-ui,sans-serif';
+
+      const padT = 16, padB = 26;
+      const coreW = Math.min(120, cssW * 0.26);
+      const boxT = padT + 12, boxB = cssH - padB;
+      const side = Math.min(coreW, boxB - boxT);
+      const cx = 6 + (coreW - side) / 2, cy = boxT + (boxB - boxT - side) / 2;
+
+      // ---- Trái: mặt cắt lõi chia lá ----
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.45;
+      ctx.strokeRect(cx, cy, side, side);
+      ctx.globalAlpha = 0.6; ctx.fillStyle = fg; ctx.textAlign = 'center';
+      ctx.fillText('mặt cắt lõi 50 mm', cx + side / 2, boxT - 4);
+      const nDraw = Math.min(Math.round(n), 40);
+      const h = side / nDraw;
+      ctx.globalAlpha = 0.35; ctx.strokeStyle = fg;
+      for (let i = 1; i < nDraw; i++) {
+        ctx.beginPath(); ctx.moveTo(cx, cy + i * h); ctx.lineTo(cx + side, cy + i * h); ctx.stroke();
+      }
+      if (h > 4) {
+        ctx.strokeStyle = MARK;
+        ctx.globalAlpha = 0.2 + 0.6 * Math.min(1, t / 5);
+        for (let i = 0; i < nDraw; i++) {
+          ctx.beginPath();
+          ctx.ellipse(cx + side / 2, cy + (i + 0.5) * h, side * 0.32, h * 0.3, 0, 0, Math.PI * 2);
+          ctx.stroke();
+        }
+      }
+      ctx.globalAlpha = 0.6; ctx.fillStyle = fg;
+      ctx.fillText(`${Math.round(n)} lá${Math.round(n) > 40 ? ' (vẽ tượng trưng)' : ''}`,
+        cx + side / 2, boxB + 14);
+      ctx.globalAlpha = 1;
+
+      // ---- Phải: log–log tổn hao theo bề dày ----
+      const padL = 6 + coreW + 44, padR = 10;
+      const xLo = Math.log10(0.1), xHi = Math.log10(50), yLo = 0, yHi = 10;
+      const X = (mm: number) => padL + ((Math.log10(mm) - xLo) / (xHi - xLo)) * (cssW - padL - padR);
+      const Y = (w: number) => padT + ((yHi - Math.log10(Math.max(w, 1e-3))) / (yHi - yLo)) * (cssH - padB - padT);
+
+      // vùng lá dày hơn độ sâu thấm
+      if (d < 50) {
+        ctx.fillStyle = fg; ctx.globalAlpha = 0.07;
+        ctx.fillRect(X(Math.max(d, 0.1)), padT, cssW - padR - X(Math.max(d, 0.1)), cssH - padB - padT);
+        ctx.globalAlpha = 0.7; ctx.strokeStyle = BAND;
+        ctx.setLineDash([4, 3]); ctx.beginPath();
+        ctx.moveTo(X(d), padT); ctx.lineTo(X(d), cssH - padB); ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.fillStyle = BAND; ctx.textAlign = 'left'; ctx.globalAlpha = 0.9;
+        ctx.fillText(`δ = ${vn(d, 2)} mm`, X(d) + 3, padT + 9);
+      }
+
+      // dải thiết kế 1–5 W/kg
+      ctx.fillStyle = BAND; ctx.globalAlpha = 0.16;
+      ctx.fillRect(padL, Y(5 * DENS), cssW - padL - padR, Y(1 * DENS) - Y(5 * DENS));
+      ctx.globalAlpha = 0.85; ctx.fillStyle = BAND; ctx.textAlign = 'right';
+      ctx.fillText('1–5 W/kg', cssW - padR - 3, Y(5 * DENS) - 3);
+      ctx.globalAlpha = 1;
+
+      // trục + vạch chia
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.3;
+      ctx.beginPath(); ctx.moveTo(padL, padT); ctx.lineTo(padL, cssH - padB);
+      ctx.lineTo(cssW - padR, cssH - padB); ctx.stroke();
+      ctx.globalAlpha = 0.55; ctx.fillStyle = fg; ctx.textAlign = 'center';
+      for (const mm of [0.1, 0.3, 1, 3, 10, 50])
+        ctx.fillText(`${vn(mm, mm < 1 ? 1 : 0)}`, X(mm), cssH - padB + 14);
+      ctx.fillText('bề dày lá (mm)', (padL + cssW - padR) / 2, cssH - 3);
+      ctx.textAlign = 'right';
+      for (const [e, lab] of [[0, '1 W'], [3, '1 kW'], [6, '1 MW'], [9, '1 GW']] as Array<[number, string]>)
+        ctx.fillText(lab, padL - 4, Y(10 ** e) + 3);
+      ctx.fillText('/m³', padL - 4, padT + 9);
+      ctx.globalAlpha = 1;
+
+      // đường tổn hao (dốc 2 trên log–log), cắt trong khung
+      ctx.save();
+      ctx.beginPath(); ctx.rect(padL, padT, cssW - padL - padR, cssH - padB - padT); ctx.clip();
+      ctx.strokeStyle = CURVE; ctx.lineWidth = 2; ctx.beginPath();
+      for (let i = 0; i <= 120; i++) {
+        const mm = 10 ** (xLo + ((xHi - xLo) * i) / 120);
+        const yy = Y(loss(B, f, mm / 1000));
+        i ? ctx.lineTo(X(mm), yy) : ctx.moveTo(X(mm), yy);
+      }
+      ctx.stroke(); ctx.lineWidth = 1;
+      ctx.fillStyle = MARK;
+      ctx.beginPath(); ctx.arc(X(t), Y(p), 6, 0, Math.PI * 2); ctx.fill();
+      ctx.restore();
+
+      const over = t > d
+        ? ` · <b>lá dày hơn độ sâu thấm ${vn(d, 2)} mm — công thức t² đã quá đà</b>`
+        : '';
+      readout.innerHTML =
+        `Lá ${vn(t, t < 1 ? 2 : t < 10 ? 1 : 0)} mm · ${f} Hz · ${vn(B, 1)} T → ` +
+        `<b>${fmt(p)}</b> = ${vn(p / DENS, p / DENS < 10 ? 2 : 0)} W/kg` +
+        ` · lõi đặc 50 mm cùng điều kiện: ${fmt(pSolid)}, gấp <b>${Math.round(pSolid / p).toLocaleString('vi-VN')} lần</b>${over}`;
+    }
+
+    root.querySelectorAll('input').forEach((el) => el.addEventListener('input', draw));
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="loi-bien-ap-phai-cat-thanh-la-mong"]').forEach(setup);
+</script>

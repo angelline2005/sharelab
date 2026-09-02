@@ -1,0 +1,105 @@
+---
+title: "Cùng một kiểu tinh thể: silic dẫn điện gấp kim cương mười triệu tỉ tỉ tỉ lần"
+seoTitle: "Vùng cấm bán dẫn: vì sao silic dẫn điện còn kim cương thì không"
+description: "Kim cương và silic xếp nguyên tử theo đúng một kiểu, chỉ khác vùng cấm: 5,47 eV so với 1,12 eV. Chênh 4,35 eV ấy được hàm mũ khuếch đại thành 3,5×10³⁶ lần mật độ hạt tải — và cùng công thức ấy giải thích vì sao con chip nào cũng chết ở 150 °C."
+pubDate: 2026-09-02
+tags: ["vat-ly", "dien-tu", "luong-tu", "javascript"]
+translationId: "vung-cam-vi-sao-kim-cuong-khong-dan-dien"
+---
+
+import BandGapCarriers from '../../../components/demos/BandGapCarriers.astro';
+
+Kim cương là chất cách điện tốt nhất tự nhiên từng làm ra. Silic là thứ
+mọi con chip trên đời được cắt ra. Hai chất xếp nguyên tử theo **đúng một
+kiểu** — cùng mạng lập phương kim cương, mỗi nguyên tử bốn liên kết chĩa
+ra bốn đỉnh tứ diện. Chúng khác nhau đúng một con số:
+
+<BandGapCarriers />
+
+## Cùng một kiểu xếp, chỉ lệch nhau tám phần mười ångström
+
+Trong tinh thể cộng hoá trị, quỹ đạo của hai nguyên tử cạnh nhau tách làm
+hai mức: mức liên kết chìm xuống thành **vùng hoá trị** đầy ắp electron,
+mức phản liên kết vọt lên thành **vùng dẫn** trống trơn. Khoảng giữa là
+vùng cấm Eg — dải năng lượng không electron nào được phép mang. Nguyên tử
+càng sát nhau, quỹ đạo chồng lấn càng mạnh, khe tách càng rộng. (Cũng
+chiều cao ấy, nhìn bằng mắt thay vì bằng ampe kế, [quyết định màu một con
+LED](/vi/posts/mau-cua-led-va-hang-so-1240).)
+
+Đó là toàn bộ khác biệt. Liên kết C–C dài **1,545 Å**, liên kết Si–Si dài
+**2,352 Å** — xa hơn 1,52 lần. Cùng hình mạng, chỉ nở ra, và khe tụt từ
+**5,47 eV xuống 1,12 eV**. Kim loại nằm ở đầu kia của cùng dải: khe bằng
+không, electron tự do sẵn ở mọi nhiệt độ — [chính đám electron ấy hút
+nhiệt khỏi tay bạn khi sờ tay nắm cửa
+thép](/vi/posts/vi-sao-kim-loai-so-vao-thay-lanh).
+
+## Hàm mũ biến 4,35 eV thành 10³⁶
+
+Dao động nhiệt thỉnh thoảng hất được một electron qua khe. Xác suất ấy là
+hàm Boltzmann, và mật độ hạt tải nội tại đi theo:
+
+```
+n_i ∝ e^(−Eg / 2kT)
+```
+
+Ở 300 K, kT = 25,9 meV, tức 2kT = **51,7 meV**. Chia 4,35 eV chênh lệch
+cho 51,7 meV được số mũ 84,1, và e mũ 84,1 là **3,5×10³⁶**. Khe cấm gấp
+năm lần không cho chênh lệch gấp năm — nó cho ba mươi sáu bậc mười.
+
+Cùng con số ấy đặt lên bàn tay: silic tinh khiết có **1,0×10¹⁰ hạt tải mỗi
+cm³**, nghe nhiều nhưng thực ra là một electron tự do trên mỗi **5×10¹²
+nguyên tử**. Kim cương ở cùng nhiệt độ: cỡ 10⁻²⁷ mỗi cm³. Muốn tìm trung
+bình *một* electron đã trèo qua khe, bạn cần quả cầu kim cương **bán kính
+4 400 km** — to hơn Sao Hoả.
+
+## Cùng công thức ấy, nhìn ngang, là chiếc nhiệt kế
+
+Giữ Eg đứng yên và kéo nhiệt độ thì hàm mũ đổi vai. Với silic quanh 300 K,
+nóng thêm 10 K là mật độ hạt tải **nhân 2,11 lần**. Hệ số điều khiển
+chuyện đó bằng Eg/2k = **6 499 K**, trong khi hệ số cần để điện trở giảm
+đúng một nửa mỗi 10 độ là 6 368 K — nên câu "bán dẫn giảm nửa điện trở mỗi
+10 độ" là mô tả khá chính xác của silic tinh khiết.
+
+Nhưng nó không đúng cho mọi cảm biến. Nhiệt điện trở NTC trong bình nóng
+lạnh hay điều hoà làm bằng ôxít mangan–niken, hệ số B chỉ khoảng **3 435
+K**: nóng thêm 10 độ, điện trở còn **69%**, tức −3,7% mỗi độ — chậm bằng
+nửa silic. Còn [nồi cơm điện cơ thì không đo nhiệt độ chút
+nào](/vi/posts/noi-com-dien-va-nam-cham-quen-tu-tinh): nó nhờ một viên nam
+châm quên mình là nam châm ở 103 °C.
+
+## Hai mươi phần tỉ đủ đè bẹp cả hàm mũ
+
+Kéo thanh pha tạp trong demo lên 10¹⁵ và đường cong gãy ngang. Silic có
+5,0×10²² nguyên tử mỗi cm³, nên 10¹⁵ nguyên tử phốt pho là **một phần năm
+mươi triệu** — hai mươi phần tỉ. Chừng ấy tạp chất kéo điện trở suất từ
+3×10⁵ Ω·cm xuống **4,6 Ω·cm**, gọn 70 000 lần.
+
+Món quà thật không phải độ dẫn, mà là **sự điếc đặc với nhiệt độ**: ở 300 K
+silic pha tạp có 1,0×10¹⁵ hạt tải, ở 150 °C vẫn đúng 1,0×10¹⁵. Transistor
+nhờ vậy mới là linh kiện chứ không phải nhiệt kế. Germani thua cuộc đúng ở
+chỗ này — Eg = 0,67 eV cho tới 5,9×10¹³ hạt tải nhiệt ngay ở 300 K, và một
+vùng germani pha tạp 10¹³ đã mất quyền kiểm soát từ **−6 °C**.
+
+## Trường hợp biên: 150 °C, khi con chip quên mất mình được pha tạp
+
+Nới nhiệt độ mãi thì hàm mũ đòi lại chỗ. Trong một con chip, các vùng
+loãng nhất chỉ pha tạp cỡ 10¹³ cm⁻³; ở 150 °C, hạt tải nhiệt của chính
+silic đã lên **8,9×10¹²** — ngang bằng. Lớp tiếp giáp hết là tiếp giáp,
+dòng rò dựng đứng, và mọi tờ datasheet dừng ở 150 °C không phải vì nhựa
+chảy mà vì vật lý hết chỗ.
+
+Lối thoát duy nhất là đi ngược lên trục Eg. Silic cacbua 3,26 eV chỉ có
+10⁻⁸ hạt tải nhiệt mỗi cm³ ở 300 K và phải quá **1 000 °C** mới quên nổi
+mức pha tạp 10¹⁵ — nó thăng hoa trước khi kịp quên, nên bộ nghịch lưu xe
+điện dùng SiC chạy 200 °C tỉnh bơ. Đẩy tiếp lên 5,47 eV là gặp lại kim
+cương, và nghịch lý khép vòng: đúng cái khe khiến nó vô dụng làm vật dẫn
+lại biến nó thành vật liệu công suất trong mơ — chịu điện trường gấp hơn
+30 lần silic, tản nhiệt gấp năm lần đồng.
+
+Vướng mỗi chuyện chưa ai pha tạp nổi nó cho ra hồn, mà thủ phạm vẫn là cái
+khe ấy: khe càng rộng, mức tạp chất càng bị chôn sâu. Nguyên tử bo trong
+silic nằm cách vùng hoá trị **0,045 eV**, chưa tới hai lần kT, nên ở nhiệt
+độ phòng nó nhả electron gần như hết; cũng nguyên tử bo ấy trong kim cương
+nằm cách **0,37 eV** — mười bốn lần kT, và đại đa số ngồi im. Vật liệu giữ
+chặt electron của mình đến thế thì cũng giữ chặt luôn món quà bạn định
+tặng nó.

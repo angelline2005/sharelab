@@ -1,0 +1,166 @@
+---
+// Penalty-kick reachability, front view of a FIFA goal (7,32 × 2,44 m),
+// spot at 11 m. Ball flight t = d/v, drag ignored: tích phân với Cd = 0,20
+// cho 0,417 s thay vì 0,393 s (+6%), kéo vùng chết từ 66,6% xuống 64,9% —
+// không đổi kết luận. Keeper is modelled as reacting from rest:
+// t_dive = t − t_react, lateral centre-of-mass shift x = ½·a·t_dive²,
+// reach per side = static lateral reach (1,0 m) + x, capped at 2,9 m —
+// the measured full-stretch dive reach of a tall keeper, so the constant-a
+// model cannot invent superhuman reach at the slow end of the speed slider.
+// Valid range: v 15–35 m/s, t_react 0,12–0,35 s, a 6–16 m/s².
+---
+
+<figure class="demo" data-demo="phat-den-va-vung-chet-cua-thu-mon">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Tốc độ sút (m/s) <output data-out="v"></output>
+      <input type="range" data-in="v" min="15" max="35" step="0.5" value="28" /></label>
+    <label>Thời gian phản xạ (s) <output data-out="r"></output>
+      <input type="range" data-in="r" min="0.12" max="0.35" step="0.01" value="0.20" /></label>
+    <label>Gia tốc bay người (m/s²) <output data-out="a"></output>
+      <input type="range" data-in="a" min="6" max="16" step="0.5" value="12" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Khung thành nhìn chính diện, đúng tỉ lệ 7,32 × 2,44 m. Dải xanh giữa là
+    phần thủ môn với tới được nếu anh ta chỉ bắt đầu di chuyển SAU khi bóng
+    rời chân; đoạn vàng ở hai mép dải là phần thêm được nhờ cú bay, phần
+    còn lại là tầm với đứng yên. Hai dải đỏ là vùng chết — bóng vào đó thì
+    không có cú bay nào cứu kịp. Thước mét chạy dọc vạch vôi để bạn tự đo.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const CURVE = '#2563eb', MARK = '#dc2626', EXTRA = '#f59e0b';
+  const GW = 7.32, GH = 2.44, DIST = 11, ARM = 1.0, RMAX = 2.9;
+  const vi = (x: number, d: number) => x.toFixed(d).replace('.', ',');
+
+  function model(v: number, tr: number, a: number) {
+    const tFly = DIST / v;
+    const tDive = Math.max(0, tFly - tr);
+    const shift = 0.5 * a * tDive * tDive;
+    const raw = ARM + shift;
+    const reach = Math.min(raw, RMAX);
+    const cover = Math.min(2 * reach, GW);
+    const dead = GW - cover;
+    return { tFly, tDive, shift, reach, cover, dead, pct: (dead / GW) * 100, capped: raw > RMAX };
+  }
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (k: string) => root.querySelector(`[data-in="${k}"]`) as HTMLInputElement;
+    const output = (k: string) => root.querySelector(`[data-out="${k}"]`) as HTMLOutputElement;
+
+    function draw() {
+      const v = Number(input('v').value);
+      const tr = Number(input('r').value);
+      const a = Number(input('a').value);
+      output('v').textContent = vi(v, 1);
+      output('r').textContent = vi(tr, 2);
+      output('a').textContent = vi(a, 1);
+      const m = model(v, tr, a);
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.46);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+      ctx.font = '10px system-ui,sans-serif';
+
+      const padL = 18, padR = 18, padT = 34, padB = 30;
+      const s = Math.min((cssW - padL - padR) / GW, (cssH - padT - padB) / GH);
+      const cx = cssW / 2, yTop = padT, yBot = padT + GH * s;
+      const X = (mx: number) => cx + mx * s;   // mx in metres from goal centre
+
+      // Reachable strip (blue) and the two dead strips (red).
+      ctx.fillStyle = CURVE; ctx.globalAlpha = 0.18;
+      ctx.fillRect(X(-m.reach), yTop, 2 * m.reach * s, GH * s);
+      ctx.fillStyle = MARK; ctx.globalAlpha = 0.18;
+      ctx.fillRect(X(-GW / 2), yTop, (GW / 2 - m.reach) * s, GH * s);
+      ctx.fillRect(X(m.reach), yTop, (GW / 2 - m.reach) * s, GH * s);
+      // The slice of the strip that the dive itself bought (amber).
+      ctx.fillStyle = EXTRA; ctx.globalAlpha = 0.3;
+      ctx.fillRect(X(-m.reach), yTop, (m.reach - ARM) * s, GH * s);
+      ctx.fillRect(X(ARM), yTop, (m.reach - ARM) * s, GH * s);
+      ctx.globalAlpha = 1;
+
+      // Goal frame.
+      ctx.strokeStyle = fg; ctx.lineWidth = 3; ctx.beginPath();
+      ctx.moveTo(X(-GW / 2), yBot); ctx.lineTo(X(-GW / 2), yTop);
+      ctx.lineTo(X(GW / 2), yTop); ctx.lineTo(X(GW / 2), yBot);
+      ctx.stroke(); ctx.lineWidth = 1;
+      ctx.globalAlpha = 0.35; ctx.beginPath();
+      ctx.moveTo(X(-GW / 2) - 8, yBot); ctx.lineTo(X(GW / 2) + 8, yBot); ctx.stroke();
+      ctx.globalAlpha = 1;
+
+      // Keeper standing at the centre of the line.
+      const hh = 1.85 * s;
+      ctx.strokeStyle = fg; ctx.lineWidth = 2; ctx.beginPath();
+      ctx.moveTo(cx, yBot); ctx.lineTo(cx, yBot - hh * 0.62); ctx.stroke();
+      ctx.beginPath(); ctx.arc(cx, yBot - hh * 0.74, hh * 0.11, 0, Math.PI * 2); ctx.stroke();
+      ctx.lineWidth = 1;
+
+      // Reach arrows at chest height: white-of-arm part then dive part.
+      const yA = yBot - hh * 0.55;
+      const arrow = (from: number, to: number, col: string) => {
+        ctx.strokeStyle = col; ctx.fillStyle = col; ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.moveTo(X(from), yA); ctx.lineTo(X(to), yA); ctx.stroke();
+        const dir = to > from ? 1 : -1;
+        ctx.beginPath();
+        ctx.moveTo(X(to), yA); ctx.lineTo(X(to) - dir * 7, yA - 4); ctx.lineTo(X(to) - dir * 7, yA + 4);
+        ctx.closePath(); ctx.fill(); ctx.lineWidth = 1;
+      };
+      arrow(0, ARM, CURVE); arrow(0, -ARM, CURVE);
+      if (m.reach > ARM + 0.01) { arrow(ARM, m.reach, EXTRA); arrow(-ARM, -m.reach, EXTRA); }
+
+      // Metre ruler along the goal line, 0 at the left post.
+      ctx.strokeStyle = fg; ctx.fillStyle = fg; ctx.globalAlpha = 0.55;
+      ctx.textAlign = 'center';
+      for (let k = 0; k <= 7; k++) {
+        const px = X(-GW / 2 + k);
+        ctx.beginPath(); ctx.moveTo(px, yBot + 2); ctx.lineTo(px, yBot + 7); ctx.stroke();
+        ctx.fillText(`${k} m`, px, yBot + 19);
+      }
+      ctx.globalAlpha = 1;
+
+      // Headline: dead width in metres and per cent.
+      ctx.fillStyle = MARK; ctx.font = 'bold 15px system-ui,sans-serif'; ctx.textAlign = 'center';
+      ctx.fillText(`Vùng chết ${vi(m.dead, 2)} m = ${vi(m.pct, 1)}% bề ngang`, cx, 18);
+      ctx.font = '10px system-ui,sans-serif';
+      ctx.fillStyle = fg; ctx.globalAlpha = 0.6; ctx.textAlign = 'left';
+      ctx.fillText(`khung 7,32 × 2,44 m · chấm phạt đền cách 11 m`, padL, cssH - 6);
+      ctx.textAlign = 'right';
+      ctx.fillText(`dải với tới ${vi(m.cover, 2)} m`, cssW - padR, cssH - 6);
+      ctx.globalAlpha = 1;
+
+      const note = m.capped
+        ? ' · <b>chạm trần tầm với 2,9 m của một cú bay hết cỡ</b>'
+        : (m.pct < 50 ? ' · <b>dưới một nửa: sút nhẹ vào góc hết an toàn</b>' : '');
+      readout.innerHTML =
+        `Sút ${vi(v, 1)} m/s (${vi(v * 3.6, 0)} km/h) → bóng qua 11 m trong <b>${vi(m.tFly, 3)} s</b>` +
+        ` · trừ phản xạ ${vi(tr, 2)} s còn ${vi(m.tDive, 3)} s để bay, dịch ${vi(m.shift, 2)} m` +
+        ` · tầm với ${vi(m.reach, 2)} m mỗi bên = dải ${vi(m.cover, 2)} m giữa khung 7,32 m` +
+        ` → <b>${vi(m.dead, 2)} m (${vi(m.pct, 1)}%) không thể cứu</b>${note}`;
+    }
+
+    root.querySelectorAll('input').forEach((el) => el.addEventListener('input', draw));
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="phat-den-va-vung-chet-cua-thu-mon"]').forEach(setup);
+</script>

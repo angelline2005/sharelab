@@ -1,0 +1,183 @@
+---
+// Tâm va đập (center of percussion) của vật rắn quay quanh trục ở tay cầm.
+// Mô hình: thanh đều dài L = 0,80 m, khối lượng m_r = 0,30 kg, cộng khối
+// lượng điểm m_t đặt ở đầu mút (x = L) — "vợt đầu nặng".
+//   I  = m_r·L²/3 + m_t·L²        (momen quán tính quanh tay cầm)
+//   m·d = m_r·L/2 + m_t·L         (momen khối lượng bậc một)
+//   b_COP = I/(m·d) = L·(m_r/3 + m_t)/(m_r/2 + m_t)
+//   R = F·(1 − b/b_COP)           (lực xung kích truyền vào tay)
+// Nguồn: bài toán con lắc vật lý cổ điển (Huygens, tâm dao động) — xem
+// Cross, "The sweet spot of a baseball bat", Am. J. Phys. 66 (1998) 772.
+// Phạm vi hợp lệ: mô hình VẬT RẮN (chỉ mô tả xung lực tổng), bỏ qua dao
+// động uốn đàn hồi; b ≤ L; lực F là lực va trung bình, R tỉ lệ tuyến tính
+// với F nên mọi kết luận về vị trí không phụ thuộc F.
+---
+
+<figure class="demo" data-demo="diem-dap-ngot-cua-vot-va-gay-bong">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Vị trí đập, tính từ tay (m) <output data-out="b"></output>
+      <input type="range" data-in="b" min="0.05" max="0.80" step="0.01" value="0.48" /></label>
+    <label>Khối lượng dồn ở đầu gậy (g) <output data-out="mt"></output>
+      <input type="range" data-in="mt" min="0" max="300" step="10" value="0" /></label>
+    <label>Lực va chạm F (N) <output data-out="f"></output>
+      <input type="range" data-in="f" min="100" max="1500" step="50" value="500" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Trên: cây gậy đều 80 cm, tay cầm ở mốc 0, mũi tên đỏ là cú va, mũi tên
+    ở tay là phần lực dội lại — nó ngắn dần về 0 khi điểm đập tiến tới vạch
+    cam, rồi <em>đổi chiều</em> khi vượt qua. Dưới: lực ở tay theo vị trí
+    đập, một đường thẳng cắt trục 0 đúng tại tâm va đập. Dồn khối lượng ra
+    đầu gậy là kéo vạch cam chạy ra xa tay.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const CURVE = '#2563eb', MARK = '#dc2626', LM = '#f59e0b';
+  const L = 0.80, MR = 0.30;
+
+  const bcop = (mt: number) => (L * (MR / 3 + mt)) / (MR / 2 + mt);
+  const reaction = (F: number, b: number, mt: number) => F * (1 - b / bcop(mt));
+  const vi = (x: number, n: number) => x.toFixed(n).replace('.', ',');
+
+  function niceStep(span: number) {
+    const raw = span / 6, pow = Math.pow(10, Math.floor(Math.log10(raw)));
+    for (const f of [1, 2, 2.5, 5, 7.5, 10]) if (pow * f >= raw) return pow * f;
+    return pow * 10;
+  }
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (k: string) => root.querySelector(`[data-in="${k}"]`) as HTMLInputElement;
+    const output = (k: string) => root.querySelector(`[data-out="${k}"]`) as HTMLOutputElement;
+
+    function draw() {
+      const b = Number(input('b').value);
+      const mtg = Number(input('mt').value), mt = mtg / 1000;
+      const F = Number(input('f').value);
+      output('b').textContent = vi(b, 2);
+      output('mt').textContent = String(mtg);
+      output('f').textContent = String(F);
+
+      const cop = bcop(mt), R = reaction(F, b, mt);
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.58);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+      ctx.font = '10px system-ui,sans-serif';
+
+      const padL = 48, padR = 14, padB = 28;
+      const X = (x: number) => padL + (x / L) * (cssW - padL - padR);
+      const stickY = Math.round(cssH * 0.26);
+      const plotT = Math.round(cssH * 0.47), plotB = cssH - padB;
+
+      // ---- vertical guide at the COP, spanning both panels ----
+      ctx.strokeStyle = LM; ctx.globalAlpha = 0.85; ctx.setLineDash([4, 3]);
+      ctx.beginPath(); ctx.moveTo(X(cop), 8); ctx.lineTo(X(cop), plotB); ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillStyle = LM; ctx.textAlign = X(cop) > cssW * 0.72 ? 'right' : 'left';
+      ctx.fillText(`tâm va đập ${vi(cop * 100, 1)} cm`, X(cop) + (X(cop) > cssW * 0.72 ? -5 : 5), 15);
+      ctx.globalAlpha = 1;
+
+      // ---- the stick, tapering handle -> barrel ----
+      ctx.fillStyle = fg; ctx.globalAlpha = 0.35;
+      ctx.beginPath();
+      ctx.moveTo(X(0), stickY - 3); ctx.lineTo(X(L), stickY - 7);
+      ctx.lineTo(X(L), stickY + 7); ctx.lineTo(X(0), stickY + 3);
+      ctx.closePath(); ctx.fill();
+      ctx.globalAlpha = 1;
+
+      // hand grip
+      ctx.strokeStyle = fg; ctx.lineWidth = 3;
+      ctx.beginPath(); ctx.moveTo(X(0), stickY - 11); ctx.lineTo(X(0), stickY + 11); ctx.stroke();
+      ctx.lineWidth = 1;
+      ctx.globalAlpha = 0.65; ctx.fillStyle = fg; ctx.textAlign = 'center';
+      ctx.fillText('tay', X(0), stickY + 24); ctx.globalAlpha = 1;
+
+      // lump of mass at the tip
+      if (mt > 0) {
+        ctx.fillStyle = LM;
+        ctx.beginPath(); ctx.arc(X(L), stickY, 3 + 30 * mt, 0, Math.PI * 2); ctx.fill();
+      }
+
+      // ---- force arrows, common scale: 1500 N -> 60 px ----
+      const px = (n: number) => (Math.abs(n) / 1500) * 60;
+      function arrow(x: number, yTail: number, yHead: number) {
+        const s = Math.sign(yHead - yTail);
+        ctx.beginPath(); ctx.moveTo(x, yTail); ctx.lineTo(x, yHead); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(x, yHead);
+        ctx.lineTo(x - 4, yHead - 6 * s); ctx.lineTo(x + 4, yHead - 6 * s);
+        ctx.closePath(); ctx.fill();
+      }
+      ctx.strokeStyle = MARK; ctx.fillStyle = MARK; ctx.lineWidth = 2;
+      arrow(X(b), stickY - 10 - px(F), stickY - 10);
+      ctx.textAlign = 'center';
+      ctx.fillText(`${F} N`, X(b), stickY - 15 - px(F));
+
+      // reaction at the hand: same sign as F when inside the COP, flipped outside
+      const rLen = Math.max(px(R), 1.5);
+      if (R >= 0) arrow(X(0) + 13, stickY - 10 - rLen, stickY - 10);
+      else arrow(X(0) + 13, stickY + 10 + rLen, stickY + 10);
+      ctx.textAlign = 'left';
+      ctx.fillText(`${vi(Math.abs(R), 0)} N`, X(0) + 19, R >= 0 ? stickY - 12 - rLen : stickY + 16 + rLen);
+      ctx.lineWidth = 1;
+
+      // ---- lower panel: R versus impact position ----
+      const yHi = F, yLo = reaction(F, L, mt);
+      const Y = (v: number) => plotT + ((yHi - v) / (yHi - yLo)) * (plotB - plotT);
+
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.3;
+      ctx.beginPath(); ctx.moveTo(padL, plotT); ctx.lineTo(padL, plotB); ctx.lineTo(cssW - padR, plotB); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(padL, Y(0)); ctx.lineTo(cssW - padR, Y(0)); ctx.stroke();
+      ctx.globalAlpha = 0.55; ctx.fillStyle = fg;
+
+      ctx.textAlign = 'center';
+      for (const cm of [0, 20, 40, 60]) ctx.fillText(String(cm), X(cm / 100), plotB + 14);
+      ctx.fillText('80 cm', X(0.8) - 8, plotB + 14);
+      ctx.textAlign = 'right';
+      const step = niceStep(yHi - yLo);
+      for (let v = Math.ceil(yLo / step) * step; v <= yHi + 1e-9; v += step)
+        ctx.fillText(`${Math.round(v)} N`, padL - 4, Y(v) + 3);
+      ctx.globalAlpha = 1;
+
+      ctx.strokeStyle = CURVE; ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(X(0), Y(reaction(F, 0, mt))); ctx.lineTo(X(L), Y(yLo));
+      ctx.stroke(); ctx.lineWidth = 1;
+
+      ctx.fillStyle = MARK;
+      ctx.beginPath(); ctx.arc(X(b), Y(R), 6, 0, Math.PI * 2); ctx.fill();
+
+      const dead = Math.abs(R) < 0.03 * F
+        ? ' · <b>vùng chết: tay gần như không nhận gì</b>'
+        : R < 0 ? ' · <b>giật ngược chiều cú va</b>' : '';
+      readout.innerHTML =
+        `Gậy đều 0,80 m (300 g) + ${mtg} g ở đầu · đập tại ${vi(b, 2)} m → tay nhận ` +
+        `<b>${vi(Math.abs(R), 1)} N</b> từ cú va ${F} N (${vi(100 * Math.abs(R) / F, 1)}%)` +
+        ` · tâm va đập: <b>${vi(cop, 3)} m</b> → 0 N${dead}`;
+    }
+
+    root.querySelectorAll('input').forEach((el) => el.addEventListener('input', draw));
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="diem-dap-ngot-cua-vot-va-gay-bong"]').forEach(setup);
+</script>

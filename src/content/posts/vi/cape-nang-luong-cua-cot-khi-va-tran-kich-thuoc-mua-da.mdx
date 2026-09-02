@@ -1,0 +1,99 @@
+---
+title: "Mưa đá không thể to quá 24 cm — và kỷ lục thế giới là 20,3 cm"
+seoTitle: "CAPE và mưa đá: dòng thăng mạnh bao nhiêu, hạt đá to nhất bao nhiêu"
+description: "CAPE là năng lượng nổi của mỗi kilogram không khí. Đổi trọn sang động năng, CAPE 4 000 J/kg cho dòng thăng 89 m/s — 322 km/h — và cột khí ấy giữ lơ lửng viên đá đường kính 23,8 cm. Kỷ lục thực đo: 20,3 cm."
+pubDate: 2026-09-02
+tags: ["vat-ly", "khi-hau", "co-hoc", "javascript"]
+translationId: "cape-nang-luong-cua-cot-khi-va-tran-kich-thuoc-mua-da"
+---
+
+import CapeUpdraft from '../../../components/demos/CapeUpdraft.astro';
+
+Mưa đá nện lên mái tôn nghe như ai ném sỏi. Nhưng viên đá bằng quả bóng
+tennis nặng gần một lạng, và trước lúc rơi nó đã treo lơ lửng trên đầu bạn
+hàng chục phút. Thứ giữ nó ở trên đó là một cột không khí đang bốc lên —
+và sức của cột khí ấy gói gọn trong một con số:
+
+<CapeUpdraft />
+
+## Một kilogram không khí mang theo bao nhiêu năng lượng
+
+Bọc khí ẩm nóng sát mặt đất, khi bị đẩy lên, nở ra và [nguội đi 9,8 °C mỗi
+kilômét](/vi/posts/vi-sao-len-nui-thi-lanh-du-gan-mat-troi-hon). Nhưng hơi
+nước trong nó ngưng tụ dọc đường, và [nhiệt ẩn trả
+lại](/vi/posts/nhiet-an-hai-quang-nhiet-ke-dung-im) giữ cho bọc khí chỉ
+nguội chừng 5–6 °C mỗi kilômét. Nguội chậm hơn môi trường nghĩa là **luôn
+nhẹ hơn môi trường**: càng lên càng bị đẩy tiếp. Cộng công của lực nổi
+trên cả quãng đường ấy, ta được CAPE — năng lượng đối lưu khả dụng, tính
+bằng joule trên mỗi kilogram không khí.
+
+Bản tin dông đọc CAPE như đọc mã lực: 1 000 J/kg là dông thường, 2 500 là
+dông mạnh, trên 4 000 là hạng siêu ổ dông. Con số 4 000 J/kg nghĩa là mỗi
+kilogram khí được cấp đúng chừng ấy công — bằng công nâng chính nó lên
+**408 mét**. Đổi trọn sang động năng:
+
+```
+w = √(2 · CAPE)
+```
+
+CAPE 4 000 → **w = 89,4 m/s, tức 322 km/h**, một cột khí dựng đứng chạy
+nhanh hơn tàu cao tốc.
+
+## Viên đá lớn nhất mà cột khí ấy nuôi nổi
+
+Viên đá đứng yên giữa trời khi lực cản của dòng khí đúng bằng trọng lượng
+nó — vẫn là bài toán [vận tốc tới
+hạn](/vi/posts/roi-tu-do-va-van-toc-toi-han), chỉ đọc ngược chiều: thay vì
+hỏi viên đá rơi nhanh bao nhiêu, ta hỏi dòng khí này giữ nổi viên to bao
+nhiêu. Cân bằng hai lực cho:
+
+```
+D_max = 3 · ρ_kk · Cd · w² / (4 · ρ_đá · g)
+```
+
+Với ρ_kk = 0,70 kg/m³ (độ cao ~5,5 km, nơi hạt đá lớn lên), Cd = 0,5 và
+ρ_đá = 900 kg/m³, dòng thăng 89,4 m/s giữ nổi viên **23,8 cm**. Để ý số mũ:
+đường kính tỉ lệ với **bình phương** tốc độ — cột khí mạnh gấp đôi nuôi
+nổi viên đá to gấp bốn. CAPE 1 000 chỉ đỡ nổi 5,9 cm; CAPE 2 500 đã là
+14,9 cm.
+
+Kỷ lục thế giới thuộc về viên đá rơi xuống Vivian, South Dakota ngày
+23/7/2010: đường kính **20,3 cm**, chu vi 47,3 cm, cân được 0,88 kg sau khi
+đã tan bớt trong lúc chờ người ta tìm ra cái cân. Trần lý thuyết 23,8 cm
+cách kỷ lục đúng **3,5 cm** — gần đến mức đáng ngờ, với một mô hình chỉ
+gồm hai lực.
+
+## Vì sao thực tế chỉ được một nửa
+
+Công thức `w = √(2·CAPE)` giả định cột khí giữ trọn năng lượng nổi, điều
+không cơn dông nào làm được: nó **cuốn khí khô** hai bên vào, và khí khô
+làm bay hơi bớt nước, hút nhiệt, giảm độ nổi; nó phải **cõng nước** — hàng
+gram nước lỏng và đá mỗi mét khối. Radar Doppler đo đỉnh dòng thăng trong
+siêu ổ dông mạnh nhất chỉ vào khoảng 50–60 m/s — **chừng 60% con số lý
+thuyết**. Kéo thanh hiệu suất về 50% trong demo và trần sụp
+xuống 5,9 cm — cỡ quả bóng tennis, viên nặng 97 g, chạm đất ở 122 km/h với
+56 J động năng, thừa sức thủng mái tôn và móp nắp capô.
+
+Viên đá Vivian vì thế đòi một cột khí gần như hoàn hảo: giữ nó lơ lửng cần
+82,6 m/s, tức CAPE 3 400 J/kg mà **không hao một phần trăm nào**. Và lơ
+lửng được vẫn chưa đủ, còn phải kịp lớn: với hàm lượng nước lỏng siêu lạnh
+3 g/m³, hạt đá cần **gần 50 phút** đi đi về về qua vùng siêu lạnh mới đắp
+đủ 20 cm (26 phút cho viên 5,9 cm). Một cơn dông CAPE khủng nhưng phun hạt
+ra khỏi cột sớm vẫn chỉ cho mưa đá bé.
+
+## Trường hợp biên: bốn kilômét không khí ấm ở dưới
+
+Còn một cửa ải nữa: rơi xuống, viên đá phải xuyên lớp khí quyển trên 0 °C.
+Lấy mực đóng băng 4 km và mặt đất 25 °C — một ngày tháng Tư ở miền núi
+phía Bắc — rồi tính nhiệt lượng dòng khí
+rót vào viên đá trong quãng rơi: viên **1 cm mất khoảng 94% khối lượng**,
+coi như biến mất, và ngưỡng sống sót nằm ngay quanh 1 cm. Ngưỡng ấy dịch
+rất nhanh theo mùa vì tốc độ tan tỉ lệ nghịch với cỡ hạt gần như luỹ thừa
+1,75: ngày mát 10 °C, hạt 0,6 cm đã qua được; giữa hè mặt đất 33 °C và mực
+đóng băng lên gần 5 km, phải to hơn 1,3 cm mới có cửa.
+
+Nên mưa đá ở Sơn La, Lào Cai, Nghệ An dồn vào tháng 3–4, lúc tầng ấm bên
+dưới còn mỏng, chứ không phải giữa mùa dông. Cùng một đám mây ấy, cùng cột
+khí 40 m/s: tháng Ba nó ném đá xuống mái nhà, tháng Bảy nó chỉ đổ một trận
+mưa rào — và cơn mưa rào ấy chính là những viên đá đã tan hết trong bốn
+cây số cuối.

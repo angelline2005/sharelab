@@ -1,0 +1,87 @@
+---
+title: "Cả mười quãng tám bạn nghe được nằm gọn trên 35 milimét"
+seoTitle: "Ốc tai mã hoá tần số thế nào: bản đồ vị trí và hàm Greenwood"
+description: "Ốc tai dài 35 mm trải trọn dải nghe được lên chính nó: 20 Hz ở đỉnh, 20 677 Hz ở đáy. Mỗi quãng tám chưa tới 5 mm, nửa cung tại nốt La 440 là 0,32 mm — và ngưỡng phân biệt cao độ 0,3% của bạn chỉ là hai điểm cách nhau 19 micromet."
+pubDate: 2026-09-02
+tags: ["vat-ly", "song", "am-thanh", "javascript"]
+translationId: "ban-do-tan-so-oc-tai-muoi-chin-micromet"
+---
+
+import CochlearMap from '../../../components/demos/CochlearMap.astro';
+
+Ốc tai của bạn là một ống xoắn hai vòng rưỡi; duỗi thẳng ra được **35
+milimét**, ngắn hơn đốt ngón tay cái. Mọi thứ bạn từng nghe — tiếng ù máy
+biến áp, giọng mẹ, tiếng dơi rít — đều có một địa chỉ riêng trên đoạn ấy:
+
+<CochlearMap />
+
+## Tần số được chuyển thành địa chỉ
+
+Chạy dọc trong ống là màng đáy, và nó cố tình không đồng đều: ở đáy ốc tai
+màng hẹp (~0,1 mm) và căng cứng, càng lên đỉnh càng rộng ra (~0,5 mm) và
+mềm dần — độ cứng tụt khoảng **100 lần** trên suốt chiều dài. Sóng áp suất
+vào tai chạy dọc màng và **đỉnh rung dừng lại đúng chỗ** cộng hưởng với
+tần số của nó: âm cao dừng sớm ở đáy, âm trầm đi hết đường lên đỉnh (Georg
+von Békésy soi được đợt sóng chạy ấy dưới kính hiển vi — giải Nobel Y học
+1961). Tai bạn không "tính" phổ tần số, nó **đo bằng thước** — cây thước
+Donald Greenwood khớp thành công thức năm 1990:
+
+```
+f = 165,4 · (10^(2,1·x/L) − 0,88)   Hz
+```
+
+với x là khoảng cách tính từ đỉnh ốc tai và L = 35 mm. Thay x = 0 ra
+19,8 Hz; thay x = L ra **20 677 Hz** — vừa đúng 10,0 quãng tám giữa hai
+đầu. Hàm mũ theo vị trí nghĩa là tai đọc tần số bằng lôgarit — đúng lối
+rút gọn nó đã dùng cho cường độ ở [thang
+decibel](/vi/posts/thang-decibel-vi-sao-tai-nguoi-dem-bang-logarit).
+
+## Quãng tám nào cũng dưới 5 mm, nhưng nốt trầm bị dồn
+
+Vì là thang lôgarit, cứ mỗi lần tần số gấp đôi thì điểm kích thích lại
+dịch đi một đoạn gần như cố định: **5,02 mm**, và không bao giờ hơn. La
+440 nằm ở 9,15 mm tính từ đỉnh, La 880 ở 13,21 mm — cách nhau **4,06 mm**.
+
+"Gần như" là chỗ hàm Greenwood khác một thang log thuần tuý: số hạng −0,88
+bóp chặt đầu trầm. Quãng tám thấp nhất bạn nghe được, 20 → 40 Hz, chỉ
+chiếm **0,83 mm**, trong khi quãng tám 10 → 20 kHz chiếm 4,97 mm — **gấp
+6 lần** cho cùng một quãng tám âm nhạc. Kéo hai con trỏ xuống vùng trầm mà
+xem: dãy phím piano dồn lại thành một vệt. Nửa cung — tỉ số [2^(1/12) của
+bình quân luật](/vi/posts/vi-sao-dan-piano-co-y-chinh-sai-moi-not) — rộng
+0,42 mm ở vùng cao, còn 0,32 mm tại La 440, và chỉ 0,17 mm quanh 100 Hz.
+Toàn bộ 88 phím đàn, từ La0 (27,5 Hz) tới Đô8 (4 186 Hz), gói trong
+**23,3 mm** đầu tiên; mười một milimét còn lại giữ 2,3 quãng tám mà không
+nhạc cụ nào đặt nốt gốc vào.
+
+## Mười chín micromet, chưa tới hai tế bào lông
+
+Người nghe tốt phân biệt được hai âm chênh nhau **0,3%** tần số — bằng một
+phần hai mươi nửa cung. Trên thước Greenwood, 0,3% ở nốt Đô6 (1 047 Hz)
+dịch đỉnh rung đi **19,0 micromet**.
+
+Hàng tế bào lông trong — 3 500 tế bào trải suốt 35 mm — nằm cách nhau
+**10 µm**, tức 100 tế bào mỗi milimét. Cái ngưỡng nghe ra của bạn, ranh
+giới giữa "cùng một nốt" và "phô rồi", là một cú xê dịch chưa đầy **hai tế
+bào**.
+
+## Trường hợp biên: trên 4 kHz thì giai điệu tắt
+
+Chỉ có điều bản đồ vị trí **không giải thích nổi** 19 µm. Đỉnh rung không
+phải một điểm mà là một ụ trải rộng: bộ lọc thính giác ở 1 kHz rộng chừng
+133 Hz, tức **0,84 mm** màng đáy cùng rung lên — gấp **44 lần** khoảng
+cách bạn phân biệt được. Chỉ với vị trí, đó là đọc một cây thước nhoè tới
+một phần bốn mươi tư độ nhoè của nó.
+
+Tai bù bằng kênh thứ hai: **thời gian**. Dưới khoảng 1 kHz, sợi thần kinh
+phóng điện đúng nhịp từng chu kỳ sóng, nên não đọc tần số từ *khoảng cách
+giữa các xung* chứ không cần biết xung đến từ đâu — đúng cỗ máy đếm thời
+gian đã cho bạn [phân biệt 10 micro
+giây](/vi/posts/hai-tai-va-muoi-micro-giay-nghe-ra-huong) chênh lệch giữa
+hai tai. Nhưng nơron có thời gian trơ: trên 4–5 kHz nó không bám kịp nhịp
+sóng nữa, khoá pha tắt hẳn, chỉ còn lại tấm bản đồ nhoè.
+
+Đúng ở đó, khả năng nghe nhạc của con người tắt theo: trên 5 kHz người ta
+không nhận ra giai điệu quen thuộc, không gọi tên nổi quãng, chỉ còn cảm
+giác "chói" hay "đục". Nốt cao nhất của cây đàn piano là Đô8, **4 186
+Hz** — ba thế kỷ chế tác nhạc cụ đã dừng lại đúng chỗ sinh lý học bắt
+phải dừng, trước khi ai kịp biết vì sao.

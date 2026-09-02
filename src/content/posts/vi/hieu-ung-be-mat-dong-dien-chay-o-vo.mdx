@@ -1,0 +1,90 @@
+---
+title: "Ở 50 Hz dòng điện chui sâu 9,3 mm; với sóng WiFi chỉ 1,35 micromet"
+seoTitle: "Hiệu ứng bề mặt (skin effect): độ sâu thấm của dòng điện theo tần số"
+description: "Độ sâu thấm của đồng là 9,33 mm ở 50 Hz, 66,0 µm ở 1 MHz và 1,35 µm ở 2,4 GHz. Nghĩa là mọi sợi dây trong nhà bạn đều 'đặc' với điện lưới — còn với sóng WiFi, đúng sợi dây ấy chỉ dùng 0,27% tiết diện và điện trở của nó lớn gấp 371 lần."
+pubDate: 2026-09-02
+tags: ["vat-ly", "dien-tu", "song", "javascript"]
+translationId: "hieu-ung-be-mat-dong-dien-chay-o-vo"
+---
+
+import SkinDepth from '../../../components/demos/SkinDepth.astro';
+
+Kẹp đồng hồ vạn năng vào một đoạn dây đồng: nó trả về một con số điện trở.
+Bơm tín hiệu WiFi 2,4 GHz qua đúng đoạn dây ấy, điện trở của nó lớn gấp
+**371 lần**. Sợi dây không đổi một chút nào — chỉ tần số đổi, và dòng điện
+đã bỏ hoang phần lõi:
+
+<SkinDepth />
+
+## Dòng xoay chiều tự đuổi mình ra vỏ
+
+Dòng chảy trong dây sinh từ trường *bên trong chính khối kim loại*. Dòng
+xoay chiều làm từ trường ấy đảo chiều liên tục, mà [từ thông đang thay đổi
+thì sinh ra điện](/vi/posts/cam-ung-faraday-hai-cu-hich-nguoc-dau) — ngay
+trong lòng đồng. Những vòng dòng cảm ứng đó cộng vào dòng chính ở sát mặt
+dây và trừ đi ở tâm; càng vào sâu càng nhiều lớp kim loại chắn phía trước,
+nên biên độ tắt theo hàm mũ. Chiều dài đặc trưng của cú tắt ấy là **độ sâu
+thấm**:
+
+```
+δ = √( ρ / (π · f · µ) )
+```
+
+Sâu đúng một δ, mật độ dòng còn 1/e = 37% giá trị ở mặt — nên lớp vỏ dày
+một δ gánh **63,2%** toàn bộ dòng. Để ý cái *không* có trong công thức:
+bán kính dây và cường độ dòng. δ chỉ là chuyện của vật liệu và tần số, và
+nó đi theo 1/√f — nhân tần số lên 100 lần thì độ sâu chia 10.
+
+## Từ 9,33 mm tụt xuống 1,35 micromet
+
+Với đồng ủ (ρ = 1,72·10⁻⁸ Ω·m): **50 Hz → 9,33 mm**, 1 kHz → 2,09 mm,
+100 kHz → 209 µm, **1 MHz → 66,0 µm**, **2,4 GHz → 1,35 µm**. Hai đầu bảng
+cách nhau **6 928 lần**, đúng bằng căn bậc hai của tỉ số tần số. Một sợi
+tóc dày 70 µm — **gấp 52 lần** cái lớp vỏ mà sóng WiFi thèm dùng.
+
+## Dây trong nhà bạn đặc, thanh cái trạm biến áp thì không
+
+Sợi dây 1,5 mm² đi trong tường có bán kính 0,7 mm, mỏng hơn δ ở 50 Hz tới
+mười ba lần: dòng lưới phủ kín tiết diện, tỉ số điện trở xoay chiều trên một
+chiều là **1,0000**.
+
+Leo lên thang tiết diện thì nó bắt đầu đòi tiền: cáp 240 mm² mất thêm
+**1,6%**, còn cáp 1 000 mm² — bán kính 17,8 mm — đội tổn thất
+[I²R](/vi/posts/vi-sao-duong-day-tai-dien-phai-cao-the) lên **23%** chỉ vì
+tần số không chịu bằng 0. Nên cáp lõi lớn không đúc đặc mà bện từ nhiều bó
+nhỏ cách điện, hoán vị vào ra dọc chiều dài — mỗi sợi con đủ mảnh để dòng
+còn phủ kín được nó.
+
+Thanh cái đồng tròn đường kính 100 mm thì thua hẳn: chỉ **33,9%** tiết diện
+làm việc, điện trở gấp **2,95 lần** trị số một chiều, mật độ dòng ở tâm còn
+3,2% so với ngoài mặt. Nên thanh cái thực tế hay được làm dẹt hoặc rỗng
+ruột — dàn cùng khối đồng ấy ra thì phần nào cũng là "mặt".
+
+## Lên tần số WiFi, sợi dây chỉ còn là một cái ống
+
+Ở 2,4 GHz, sợi đồng bán kính 1 mm dùng **0,27%** tiết diện; phần đồng còn
+lại nằm đó làm khung. Đó là lý do kỹ thuật cao tần đầy những thứ trông như
+gian lận: ống dẫn sóng bằng đồng thau mạ bạc vài micromet — δ của bạc ở
+2,4 GHz là 1,30 µm, nên lớp mạ ấy *là* toàn bộ vật dẫn — hay [ăng-ten in
+phẳng trên bo mạch](/vi/posts/ang-ten-vi-sao-dien-thoai-khong-con-can-cai-can)
+với lớp đồng 35 µm, dày gấp 26 lần thứ mà tín hiệu thật sự chạm tới.
+
+## Trường hợp biên: cho f về 0, và cái lõi thép của đường dây cao thế
+
+Thả tần số về 0 thì mẫu số biến mất và δ → ∞. Công thức chia cho không,
+nhưng vật lý thì gọn: dòng một chiều không có từ thông biến thiên, không
+sinh dòng cảm ứng, nên cả tiết diện cùng làm việc. Hiệu ứng bề mặt không
+phải tính chất của sợi dây — nó là tính chất của một dòng điện *đang đổi*.
+
+Đầu kia của công thức là µ, và ở đó thép lật ngược trực giác. Thép carbon
+dẫn điện tệ hơn đồng 9,3 lần, đáng lẽ δ phải sâu hơn; nhưng độ từ thẩm của
+nó lớn cỡ 200 lần, mà µ cũng nằm dưới dấu căn nên thắng: δ của thép ở 50 Hz
+chỉ **2,01 mm**, nông hơn đồng 4,6 lần. Chính chỗ đó giải thích sợi cáp cao
+thế treo ngoài đồng ruộng: nó có lõi thép, nhưng lõi ấy chỉ để chịu lực kéo
+giữa hai cột — dòng điện vốn đã không muốn vào, nên sự phân công ấy gần như
+miễn phí.
+
+Rồi thép phản bội thêm lần nữa: lên vùng vi ba thì các đô-men từ không đảo
+kịp, µ tự sụp về gần 1 và con số 200 bốc hơi khỏi công thức. Cùng một chữ
+µ, ở 50 Hz nó ép dòng ra vỏ, ở 2,4 GHz nó buông tay — nên đường cong thép
+trong demo dừng ở 1 MHz, đúng chỗ công thức hết quyền phát biểu.

@@ -1,0 +1,105 @@
+---
+title: "Kéo khăn trải bàn: chậm đi một nửa, ly trượt xa gấp bốn"
+seoTitle: "Trò kéo khăn trải bàn: quãng dịch của ly tỉ lệ nghịch bình phương tốc độ"
+description: "Khăn phủ 30 cm dưới ly, rút với 5 m/s chỉ đẩy ly đi 2,4 mm. Rút với 1 m/s: 8,7 cm, đủ để ly rơi khỏi mép. Và dưới 0,77 m/s thì không còn quãng dịch nào để bàn — ly bám tốc độ khăn rồi bay theo khăn."
+pubDate: 2026-09-02
+tags: ["vat-ly", "co-hoc", "javascript"]
+translationId: "keo-khan-trai-ban-nhanh-hay-cham"
+---
+
+import TableclothPull from '../../../components/demos/TableclothPull.astro';
+
+Cái trò ai cũng đã xem một lần: giật phắt tấm khăn, bộ bát đĩa đứng nguyên
+tại chỗ. Trực giác bảo phải có mẹo — tay khéo, khăn đặc biệt, ma sát bằng
+không. Không có mẹo nào cả. Ma sát vẫn kéo cái ly đi, kéo mạnh là khác —
+nó chỉ không có thời gian:
+
+<TableclothPull />
+
+## Cái ly vẫn bị đẩy — chỉ trong sáu phần trăm giây
+
+Chừng nào khăn còn trượt dưới đáy ly, ma sát khăn–ly còn kéo ly chạy theo.
+Với μ₁ = 0,10 (cotton mịn dưới đáy thuỷ tinh), gia tốc ấy là μ₁·g =
+**0,98 m/s²** — một phần mười gia tốc rơi tự do, chẳng nhỏ nhặt gì. Cái ly
+không được miễn lực; nó được miễn thời gian.
+
+Rút 5 m/s, mép khăn cần **0,060 giây** để vượt hết 30 cm khăn nằm dưới ly.
+Trong ngần ấy thời gian ly chỉ kịp đạt 5,9 cm/s và đi được 1,8 mm. Rồi khăn
+biến mất, đáy ly chạm mặt bàn, ma sát đổi phe: μ₂ ≈ 0,30 hãm nốt trong
+0,6 mm nữa. Tổng cộng **2,4 mm**. [Túi khí ô
+tô](/vi/posts/tui-khi-va-nghe-thuat-keo-dai-mot-phan-muoi-giay) mặc cả với
+thời gian theo chiều ngược lại: nó kéo dài thời gian để hạ lực, còn bạn cắt
+ngắn thời gian và mặc kệ lực.
+
+Để ý thứ vắng mặt: khối lượng. Ma sát tỉ lệ với m, gia tốc lại là lực chia
+m — m biến sạch. Ly pha lê nặng trịch và cốc nhựa rỗng dịch đi đúng bằng
+nhau, [cùng lý do khiến góc bắt đầu trượt trên mặt phẳng nghiêng không quan
+tâm vật nặng](/vi/posts/mat-phang-nghieng-va-goc-bat-dau-truot).
+
+## Bình phương ăn hai lần
+
+```
+u  = v − √(v² − 2·μ₁·g·L)      (tốc độ ly khi khăn vừa thoát)
+s  = u²/(2·μ₁·g) + u²/(2·μ₂·g)  (đoạn bị đẩy + đoạn trượt trên bàn)
+khi v lớn:  s → ½·μ₁·g·(L/v)²·(1 + μ₁/μ₂)
+```
+
+Tốc độ rút ăn hai lần: kéo nhanh vừa **rút ngắn** thời gian ly bị đẩy, vừa
+**hạ thấp** tốc độ ly kịp đạt. Hai lần lợi nhân với nhau thành bình phương.
+Cùng cái ly, chỉ đổi tay: rút 8 m/s ly dịch 0,92 mm; 5 m/s được 2,4 mm;
+2,5 m/s đã là 9,9 mm; còn 1 m/s — một cú kéo "dứt khoát" — ly đi
+**8,7 cm**.
+
+Chậm một nửa thì hỏng gấp 4,15 lần, đúng như bình phương hứa — và phía chậm
+luật còn tệ hơn quảng cáo: từ 5 xuống 1 m/s, 1/v² dự báo 25 lần, thực tế
+**36,7 lần**, vì ly kịp tăng tốc nên mép khăn phải đuổi theo một vật đang
+chạy trốn. Chiều dài khăn cùng hạng với v: giữ 5 m/s mà kéo 30 cm thành
+60 cm, 2,4 mm thành 9,6 mm. Vẫn là cái bình phương từng khiến [chiếc xe
+60 km/h còn lao 55 km/h tại chỗ chiếc chạy 40 đã đứng
+im](/vi/posts/duong-phanh-xe-may-va-toc-do-con-lai).
+
+## Đường cong không chạy tới vô cực — nó đứt ở 0,77 m/s
+
+Kéo càng chậm càng tệ, nhưng không tệ theo kiểu trơn tru. Tới một tốc độ
+nào đó, ly kịp **đạt đúng tốc độ của khăn** trước khi mép khăn thoát ra.
+Hai mặt thôi trượt, ma sát chuyển sang tĩnh, và khăn mang ly đi cùng.
+Ngưỡng ở √(2·μ₁·g·L) = **0,77 m/s** — chỉ nhanh hơn nhịp đi bộ một chút.
+
+Ngay tại ngưỡng, ly vẫn còn dừng lại được, ở **40 cm** — đúng bằng
+L·(1 + μ₁/μ₂), đã văng khỏi mọi mép bàn tử tế. Rút 0,8 m/s, trên ngưỡng
+đúng 4%: 22,3 cm. Nên không có cái gọi là "kéo nhẹ nhàng cho an
+toàn": phía chậm không có vùng hỏng vừa phải, chỉ có một vách.
+
+## Vì sao ảo thuật gia chọn khăn không viền
+
+μ₁ đứng ở hai vị trí trong công thức nên nó phá mạnh hơn ta tưởng. Từ 0,10
+lên 0,30 — vải thô, hay chỉ một đường may vướng đáy ly trong tích tắc —
+cùng cú rút 5 m/s: 2,4 mm thành **11,0 mm**. Thiệt hại thật nằm chỗ khác:
+ngưỡng tới hạn nhảy từ 0,77 lên **1,33 m/s**, biên an toàn co gần một nửa.
+Cái gấu viền không làm hỏng cú rút, nó dịch cả đường cong sang phải.
+
+Còn μ₂ là cái phanh: đoạn trượt sau khi khăn thoát dài đúng bằng μ₁/μ₂ lần
+đoạn bị đẩy, nên trên mặt kính bóng cái đuôi ấy dài ra chứ không ngắn đi.
+Mẹo cuối thuần hình học: kéo **chếch xuống dưới mép bàn** để khăn luôn ép
+sát mặt bàn thay vì bùng lên hất vào thành ly.
+
+## Trường hợp biên: ly champagne lật trước khi kịp trượt xong
+
+Suốt bài trên, ly được coi là một khối trượt. Ly cao và hẹp thì không — nó
+lật, và tiêu chí đổi hẳn: không nhìn quãng dịch nữa mà nhìn mô-men.
+
+```
+lật khi   a/g  >  (nửa đường kính đáy) / (chiều cao khối tâm)
+```
+
+Ở đây có hai cú gia tốc, và cú nguy hiểm là cú thứ hai: khi khăn thoát ra,
+gia tốc lộn ngược từ +0,10·g sang −0,30·g gần như tức thời — một cú đổi
+**0,40·g**, và chính pha hãm mới đủ mạnh để lật. Cốc uống nước đáy 7 cm,
+khối tâm 5 cm: ngưỡng 0,70, không thứ gì trong bài chạm tới. Ly champagne
+chân cao, đáy 6 cm, khối tâm chừng 10 cm: ngưỡng đúng **0,30** —
+bằng chằn chặn μ₂ của mặt bàn gỗ.
+
+Tiêu chí ấy không chứa v: cùng một cú giật cứu được cái cốc thấp lại làm đổ
+ly champagne, vì thứ quyết định không phải bạn nhanh bao nhiêu mà là khối
+tâm cao bao nhiêu. Đó là lý do trên tấm khăn trong tiết mục thật luôn là
+đĩa và cốc lùn.

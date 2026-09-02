@@ -1,0 +1,95 @@
+---
+title: "WiFi 5 GHz nhanh hơn, và mất thêm đúng 6,4 dB"
+seoTitle: "Suy hao đường truyền WiFi: so sánh băng 2,4 GHz và 5 GHz theo công thức Friis"
+description: "Cách router 10 mét, điện thoại của bạn chỉ nhận được một phần triệu công suất phát — 60 dB bay hơi chỉ vì khoảng cách. Đổi 2,4 lên 5 GHz mất thêm 6,4 dB nữa, tương đương lùi ra xa 2,08 lần. Đó là toàn bộ cuộc mặc cả giữa tốc độ và tầm phủ."
+pubDate: 2026-09-02
+tags: ["vat-ly", "dien-tu", "song", "javascript"]
+translationId: "wifi-5-ghz-nhanh-hon-nhung-di-gan-hon"
+---
+
+import FriisPathLoss from '../../../components/demos/FriisPathLoss.astro';
+
+Đứng cạnh router, điện thoại bắt 5 GHz và tải phim nhanh hết mức gói cước
+cho phép. Cầm nó qua hai bức tường vào phòng ngủ, nó lặng lẽ tụt về 2,4
+GHz — chậm hơn hẳn, nhưng còn sống. Không ai đổi cài đặt gì:
+
+<FriisPathLoss />
+
+## Sáu mươi decibel bốc hơi trong mười mét
+
+Router phát 100 mW. Cách đó 10 m, ăng-ten điện thoại nhận được
+**0,1 µW** — 9,9·10⁻⁷ phần công suất phát, tức một phần triệu. Không có
+gì "hấp thụ" chỗ thất thoát khổng lồ ấy cả: sóng toả đều ra mặt cầu diện
+tích 4πd², ăng-ten chỉ chắn một mẩu tí hon của mặt cầu, phần còn lại bay
+đi trúng tường, trúng trần, trúng bầu trời. Đi xa gấp đôi, mặt cầu rộng
+gấp bốn, phần bạn hứng chia bốn — **6,02 dB**. Ngay ở 1 m đã mất 40 dB.
+
+Kỹ thuật vô tuyến gói cả câu chuyện vào ba số hạng cộng lại:
+
+```
+L(dB) = 20·log₁₀(d_km) + 20·log₁₀(f_MHz) + 32,44
+P_nhận(dBm) = P_phát(dBm) − L
+```
+
+Ở 10 m, băng 2,4 GHz nộp đúng **60,0 dB**. Máy thu trong điện thoại giải
+mã được tín hiệu yếu tới −90 dBm, nên bạn vẫn dư 50 dB — đó là lý do WiFi
+chạy được dù con số thất thoát nghe vô vọng.
+
+## Vế tần số: ăng-ten của bạn nhỏ đi, không phải không khí dày lên
+
+Số hạng `20·log₁₀(f)` là chỗ bị hiểu sai nhiều nhất. Không gian trống
+không hề cản 5 GHz mạnh hơn 2,4 GHz — chân không chẳng phân biệt tần số,
+còn không khí phải lên tới cỡ 20 GHz mới bắt đầu hấp thụ đáng kể. Tần số
+lẻn vào công thức từ phía **máy thu**: diện tích hứng sóng hiệu dụng của
+một ăng-ten bằng G·λ²/4π, tỉ lệ với bình phương bước sóng. Ở 2,4 GHz,
+λ = 12,5 cm; ở 5 GHz, λ = 6,0 cm. Cái "miệng" hứng sóng thu nhỏ đúng
+(5/2,4)² = **4,34 lần**, và 4,34 lần chính là 6,4 dB. Cùng một phép chia
+c/f [khiến ăng-ten điện thoại co lại](/vi/posts/ang-ten-vi-sao-dien-thoai-khong-con-can-cai-can)
+cũng khiến nó hứng được ít hơn. Nên đây không phải luật trời: cái chảo
+parabol giữ nguyên kích thước vật lý thì tần số càng cao càng lợi.
+
+## Một bức tường đắt hơn mười mét không khí
+
+Trong nhà, một vách ngăn nhẹ lấy khoảng 5 dB — bằng đúng việc dời router
+ra xa thêm **1,78 lần**; tường bê tông cốt thép lấy 10–15 dB. Ba vách
+ngăn cộng lại là 15 dB, tương đương đẩy router ra xa **5,62 lần** mà
+không ai động vào nó.
+
+Các hướng dẫn lắp mạng không dây đòi tín hiệu mạnh hơn −67 dBm nếu muốn
+thoại và video mượt. Trong không gian trống, 2,4 GHz giữ được mức ấy tới
+**223 m**, 5 GHz tới 107 m. Cho ba bức tường xen vào: **39,6 m** và
+**19,0 m**. Băng 5 GHz không hề yếu — nó chỉ hết ngân sách sớm hơn đúng
+một bậc thang căn hộ.
+
+## Cái bạn mua bằng 6,4 dB
+
+Thiệt mọi mặt về đường truyền như thế, sao ai cũng chuộng 5 GHz? Vì băng
+2,4 GHz chỉ rộng 83,5 MHz, nhét vừa **ba kênh 20 MHz không chồng nhau**
+cho cả toà chung cư, lại phải chia sóng với Bluetooth và với
+[lò vi sóng rò ra ở 2,45 GHz](/vi/posts/lo-2-mm-chan-song-cho-anh-sang).
+Băng 5 GHz đủ chỗ cho kênh 160 MHz — **rộng gấp 8 lần**.
+
+Cuộc mặc cả vì thế đọc được bằng một phép cộng: mở kênh rộng gấp 8 thì
+nhiễu nhiệt cũng vào gấp 8, tức **9,0 dB**; cộng 6,4 dB suy hao, 5 GHz
+đánh đổi tổng cộng 15,4 dB tỉ số tín hiệu trên nhiễu để lấy 8 lần bề rộng
+kênh. Ở gần, nơi bạn còn dư 50 dB, đó là món hời. Ở xa, khi ngân sách chỉ
+còn vài dB, đó là tự sát — và đúng phép tính ấy điện thoại làm lại mỗi
+lần bạn bước qua một ngưỡng cửa.
+
+## Trường hợp biên: hành lang thắng cả không gian trống
+
+Công thức trên giả định không gian tự do, và trong đời thật nó sai theo
+cả hai chiều. Trong hành lang hẹp, tường và trần dội sóng tới lui thay vì
+thả nó ra mặt cầu — hành lang hành xử như [một ống dẫn
+sóng](/vi/posts/duong-ham-la-mot-ong-dan-song), và tín hiệu tụt chậm hơn
+cả trong không gian trống. Ngoài trời thì ngược lại: qua điểm gãy, tia
+phản xạ từ mặt đất về gần ngược pha với tia thẳng và triệt tiêu bớt nó,
+suy hao chuyển từ d² sang d⁴ — mỗi lần đi xa gấp đôi mất **12,0 dB** thay
+vì 6,0.
+
+Vế tần số hiện rõ nhất ở chỗ nhà mạng đặt tiền: 4G băng 900 MHz phủ cả
+một xã bằng vài cột, còn WiFi 5 GHz không ra nổi khỏi cái sân. Ở cùng
+khoảng cách, 900 MHz lời **14,9 dB** so với 5 GHz — đi xa được 5,56 lần
+trước khi yếu tương đương. Nhưng cả băng 900 MHz chỉ rộng vài chục MHz,
+và đó là toàn bộ lời nguyền: cùng một vế 20·log₁₀(f) bán tầm phủ cho tần
+số thấp và bán tốc độ cho tần số cao, chưa bao giờ bán cả hai cho một ai.

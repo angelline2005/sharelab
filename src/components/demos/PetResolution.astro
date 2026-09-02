@@ -1,0 +1,129 @@
+---
+// PET spatial resolution, standard quadrature model (Moses 2011, NIM A 648:S236):
+//   R = sqrt( (d/2)^2 + (0.0022*D)^2 + r^2 )   — all lengths in mm
+//   d = crystal width, D = detector ring diameter, r = positron range blurring (FWHM).
+// 0.0022*D is the photon acollinearity term: the two 511 keV photons miss 180 deg by
+// eps ~ 0.5 deg FWHM, displacing the line of response at the ring centre by D*eps/4
+// (0.00873 rad / 4 = 0.00218, rounded to 0.0022 in the literature).
+// Positron range FWHM in water, Levin & Hoffman 1999 Phys Med Biol 44:781 —
+// 18F 0.54 mm ... 82Rb 6.14 mm.
+// Floor only: omits block-decoding and reconstruction blur (a further ~1.1-1.3x).
+// Valid for ring geometry, D = 250-900 mm, source at the centre of the field of view.
+---
+
+<figure class="demo" data-demo="pet-511-kev-va-gioi-han-do-net">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Đường kính vòng máy D (cm) <output data-out="d"></output>
+      <input type="range" data-in="d" min="25" max="90" step="1" value="80" /></label>
+    <label>Bề rộng tinh thể (mm) <output data-out="c"></output>
+      <input type="range" data-in="c" min="1" max="6" step="0.1" value="4" /></label>
+    <label>Tầm bay positron (mm) <output data-out="r"></output>
+      <input type="range" data-in="r" min="0.2" max="6.5" step="0.01" value="0.54" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Đường cong: độ nhoè của ảnh PET khi bạn thu nhỏ dần tinh thể đầu dò.
+    Nó không đi về 0 mà đè lên một đường ngang — cái trần do hai thứ tinh
+    thể không đụng tới được: hai photon 511 keV bay lệch khỏi 180° chừng
+    nửa độ, và positron đã đi lạc một quãng trước khi huỷ. Chấm đỏ là máy
+    bạn đang chỉnh; F-18 có tầm bay 0,54 mm, Rb-82 tới 6,14 mm.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const CURVE = '#2563eb', MARK = '#dc2626', FLOOR = '#f59e0b';
+  const vi = (x: number, n = 2) => x.toFixed(n).replace('.', ',');
+  // Blur terms in mm: crystal d/2, acollinearity 0.0022*D, positron range r.
+  const res = (c: number, Dmm: number, r: number) =>
+    Math.sqrt((c / 2) ** 2 + (0.0022 * Dmm) ** 2 + r * r);
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (k: string) => root.querySelector(`[data-in="${k}"]`) as HTMLInputElement;
+    const output = (k: string) => root.querySelector(`[data-out="${k}"]`) as HTMLOutputElement;
+
+    function draw() {
+      const Dcm = Number(input('d').value);
+      const c = Number(input('c').value);
+      const r = Number(input('r').value);
+      const Dmm = Dcm * 10;
+      output('d').textContent = String(Dcm);
+      output('c').textContent = vi(c, 1);
+      output('r').textContent = vi(r, 2);
+
+      const tCry = c / 2, tAco = 0.0022 * Dmm, tPos = r;
+      const R = res(c, Dmm, r);
+      const floor = Math.sqrt(tAco * tAco + tPos * tPos);
+      const sq = tCry ** 2 + tAco ** 2 + tPos ** 2;
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.46);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+
+      const padL = 46, padB = 26, padT = 12, padR = 10;
+      const X = (cc: number) => padL + ((cc - 1) / 5) * (cssW - padL - padR);
+      const Y = (rr: number) => padT + ((8 - rr) / 8) * (cssH - padB - padT);
+
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.3;
+      ctx.beginPath(); ctx.moveTo(padL, padT); ctx.lineTo(padL, cssH - padB); ctx.lineTo(cssW - padR, cssH - padB); ctx.stroke();
+      ctx.globalAlpha = 0.55; ctx.fillStyle = fg; ctx.font = '10px system-ui,sans-serif';
+      ctx.textAlign = 'center';
+      for (const k of [1, 2, 3, 4, 5, 6]) ctx.fillText(`${k} mm`, X(k), cssH - padB + 14);
+      ctx.textAlign = 'right';
+      for (const v of [0, 2, 4, 6, 8]) ctx.fillText(`${v} mm`, padL - 4, Y(v) + 3);
+      ctx.globalAlpha = 1;
+
+      // The floor: what survives when the crystal shrinks to nothing.
+      ctx.strokeStyle = FLOOR; ctx.setLineDash([5, 4]);
+      ctx.beginPath(); ctx.moveTo(padL, Y(floor)); ctx.lineTo(cssW - padR, Y(floor)); ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillStyle = FLOOR; ctx.textAlign = 'left';
+      ctx.fillText(`trần ${vi(floor)} mm — tinh thể nhỏ mấy cũng không xuống dưới`, padL + 6, Y(floor) - 5);
+
+      // Resolution vs crystal width, at this ring diameter and isotope.
+      ctx.strokeStyle = CURVE; ctx.lineWidth = 2; ctx.beginPath();
+      for (let i = 0; i <= 200; i++) {
+        const cc = 1 + (5 * i) / 200;
+        const y = Y(res(cc, Dmm, r));
+        i ? ctx.lineTo(X(cc), y) : ctx.moveTo(X(cc), y);
+      }
+      ctx.stroke(); ctx.lineWidth = 1;
+
+      ctx.fillStyle = MARK;
+      ctx.beginPath(); ctx.arc(X(c), Y(R), 6, 0, Math.PI * 2); ctx.fill();
+
+      const pct = (t: number) => Math.round((100 * t * t) / sq);
+      let note = '';
+      if (pct(tAco) >= 60) note = ' · <b>vòng máy đang là nút thắt — chỉ thu nhỏ máy mới gỡ được</b>';
+      else if (pct(tPos) >= 60) note = ' · <b>thuốc đang là nút thắt, không phải máy</b>';
+      else if (pct(tCry) >= 60) note = ' · còn đáng để mài tinh thể nhỏ hơn';
+      readout.innerHTML =
+        `D = ${Dcm} cm · tinh thể ${vi(c, 1)} mm · tầm bay ${vi(r)} mm → độ nét <b>${vi(R)} mm</b>` +
+        `<br>Cộng bình phương: tinh thể ${vi(tCry)} (${pct(tCry)}%) · vòng máy ${vi(tAco)} (${pct(tAco)}%)` +
+        ` · positron ${vi(tPos)} (${pct(tPos)}%)${note}`;
+    }
+
+    root.querySelectorAll('input').forEach((el) => el.addEventListener('input', draw));
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="pet-511-kev-va-gioi-han-do-net"]').forEach(setup);
+</script>

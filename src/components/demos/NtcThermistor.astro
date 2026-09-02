@@ -1,0 +1,196 @@
+---
+// NTC beta model: R(T) = R25·exp[B·(1/T − 1/298,15)], T in kelvin.
+// Relative sensitivity dR/R per K = −B/T². Reference: Vishay/TDK NTC
+// application notes. The two-point B model is good to ~±0,3 °C over
+// 0–100 °C; above that a real NTC needs Steinhart–Hart, so the T slider
+// stops at 150 °C. Pt100 overlay uses Callendar–Van Dusen for t ≥ 0:
+// R = 100·(1 + 3,9083e−3·t − 5,775e−7·t²). Lower panel: voltage divider
+// 3,3 V with series resistor fixed at R25, output taken across it.
+---
+
+<figure class="demo" data-demo="nhiet-dien-tro-ntc-nhay-gap-muoi-mot-lan">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Nhiệt độ T (°C) <output data-out="t"></output>
+      <input type="range" data-in="t" min="0" max="150" step="0.5" value="25" /></label>
+    <label>Hằng số B (K) <output data-out="b"></output>
+      <input type="range" data-in="b" min="3000" max="4500" step="50" value="3950" /></label>
+    <label>Điện trở danh định R₂₅ (kΩ) <output data-out="r"></output>
+      <input type="range" data-in="r" min="1" max="100" step="1" value="10" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Trên: điện trở NTC theo nhiệt độ, trục tung chia theo bậc 10 — đường
+    thẳng ở đây nghĩa là hàm mũ. Đường cam là Pt100 công nghiệp vẽ cùng
+    thang: gần như nằm ngang. Dưới: điện áp ra khi mắc NTC vào cầu phân
+    áp 3,3 V với điện trở nối tiếp bằng R₂₅; nét đứt là tiếp tuyến tại
+    25 °C, cho thấy đường ra chỉ bám đường thẳng trong một cửa sổ hẹp
+    rồi cong đi cả hai đầu.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const CURVE = '#2563eb', MARK = '#dc2626', ALT = '#f59e0b';
+  const K0 = 273.15, T25 = 298.15, VCC = 3.3, TMAX = 150;
+  const RMIN = 10, RMAX = 1e6;
+
+  const ntc = (tC: number, B: number, R25: number) =>
+    R25 * Math.exp(B * (1 / (tC + K0) - 1 / T25));
+  // Callendar–Van Dusen, positive branch.
+  const pt100 = (tC: number) => 100 * (1 + 3.9083e-3 * tC - 5.775e-7 * tC * tC);
+  const vn = (x: number, d: number) => x.toFixed(d).replace('.', ',');
+  const ohm = (r: number) =>
+    r >= 1000 ? `${vn(r / 1000, 2)} kΩ` : `${vn(r, 0)} Ω`;
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (k: string) => root.querySelector(`[data-in="${k}"]`) as HTMLInputElement;
+    const output = (k: string) => root.querySelector(`[data-out="${k}"]`) as HTMLOutputElement;
+
+    function draw() {
+      const T = Number(input('t').value);
+      const B = Number(input('b').value);
+      const R25 = Number(input('r').value) * 1000;
+      output('t').textContent = vn(T, 1);
+      output('b').textContent = String(B);
+      output('r').textContent = vn(R25 / 1000, 0);
+
+      const R = ntc(T, B, R25);
+      const sens = (B / Math.pow(T + K0, 2)) * 100;      // %/K, magnitude
+      const vout = (tC: number) => VCC * R25 / (R25 + ntc(tC, B, R25));
+      const dVdT = (tC: number) => {
+        const r = ntc(tC, B, R25);
+        return VCC * R25 * (r * B / Math.pow(tC + K0, 2)) / Math.pow(R25 + r, 2);
+      };
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.72);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+      ctx.font = '10px system-ui,sans-serif';
+
+      const padL = 50, padR = 10, padT = 12, gap = 34, padB = 24;
+      const plotW = cssW - padL - padR;
+      const hTop = Math.round((cssH - padT - gap - padB) * 0.6);
+      const topB = padT + hTop;                 // baseline of upper panel
+      const botT = topB + gap;                  // top of lower panel
+      const botB = cssH - padB;
+
+      const X = (tC: number) => padL + (tC / TMAX) * plotW;
+      const lg = Math.log10(RMAX) - Math.log10(RMIN);
+      const YR = (r: number) =>
+        padT + ((Math.log10(RMAX) - Math.log10(Math.min(Math.max(r, RMIN), RMAX))) / lg) * hTop;
+      const YV = (v: number) => botB - (v / 3.4) * (botB - botT);
+
+      // ---- axes -------------------------------------------------------
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.3;
+      ctx.beginPath();
+      ctx.moveTo(padL, padT); ctx.lineTo(padL, topB); ctx.lineTo(cssW - padR, topB);
+      ctx.moveTo(padL, botT); ctx.lineTo(padL, botB); ctx.lineTo(cssW - padR, botB);
+      ctx.stroke();
+      ctx.globalAlpha = 0.55; ctx.fillStyle = fg;
+
+      ctx.textAlign = 'right';
+      const decades: Array<[number, string]> = [
+        [10, '10 Ω'], [100, '100 Ω'], [1e3, '1 kΩ'], [1e4, '10 kΩ'], [1e5, '100 kΩ'], [1e6, '1 MΩ'],
+      ];
+      for (const [r, lab] of decades) ctx.fillText(lab, padL - 4, YR(r) + 3);
+      for (const v of [0, 1, 2, 3]) ctx.fillText(`${v} V`, padL - 4, YV(v) + 3);
+
+      ctx.textAlign = 'center';
+      for (const tC of [0, 50, 100, 150]) {
+        ctx.fillText(`${tC}°`, X(tC), topB + 13);
+        ctx.fillText(`${tC} °C`, X(tC), botB + 13);
+      }
+      ctx.globalAlpha = 1;
+
+      // ---- upper panel: R(T), log axis --------------------------------
+      ctx.strokeStyle = ALT; ctx.lineWidth = 2; ctx.beginPath();
+      for (let i = 0; i <= 200; i++) {
+        const tC = (TMAX * i) / 200;
+        i ? ctx.lineTo(X(tC), YR(pt100(tC))) : ctx.moveTo(X(tC), YR(pt100(tC)));
+      }
+      ctx.stroke();
+      ctx.fillStyle = ALT; ctx.textAlign = 'left';
+      ctx.fillText('Pt100', X(4), YR(pt100(4)) - 6);
+
+      ctx.strokeStyle = CURVE; ctx.beginPath();
+      for (let i = 0; i <= 200; i++) {
+        const tC = (TMAX * i) / 200;
+        i ? ctx.lineTo(X(tC), YR(ntc(tC, B, R25))) : ctx.moveTo(X(tC), YR(ntc(tC, B, R25)));
+      }
+      ctx.stroke(); ctx.lineWidth = 1;
+      ctx.fillStyle = CURVE;
+      ctx.fillText('NTC', X(4), YR(ntc(4, B, R25)) - 6);
+
+      ctx.fillStyle = MARK;
+      ctx.beginPath(); ctx.arc(X(T), YR(R), 6, 0, Math.PI * 2); ctx.fill();
+
+      // ---- lower panel: divider output --------------------------------
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.45;
+      ctx.setLineDash([4, 4]); ctx.beginPath();
+      const m = dVdT(25), b0 = vout(25) - m * 25;
+      ctx.moveTo(X(0), YV(Math.min(Math.max(b0, 0), 3.4)));
+      const vEnd = b0 + m * TMAX;
+      const tEnd = vEnd > 3.4 ? (3.4 - b0) / m : TMAX;
+      ctx.lineTo(X(tEnd), YV(Math.min(vEnd, 3.4)));
+      ctx.stroke(); ctx.setLineDash([]);
+      ctx.textAlign = 'left';
+      ctx.fillStyle = fg;
+      ctx.fillText('tiếp tuyến tại 25 °C', X(2), YV(3.25));
+      ctx.globalAlpha = 1;
+
+      ctx.strokeStyle = CURVE; ctx.lineWidth = 2; ctx.beginPath();
+      for (let i = 0; i <= 200; i++) {
+        const tC = (TMAX * i) / 200;
+        i ? ctx.lineTo(X(tC), YV(vout(tC))) : ctx.moveTo(X(tC), YV(vout(tC)));
+      }
+      ctx.stroke(); ctx.lineWidth = 1;
+
+      // ±15 °C window around 25 °C
+      ctx.fillStyle = ALT;
+      for (const tC of [10, 40]) {
+        ctx.beginPath(); ctx.arc(X(tC), YV(vout(tC)), 3.5, 0, Math.PI * 2); ctx.fill();
+      }
+      ctx.globalAlpha = 0.7; ctx.fillStyle = fg; ctx.textAlign = 'center';
+      ctx.fillText('cửa sổ ±15 °C', X(25), YV(vout(25)) + 16);
+      ctx.globalAlpha = 1;
+
+      ctx.fillStyle = MARK;
+      ctx.beginPath(); ctx.arc(X(T), YV(vout(T)), 6, 0, Math.PI * 2); ctx.fill();
+
+      // ---- readout ----------------------------------------------------
+      const ratio = sens / 0.385;
+      const mvK = dVdT(T) * 1000;
+      const degPerLsb = (VCC / 4096) / dVdT(T);
+      const flag = degPerLsb > 0.2
+        ? ` · <b>vùng đuối tín hiệu: mỗi bước ADC 12-bit đã là ${vn(degPerLsb, 2)} °C</b>`
+        : '';
+      readout.innerHTML =
+        `T = ${vn(T, 1)} °C → R = <b>${ohm(R)}</b> (${vn(100 * R / R25, 1)}% giá trị ở 25 °C)` +
+        ` · độ nhạy −${vn(sens, 2)} %/K, gấp <b>${vn(ratio, 1)} lần</b> Pt100 (+0,385 %/K)` +
+        ` · cầu phân áp ra ${vn(vout(T), 3)} V, dốc ${vn(mvK, 1)} mV/K${flag}`;
+    }
+
+    root.querySelectorAll('input').forEach((el) => el.addEventListener('input', draw));
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="nhiet-dien-tro-ntc-nhay-gap-muoi-mot-lan"]').forEach(setup);
+</script>

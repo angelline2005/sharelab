@@ -1,0 +1,94 @@
+---
+title: "Cục sạc nhỏ đi vì tần số đã tăng hai nghìn lần"
+seoTitle: "Vì sao cục sạc điện thoại ngày càng nhỏ: tần số băm và tiết diện lõi biến áp"
+description: "Tiết diện lõi biến áp nằm dưới mẫu số của tần số: A = U/(4,44·f·N·B). Cuộn 12 V chạy thẳng 50 Hz cần lõi 4,50 cm²; cũng cuộn ấy ở 100 kHz chỉ cần 6,76 mm² — nhỏ hơn 66,7 lần trong thực tế, 2 000 lần trên giấy."
+pubDate: 2026-09-02
+tags: ["vat-ly", "dien-tu", "dien-hoc", "javascript"]
+translationId: "cuc-sac-nho-di-nho-tan-so-cao"
+---
+
+import TransformerCoreSize from '../../../components/demos/TransformerCoreSize.astro';
+
+Ngăn kéo nhà bạn chắc vẫn còn một cục sạc đen nặng trịch thời điện thoại
+phím bấm — bổ ra, bên trong là một khối sắt quấn dây. Cạnh nó, cục sạc GaN
+65 W hôm nay bé bằng bao diêm. Đồng vẫn là đồng, sắt vẫn là sắt; thứ đã
+đổi là một con số không ai in lên nhãn:
+
+<TransformerCoreSize />
+
+## Tần số nằm dưới mẫu số
+
+Cuộn dây chỉ sinh ra điện áp khi từ thông xuyên qua nó [đang thay
+đổi](/vi/posts/cam-ung-faraday-hai-cu-hich-nguoc-dau) — nằm im thì bằng
+không. Với dòng hình sin, toàn bộ câu chuyện gói trong một dòng:
+
+```
+U = 4,44 · f · N · B · A   →   A = U / (4,44 · f · N · B)
+```
+
+A là tiết diện lõi, N là số vòng, B là mật độ từ thông lúc làm việc. Tần
+số nằm dưới mẫu số: **tăng f bao nhiêu lần thì tiết diện lõi được phép co
+lại bấy nhiêu lần**.
+
+Lý do dễ hình dung hơn công thức. [Máy biến áp là một băng
+chuyền](/vi/posts/may-bien-ap-doi-ap-lay-dong-va-nguoc-lai) chở năng lượng
+qua lõi từ theo từng gói, mỗi chu kỳ một gói. Cùng công suất 12 W: ở 50 Hz
+mỗi chu kỳ phải khuân **0,24 J**, ở 100 kHz chỉ còn **0,12 mJ**. Gói hàng
+nhỏ đi 2 000 lần thì cái thùng chở nó cũng vậy. Luật ấy không của riêng
+biến áp — [ăng-ten cũng teo theo đúng
+c/f](/vi/posts/ang-ten-vi-sao-dien-thoai-khong-con-can-cai-can).
+
+## Hai nghìn lần trên giấy, chia cho 5 rồi chia cho 6
+
+Con số 2 000 chỉ đúng nếu giữ nguyên N và B. Không cái nào giữ được.
+
+**B mất 6 lần.** Thép silic ở 50 Hz chạy thoải mái tại 1,2 T; ferrite ở
+100 kHz chỉ dám 0,2 T — và không phải vì bão hoà (ferrite còn bão hoà tới
+khoảng 0,4 T) mà vì tổn hao lõi ở tần số ấy tăng dựng đứng theo B.
+
+**N mất 5 lần.** Người thiết kế tiêu bớt món lợi 1/f vào chỗ khác: quấn 20
+vòng thay vì 100, cho nhẹ đồng và bớt điện dung ký sinh giữa các lớp.
+
+2 000 ÷ 6 ÷ 5 = **66,7**. Một cuộn 12 V ở 50 Hz cần lõi **4,50 cm²** — ô
+vuông cạnh 2,12 cm. Cũng 12 V ấy ở 100 kHz cần **6,76 mm²** — ô vuông cạnh
+**2,60 mm**, đúng hai hình lồng nhau trong demo. Giữ nguyên hình dạng thì
+thể tích đi theo luỹ thừa 1,5 của diện tích: **nhỏ hơn 545 lần**. (Sạc
+thật băm sóng vuông nên hệ số là 4 chứ không phải 4,44, lõi còn nhỏ thêm
+10%; đổi lại đây mới là tiết diện tối thiểu để từ thông không bão hoà, lõi
+thật vẫn phải chừa cửa sổ cho dây quấn chui qua.)
+
+## Máy bay đã dùng mẹo này trước bạn
+
+Lưới điện trên máy bay không chạy 50 Hz mà chạy **400 Hz**: cùng cuộn dây
+ấy, lõi nhỏ đi đúng **8 lần**, và trên máy bay mỗi kilôgam là tiền vé cả
+đời tàu bay. Vậy sao nhà bạn không dùng 400 Hz cho gọn? Vì điện lưới còn
+phải đi hàng trăm cây số, mà tần số càng cao thì điện cảm đường dây càng
+ăn — 50 Hz là thoả hiệp của [cả một hệ thống truyền
+tải](/vi/posts/vi-sao-duong-day-tai-dien-phai-cao-the), không phải của một
+cục sạc.
+
+Còn cục sạc thì chẳng phải đi đâu xa, nên nó **tự băm lấy tần số riêng**:
+chỉnh lưu 220 V thành một chiều, rồi cho transistor đóng–ngắt hàng trăm
+nghìn lần mỗi giây trước khi đưa vào biến áp tí hon. Vì sao không băm ở 5
+kHz cho nhàn? Vì lõi từ **rít**: từ giảo làm nó co giãn theo mỗi chu kỳ,
+và dưới 20 kHz tai bạn nghe thấy. Thế hệ nguồn xung đầu tiên đứng đúng ở
+20–25 kHz, vừa đủ qua mép nghe được.
+
+## Trường hợp biên: gấp đôi tần số chỉ còn lãi 1,23 lần
+
+Nếu 1/f là tất cả, cục sạc đã bé bằng hạt đậu từ lâu. Chặn nó lại là tổn
+hao lõi, thứ Steinmetz đã đo từ thập niên 1890: mật độ tổn hao đi như
+`f^1,6 · B^2,3`. Muốn lõi đừng nóng thêm, mỗi lần gấp đôi f bạn buộc phải
+hạ B xuống `2^(−1,6/2,3)` = 0,617 lần — món lợi 2 lần teo lại còn **1,23
+lần**. Từ 100 kHz lên 1 MHz, gấp mười tần số chỉ mua được **hai lần** tiết
+diện — đường cam dựng lên trong demo chính là bức tường ấy.
+
+Và đó mới là lõi. Dây quấn cũng phản đối: ở 50 Hz dòng chảy đều khắp tiết
+diện (độ sâu bề mặt trong đồng là 9,3 mm, dày hơn mọi sợi dây trong nhà),
+còn ở 100 kHz nó chỉ bám lớp vỏ ngoài **0,21 mm** — ruột dây thành hành
+khách, phải đổi sang dây Litz bện từ hàng chục sợi mảnh. Transistor thì
+mất một nhúm năng lượng mỗi lần đóng–ngắt, khoản mất tỉ lệ **thẳng** với
+f: đó mới là chỗ GaN thắng silic, chứ không phải ở chỗ nó "khoẻ hơn". Cộng
+ba đường cong ngược chiều ấy lại, đáy của tổng rơi vào khoảng **100 kHz –
+1 MHz** — và đó là lý do mọi cục sạc trong nhà bạn, dù hãng nào, đều đang
+băm điện trong đúng dải hẹp đó.

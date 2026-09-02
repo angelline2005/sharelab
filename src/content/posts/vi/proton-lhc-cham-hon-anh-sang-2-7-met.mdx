@@ -1,0 +1,99 @@
+---
+title: "Proton trong LHC chậm hơn ánh sáng đúng 2,7 mét mỗi giây"
+seoTitle: "Máy gia tốc LHC: proton 7 TeV nhanh bằng bao nhiêu phần trăm tốc độ ánh sáng"
+description: "Ở 7 TeV, proton có γ = 7 461 và chạy với vận tốc 0,999999991 c — sau một giây đua với một hạt photon nó bị bỏ lại 2,69 mét. Còn trong hệ quy chiếu của chính nó, vòng hầm 26 659 mét co lại còn 3,57 mét."
+pubDate: 2026-09-02
+tags: ["vat-ly", "tuong-doi", "hat-nhan", "javascript"]
+translationId: "proton-lhc-cham-hon-anh-sang-2-7-met"
+---
+
+import RelativisticBeam from '../../../components/demos/RelativisticBeam.astro';
+
+Ánh sáng đi 299 792 458 mét trong một giây. Một proton của LHC, chạy hết công
+suất cỗ máy, đi được 299 792 455 mét trong cùng giây ấy. Cho hai đứa xuất phát
+cạnh nhau: sau **một giây**, khoảng cách giữa chúng là 2,69 mét — vừa đúng
+tầm với của một cánh tay giơ lên:
+
+<RelativisticBeam />
+
+## Tám chữ số 9, rồi mới tới một chữ số khác
+
+Proton lúc đứng yên "nặng" 938,272 MeV; máy bơm nó lên 7 TeV, tức bảy triệu
+MeV. Tỉ số giữa hai con số ấy chính là hệ số Lorentz γ:
+
+```
+γ = E / mc² = 7 000 000 / 938,272 = 7 461
+v/c = √(1 − 1/γ²) = 0,999999991
+```
+
+Đếm thử: tám chữ số 9 liên tiếp. Vận tốc ấy còn thiếu c đúng **9 phần tỉ** —
+nhân với c thì ra 2,69 mét mỗi giây, tốc độ đi bộ thong thả.
+
+Chia nhỏ ra còn buồn cười hơn: vòng hầm LHC dài 26 659 m, proton chạy hết
+**11 245 vòng mỗi giây**. Trong mỗi vòng, nó chỉ tụt lại sau hạt photon
+0,239 mm — chưa bằng bề dày ba tờ giấy. Phải cộng dồn đủ 11 245 vòng thì
+khoảng tụt tí xíu ấy mới thành 2,69 mét.
+
+## Phần trăm cuối cùng của c đắt theo bình phương
+
+Khai triển căn thức khi E lớn hơn hẳn mc² cho một công thức gọn hơn, và nó
+là cả câu chuyện:
+
+```
+c − v ≈ c · (mc²)² / (2E²)
+```
+
+Khoảng thiếu tỉ lệ nghịch với **bình phương** năng lượng. Trên trục log–log
+của demo, đó là ba đường thẳng dốc −2: nhân năng lượng lên 10, khoảng thiếu
+chia cho 100. Electron trong ống hình tivi cũ, gia tốc bằng có 25 kV, đã chạy
+0,302 c; proton trong máy xạ trị 200 MeV đạt 0,566 c. Nhưng proton vừa bơm từ
+SPS vào LHC ở 450 GeV vẫn chậm hơn ánh sáng **652 m/s**: phải nhân năng lượng
+thêm 15,6 lần nữa mới hạ được khoản ấy xuống 2,69 m/s.
+
+Hệ quả nhìn thấy ngay ở phòng điều khiển: suốt cú tăng tốc 450 GeV → 7 TeV,
+tần số quay của chùm tia chỉ nhích từ 11 245,4258 lên 11 245,4501 vòng mỗi
+giây — **thêm 0,024 Hz**. Máy nhồi thêm 6 550 GeV vào mỗi hạt mà gần như
+không làm nó đi nhanh hơn; toàn bộ số ấy chui vào quán tính. Đây đúng là chỗ
+chiếc [cyclotron cổ điển tắt
+thở](/vi/posts/hat-tich-dien-trong-tu-truong-chu-ky-khong-can-toc-do): chu kỳ
+quay `2πm/qB` của nó chỉ độc lập với vận tốc chừng nào m còn là hằng số, mà ở
+γ = 7 461 thì proton ì gấp 7 461 lần lúc nghỉ.
+
+Muốn qua mặt ánh sáng thì phải đổi môi trường chứ không phải đổi máy: trong
+nước ánh sáng chỉ còn 224 901 km/s, và một electron 0,26 MeV đã vượt được, để
+lại [vệt xanh Cherenkov](/vi/posts/anh-sang-cherenkov-va-goc-41-do).
+
+## Với chính proton, vòng 27 km chỉ dài 3,57 mét
+
+Đổi chỗ ngồi: leo lên lưng hạt. Giờ proton đứng yên, cả cỗ máy lao ngược lại
+ở 0,999999991 c, và mọi khoảng cách dọc hướng chạy co lại đúng γ lần:
+
+```
+L' = C / γ = 26 659 / 7 461 = 3,57 m
+```
+
+Cái vòng hầm 27 kilômét chôn dưới biên giới Pháp–Thụy Sĩ, với proton, chỉ là
+một đường tròn dài **3,57 mét** — quãng từ bàn làm việc của bạn ra tới cửa.
+Phép chia ấy y hệt phép [đã cứu hạt muon khỏi tan biến trước khi chạm
+đất](/vi/posts/gian-thoi-gian-hat-muon-khong-du-tuoi-de-cham-dat), chỉ khác
+độ lớn. Một chùm tia được giữ trong máy mười tiếng đồng hồ đi hết 72 lần
+khoảng cách Trái Đất – Mặt Trời, xa gần gấp đôi quỹ đạo Sao Diêm Vương — vậy
+mà theo nhịp đồng hồ riêng của proton, nó chỉ vừa già thêm **4,8 giây**.
+
+## Trường hợp biên: gấp đôi năng lượng chỉ đòi lại 2 mét
+
+Đẩy mỗi chùm lên 14 TeV. Vì c − v đi theo 1/E², khoảng thiếu chia cho đúng
+4: từ 2,69 xuống **0,67 m/s**. Nhân đôi cả cỗ máy để giành lại 2 mét trong
+cuộc đua một giây — đó là lý do không ai quảng cáo máy gia tốc bằng phần
+trăm tốc độ ánh sáng. Con số ấy đã hết chỗ để tăng; chỉ năng lượng là còn.
+
+Vẫn còn một lối thoát nghe rất hợp lý: dùng electron cho nhẹ. Cùng 7 TeV,
+electron nhẹ hơn proton 1 836 lần nên γ lớn hơn đúng 1 836 lần — nhưng hạt
+chạy vòng bức xạ synchrotron theo γ⁴, tức là mạnh gấp **1,1 × 10¹³ lần**.
+LEP, cỗ máy electron từng nằm trong chính đường hầm này, ở 104,5 GeV đã phải
+bơm bù 3,41 GeV mỗi vòng — 3,3% năng lượng bốc hơi thành ánh sáng sau mỗi lần
+chạy quanh. Một electron 7 TeV trong vòng ấy sẽ phải trả gấp 10 800 lần năng
+lượng của chính nó cho mỗi vòng — nó cháy rụi trong khoảng hai mét rưỡi đầu
+tiên. Nên máy electron thời nay chạy đường
+thẳng, còn cái hầm tròn 27 km để dành cho proton: nặng đủ để chịu bẻ cong mà
+không tự đốt mình.

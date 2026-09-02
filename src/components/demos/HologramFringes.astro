@@ -1,0 +1,198 @@
+---
+// Interference of two plane waves crossing at angle θ (in air):
+//   fringe spacing  d = λ / (2·sin(θ/2))
+//   fringe density  f = 1/d = 2·sin(θ/2)/λ   [lines per mm when λ in nm ×1e6]
+// Hard ceiling: f_max = 2/λ at θ = 180° (5 000 vạch/mm at 400 nm, 2 857 at 700 nm).
+// Valid for two collimated coherent beams, both in air, symmetric about the
+// plate normal. Sliders: θ 1–180°, λ 400–700 nm, recording resolution R 30–6 000
+// vạch/mm. Grain rule of thumb (empirical for silver-halide holo emulsions):
+// usable grain ≲ d/10 — PFG-01/Agfa 8E75 use 35–40 nm for d ≈ 400 nm.
+---
+
+<figure class="demo" data-demo="hologram-la-mot-tam-luoi-van-giao-thoa">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Góc giữa hai chùm θ (°) <output data-out="th"></output>
+      <input type="range" data-in="th" min="1" max="180" step="1" value="90" /></label>
+    <label>Bước sóng λ (nm) <output data-out="lam"></output>
+      <input type="range" data-in="lam" min="400" max="700" step="1" value="532" /></label>
+    <label>Độ phân giải vật liệu ghi (vạch/mm) <output data-out="r"></output>
+      <input type="range" data-in="r" min="30" max="6000" step="10" value="100" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Trên: mật độ vân mà hai chùm laser đẻ ra, theo góc giữa chúng (trục dọc
+    thang log). Vạch cam là trần của vật liệu bạn chọn — nằm dưới nó là ghi
+    được, vượt lên là phim chỉ nhận được một mảng xám. Dưới: đúng hệ vân ấy vẽ
+    đúng tỉ lệ trên thước micromét, cạnh hai hạt bạc — 40 nm của nhũ tương
+    hologram và 1 µm của phim ảnh thường. Quy tắc ngón tay cái của nghề: hạt
+    phải nhỏ hơn khoảng một phần mười chu kỳ vân.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const CURVE = '#2563eb', MARK = '#dc2626', LM = '#f59e0b';
+  const REF: Array<[number, string]> = [[60, 'phim điện ảnh 60'], [100, 'phim ảnh 100']];
+
+  // d in nm; density in vạch/mm.
+  const spacing = (th: number, lam: number) => lam / (2 * Math.sin((th * Math.PI) / 360));
+  const density = (th: number, lam: number) => 1e6 / spacing(th, lam);
+
+  const vn = (n: number, dec = 0) => {
+    const [i, f] = n.toFixed(dec).split('.');
+    return i.replace(/\B(?=(\d{3})+(?!\d))/g, ' ') + (f ? ',' + f : '');
+  };
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (k: string) => root.querySelector(`[data-in="${k}"]`) as HTMLInputElement;
+    const output = (k: string) => root.querySelector(`[data-out="${k}"]`) as HTMLOutputElement;
+
+    function draw() {
+      const th = Number(input('th').value);
+      const lam = Number(input('lam').value);
+      const R = Number(input('r').value);
+      output('th').textContent = String(th);
+      output('lam').textContent = String(lam);
+      output('r').textContent = vn(R);
+
+      const d = spacing(th, lam);
+      const f = density(th, lam);
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.66);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+      ctx.font = '10px system-ui,sans-serif';
+
+      const padL = 52, padR = 10;
+      const topH = Math.round(cssH * 0.60);      // chart area height
+      const padT = 12, padB = 24;                // inside chart
+      const X = (t: number) => padL + (t / 180) * (cssW - padL - padR);
+      const lo = Math.log10(20), hi = Math.log10(6000);
+      const Y = (v: number) =>
+        topH - padB - ((Math.log10(Math.min(Math.max(v, 20), 6000)) - lo) / (hi - lo)) * (topH - padB - padT);
+
+      // --- shaded "ghi được" band under the material ceiling ---
+      ctx.fillStyle = LM; ctx.globalAlpha = 0.12;
+      ctx.fillRect(padL, Y(R), cssW - padL - padR, topH - padB - Y(R));
+      ctx.globalAlpha = 1;
+
+      // --- axes ---
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.3;
+      ctx.beginPath();
+      ctx.moveTo(padL, padT); ctx.lineTo(padL, topH - padB); ctx.lineTo(cssW - padR, topH - padB);
+      ctx.stroke();
+      ctx.globalAlpha = 0.55; ctx.fillStyle = fg;
+      ctx.textAlign = 'center';
+      for (const t of [0, 45, 90, 135, 180]) ctx.fillText(`${t}°`, X(t), topH - padB + 14);
+      ctx.textAlign = 'right';
+      for (const v of [30, 100, 300, 1000, 3000]) ctx.fillText(vn(v), padL - 5, Y(v) + 3);
+      ctx.fillText('vạch/mm', padL - 5, padT + 4);
+      ctx.globalAlpha = 1;
+
+      // --- fixed reference ceilings ---
+      ctx.setLineDash([3, 3]); ctx.strokeStyle = fg; ctx.globalAlpha = 0.4;
+      for (const [v] of REF) {
+        ctx.beginPath(); ctx.moveTo(padL, Y(v)); ctx.lineTo(cssW - padR, Y(v)); ctx.stroke();
+      }
+      ctx.globalAlpha = 0.6; ctx.fillStyle = fg; ctx.textAlign = 'left';
+      for (const [v, lab] of REF) ctx.fillText(lab, padL + 6, Y(v) - 4);
+      ctx.setLineDash([]); ctx.globalAlpha = 1;
+
+      // --- the material ceiling the reader controls ---
+      ctx.strokeStyle = LM; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.moveTo(padL, Y(R)); ctx.lineTo(cssW - padR, Y(R)); ctx.stroke();
+      ctx.lineWidth = 1;
+      ctx.fillStyle = LM; ctx.textAlign = 'right';
+      ctx.fillText(`vật liệu ${vn(R)} vạch/mm`, cssW - padR, Y(R) - 5);
+
+      // --- density curve vs θ at this λ ---
+      ctx.strokeStyle = CURVE; ctx.lineWidth = 2; ctx.beginPath();
+      for (let i = 0; i <= 240; i++) {
+        const t = 1 + (179 * i) / 240;
+        const y = Y(density(t, lam));
+        i ? ctx.lineTo(X(t), y) : ctx.moveTo(X(t), y);
+      }
+      ctx.stroke(); ctx.lineWidth = 1;
+
+      ctx.fillStyle = MARK;
+      ctx.beginPath(); ctx.arc(X(th), Y(f), 6, 0, Math.PI * 2); ctx.fill();
+
+      // --- bottom strip: the real fringe pattern, 8 periods wide, to scale ---
+      const sy = topH + 6, sh = Math.round(cssH * 0.20);
+      const sw = cssW - padL - padR;
+      const spanNm = 8 * d;                       // strip covers 8 fringe periods
+      const pxPerNm = sw / spanNm;
+      for (let x = 0; x < sw; x++) {
+        const phase = (x / pxPerNm / d) * 2 * Math.PI;
+        ctx.globalAlpha = 0.15 + 0.75 * (0.5 + 0.5 * Math.cos(phase));
+        ctx.fillStyle = CURVE;
+        ctx.fillRect(padL + x, sy, 1, sh);
+      }
+      ctx.globalAlpha = 1;
+
+      // grains drawn at the same scale, sitting on the fringes. A grain wider
+      // than the strip is clipped to it — that blob IS the failure mode.
+      const grains: Array<[number, string]> = [[40, 'hạt 40 nm'], [1000, 'hạt 1 µm']];
+      grains.forEach(([g, lab], k) => {
+        const rad = Math.max((g * pxPerNm) / 2, 1.2);
+        const cx = padL + sw * (k === 0 ? 0.22 : 0.66);
+        const cy = sy + sh / 2;
+        ctx.save();
+        ctx.beginPath(); ctx.rect(padL, sy, sw, sh); ctx.clip();
+        ctx.fillStyle = MARK; ctx.globalAlpha = 0.85;
+        ctx.beginPath(); ctx.arc(cx, cy, rad, 0, Math.PI * 2); ctx.fill();
+        ctx.restore();
+        ctx.globalAlpha = 1; ctx.fillStyle = fg; ctx.textAlign = 'center';
+        ctx.fillText(lab, cx, sy + sh + 12);
+      });
+
+      // scale bar under the strip
+      const barY = sy + sh + 22;
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.5;
+      ctx.beginPath();
+      ctx.moveTo(padL, barY); ctx.lineTo(padL + sw, barY);
+      ctx.moveTo(padL, barY - 4); ctx.lineTo(padL, barY + 4);
+      ctx.moveTo(padL + sw, barY - 4); ctx.lineTo(padL + sw, barY + 4);
+      ctx.stroke();
+      ctx.globalAlpha = 0.7; ctx.fillStyle = fg; ctx.textAlign = 'center';
+      ctx.fillText(`8 vân = ${vn(spanNm / 1000, 2)} µm`, padL + sw / 2, barY + 13);
+      ctx.textAlign = 'left';
+      ctx.fillText('lát cắt hệ vân, đúng tỉ lệ', padL, sy - 2);
+      ctx.globalAlpha = 1;
+
+      const grain = d / 10;
+      const ok = f <= R;
+      const verdict = ok
+        ? `<b>ghi được</b> (còn dư ${vn(R / f, 1)}×)`
+        : `<b>KHÔNG ghi được</b> — thiếu ${vn(f / R, 1)} lần`;
+      readout.innerHTML =
+        `θ = ${th}° · λ = ${lam} nm → vân cách <b>${vn(d, 0)} nm</b> = <b>${vn(f, 0)} vạch/mm</b>` +
+        ` · vật liệu ${vn(R)} vạch/mm ⇒ ${verdict}` +
+        ` · cần hạt nhũ tương nhỏ hơn ~${vn(grain, 0)} nm` +
+        ` · trần tuyệt đối ở λ này (θ = 180°): ${vn(2e6 / lam, 0)} vạch/mm`;
+    }
+
+    root.querySelectorAll('input').forEach((el) => el.addEventListener('input', draw));
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="hologram-la-mot-tam-luoi-van-giao-thoa"]').forEach(setup);
+</script>

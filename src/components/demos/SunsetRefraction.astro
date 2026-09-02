@@ -1,0 +1,209 @@
+---
+// Khúc xạ khí quyển — công thức Bennett (1982), G.G. Bennett, "The calculation
+// of astronomical refraction in marine navigation", Journal of Navigation 35:255:
+//   R (phút cung) = cot(h + 7,31/(h + 4,4)) × (P/1010) × (283/(273+T))
+// h = độ cao BIỂU KIẾN (độ), P (hPa), T (°C). Sai số ~0,07′ ở khí quyển tiêu
+// chuẩn; chỉ dùng cho h ≥ 0 nên slider bắt đầu từ 0. Đường kính góc trung bình
+// của Mặt Trời 31,97′ (1 AU). Tốc độ hạ độ cao lúc lặn: 15′/phút × cos(vĩ độ),
+// lấy Hà Nội 21,03° → 14,00′/phút.
+---
+
+<figure class="demo" data-demo="mat-troi-lan-roi-ban-moi-thay-no-lan">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Độ cao biểu kiến của mép dưới (°) <output data-out="h"></output>
+      <input type="range" data-in="h" min="0" max="45" step="0.5" value="0" /></label>
+    <label>Nhiệt độ không khí (°C) <output data-out="t"></output>
+      <input type="range" data-in="t" min="-20" max="45" step="0.1" value="10" /></label>
+    <label>Áp suất (hPa) <output data-out="p"></output>
+      <input type="range" data-in="p" min="950" max="1040" step="1" value="1010" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Trái: cảnh hoàng hôn nhìn ngang, vẽ đúng tỉ lệ phút cung. Đĩa tô cam là thứ
+    bạn nhìn thấy; vòng nét đứt đỏ là vị trí thật của Mặt Trời, luôn nằm thấp
+    hơn. Phải: độ khúc xạ theo độ cao biểu kiến, với vạch ngang là đường kính
+    đĩa 32,0′. Ở chân trời đường cong vọt lên trên vạch ấy — nghĩa là ảnh bị
+    nâng cao hơn cả bề rộng của chính Mặt Trời.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const CURVE = '#2563eb', MARK = '#dc2626', SUN = '#f59e0b';
+  const SD = 31.974;                 // đường kính góc Mặt Trời, phút cung
+  const RATE = 15 * Math.cos(21.03 * Math.PI / 180);  // ′/phút, vĩ độ Hà Nội
+  const HMAX = 45;
+
+  const bennett = (h: number) => 1 / Math.tan((h + 7.31 / (h + 4.4)) * Math.PI / 180);
+  const refr = (h: number, P: number, T: number) =>
+    bennett(h) * (P / 1010) * (283 / (273 + T));
+
+  // Đường kính đứng biểu kiến khi mép dưới ở độ cao biểu kiến h.
+  function vertDiam(h: number, P: number, T: number) {
+    const tU = h - refr(h, P, T) / 60 + SD / 60;      // độ cao thật của mép trên
+    let lo = Math.max(0, tU), hi = tU + 2;
+    for (let i = 0; i < 120; i++) {
+      const m = (lo + hi) / 2;
+      m - refr(m, P, T) / 60 < tU ? (lo = m) : (hi = m);
+    }
+    return ((lo + hi) / 2 - h) * 60;
+  }
+
+  const vi = (x: number, d = 1) => x.toFixed(d).replace('.', ',').replace('-', '−');
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (k: string) => root.querySelector(`[data-in="${k}"]`) as HTMLInputElement;
+    const output = (k: string) => root.querySelector(`[data-out="${k}"]`) as HTMLOutputElement;
+
+    function draw() {
+      const h = Number(input('h').value);
+      const T = Number(input('t').value);
+      const P = Number(input('p').value);
+      output('h').textContent = vi(h);
+      output('t').textContent = vi(T);
+      output('p').textContent = String(P);
+
+      const R = refr(h, P, T);
+      const vd = vertDiam(h, P, T);
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.52);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+      ctx.font = '10px system-ui,sans-serif';
+
+      const gap = 16;
+      const sceneW = Math.round((cssW - gap) * 0.44);
+      const padT = 12, padB = 26;
+
+      // ---------- Bảng trái: cảnh hoàng hôn, thang phút cung ----------
+      const sL = 30, sR = sceneW;
+      const pH = cssH - padT - padB;
+      const HALF = 1.15;                                   // nửa khung, độ
+      const appC = h + vd / 120;                           // tâm đĩa nhìn thấy (độ)
+      const wc = Math.max(0.42, appC);                     // tâm khung
+      const Ys = (deg: number) => padT + ((wc + HALF - deg) / (2 * HALF)) * pH;
+      const perDeg = pH / (2 * HALF);
+
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.3;
+      ctx.beginPath(); ctx.moveTo(sL, padT); ctx.lineTo(sL, padT + pH); ctx.stroke();
+      ctx.globalAlpha = 0.55; ctx.fillStyle = fg; ctx.textAlign = 'right';
+      for (let k = -4; k <= 12; k++) {
+        const v = Math.round((wc - HALF) * 2) / 2 + k * 0.5;
+        const y = Ys(v);
+        if (y < padT + 6 || y > padT + pH - 2) continue;
+        ctx.fillText(`${vi(v)}°`, sL - 3, y + 3);
+      }
+      ctx.globalAlpha = 1;
+
+      // đường chân trời hình học
+      const yH = Ys(0);
+      if (yH > padT && yH < padT + pH) {
+        ctx.fillStyle = fg; ctx.globalAlpha = 0.1;
+        ctx.fillRect(sL, yH, sR - sL, padT + pH - yH);
+        ctx.globalAlpha = 0.55; ctx.strokeStyle = fg;
+        ctx.beginPath(); ctx.moveTo(sL, yH); ctx.lineTo(sR, yH); ctx.stroke();
+        ctx.textAlign = 'left'; ctx.fillStyle = fg;
+        ctx.fillText('chân trời', sL + 4, yH + 12);
+        ctx.globalAlpha = 1;
+      } else {
+        ctx.fillStyle = fg; ctx.globalAlpha = 0.55; ctx.textAlign = 'center';
+        ctx.fillText(`chân trời ở ${vi(h)}° phía dưới ↓`, (sL + sR) / 2, padT + pH - 4);
+        ctx.globalAlpha = 1;
+      }
+
+      const cx = (sL + sR) / 2 + 6;
+      const rx = (SD / 120) * perDeg;                      // bán kính ngang (độ→px)
+
+      // đĩa thật: tròn, nét đứt, thấp hơn đúng R
+      const trueC = appC - R / 60 + (SD - vd) / 120;
+      ctx.strokeStyle = MARK; ctx.lineWidth = 1.5; ctx.setLineDash([4, 3]);
+      ctx.beginPath(); ctx.arc(cx, Ys(trueC), rx, 0, Math.PI * 2); ctx.stroke();
+      ctx.setLineDash([]); ctx.lineWidth = 1;
+
+      // đĩa nhìn thấy: ellipse bị ép dẹt
+      ctx.fillStyle = SUN; ctx.globalAlpha = 0.85;
+      ctx.beginPath();
+      ctx.ellipse(cx, Ys(appC), rx, (vd / 120) * perDeg, 0, 0, Math.PI * 2);
+      ctx.fill(); ctx.globalAlpha = 1;
+
+      // mũi tên độ nâng
+      ctx.strokeStyle = MARK; ctx.globalAlpha = 0.8;
+      const ax = cx - rx - 10;
+      ctx.beginPath(); ctx.moveTo(ax, Ys(trueC)); ctx.lineTo(ax, Ys(appC)); ctx.stroke();
+      ctx.globalAlpha = 1; ctx.fillStyle = MARK; ctx.textAlign = 'right';
+      ctx.fillText(`${vi(R)}′`, ax - 3, (Ys(trueC) + Ys(appC)) / 2 + 3);
+
+      // ---------- Bảng phải: đường cong khúc xạ ----------
+      const padL = sceneW + gap + 34, padR = 8;
+      const Xc = (hh: number) => padL + Math.sqrt(hh / HMAX) * (cssW - padL - padR);
+      const RMAX = 42;
+      const Yc = (r: number) => padT + ((RMAX - r) / RMAX) * pH;
+
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.3;
+      ctx.beginPath();
+      ctx.moveTo(padL, padT); ctx.lineTo(padL, padT + pH); ctx.lineTo(cssW - padR, padT + pH);
+      ctx.stroke();
+      ctx.globalAlpha = 0.55; ctx.fillStyle = fg; ctx.textAlign = 'center';
+      for (const k of [0, 1, 5, 10, 20, 45]) ctx.fillText(`${k}°`, Xc(k), padT + pH + 14);
+      ctx.textAlign = 'right';
+      for (const r of [10, 20, 30, 40]) ctx.fillText(`${r}′`, padL - 4, Yc(r) + 3);
+      ctx.globalAlpha = 1;
+
+      // vạch đường kính đĩa
+      ctx.strokeStyle = SUN; ctx.setLineDash([5, 4]);
+      ctx.beginPath(); ctx.moveTo(padL, Yc(SD)); ctx.lineTo(cssW - padR, Yc(SD)); ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillStyle = SUN; ctx.textAlign = 'right';
+      ctx.fillText('đĩa 32,0′', cssW - padR, Yc(SD) - 4);
+
+      ctx.strokeStyle = CURVE; ctx.lineWidth = 2; ctx.beginPath();
+      for (let i = 0; i <= 240; i++) {
+        const hh = HMAX * Math.pow(i / 240, 2);
+        const y = Yc(Math.min(RMAX, refr(hh, P, T)));
+        i ? ctx.lineTo(Xc(hh), y) : ctx.moveTo(Xc(hh), y);
+      }
+      ctx.stroke(); ctx.lineWidth = 1;
+
+      ctx.fillStyle = MARK;
+      ctx.beginPath(); ctx.arc(Xc(h), Yc(Math.min(RMAX, R)), 5, 0, Math.PI * 2); ctx.fill();
+
+      // ---------- Readout ----------
+      const secs = (R / RATE) * 60;
+      const mm = Math.floor(secs / 60), ss = Math.round(secs - mm * 60);
+      const late = mm > 0 ? `${mm} phút ${ss} giây` : `${ss} giây`;
+      const flag = h < 0.25 && R > SD
+        ? ' · <b>khúc xạ lớn hơn đường kính đĩa: cả Mặt Trời thật đã nằm dưới chân trời hình học</b>'
+        : h < 0.25
+          ? ' · khúc xạ nhỏ hơn đường kính đĩa: mép trên của đĩa thật còn nhô lên trên chân trời'
+          : '';
+      readout.innerHTML =
+        `Mép dưới ở ${vi(h)}° · ${P} hPa · ${vi(T)} °C → khúc xạ nâng ảnh lên ` +
+        `<b>${vi(R)}′</b>; đĩa bị ép dẹt còn <b>${vi(vd)}′</b> theo phương đứng ` +
+        `(${vi(100 * vd / SD, 0)}% bề ngang 32,0′). Ở vĩ độ Hà Nội, chênh lệch ấy ` +
+        `bằng <b>${late}</b> thời gian: bạn đang nhìn một chỗ Mặt Trời đã rời khỏi.${flag}`;
+    }
+
+    root.querySelectorAll('input').forEach((el) => el.addEventListener('input', draw));
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="mat-troi-lan-roi-ban-moi-thay-no-lan"]').forEach(setup);
+</script>

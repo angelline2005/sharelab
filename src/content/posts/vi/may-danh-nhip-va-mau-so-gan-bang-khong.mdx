@@ -1,0 +1,85 @@
+---
+title: "Máy đánh nhịp: trượt quả nặng lên cao 10 cm, nhịp rơi từ 201 xuống 41"
+seoTitle: "Máy đánh nhịp cơ: công thức chu kỳ của con lắc có đối trọng trên trục"
+description: "Quả nặng bạn trượt trên cần máy đánh nhịp nằm TRÊN trục quay, nên nó trừ đi mô-men hồi phục thay vì cộng vào. Trượt từ 1 cm lên 11 cm, nhịp tụt từ 201 xuống 41 — đúng thang 208–40 in trên máy thật. Lên 12,0 cm thì mẫu số bằng 0 và cần đứng im vĩnh viễn."
+pubDate: 2026-09-02
+tags: ["vat-ly", "dao-dong", "am-thanh", "javascript"]
+translationId: "may-danh-nhip-va-mau-so-gan-bang-khong"
+---
+
+import MetronomeTempo from '../../../components/demos/MetronomeTempo.astro';
+
+Chiếc máy đánh nhịp hình tháp trên nóc đàn piano có một chi tiết ai cũng
+dùng mà không ai thấy lạ: bạn trượt quả nặng **lên cao** thì nó đánh
+**chậm lại**. Mọi con lắc khác trên đời làm ngược — và máy đánh nhịp cãi
+được là vì quả nặng bạn nhìn thấy nằm sai phía trục quay:
+
+<MetronomeTempo />
+
+## Hai mô-men trừ nhau, chứ không cộng
+
+Mở thân tháp ra: khuất phía dưới trục quay còn một **đối trọng cố định**
+mà bạn không bao giờ chạm tới — ở mô hình trên là 32 g cách trục 3,0 cm.
+Quả nặng trượt được thì nằm **trên** trục. Đối trọng dưới trục kéo cần về
+vị trí đứng: con lắc bình thường. Quả nặng trên trục kéo cần đổ xa thêm:
+con lắc ngược. Cùng một trọng lực, hai mô-men ngược dấu, và cái còn lại
+sau **phép trừ** mới điều khiển nhịp:
+
+```
+T = 2π · √( I / [ g·(m₁r₁ − m₂r₂) ] )     I = m₁r₁² + m₂r₂² + m_cần·L²/3
+nhịp/phút = 120 / T
+```
+
+(120 chứ không phải 60: cơ cấu hồi kêu một tiếng ở mỗi đầu biên, tức hai
+tiếng mỗi chu kỳ.)
+
+Con số then chốt là **m₁r₁ = 96 g·cm** — ngân sách mà quả nặng trượt tiêu
+dần. Ở r₂ = 1 cm nó mới tiêu 8, mẫu số còn 88 g·cm: **201 nhịp/phút**.
+Đẩy lên 11 cm, nó tiêu hết 88, mẫu số còn **8 g·cm** — 8% ngân sách — và
+nhịp còn **41**. Hai đầu ấy không phải tôi chọn cho đẹp: thang in trên
+mọi máy đánh nhịp cơ chạy đúng từ 208 xuống 40.
+
+## 40 nhịp mỗi phút, gói trong 12 xentimét
+
+Vì sao phải bày ra phép trừ cho phức tạp? Vì cách thẳng thắn thì không
+vác đi được. Nhịp 40 nghĩa là chu kỳ 3,0 giây, mà một [con lắc đơn theo
+T = 2π√(L/g)](/vi/posts/chu-ky-con-lac-don-co-that-su-khong-phu-thuoc-bien-do)
+muốn chậm đến thế phải dài **2,24 m**. Ngay nhịp 60 hiền lành — mỗi tiếng
+một giây — cũng đòi 0,99 m: đó là con lắc giây của đồng hồ quả lắc, và là
+lý do đồng hồ quả lắc cao bằng người. Maelzel không kéo dài cánh tay đòn;
+ông **bóp nhỏ mô-men hồi phục** cho tới khi cái cần 12 cm lắc uể oải như
+một cây cột 2,24 m.
+
+## Mẫu số rơi 11 lần, quán tính chỉ tăng 2,2
+
+Trượt quả nặng từ 1 cm lên 11 cm làm hai việc cùng lúc: mẫu số sụp **11
+lần** (88 → 8 g·cm), còn I thì tăng vì quả nặng ra xa trục — 776 → 1 736
+g·cm², tức **2,24 lần**. Cả hai đều làm chậm, và chúng nhân nhau dưới
+dấu căn: √(11 × 2,24) = **4,96**, đúng tỉ số 201,4/40,6. Phép trừ làm
+phần lớn công việc, quán tính chỉ phụ hoạ.
+
+Hệ quả thực dụng nằm ở độ dốc. Ở r₂ = 1 cm, xê dịch quả nặng **1 mm** đổi
+1,13 nhịp/phút — 0,56% tempo. Ở 11 cm, cũng 1 mm ấy đổi 2,28 nhịp/phút,
+tức **5,6%**: sai số tương đối **gấp mười lần**. Cây máy cũ dầu khô, chốt
+trục rơ, vì thế thường vẫn khá đúng ở đầu nhanh mà sai bét ở đầu chậm —
+gần chỗ mẫu số cạn, [ma sát nuốt mất phần năng lượng mà cơ cấu hồi bơm
+vào](/vi/posts/dao-dong-tat-dan-diem-vang-cua-giam-xoc), và mọi nhiễu đều
+được phép chia phóng đại lên. (Công thức trên là gần đúng góc nhỏ; cần
+lắc thật tới ±25° nên chu kỳ dài hơn chừng 1,2%.)
+
+## Trường hợp biên: qua 12,0 cm, cần thôi làm con lắc
+
+Đẩy quả nặng 8 g lên đúng **r₂ = 12,0 cm** thì m₂r₂ = 96 g·cm, bằng chằn
+chặn m₁r₁. Mẫu số bằng không, chu kỳ vô hạn, nhịp bằng 0: cần đứng đâu
+nằm yên đó, cân bằng phiếm định, không còn phương nào để trở về.
+
+Nhích thêm một milimét, dưới dấu căn là số âm — cách toán học báo rằng
+câu hỏi đã hỏng, chứ không phải rằng chu kỳ ảo. Mô-men đổi dấu: cần **đổ
+hẳn sang một bên rồi nằm đó**. Ở 12,5 cm, độ lệch khỏi phương đứng nhân
+lên e sau mỗi **0,72 giây** — chính là [con lắc
+ngược](/vi/posts/con-lac-nguoc-dung-vung-nho-rung-nhanh), thứ chỉ đứng
+thẳng nổi nếu có ai rung điểm treo thật nhanh. Nhà sản xuất chặn chuyện
+đó không bằng vật lý mà bằng một mẩu kim loại: vạch chậm nhất luôn dừng
+trước tiệm cận, và trên ngọn cần có cái chặn. Tay nghề của chiếc máy nằm
+ở chỗ chọn 96 g·cm sao cho nhạc công đi được tới sát bờ vực — rồi dựng
+rào ngay trước mép.

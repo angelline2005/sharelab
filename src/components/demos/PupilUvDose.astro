@@ -1,0 +1,174 @@
+---
+// Moon & Spencer (1944) light-adapted pupil diameter, in the cd/m² form
+// quoted by Watson & Yellott (2012), J. Vision 12(10):12:
+//   d = 4.9 − 3·tanh(0.4·(log10 L − 0.5))   [d in mm, L in cd/m²]
+// (The −0.5 is the millilambert → cd/m² conversion of the 1944 original.)
+// Asymptotes 7.9 mm dark / 1.9 mm bright; trustworthy for L ≈ 0.1–10⁵ cd/m².
+// UV dose entering the eye behind the pupil ∝ T_UV · d², so the tinted-lens
+// dose factor vs the bare eye is T_UV · (d(L·VLT)/d(L))².
+// Slider range 100–20 000 cd/m² keeps both L and L·VLT inside validity.
+---
+
+<figure class="demo" data-demo="kinh-ram-toi-mau-khong-loc-uv">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Độ chói của cảnh (cd/m²) <output data-out="l"></output>
+      <input type="range" data-in="l" min="100" max="20000" step="20" value="4000" /></label>
+    <label>Tròng cho qua bao nhiêu ánh sáng — VLT (%) <output data-out="v"></output>
+      <input type="range" data-in="v" min="3" max="90" step="1" value="3" /></label>
+    <label>Tròng chặn bao nhiêu tia UV (%) <output data-out="u"></output>
+      <input type="range" data-in="u" min="0" max="100" step="1" value="0" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Đường cong là đường kính đồng tử theo độ chói cảnh (trục ngang thang
+    log). Chấm vàng là mắt trần; tròng tối kéo mắt sang trái đường cong tới
+    chấm đỏ — đồng tử mở to hơn. Hai cột bên phải so liều tia UV lọt qua
+    đồng tử vào bên trong mắt: mắt trần lấy làm mốc 1. Kéo thanh "chặn UV"
+    và xem cột đỏ sụp — đó là toàn bộ khác biệt giữa kính đạt chuẩn và kính
+    chỉ tối màu.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const CURVE = '#2563eb', MARK = '#dc2626', BARE = '#f59e0b';
+  const pupil = (L: number) => 4.9 - 3 * Math.tanh(0.4 * (Math.log10(L) - 0.5));
+  const cm = (x: number, n: number) => x.toFixed(n).replace('.', ',');
+  const grp = (n: number) => n.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (k: string) => root.querySelector(`[data-in="${k}"]`) as HTMLInputElement;
+    const output = (k: string) => root.querySelector(`[data-out="${k}"]`) as HTMLOutputElement;
+
+    function draw() {
+      const L = Number(input('l').value);
+      const vlt = Number(input('v').value) / 100;
+      const blk = Number(input('u').value) / 100;
+      output('l').textContent = grp(L);
+      output('v').textContent = `${(vlt * 100).toFixed(0)}%`;
+      output('u').textContent = `${(blk * 100).toFixed(0)}%`;
+
+      const Lin = L * vlt;
+      const dBare = pupil(L), dLens = pupil(Lin);
+      const areaRatio = (dLens * dLens) / (dBare * dBare);
+      const factor = (1 - blk) * areaRatio;
+      const uv400 = 0.01 * areaRatio;
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.46);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+
+      const padL = 34, padT = 14, padB = 26, padR = 8;
+      const innerW = cssW - padL - padR;
+      const plotW = innerW * 0.62;
+      const plotB = cssH - padB, plotH = plotB - padT;
+      const dLo = 1.8, dHi = 7.0, lgHi = 4.3;
+      const X = (lg: number) => padL + (lg / lgHi) * plotW;
+      const Y = (d: number) => padT + ((dHi - d) / (dHi - dLo)) * plotH;
+
+      ctx.font = '10px system-ui,sans-serif';
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.3;
+      ctx.beginPath(); ctx.moveTo(padL, padT); ctx.lineTo(padL, plotB); ctx.lineTo(padL + plotW, plotB); ctx.stroke();
+      ctx.globalAlpha = 0.55; ctx.fillStyle = fg;
+      ctx.textAlign = 'center';
+      for (const lg of [0, 1, 2, 3, 4]) ctx.fillText(grp(Math.pow(10, lg)), X(lg), plotB + 14);
+      ctx.textAlign = 'right';
+      for (const d of [2, 3, 4, 5, 6, 7]) ctx.fillText(`${d}`, padL - 4, Y(d) + 3);
+      ctx.textAlign = 'left';
+      ctx.fillText('mm', padL + 3, padT + 8);
+      ctx.fillText('cd/m²', padL + plotW - 34, plotB + 14);
+      ctx.globalAlpha = 1;
+
+      ctx.strokeStyle = CURVE; ctx.lineWidth = 2; ctx.beginPath();
+      for (let i = 0; i <= 220; i++) {
+        const lg = (lgHi * i) / 220;
+        const y = Y(pupil(Math.pow(10, lg)));
+        i ? ctx.lineTo(X(lg), y) : ctx.moveTo(X(lg), y);
+      }
+      ctx.stroke(); ctx.lineWidth = 1;
+
+      // Arrow: bare eye -> behind the lens.
+      const x1 = X(Math.log10(L)), y1 = Y(dBare);
+      const x2 = X(Math.log10(Lin)), y2 = Y(dLens);
+      if (x1 - x2 > 4) {
+        ctx.strokeStyle = MARK; ctx.globalAlpha = 0.65; ctx.lineWidth = 1.5;
+        ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
+        const a = Math.atan2(y2 - y1, x2 - x1);
+        ctx.beginPath(); ctx.moveTo(x2, y2);
+        ctx.lineTo(x2 - 8 * Math.cos(a - 0.4), y2 - 8 * Math.sin(a - 0.4));
+        ctx.lineTo(x2 - 8 * Math.cos(a + 0.4), y2 - 8 * Math.sin(a + 0.4));
+        ctx.closePath(); ctx.fillStyle = MARK; ctx.fill();
+        ctx.globalAlpha = 1; ctx.lineWidth = 1;
+      }
+      ctx.fillStyle = BARE;
+      ctx.beginPath(); ctx.arc(x1, y1, 5, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = MARK;
+      ctx.beginPath(); ctx.arc(x2, y2, 5, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = fg; ctx.globalAlpha = 0.7; ctx.textAlign = 'center';
+      ctx.fillText('trần', x1, y1 - 9);
+      ctx.fillText('sau tròng', x2, y2 - 9);
+      ctx.globalAlpha = 1;
+
+      // Right panel: UV dose entering the eye, bare eye = 1.
+      const barL = padL + plotW + 40, barR = cssW - padR;
+      const vHi = 2.5;
+      const YB = (v: number) => padT + ((vHi - Math.min(v, vHi)) / vHi) * plotH;
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.3;
+      ctx.beginPath(); ctx.moveTo(barL - 6, padT); ctx.lineTo(barL - 6, plotB); ctx.lineTo(barR, plotB); ctx.stroke();
+      ctx.setLineDash([3, 3]);
+      ctx.beginPath(); ctx.moveTo(barL - 6, YB(1)); ctx.lineTo(barR, YB(1)); ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.globalAlpha = 0.55; ctx.fillStyle = fg; ctx.textAlign = 'right';
+      for (const v of [0, 1, 2]) ctx.fillText(`${v}`, barL - 9, YB(v) + 3);
+      ctx.textAlign = 'left';
+      ctx.fillText('liều UV', barL - 4, padT + 8);
+      ctx.globalAlpha = 1;
+
+      const slot = (barR - barL) / 2, bw = Math.max(14, slot * 0.5);
+      const bx1 = barL + slot * 0.5 - bw / 2, bx2 = barL + slot * 1.5 - bw / 2;
+      ctx.fillStyle = BARE;
+      ctx.fillRect(bx1, YB(1), bw, plotB - YB(1));
+      ctx.fillStyle = MARK;
+      ctx.fillRect(bx2, YB(factor), bw, Math.max(1, plotB - YB(factor)));
+      ctx.fillStyle = fg; ctx.globalAlpha = 0.7; ctx.textAlign = 'center';
+      ctx.fillText('trần', bx1 + bw / 2, plotB + 14);
+      ctx.fillText('có kính', bx2 + bw / 2, plotB + 14);
+      ctx.globalAlpha = 1;
+      ctx.fillStyle = MARK;
+      ctx.fillText(`×${cm(factor, 2)}`, bx2 + bw / 2, Math.max(padT + 9, YB(factor) - 5));
+
+      const note = blk >= 0.99
+        ? ' · <b>mức của tròng đạt chuẩn UV400</b>'
+        : factor > 1
+          ? ' · <b>tròng này đang nhân liều UV lên, không phải giảm</b>'
+          : '';
+      readout.innerHTML =
+        `Cảnh ${grp(L)} cd/m² · tròng cho qua ${(vlt * 100).toFixed(0)}% ánh sáng, chặn ${(blk * 100).toFixed(0)}% UV ` +
+        `→ đồng tử <b>${cm(dBare, 2)} → ${cm(dLens, 2)} mm</b> (diện tích ×${cm(areaRatio, 2)}) · ` +
+        `liều UV vào trong mắt <b>×${cm(factor, 2)}</b>${note} · cùng tròng ấy mà chặn 99% UV: ×${cm(uv400, 3)}`;
+    }
+
+    root.querySelectorAll('input').forEach((el) => el.addEventListener('input', draw));
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="kinh-ram-toi-mau-khong-loc-uv"]').forEach(setup);
+</script>

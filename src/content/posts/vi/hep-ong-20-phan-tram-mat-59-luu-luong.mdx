@@ -1,0 +1,94 @@
+---
+title: "Hẹp lòng ống 20%, lưu lượng còn 41%: luật luỹ thừa bốn"
+seoTitle: "Định luật Hagen–Poiseuille: lưu lượng tỉ lệ luỹ thừa bốn bán kính ống"
+description: "Lưu lượng chảy tầng tỉ lệ với r⁴, nên bóp lòng ống còn 80% là mất 59% nước: 0,8⁴ = 0,41. Nhưng chính cái ống sau bức tường nhà bạn lại không tuân luật ấy — và sai số là 21 lần."
+pubDate: 2026-09-02
+tags: ["vat-ly", "chat-luu", "javascript"]
+translationId: "hep-ong-20-phan-tram-mat-59-luu-luong"
+---
+
+import PoiseuilleFlow from '../../../components/demos/PoiseuilleFlow.astro';
+
+Vòi sen tầng ba chảy như nước mắt. Thợ nước ngó một vòng rồi phán: thay ống
+phi 21 lên phi 27. Sáu milimét — nghe như cái cớ để tính thêm tiền công.
+Nhưng lưu lượng không đi theo đường kính, cũng không đi theo tiết diện:
+
+<PoiseuilleFlow />
+
+## Vì sao là mũ bốn chứ không phải mũ hai
+
+Lớp nước sát thành ống **không chảy** — nó dính vào thành, vận tốc bằng
+không. Lớp kế trượt lên nó, bị độ nhớt níu lại; càng vào giữa trục càng ít
+bị níu. Giải ra được biên dạng parabol `v(r) = Δp·(R² − r²)/(4·η·L)`: vận
+tốc ở tâm ống tỉ lệ với **R bình phương**.
+
+Tiết diện ống cũng tỉ lệ R², nên lưu lượng — tiết diện nhân vận tốc trung
+bình — mang cả hai lần bình phương ấy:
+
+```
+Q = π·Δp·r⁴ / (8·η·L)
+```
+
+Nới ống gấp đôi thì nước chảy gấp **16 lần**. Bóp lòng ống còn 80%:
+0,8⁴ = 0,4096 — **còn 41%, mất 59% chỉ vì hụt một phần năm đường kính**.
+Công thức mang tên Gotthilf Hagen và Jean Poiseuille, mà Poiseuille là bác
+sĩ: ông đo dòng máu chứ không đo ống nước. Chi tiết ấy là lý do công thức
+đúng.
+
+## Hẹp một nửa động mạch và bài kiểm tra trên máy chạy
+
+Trong [hệ tuần hoàn](/vi/posts/huyet-ap-va-cot-nuoc-trong-nguoi-ban),
+tiểu động mạch rộng 30 µm và máu bò 5 mm/s: số Reynolds cỡ **0,04** —
+chảy tầng tuyệt đối, luật mũ bốn đúng từng chữ. Vì thế cơ thể không cần
+bơm mạnh hơn để chia lại máu, chỉ cần bóp nhẹ lòng mạch: co 20% đường
+kính là cắt 59% dòng, muốn bù lại bằng áp lực thì tim phải gắng gấp 2,4
+lần.
+
+Cùng con dao ấy quay ngược: động mạch vành hẹp 50% đường kính còn
+0,5⁴ = **6% lưu lượng**. Nghe như án tử, nhưng người bệnh vẫn đi chợ bình
+thường — mạch phía sau giãn ra bù. Chỉ khi gắng sức, nhu cầu vọt lên vài
+lần, khoản dự trữ ấy mới cạn: đó là lý do nghiệm pháp gắng sức bắt bệnh
+trên máy chạy bộ chứ không bắt trên ghế.
+
+Trên bàn tiêm cũng luật đó. Kim 21G lòng 0,51 mm so với kim 25G lòng
+0,26 mm — chưa tới gấp đôi bề ngang mà truyền nhanh hơn **khoảng 15 lần**.
+Kim nhỏ đỡ đau thật, nhưng truyền máu cấp cứu thì không ai dám nhỏ.
+
+## Nới ống ăn đứt mọi mẹo tăng áp
+
+Trong công thức, Δp nằm ở mũ một còn r ở mũ bốn — đó là toàn bộ lời
+khuyên kỹ thuật, viết gọn. Muốn gấp đôi lưu lượng bằng áp lực, bạn phải
+gấp đôi áp lực: máy bơm, tiền điện, tiếng ồn. Muốn gấp đôi bằng đường
+kính, chỉ cần nới **19%**, vì căn bậc bốn của 2 là 1,19.
+
+Phi 21 lên phi 27 là nới 29% — dư sức. (Nhãn ⌀ là đường kính ngoài, nhưng
+bề dày thành ống chịu áp tỉ lệ thuận với đường kính, nên tỉ số lòng ống
+giữ nguyên tỉ số nhãn.) Còn chiều dài thì tàn nhẫn theo kiểu khác, tuyến
+tính: kéo ống vòng ra sau nhà cho khuất mắt, dài gấp đôi là mất một nửa.
+
+## Trường hợp biên: nước nhà bạn chưa bao giờ chảy tầng
+
+Hagen–Poiseuille chỉ đúng khi dòng còn chảy tầng, tức
+[số Reynolds](/vi/posts/so-reynolds-vi-khuan-boi-trong-mat-ong) dưới
+2 300. Ống phi 21 mở 12 lít/phút: nước đi 0,58 m/s, Re ≈ **12 000**. Muốn
+ở lại vùng chảy tầng, vòi nhà bạn phải rỉ dưới **2,3 lít/phút**.
+
+Trên ngưỡng đó ma sát đổi luật. Hệ số Blasius `f = 0,3164·Re^(−1/4)` ghép
+vào Darcy–Weisbach cho `Q ∝ Δp^(4/7)·D^(19/7)` — số mũ tụt từ 4 xuống
+**2,71**. Mọi kết luận co lại theo: bóp còn 80% đường kính chỉ mất 45%
+chứ không phải 59%; phi 21 lên phi 27 cho 1,98 lần chứ không phải 2,73.
+Và áp lực mất giá thảm hại — muốn gấp đôi lưu lượng giờ phải tăng áp
+**3,36 lần**, nên nới ống lại càng thắng đậm.
+
+Sai số tuyệt đối thì không co chút nào. Ống phi 21 dài 20 m, chênh 1 bar:
+công thức mũ bốn hứa 1 429 lít/phút, thực tế khoảng 68 — **lệch 21 lần**.
+Công thức đẹp nhất chương thuỷ động lực học sai hơn một bậc độ lớn với
+đúng cái ống sau bức tường nhà bạn.
+
+Luật mũ bốn không sai, nó chỉ sống ở chỗ khác: trong tiểu động mạch,
+trong lòng kim tiêm, trong [mạch gỗ của
+cây](/vi/posts/mao-dan-nuoc-leo-cao-va-bi-mat-cua-cay-100-met) — nơi ống
+hẹp đến mức nước không đủ đà để rối. Và cái cây phải trả giá đúng bằng
+đồng tiền ấy: ống càng hẹp thì mao dẫn kéo nhựa lên càng cao, mà cũng
+chính độ hẹp đó bóp nghẹt lưu lượng theo luỹ thừa bốn. Còn ông thợ nước
+thì đúng — chỉ là ông đúng nhờ số mũ 2,71, không phải số mũ 4.

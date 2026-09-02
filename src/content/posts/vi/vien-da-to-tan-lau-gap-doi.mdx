@@ -1,0 +1,91 @@
+---
+title: "Cùng 100 g đá: một viên to giữ ly lạnh lâu gấp đôi tám viên nhỏ"
+seoTitle: "Đá viên to hay nhỏ tan lâu hơn — và vì sao quán bar dùng viên đá cầu"
+description: "Tốc độ tan không phụ thuộc kích thước: mặt đá lùi đúng 24,5 µm mỗi giây trong ly khuấy đều. Tuổi thọ vì thế tỉ lệ thẳng với bề dày — viên 101 g sống 16,3 phút, chẻ tám còn 8,2 phút, còn đá bào biến mất trong 20 giây."
+pubDate: 2026-09-02
+tags: ["vat-ly", "nhiet-hoc", "javascript"]
+translationId: "vien-da-to-tan-lau-gap-doi"
+---
+
+import IceCubeMelt from '../../../components/demos/IceCubeMelt.astro';
+
+Ly cà phê mang đi đầy đá bào: uống nửa chừng đã nhạt thếch. Ly whisky ở
+quán bar chỉ có đúng một viên đá vuông cạnh gần 5 phân, nửa tiếng sau vẫn
+còn hình. Cùng một khối lượng nước đá, cùng một cái ly — khác nhau ở đúng
+một chiều dài:
+
+<IceCubeMelt />
+
+## Mặt đá lùi 24,5 micromet mỗi giây, bất kể viên to hay nhỏ
+
+Nhiệt chỉ vào đá qua mặt ngoài. Mỗi mét vuông mặt ấy — luôn đứng đúng
+0 °C chừng nào còn đá — nhận `q = h·ΔT` oát, với h là hệ số truyền nhiệt
+của lớp chất lỏng sát mặt. Bào mỏng đi một lớp dày dR tốn `ρ·L_f·dR`
+joule trên chính mét vuông đó: [ẩn nhiệt nóng
+chảy](/vi/posts/nhiet-an-hai-quang-nhiet-ke-dung-im) của nước là 334 kJ
+mỗi kilôgam, khoản chi đắt nhất trong bếp. Chia hai vế:
+
+```
+dR/dt = h·ΔT / (ρ·L_f)
+```
+
+Vế phải không có chữ nào nói về kích thước. Ly cà phê 25 °C khuấy đều
+(h ≈ 300 W/m²K) rót 7 500 W vào mỗi mét vuông mặt đá, và mặt đá lùi vào
+**24,5 µm mỗi giây** — 1,47 mm mỗi phút — dù đó là mặt viên đá cầu hay
+mảnh đá bào mỏng dính. Viên to không tan chậm hơn; nó chỉ có nhiều bề dày
+hơn để cho người ta bào.
+
+## Chẻ tám là mất một nửa tuổi thọ
+
+Viên đá lập phương cạnh 4,8 cm nặng **101 g**. Mọi mặt cùng lùi 24,5
+µm/s, nên viên sống tới lúc hai mặt đối diện gặp nhau ở giữa: nửa cạnh
+24 mm chia cho tốc độ ấy ra **16,3 phút**.
+
+Chẻ đúng viên đó thành tám viên cạnh 2,4 cm — cỡ khay đá tủ lạnh — khối
+lượng không đổi một gam nào, nhưng nửa cạnh chỉ còn 12 mm: **8,2 phút**.
+Chẻ tiếp thành 64 viên cạnh 1,2 cm: 4,1 phút. Đá bào, mảnh dày cỡ 1 mm:
+**20 giây**, đúng bằng quãng bạn cắm ống hút rồi ngồi xuống.
+
+Đếm theo diện tích ra cùng một kết quả: 138 → 277 → 553 cm². Mỗi lần chia
+đôi cạnh, diện tích nhân đôi, công suất hút nhiệt nhân đôi (104 W lên
+207 W), tuổi thọ chia đôi. Đây là [luật bình phương–lập
+phương](/vi/posts/nhen-nuoc-di-tren-mat-ho-va-luat-choi-cua-kich-thuoc)
+đọc ngược: khối lượng đá đi theo lập phương, còn cửa cho nhiệt vào chỉ đi
+theo bình phương.
+
+## Vì sao quán bar bỏ tiền mua khuôn đá hình cầu
+
+Nếu bề dày quyết định tất cả thì hình tối ưu là hình giấu được nhiều thịt
+nhất sau ít da nhất. Cùng 101 g, viên cầu có bán kính 29,8 mm — dày hơn
+nửa cạnh viên vuông (24 mm) **24%** — và chỉ phơi ra 111 cm² mặt thay vì
+138: nó sống **20,3 phút**. Thực tế còn nghiêng về hình cầu hơn nữa, vì
+góc và cạnh của viên vuông hứng nhiệt từ hai ba phía nên mòn trước, viên
+vuông tự bo tròn dần trong lúc tan. Bốn phút chênh lệch ấy là bốn phút ly
+rượu chưa bị pha loãng — thứ khách trả tiền, chứ không phải cái lạnh.
+
+## Cây kim còn lại trong công thức: khuấy hay để yên
+
+Cố định kích thước rồi thì chỉ còn h, và h xoay rất mạnh. Nước tan ra ở
+0 °C nặng hơn đồ uống 25 °C nên chìm thành dòng, kéo nước ấm mới áp vào
+mặt đá: đối lưu tự nuôi chính nó, còn cái ống hút bạn ngoáy chỉ làm việc
+đó nhanh hơn. Ly để yên trên bàn có h quanh 80 W/m²K, mặt đá lùi 6,5
+µm/s, viên 4,8 cm sống **61 phút**. Vẫn viên ấy trong bình lắc pha chế,
+h vượt 500 — dưới mười phút.
+
+## Trường hợp biên: ly đầy đá thì mỗi viên gần như bất tử
+
+Cả công thức đứng trên một giả định: đồ uống giữ nguyên nhiệt độ. Đúng
+với biển, sai với cái ly. 200 mL nước ở 25 °C chỉ mang theo 20,9 kJ trên
+mức 0 °C, mà tan mỗi gam đá tốn 334 J — cả ly **chỉ đủ vốn tan 62,7 g
+đá**. Bỏ vào 101 g thì gần 40 g còn lại không có ai trả tiền, đành nằm
+đợi nhiệt rò từ không khí qua thành ly.
+
+Trước khi hết vốn, ΔT đã co dần và đá tự phanh mình: ly xuống 5 °C thì
+tốc độ lùi chỉ còn một phần năm, xuống 1 °C còn một phần hai mươi lăm.
+Đối lưu tắt theo, vì [nước đặc nhất ở 3,98
+°C](/vi/posts/nuoc-dac-nhat-o-4-do-di-thuong-cuu-song-moi-ho-ca) — quanh
+mốc đó nước tan ra hết chìm, dòng nuôi mặt đá đứng lại, h sụp nốt.
+
+Nên nghịch lý dễ chịu của ly đá đầy là có thật: càng bỏ nhiều đá, mỗi
+viên càng sống dai, và ly càng lâu bị pha loãng. Bí quyết giữ ly lạnh
+không nằm ở viên đá to — nó nằm ở chỗ **đừng bao giờ để ly vơi đá**.

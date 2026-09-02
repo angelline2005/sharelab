@@ -1,0 +1,117 @@
+---
+title: "Đèn pha ngược chiều phủ lên võng mạc bạn một lớp sương 11 cd/m²"
+seoTitle: "Chói loá mất khả năng nhìn: công thức Stiles–Holladay"
+description: "Ánh sáng lệch trục không bị mắt bỏ qua — nó tán xạ trong thuỷ tinh thể rồi phủ đều lên toàn võng mạc. Một đèn 1 000 cd cách 10 m, lệch 3° khỏi hướng nhìn, dựng lên lớp chói 11,1 cd/m², gấp mười một lần độ chói mặt đường. Người đi bộ áo tối không biến mất khỏi thế giới, chỉ biến mất khỏi tương phản."
+pubDate: 2026-09-02
+tags: ["vat-ly", "quang-hoc", "javascript"]
+translationId: "choi-loa-den-pha-lop-suong-tren-vong-mac"
+---
+
+import VeilingGlare from '../../../components/demos/VeilingGlare.astro';
+
+Đêm, một chiếc xe ngược chiều lắp bóng LED độ. Bạn *không* nhìn thẳng vào
+nó — mắt vẫn hướng về phía trước, đèn nằm lệch vài độ bên rìa. Vậy mà
+người đi bộ áo tối đang bước xuống lề đột nhiên không còn ở đó nữa. Anh ta
+chưa đi đâu cả:
+
+<VeilingGlare />
+
+## Ánh sáng lệch trục không bị bỏ qua — nó bị trải đều
+
+Thấu kính của mắt không hoàn hảo. Khoảng **một phần mười** lượng sáng lọt
+qua đồng tử một người trẻ không tới được chỗ nó đáng tới: nó tán xạ trên
+giác mạc, trong các sợi protein của thuỷ tinh thể, trong dịch kính — rồi
+rơi vãi khắp võng mạc thành một lớp sáng nền mỏng, đều, không mang tin tức
+gì. Đó không phải cảm giác chủ quan mà là một độ chói đo được, và nó cộng
+thẳng vào ảnh: **độ chói màn** (veiling luminance).
+
+Stiles và Holladay đo nó từ những năm 1920 và rút ra một công thức gọn
+đến khó tin:
+
+```
+L_màn = 10 · E / θ²      (E = I/d² lux tại mắt, θ tính bằng độ)
+```
+
+Chiếc đèn độ ấy hắt về phía mắt bạn cỡ 1 000 cd. Cách 10 m, nó rọi vào mắt
+E = 1 000/10² = **10 lx**. Nó lệch 3° khỏi hướng nhìn — tức chỉ nhích ngang
+0,52 m, đúng cỡ một chiếc xe máy vượt sát bạn. Kết quả: **11,1 cd/m²** phủ
+lên toàn bộ võng mạc. Mặt đường đô thị chiếu sáng đạt chuẩn có độ chói
+khoảng 1 cd/m². Bạn vừa được phát một lớp sương sáng **gấp mười một lần**
+cả con đường.
+
+Lớp sương ấy màu xám chứ không xanh, và đó là chi tiết đáng để ý: các hạt
+tán xạ trong thuỷ tinh thể lớn hơn bước sóng nhiều, nên chúng không có sở
+thích λ⁻⁴ đã [nhuộm xanh bầu
+trời](/vi/posts/vi-sao-bau-troi-xanh-va-hoang-hon-do) — mọi màu bị hắt đi
+như nhau, và cái đọng lại là một tấm màn trắng đục vô sắc.
+
+## Hiệu số vẫn nguyên, chỉ có mẫu số phồng lên
+
+Cộng đều lên mọi thứ thì đâu có làm mất thông tin? Đúng — và đó mới là
+điều ác. Người đi bộ áo tối trên nền đường 1 cd/m² có tương phản gốc
+C₀ = 0,60. Thêm màn chói:
+
+```
+C = C₀ · L_nền / (L_nền + L_màn)
+```
+
+Hiệu độ chói giữa người và đường vẫn y nguyên 0,6 cd/m². Nhưng mắt đọc
+tương phản, không đọc hiệu số — và mẫu số vừa nhảy từ 1,0 lên 12,1. Tương
+phản còn lại: **0,05**, tụt hơn **mười hai lần**. Trong dải xám ở nửa dưới
+của demo, bóng người và mặt đường trôi về cùng một sắc độ. Anh ta vẫn đứng
+đó, vẫn hắt về mắt bạn đủ photon; chỉ là nền quanh anh ta cũng thế.
+
+## Vì sao 250 candela là con số nằm trong luật
+
+Quy chuẩn đèn chiếu gần châu Âu (ECE R112) đặt một điểm đo tên B50L — đúng
+vị trí mắt tài xế ngược chiều — và giới hạn 0,4 lx trên màn cách 25 m, tức
+cường độ **0,4 × 25² = 250 cd**. Cắm số ấy vào: xe đó cách bạn 50 m, lệch
+3,4°, rọi vào mắt 0,10 lx, dựng lớp chói **0,087 cd/m²**. Tương phản người
+đi bộ: 0,60 → 0,55. Mất 8%. Bạn thậm chí không nhận ra.
+
+So với 11,1 cd/m² của chiếc đèn độ: **gấp 128 lần**. Không phải vì bóng đèn
+mạnh gấp 128 — nó chỉ mạnh gấp 4. Phần lớn chỗ còn lại là khoảng cách: gần
+hơn năm lần thì E lớn hơn hai mươi lăm lần (4 × 25 = 100), và góc lệch nhỏ
+hơn chút đỉnh — 3° thay vì 3,4° — ăn nốt 1,3 lần. Đèn hợp chuẩn không yếu; nó chỉ
+được cắt gọn *đúng phần* hắt lên trên đường cắt sáng.
+
+## Lớp sương không loãng đi khi xe lại gần
+
+Trực giác nói: xe càng gần càng chói, chịu vài giây rồi qua. Vật lý nói
+khác. Giữ khoảng lệch ngang cố định — chẳng hạn 3 m giữa mắt bạn và đèn
+xe ngược chiều — thì khi d giảm, E tăng theo 1/d², nhưng θ cũng tăng theo
+1/d, nên θ² tăng đúng bằng ngần ấy. Hai cái triệt tiêu nhau:
+
+```
+L_màn ≈ 10 · I · π² / (180² · x²)      — không còn d trong đó
+```
+
+Với một chiếc đèn pha quên hạ cốt, 20 000 cd, lệch ngang 3 m: ở 100 m lớp
+màn là 6,77 cd/m²; ở 25 m là 6,83; ở 10 m là 7,17. Suốt 90 m ấy — **4,1
+giây** nếu hai xe khép lại với tốc độ tổng 80 km/h — độ chói màn thay đổi
+chưa tới 6%. Không có khoảnh khắc "sắp qua rồi", chỉ có một mặt phẳng sáng
+đều nằm lì trên võng mạc từ lúc bạn thấy chiếc xe cho tới lúc nó lướt qua
+gương.
+
+Và không kính nào cứu được: kính phân cực bóc chói phản xạ khỏi mặt đường
+ướt vì ánh sáng ấy đã bị [phân cực khi phản
+xạ](/vi/posts/goc-brewster-goc-lam-mat-nuoc-het-choi), còn lớp màn này
+được chế tạo *bên trong* mắt bạn, sau mọi tấm lọc bạn có thể đeo.
+
+## Trường hợp biên: số 10 là hằng số của thuỷ tinh thể, không phải của vũ trụ
+
+Phương trình chói loá đầy đủ của CIE nhân hệ số ấy với 1 + (A/62,5)⁴, A là
+tuổi. Ở tuổi 20 thừa số bằng 1,01; ở tuổi 70 nó là 2,57. Hệ số 10 thành
+**25,5** — [thuỷ tinh thể đục dần](/vi/posts/kinh-can-may-do-la-mot-phep-nghich-dao)
+thì tán xạ nhiều hơn. Cùng chiếc đèn độ ấy, người 70 tuổi nhận 28,3 cd/m²
+và tương phản người đi bộ còn **0,02**. Người lớn tuổi ngại lái xe đêm
+không phải vì phản xạ chậm — họ đang nhìn qua một tấm màn dày gấp hai lần
+rưỡi.
+
+Đẩy θ về 0 thì công thức phát nổ: 1° cho 100 cd/m², 0° cho vô hạn. Chỗ đó
+nó hết hiệu lực từ khoảng 1,5° — số hạng 10/θ³ của phương trình đầy đủ
+chiếm quyền, và quan trọng hơn: khi ánh sáng rơi thẳng vào hố trung tâm,
+cái xảy ra không còn là "màn phủ" mà là **tẩy trắng sắc tố thật**. Lúc ấy
+đơn vị đúng không phải cd/m² mà là giây: vài giây cho mắt trẻ, có thể
+gần chục giây ở tuổi 70. Ở 60 km/h, hai giây là 33 m, sáu giây là **100
+m** — quãng đường bạn đi trên một võng mạc chưa quay lại.

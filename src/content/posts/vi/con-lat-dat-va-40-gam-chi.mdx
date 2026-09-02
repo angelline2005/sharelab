@@ -1,0 +1,114 @@
+---
+title: "Con lật đật: 40 gam chì đổi dấu mọi cú nghiêng"
+seoTitle: "Con lật đật: điều kiện cân bằng bền khi trọng tâm nằm dưới tâm cong"
+description: "Thân đồ chơi 80 g có trọng tâm cao 6,0 cm — cao hơn bán kính đáy chỏm cầu 5,0 cm, nên nó đổ. Thêm 40 g chì sát đáy kéo trọng tâm chung xuống 4,33 cm, và mô-men lật 3,92 mN·m ở góc nghiêng 30° đổi dấu thành mô-men hồi phục đúng bằng ngần ấy."
+pubDate: 2026-09-02
+tags: ["vat-ly", "co-hoc", "dao-dong", "javascript"]
+translationId: "con-lat-dat-va-40-gam-chi"
+---
+
+import RolyPolyToy from '../../../components/demos/RolyPolyToy.astro';
+
+Bạn ấn con lật đật nằm rạp xuống mặt bàn, buông tay, nó bật dậy. Ấn mạnh hơn
+nữa — vẫn dậy. Không nam châm, không lò xo, không pin: chỉ có hai chiều cao
+đang so nhau, và một cục chì quyết định chiều nào lớn hơn.
+
+<RolyPolyToy />
+
+## Cái đáy tròn dựng ra một điểm treo vô hình
+
+Đáy con lật đật là chỏm cầu bán kính R, và chỏm cầu nào cũng có tâm — gọi nó
+là C. Đây là mẹo hình học chống đỡ cả trò chơi: khi vật lăn không trượt trên
+bàn, **C không nhúc nhích theo phương thẳng đứng**. Nghiêng 5°, nghiêng 40°,
+C vẫn treo đúng độ cao R: điểm chạm trượt sang bên, thân vật xoay, còn C thì
+như bị đóng đinh.
+
+Vậy con lật đật là con lắc treo ở C — mà con lắc chỉ có một luật: trọng tâm
+dưới điểm treo thì bền, trên thì đổ.
+
+```
+bền  ⇔  y_G < R
+```
+
+y_G là chiều cao trọng tâm đo từ điểm chạm khi đứng thẳng. Thân đồ chơi
+rỗng 80 g có trọng tâm ở 6,0 cm — **cao hơn R = 5,0 cm một xentimét chẵn**.
+Con lắc treo ngược: đặt xuống bàn là đổ, càng nghiêng càng nhanh.
+
+## Mỗi gam chì mua được bốn gam-xentimét
+
+Đại lượng nên theo dõi không phải y_G — thương số thì không cộng được. Nhân
+nó ra:
+
+```
+M·(R − y_G) = tổng của các m·(R − y)
+```
+
+Vế phải là khoản kế toán thẳng thớm: mỗi mẩu khối lượng góp phần riêng,
+dấu do chính độ cao của nó quyết định. Thân 80 g ngồi ở 6,0 cm, cao hơn C,
+góp **−80 g·cm**. Chì đúc sát đáy ở 1,0 cm thì thấp hơn C bốn xentimét, nên
+**mỗi gam chì góp +4 g·cm**.
+
+Từ đó mọi thứ tự tính ra. 20 g chì đưa tổng về đúng 0 — ranh giới thật, chỗ
+nghiêng bao nhiêu cũng đứng yên bấy nhiêu, không đổ mà chẳng buồn dậy. 40 g
+đẩy tổng lên **+80 g·cm**, đúng bằng con số âm mà thân trần mang theo, chỉ
+đổi dấu: món đồ chơi giờ kéo về mạnh đúng bằng mức nó từng tự đổ.
+
+Chì không được đặt bừa. Vẫn 40 gam ấy nhét ở 3,0 cm chỉ góp +80 g·cm,
+vừa khít triệt tiêu và không dư gì; nhấc lên ngang C ở 5,0 cm thì nó góp số
+không — nặng mà vô dụng. **Ranh giới của 40 gam chì là mốc 3,0 cm**, và đó
+mới là lý do con lật đật nào cũng đúc chì sát đáy.
+
+## Nghiêng 30° thì nó đẩy lại bao nhiêu
+
+Nhân khoản kế toán ấy với gia tốc trọng trường là ra mô-men quanh điểm chạm:
+
+```
+τ = M·g·(R − y_G)·sinθ
+```
+
+M = 120 g, R − y_G = 6,67 mm, nghiêng 30° cho **3,92 mN·m**. Nghe bé, nhưng
+đối thủ cũng bé: cú nghiêng ấy chỉ nhấc trọng tâm lên 0,89 mm, tốn 1,05 mJ.
+Thân trần ở cùng góc 30° cho **−3,92 mN·m** — cùng độ lớn, ngược chiều;
+đường cam trong demo chính là nó.
+
+Công thức không có chữ "gần đúng" nào: là sinθ chứ không phải θ, nên đúng ở
+mọi góc chừng nào mặt cầu còn chạm bàn. Ở 60° — mép chỏm cầu trong demo —
+mô-men lên 6,80 mN·m, gấp 1,73 lần. Càng đè, nó càng cãi.
+
+## Càng vừa đủ bền thì lắc càng chậm
+
+Cân bằng bền thì phải kèm dao động, và chu kỳ tố cáo ngay bạn bỏ bao nhiêu
+chì:
+
+```
+T = 2π·√((I_G + M·y_G²) / (M·g·(R − y_G)))
+```
+
+Mẫu số chứa đúng hiệu số quyết định mọi chuyện: càng sát ranh giới, mẫu số
+càng teo và chu kỳ càng phình. Với 40 g chì — coi thân và chì là hai khối
+lượng điểm trên trục — một nhịp lắc mất **1,21 s**, chậm đủ để đếm. Đổ
+lên 80 g, hiệu R − y_G nhảy từ 6,67 lên 15,0 mm và chu kỳ tụt còn **0,70 s**.
+Đồ chơi ngoài hàng chọn vế sau: nhiều chì, lắc nhanh, trông sống động. Cùng
+logic với [chu kỳ con lắc
+đơn](/vi/posts/chu-ky-con-lac-don-co-that-su-khong-phu-thuoc-bien-do), chỉ
+khác là "chiều dài dây" ở đây là 6,67 milimét giữa G và một điểm C không nằm
+trong vật liệu nào.
+
+## Trường hợp biên: mài phẳng cái đáy thì công thức tự sụp
+
+Mài phẳng cái đáy. Mặt phẳng có bán kính cong vô hạn, nên `y_G < R` trả lời
+"bền tuyệt đối, mọi trọng tâm" — và sai hoàn toàn. Sai vì đáy phẳng không
+lăn: nghiêng một chút là vật tì lên mép, trục quay nhảy từ điểm chạm trượt
+êm sang một cạnh cứng. Tiêu chí đổi hẳn nhân dạng, thành **hình chiếu trọng
+tâm còn rơi trong đế đỡ hay không** — đúng phép tính lật [xe khách ở 0,71
+g](/vi/posts/xe-khach-lat-truoc-khi-lop-truot). Ngay con lật đật thật cũng
+chạm ranh giới ấy: chỏm cầu chỉ trải một góc hữu hạn, quá góc đó là mép cấn
+xuống bàn.
+
+Thả xuống nước thì trọng lực lại đổi vai cho [lực đẩy
+Archimedes](/vi/posts/luc-day-archimedes-va-tam-bang-chin-phan-chim): con tàu
+vẫn ổn định dù trọng tâm nằm **cao hơn** tâm nổi, miễn còn dưới điểm
+metacentre. Metacentre chẳng qua là tâm C phiên bản chất lỏng, do nước tự
+dựng ra mỗi lần thân tàu nghiêng. Đáy tròn của con lật đật đúc bằng nhựa;
+đáy tròn của con tàu đúc bằng hình dạng phần chìm, vẽ lại từ đầu sau mỗi con
+sóng.

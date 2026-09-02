@@ -1,0 +1,97 @@
+---
+title: "Cắt lõi thép thành 100 lá, tổn hao rơi 10 000 lần"
+seoTitle: "Dòng Foucault và lá thép kỹ thuật điện: công thức tổn hao trong lõi biến áp"
+description: "Công thức bảo lõi thép đặc dày 5 cm chạy ở 50 Hz, 1,5 T toả 49 megawatt mỗi mét khối. Cắt thành lá 0,5 mm, con số ấy rơi xuống 4,9 kW/m³ — tổn hao tỉ lệ bình phương bề dày, nên chia 100 lá là chia 10 000 lần. Còn con số 49 MW kia thì không phải dự báo, nó là một chứng minh bất khả thi."
+pubDate: 2026-09-02
+tags: ["vat-ly", "dien-tu", "nhiet-hoc", "javascript"]
+translationId: "loi-bien-ap-phai-cat-thanh-la-mong"
+---
+
+import LaminationLoss from '../../../components/demos/LaminationLoss.astro';
+
+Bổ một cục sạc hỏng ra, hoặc nhìn kỹ máy biến áp đầu ngõ: cái lõi nằm giữa
+hai cuộn dây không phải khối sắt liền. Nó là **xấp lá thép mỏng như bìa
+vở**, sơn cách điện từng lá rồi ép chặt lại. Có người đã trả tiền để xẻ
+thép thành cả trăm mảnh và cách điện từng mảnh — đổi lại được gì:
+
+<LaminationLoss />
+
+## Khối thép đặc là một vòng dây bị nối tắt
+
+[Bài máy biến áp](/vi/posts/may-bien-ap-doi-ap-lay-dong-va-nguoc-lai) gọi
+nó là "lõi sắt" rồi đi tiếp. Nhưng [định luật
+Faraday](/vi/posts/cam-ung-faraday-hai-cu-hich-nguoc-dau) không phân biệt
+đồng với sắt: từ thông biến thiên sinh sức điện động quanh **mọi đường
+kín**, kể cả những đường nằm trong chính thân lõi. Thép silic có điện trở
+suất 4,7·10⁻⁷ Ω·m — cao gấp 28 lần đồng, nhưng vẫn là con số của một kim
+loại dẫn điện. Lõi đặc vì thế là một cuộn thứ cấp khổng lồ **bị nối tắt
+bằng chính nó**: dòng Foucault chạy vòng trong thép, và tất cả biến thành
+nhiệt.
+
+Xẻ lõi thành lá mỏng song song với từ thông là dựng tường chắn ngang những
+vòng dòng ấy — và phần thưởng tăng nhanh hơn ta tưởng. Trong lá dày t, điện
+trường cảm ứng tại điểm cách mặt phẳng giữa một đoạn x tỉ lệ với x — mỏng
+đi một nửa thì x lớn nhất còn một nửa, điện trường ở mọi điểm còn một nửa,
+mà công suất toả tỉ lệ **bình phương** điện trường. Nửa bề dày, một phần
+tư tổn hao:
+
+```
+p = π²·B²·f²·t² / (6·ρ)   [W/m³]
+```
+
+## Chia 100 lá là chia 10 000 lần
+
+Đặt số vào: lá **0,50 mm**, lưới 50 Hz, từ thông cực đại 1,5 T →
+**4,9 kW/m³**, tức 0,64 W mỗi kilôgam thép. Đúng xấp thép ấy nhưng để
+nguyên một khối dày 5 cm cho ra **49 MW/m³** — gấp (50/0,5)² = **10 000
+lần**. Và 49 MW/m³ không phải hơi ấm tay: với nhiệt dung thể tích
+3,5 MJ/(m³·K) của thép, đó là **14 độ mỗi giây** — từ nhiệt độ phòng tới
+điểm chảy trong chưa đầy hai phút.
+
+## Chỉ có điều lõi đặc không kịp chảy — nó chết theo kiểu khác
+
+Công thức trên ngầm giả định từ thông vào **đều khắp** bề dày lá — chỉ
+đúng khi lá mỏng hơn độ sâu thấm δ = √(ρ / (π·f·μ)), mà với thép silic ở
+50 Hz thì δ chỉ khoảng **0,69 mm**. Cột mốc ấy giải thích luôn vì sao
+catalogue thép kỹ thuật điện dừng ở 0,35 và 0,50 mm: cắt vừa đủ để nằm
+dưới δ.
+
+Nên với khối 5 cm, công thức đang mô tả một trạng thái không tồn tại. Từ
+thông bị chính dòng Foucault đẩy ra, dồn vào lớp vỏ dày cỡ 0,7 mm — mà vỏ
+ấy chỉ tải được tới lúc thép bão hoà, quanh **2 T**. Máy biến áp
+đơn giản là **thôi biến áp**: dòng từ hoá vọt lên, và cuộn dây cháy vì
+[I²R](/vi/posts/vi-sao-duong-day-tai-dien-phai-cao-the) trước khi lõi kịp
+nóng. Con số 49 MW/m³ vì thế đáng giữ lại đúng như một chứng minh phản
+chứng — nó lớn tới mức tự bác bỏ cái giả thiết sinh ra nó.
+
+## Vậy sao không cắt mỏng mãi
+
+Vì Foucault không phải kẻ duy nhất trong lõi. Thép 0,50 mm thương phẩm có
+tên gọi nói thẳng ra thông số: **M470-50A** — dày 0,50 mm, tổn hao lõi
+không quá **4,70 W/kg** ở 1,5 T / 50 Hz. Nhưng phần Foucault cổ điển tính
+được ở trên chỉ là 0,64 W/kg, tức **14%**. Phần còn lại là tổn hao từ trễ
+(∝ f·B^1,6 — công lật các đômen từ 100 lần mỗi giây) cộng tổn hao dị
+thường mà công thức cổ điển bỏ sót, thường đẩy số đo thật cao hơn tính
+toán 1,5–2 lần.
+
+Nghĩa là ở 50 Hz, cuộc chiến chống Foucault **về cơ bản đã thắng xong** —
+mỏng thêm chỉ gặm nốt 14% cuối, trong khi mỗi lá cõng thêm lớp sơn vài
+micromet và một lần cắt dập. Dưới khoảng 0,2 mm, phần thép thật trong xấp
+teo nhanh hơn phần tổn hao tiết kiệm được. Sàn là từ trễ, không phải
+Foucault.
+
+## Trường hợp biên: 20 kHz và lõi màu đen trong cục sạc
+
+Đẩy tần số lên thì thế cân bằng ấy sụp, vì f cũng nằm trong bình
+phương. Lưới điện máy bay chạy **400 Hz** — gấp 8 lần, tổn hao Foucault
+gấp **64 lần**: lá 0,5 mm ở đó toả 41 W/kg, đủ để lõi tự phá; nên biến áp
+hàng không dùng lá 0,1–0,2 mm. Còn cục sạc điện thoại chuyển mạch ở
+**20 kHz**: δ tụt xuống **0,035 mm**, mỏng hơn mọi lá thép cán và xếp nổi.
+Luật t² hết hiệu lực, và thép hết cửa.
+
+Lối thoát không phải cắt mỏng hơn mà là **bỏ kim loại**: ferrite, gốm từ
+tính có điện trở suất cỡ 1 Ω·m — cao hơn thép silic khoảng **một triệu
+lần**. Vòng Foucault gần như không hình thành nổi, nên lõi đúc liền một
+khối được. Đó là lý do cái lõi trong
+cục sạc bạn vừa bổ ra có màu đen xỉn và vỡ giòn như sứ, chứ không xám bạc
+và xếp lớp như trong trạm biến áp đầu ngõ.

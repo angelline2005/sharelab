@@ -1,0 +1,102 @@
+---
+title: "Xô nước có tần số riêng 1,74 Hz — đúng bằng nhịp bước chân của bạn"
+seoTitle: "Dao động nước trong xô: tần số riêng mặt thoáng và nhịp bước đi"
+description: "Mặt nước trong bình tròn có tần số dao động riêng: xô bán kính 15 cm sâu 25 cm cho 1,74 Hz, rơi thẳng vào dải nhịp đi bộ 1,6–2,0 bước/giây. Cốc cà phê 3,38 Hz thoát được bậc một — nhưng 3,38 chia hai đúng bằng 1,69 bước/giây, và đó là chỗ nó dính."
+pubDate: 2026-09-02
+tags: ["vat-ly", "chat-luu", "dao-dong", "javascript"]
+translationId: "xo-nuoc-va-nhip-buoc-chan-cua-ban"
+---
+
+import BucketSlosh from '../../../components/demos/BucketSlosh.astro';
+
+Bạn xách xô nước ra sân. Đi vài bước, nước bắt đầu sánh — không lung tung
+mà sánh *đều*, đúng nhịp, mỗi lúc một mạnh, tới lúc ướt ống quần. Cùng
+buổi sáng ấy bạn bưng cốc cà phê đầy đi hết hành lang không rớt giọt nào.
+Cái xô không vụng hơn cái cốc — nó chỉ có một con số xui hơn:
+
+<BucketSlosh />
+
+## Mặt nước cũng là một con lắc
+
+Mặt thoáng trong bình tròn không lắc tuỳ tiện. Dạng dễ kích nhất — phản
+đối xứng bậc một — là một bên dâng thì bên kia hạ, tâm bình đứng yên
+như bản lề. Trọng lực kéo chỗ dâng xuống, quán tính đẩy quá đà sang phía
+đối diện — đúng cơ chế con lắc, với "quả nặng" là cả khối nước. Tần số
+phụ thuộc bán kính bình và độ sâu:
+
+```
+ω² = g·(1,8412/R)·tanh(1,8412·h/R)      f = ω/(2π)
+```
+
+Con số 1,8412 là nghiệm đầu tiên của đạo hàm hàm Bessel J₁ — thứ quy định
+mặt nước cong thế nào dọc bán kính. Cần nhớ một điều —
+**bình càng rộng, nước lắc càng chậm**.
+
+## 1,74 Hz gặp 105 bước mỗi phút
+
+Xô nhựa cỡ nhà bạn: đường kính 30 cm, tức R = 15 cm, nước sâu 25 cm. Thay
+số ra **f = 1,74 Hz** — 105 nhịp mỗi phút.
+
+Còn cái đang lắc nó: người lớn đi bộ ở nhịp 96–120 bước mỗi phút, tức
+**1,6–2,0 bước mỗi giây**; mỗi lần bàn chân chạm đất, thân bạn nhận một cú
+hãm rồi một cú đẩy tới, truyền thẳng xuống quai xô. Và 1,74 Hz nằm chính
+giữa dải ấy. Đi ở nhịp 1,8 bước/giây, bạn chỉ lệch **3,3%** so với tần số
+riêng của xô — trên một hệ ít tắt dần thì chừng ấy vẫn là [cộng hưởng đủ
+tốt](/vi/posts/cong-huong-vi-sao-day-nho-thang-luc-lon): mỗi bước bồi năng
+lượng đúng lúc, biên độ cộng dồn tới miệng xô.
+
+Nhìn chỗ đường cong cắt dải xanh: ở độ sâu 25 cm, mọi bình có **R từ 11,4
+đến 17,7 cm** đều rơi trúng nhịp đi bộ — đường kính 23 tới 35 cm, gần đúng
+định nghĩa của cái xô. Chân người từng làm y hệt vậy với
+một nhịp cầu thép, dù ở đó [cơ chế lại không phải cộng
+hưởng](/vi/posts/cau-di-bo-lac-ngang-va-66-nguoi).
+
+## Đổ bớt nước không cứu được bạn
+
+Phản xạ đầu tiên là đổ vơi đi. Gần như vô ích, và hàm tanh nói rõ vì
+sao: với xô sâu 25 cm, đối số của tanh bằng 3,07, mà tanh(3,07) =
+**0,996** — bão hoà sát trần. Nước ở đây là nước "sâu" theo nghĩa của
+sóng: đáy quá xa mặt thoáng để còn tiếng nói nào.
+
+Nên đổ từ 25 cm xuống 10 cm — bỏ đi **60% lượng nước** — chỉ hạ tần số từ
+1,74 xuống 1,60 Hz, tức **8%**. Xách nhẹ hơn hẳn mà vẫn nằm nguyên ở mép
+dải nguy hiểm. Muốn xuống hẳn dưới 1,6 Hz, mực nước phải còn dưới 9,9 cm —
+cái ngưỡng mà xô hết còn là xô.
+
+## Cốc cà phê thoát bậc một, không thoát bậc hai
+
+Cốc R = 4 cm, cà phê sâu 8 cm cho **f = 3,38 Hz**, gần gấp đôi cái xô và
+nằm ngoài dải đi bộ hẳn. Chuyện bạn không rớt giọt nào là thật — chỉ là
+chữ "an toàn" có điều kiện.
+
+Cú đạp chân không phải hình sin trơn tru: phổ gia tốc của nó mang một hài
+bậc hai rõ rệt ở gấp đôi nhịp bước. Mà 3,38 chia hai bằng **1,69
+bước/giây** — 101 bước mỗi phút, một nhịp đi bộ tầm thường. Đó là lý do cà
+phê sánh đúng lúc bạn bước hụt hay rẽ gấp: cú nhiễu ấy bơm vào hài bậc
+hai. Kéo thanh nhịp
+lên 3,0 bước/giây — nhịp chạy bộ 180 bước mỗi phút — thì cốc rơi vào cộng
+hưởng bậc một, lệch 11%.
+
+## Trường hợp biên: đổ gần cạn thì sóng đổi luật chơi
+
+Kéo độ sâu xuống 3 cm, công thức không sai — nó biến thành một công thức
+khác. Khi h nhỏ so với R thì tanh(x) ≈ x, và cái tanh nuốt mất R:
+
+```
+ω² ≈ g·k²·h   →   v = ω/k = √(g·h)
+```
+
+Tần số thôi bão hoà, bắt đầu tụt theo **√h**. Quan trọng hơn, mặt nước
+đổi hẳn dạng: thành **sóng nước nông chạy ngang** — một gợn đi từ thành
+này sang thành kia với tốc độ √(gh), ở 3 cm
+là 0,54 m/s, băng qua lòng xô 30 cm hết 0,55 giây. Đúng [công thức của
+sóng thần](/vi/posts/toc-do-song-than-va-can-bac-hai-cua-do-sau) thu nhỏ
+cỡ cái xô. Xô cạn 3 cm cho f = 1,04 Hz — cuối cùng cũng thoát dải bước
+chân, bằng cách vứt đi phần lớn nước.
+
+Ở đầu ngược lại, công thức không gãy mà biến mất. Đậy nắp có lỗ là xoá
+điều kiện biên mặt thoáng tự do mà cả bài toán dựa vào — không còn mặt
+thoáng thì không còn dạng bậc một để mà bơm. Chiếc nắp nhựa trên ly cà phê
+mang đi vì thế không chắn nước bắn: nó tháo mất con lắc. Mẹo thả tàu lá
+lên xô nước khi gánh đường xa cũng vậy, cùng một điều kiện biên nói bằng
+thứ tiếng cũ hơn nhiều.

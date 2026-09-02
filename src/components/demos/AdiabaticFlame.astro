@@ -1,0 +1,213 @@
+---
+// Nhiệt độ ngọn lửa đoạn nhiệt của ankan cháy trong không khí.
+// Cân bằng năng lượng: Σ n_i·[H_i(T) − H_i(T₀)] = LHV, giải T bằng chia đôi.
+// Enthalpy H(T) − H(298,15 K) lấy từ phương trình Shomate (NIST WebBook)
+// cho CO₂, H₂O(k), O₂, N₂ — mỗi chất dùng đúng khoảng hệ số của nó.
+// Phản ứng: CnH(2n+2) + (3n+1)/2·O₂ → n·CO₂ + (n+1)·H₂O ; không khí = O₂ + 3,76 N₂
+// LHV (nước ở thể hơi, kJ/mol): CH₄ 802,31 · C₂H₆ 1 428,53 · C₃H₈ 2 043,18 · C₄H₁₀ 2 657,53
+// VALIDITY: chỉ đúng cho λ ≥ 1 (thừa không khí) — dưới 1 sản phẩm sinh CO/H₂ và
+// công thức này vô nghĩa, nên thanh trượt bắt đầu từ đúng 1,00. Mô hình bỏ qua
+// phân li nhiệt: trên ~2 000 K nó cao hơn thực tế (λ=1: 2 054 vs 1 950 °C đo được).
+---
+
+<figure class="demo" data-demo="nhiet-do-ngon-lua-bep-gas-1950-do">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Hệ số không khí λ <output data-out="lam"></output>
+      <input type="range" data-in="lam" min="1" max="3" step="0.01" value="1" /></label>
+    <label>Nhiên liệu <output data-out="n"></output>
+      <input type="range" data-in="n" min="1" max="4" step="1" value="1" /></label>
+    <label>Không khí vào (°C) <output data-out="t0"></output>
+      <input type="range" data-in="t0" min="0" max="100" step="5" value="25" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Đường cong: nhiệt độ ngọn lửa nếu toàn bộ nhiệt cháy ở lại trong khối khí
+    sản phẩm. Dải màu bên dưới là thành phần khối khí ấy theo số mol — phần
+    xám là nitơ, chất trơ không tham gia phản ứng nào mà vẫn chiếm hơn bảy
+    phần mười và phải được hâm nóng bằng chính nhiệt của bạn. Vặn λ là thêm
+    không khí thừa: cùng một khoản nhiệt chia cho nhiều mol hơn. Hâm nóng
+    không khí trước khi vào bếp thì ngược lại — nhiệt ấy được cộng thêm, nên
+    lò công nghiệp nào cũng thu hồi nhiệt khói để sấy gió cấp. Mô hình bỏ qua
+    phân li nhiệt nên nằm trên vạch 1 950 °C đo thực tế.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const CURVE = '#2563eb', MARK = '#dc2626', THIRD = '#f59e0b';
+  const K0 = 273.15;
+
+  // Shomate: [Tmin, Tmax, [A,B,C,D,E,F]] — H(T)−H(298,15) = A·t + B·t²/2 + C·t³/3
+  // + D·t⁴/4 − E/t + F − Hf, với t = T/1000 (kJ/mol).
+  type Piece = [number, number, number[]];
+  const SHO: Record<string, Piece[]> = {
+    CO2: [[298, 1200, [24.99735, 55.18696, -33.69137, 7.948387, -0.136638, -403.6075]],
+          [1200, 6000, [58.16639, 2.720074, -0.492289, 0.038844, -6.447293, -425.9186]]],
+    H2O: [[298, 1700, [30.09200, 6.832514, 6.793435, -2.534480, 0.082139, -250.8810]],
+          [1700, 6000, [41.96426, 8.622053, -1.499780, 0.098119, -11.15764, -272.1797]]],
+    O2:  [[100, 700, [31.32234, -20.23531, 57.86644, -36.50624, -0.007374, -8.903471]],
+          [700, 2000, [30.03235, 8.772972, -3.988133, 0.788313, -0.741599, -11.32468]],
+          [2000, 6000, [20.91111, 10.72071, -2.020498, 0.146449, 9.245722, 5.337651]]],
+    N2:  [[100, 500, [28.98641, 1.853978, -9.647459, 16.63537, 0.000117, -8.671914]],
+          [500, 2000, [19.50583, 19.88705, -8.598535, 1.369784, 0.527601, -4.935202]],
+          [2000, 6000, [35.51872, 1.128728, -0.196103, 0.014662, -4.553760, -18.97091]]],
+  };
+  const HF: Record<string, number> = { CO2: -393.5224, H2O: -241.8264, O2: 0, N2: 0 };
+  const SPECIES = ['CO2', 'H2O', 'O2', 'N2'];
+
+  function dH(sp: string, T: number) {
+    const rows = SHO[sp];
+    let c = rows[rows.length - 1][2];
+    for (const [lo, hi, k] of rows) if (T >= lo && T <= hi) { c = k; break; }
+    if (T < rows[0][0]) c = rows[0][2];
+    const t = T / 1000;
+    return c[0] * t + (c[1] * t * t) / 2 + (c[2] * t ** 3) / 3 + (c[3] * t ** 4) / 4
+      - c[4] / t + c[5] - HF[sp];
+  }
+
+  const LHV = [0, 802.31, 1428.53, 2043.18, 2657.53];   // kJ/mol nhiên liệu
+  const FUEL = ['', 'metan CH₄', 'etan C₂H₆', 'propan C₃H₈', 'butan C₄H₁₀'];
+
+  // Số mol từng chất trong khói, tính cho 1 mol nhiên liệu.
+  function moles(n: number, lam: number) {
+    const o2 = (3 * n + 1) / 2;
+    return { CO2: n, H2O: n + 1, O2: o2 * (lam - 1), N2: 3.76 * o2 * lam };
+  }
+  const total = (m: Record<string, number>) => m.CO2 + m.H2O + m.O2 + m.N2;
+
+  // Giải Σ n_i·[H_i(T) − H_i(T₀)] = LHV bằng chia đôi.
+  function Tad(n: number, lam: number, T0: number) {
+    const m = moles(n, lam) as Record<string, number>, Q = LHV[n];
+    const f = (T: number) => SPECIES.reduce((s, sp) => s + m[sp] * (dH(sp, T) - dH(sp, T0)), 0) - Q;
+    let lo = T0 + 1, hi = 6000;
+    for (let i = 0; i < 44; i++) { const mid = (lo + hi) / 2; if (f(mid) < 0) lo = mid; else hi = mid; }
+    return (lo + hi) / 2 - K0;
+  }
+
+  const vi = (x: number, d = 0) => x.toFixed(d).replace('.', ',');
+  const grp = (x: number) => Math.round(x).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+
+  // Các mốc vật liệu nằm trọn trong khoảng trục.
+  const REFS: Array<[number, string]> = [
+    [1950, 'lửa metan đo thực tế 1 950 °C'],
+    [1538, 'sắt nóng chảy 1 538 °C'],
+    [1085, 'đồng nóng chảy 1 085 °C'],
+  ];
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (k: string) => root.querySelector(`[data-in="${k}"]`) as HTMLInputElement;
+    const output = (k: string) => root.querySelector(`[data-out="${k}"]`) as HTMLOutputElement;
+
+    function draw() {
+      const lam = Number(input('lam').value);
+      const n = Number(input('n').value);
+      const t0 = Number(input('t0').value);
+      output('lam').textContent = vi(lam, 2);
+      output('n').textContent = FUEL[n];
+      output('t0').textContent = String(t0);
+
+      const T = Tad(n, lam, t0 + K0);
+      const m = moles(n, lam) as Record<string, number>;
+      const tot = total(m);
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.56);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+      ctx.font = '10px system-ui,sans-serif';
+
+      const padL = 46, padR = 10, padT = 12;
+      const plotB = cssH - 74;                 // đáy hệ trục
+      const barT = cssH - 44, barH = 22;       // dải thành phần khói
+      const yLo = 800, yHi = 2250;
+      const X = (l: number) => padL + ((l - 1) / 2) * (cssW - padL - padR);
+      const Y = (c: number) => padT + ((yHi - c) / (yHi - yLo)) * (plotB - padT);
+
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.3;
+      ctx.beginPath(); ctx.moveTo(padL, padT); ctx.lineTo(padL, plotB); ctx.lineTo(cssW - padR, plotB); ctx.stroke();
+
+      // Vạch mốc vật liệu.
+      ctx.setLineDash([4, 3]); ctx.globalAlpha = 0.28;
+      for (const [c] of REFS) { ctx.beginPath(); ctx.moveTo(padL, Y(c)); ctx.lineTo(cssW - padR, Y(c)); ctx.stroke(); }
+      ctx.setLineDash([]);
+      ctx.globalAlpha = 0.6; ctx.fillStyle = fg; ctx.textAlign = 'right';
+      for (const [c, lab] of REFS) ctx.fillText(lab, cssW - padR - 3, Y(c) - 4);
+
+      ctx.globalAlpha = 0.55; ctx.textAlign = 'center';
+      for (const l of [1, 1.5, 2, 2.5, 3]) ctx.fillText(`λ ${vi(l, 1)}`, X(l), plotB + 14);
+      ctx.textAlign = 'right';
+      for (const c of [1000, 1500, 2000]) ctx.fillText(`${grp(c)}°`, padL - 4, Y(c) + 3);
+      ctx.globalAlpha = 1;
+
+      // Đường cong T(λ) cho nhiên liệu và nhiệt độ khí vào hiện tại.
+      ctx.strokeStyle = CURVE; ctx.lineWidth = 2; ctx.beginPath();
+      for (let i = 0; i <= 64; i++) {
+        const l = 1 + (2 * i) / 64;
+        const y = Y(Tad(n, l, t0 + K0));
+        i ? ctx.lineTo(X(l), y) : ctx.moveTo(X(l), y);
+      }
+      ctx.stroke(); ctx.lineWidth = 1;
+
+      ctx.fillStyle = MARK;
+      ctx.beginPath(); ctx.arc(X(lam), Y(T), 6, 0, Math.PI * 2); ctx.fill();
+
+      // Dải thành phần khói theo số mol.
+      const parts: Array<[string, number, string]> = [
+        ['CO₂', m.CO2, CURVE], ['H₂O', m.H2O, THIRD],
+        ['O₂ thừa', m.O2, MARK], ['N₂', m.N2, fg],
+      ];
+      let x = padL;
+      const wTot = cssW - padL - padR;
+      for (const [lab, v, col] of parts) {
+        const w = (v / tot) * wTot;
+        ctx.fillStyle = col; ctx.globalAlpha = col === fg ? 0.22 : 0.75;
+        ctx.fillRect(x, barT, w, barH);
+        ctx.globalAlpha = 1;
+        if (w > 34) {
+          ctx.fillStyle = fg; ctx.globalAlpha = 0.85; ctx.textAlign = 'center';
+          ctx.fillText(lab, x + w / 2, barT + 14);
+          ctx.globalAlpha = 1;
+        }
+        x += w;
+      }
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.3;
+      ctx.strokeRect(padL, barT, wTot, barH); ctx.globalAlpha = 1;
+
+      ctx.fillStyle = fg; ctx.globalAlpha = 0.55; ctx.textAlign = 'left';
+      ctx.fillText(`${vi(tot, 2)} mol khói cho mỗi mol nhiên liệu`, padL, cssH - 6);
+      ctx.textAlign = 'right';
+      ctx.fillText(`nitơ ${vi((100 * m.N2) / tot, 1)}%`, cssW - padR, cssH - 6);
+      ctx.globalAlpha = 1;
+
+      const zone = T >= 1538 ? ' · <b>đủ nóng để chảy sắt</b>'
+        : T >= 1085 ? ' · chảy được đồng, không chảy nổi sắt'
+        : ' · không chảy nổi đồng';
+      readout.innerHTML =
+        `${FUEL[n]}, λ = ${vi(lam, 2)}, không khí vào ${t0} °C → <b>${grp(T)} °C</b>` +
+        ` · ${grp(LHV[n])} kJ chia cho <b>${vi(tot, 2)} mol</b> khói` +
+        ` = ${vi(LHV[n] / tot, 1)} kJ/mol${zone}`;
+    }
+
+    root.querySelectorAll('input').forEach((el) => el.addEventListener('input', draw));
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="nhiet-do-ngon-lua-bep-gas-1950-do"]').forEach(setup);
+</script>

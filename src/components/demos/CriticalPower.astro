@@ -1,0 +1,172 @@
+---
+// Mô hình công suất tới hạn (Monod & Scherrer 1965; Moritani 1981; Jones & Vanhatalo 2017):
+//   W_trên_CP = W′  ⇒  t_kiệt_sức = W′ / (P − CP),  ngược lại P(t) = CP + W′/t
+// Hyperbol hai tham số: CP (W, tiệm cận đứng) và W′ (J, dung lượng hữu hạn).
+// Phạm vi hợp lệ đã kiểm chứng thực nghiệm: nỗ lực kiệt sức khoảng 2–15 phút.
+// Dưới 2 phút hệ phosphagen chi phối (mô hình thổi phồng P); trên ~15–20 phút
+// W′ tự nạp lại và CP trôi xuống, nên t thực ngắn hơn nhiều so với hyperbol.
+---
+
+<figure class="demo" data-demo="cong-suat-toi-han-va-binh-xang-phu">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Công suất tới hạn CP (W) <output data-out="cp"></output>
+      <input type="range" data-in="cp" min="120" max="400" step="5" value="250" /></label>
+    <label>Dung lượng W′ (kJ) <output data-out="w"></output>
+      <input type="range" data-in="w" min="8" max="35" step="0.5" value="20" /></label>
+    <label>Công suất đang đạp (W) <output data-out="p"></output>
+      <input type="range" data-in="p" min="150" max="1000" step="1" value="300" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Trục ngang là công suất bạn chọn đạp, trục dọc là thời gian trụ được.
+    Đường cong dựng đứng tại CP: dưới ngưỡng ấy thời gian là vô hạn. Trên
+    ngưỡng, mỗi watt vượt quá rút từ cùng một bình chứa hữu hạn W′ — thanh
+    màu cam phía dưới — với tốc độ rò đúng bằng P − CP watt mỗi giây.
+    Dải mờ dưới vạch 2 phút là nơi hyperbol hết hiệu lực.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const CURVE = '#2563eb', MARK = '#dc2626', TANK = '#f59e0b';
+  const PMIN = 150, PMAX = 1000, TMAX = 900, WMAX = 35000;
+
+  const vn = (x: number, d = 1) => x.toFixed(d).replace('.', ',');
+  const mmss = (t: number) => {
+    const m = Math.floor(t / 60), s = Math.round(t - m * 60);
+    return m < 1 ? `${Math.round(t)} s` : `${Math.round(t)} s (${m} phút ${s < 10 ? '0' : ''}${s})`;
+  };
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (k: string) => root.querySelector(`[data-in="${k}"]`) as HTMLInputElement;
+    const output = (k: string) => root.querySelector(`[data-out="${k}"]`) as HTMLOutputElement;
+
+    function draw() {
+      const CP = Number(input('cp').value);
+      const Wp = Number(input('w').value) * 1000;
+      const P = Number(input('p').value);
+      output('cp').textContent = String(CP);
+      output('w').textContent = vn(Wp / 1000);
+      output('p').textContent = String(P);
+
+      const excess = P - CP;
+      const t = excess > 0 ? Wp / excess : Infinity;
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.52);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+      ctx.font = '10px system-ui,sans-serif';
+
+      const padL = 52, padR = 12, padT = 14;
+      const barH = 13, barBottom = cssH - 4, barTop = barBottom - barH;
+      const axisB = barTop - 26;
+      const X = (p: number) => padL + ((p - PMIN) / (PMAX - PMIN)) * (cssW - padL - padR);
+      const Y = (s: number) => axisB - (Math.min(s, TMAX) / TMAX) * (axisB - padT);
+
+      // Vùng dưới 2 phút: hyperbol hết hiệu lực.
+      ctx.fillStyle = MARK; ctx.globalAlpha = 0.07;
+      ctx.fillRect(padL, Y(120), cssW - padL - padR, axisB - Y(120));
+      ctx.globalAlpha = 1;
+
+      // Trục.
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.3;
+      ctx.beginPath(); ctx.moveTo(padL, padT); ctx.lineTo(padL, axisB); ctx.lineTo(cssW - padR, axisB); ctx.stroke();
+      ctx.globalAlpha = 0.55; ctx.fillStyle = fg;
+      ctx.textAlign = 'center';
+      for (const p of [200, 400, 600, 800, 1000]) ctx.fillText(`${p} W`, X(p), axisB + 13);
+      ctx.textAlign = 'right';
+      for (const s of [60, 120, 300, 600, 900]) ctx.fillText(`${s / 60} phút`, padL - 5, Y(s) + 3);
+      ctx.globalAlpha = 1;
+
+      // Tiệm cận đứng tại P = CP.
+      if (CP >= PMIN && CP <= PMAX) {
+        ctx.strokeStyle = fg; ctx.globalAlpha = 0.45; ctx.setLineDash([4, 4]);
+        ctx.beginPath(); ctx.moveTo(X(CP), padT); ctx.lineTo(X(CP), axisB); ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.textAlign = 'left'; ctx.globalAlpha = 0.75;
+        ctx.fillStyle = fg; ctx.fillText(`CP = ${CP} W`, X(CP) + 4, padT + 10);
+        ctx.globalAlpha = 1;
+      }
+
+      // Hyperbol t = W′/(P − CP), chỉ vẽ phần t ≤ TMAX.
+      ctx.strokeStyle = CURVE; ctx.lineWidth = 2; ctx.beginPath();
+      let started = false;
+      for (let i = 0; i <= 500; i++) {
+        const pp = PMIN + ((PMAX - PMIN) * i) / 500;
+        const ex = pp - CP;
+        if (ex <= 0) continue;
+        const tt = Wp / ex;
+        if (tt > TMAX) continue;
+        started ? ctx.lineTo(X(pp), Y(tt)) : ctx.moveTo(X(pp), Y(tt));
+        started = true;
+      }
+      ctx.stroke(); ctx.lineWidth = 1;
+
+      // Chấm đỏ ở công suất đang chọn.
+      if (excess > 0 && t <= TMAX) {
+        ctx.fillStyle = MARK;
+        ctx.beginPath(); ctx.arc(X(P), Y(t), 6, 0, Math.PI * 2); ctx.fill();
+      } else {
+        ctx.strokeStyle = MARK; ctx.lineWidth = 2; ctx.setLineDash([3, 3]);
+        ctx.beginPath(); ctx.moveTo(X(P), padT); ctx.lineTo(X(P), axisB); ctx.stroke();
+        ctx.setLineDash([]); ctx.lineWidth = 1;
+      }
+
+      // Thanh "bình xăng phụ": chiều dài tỉ lệ W′ so với 35 kJ.
+      const barW = ((cssW - padL - padR) * Wp) / WMAX;
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.35;
+      ctx.strokeRect(padL, barTop, cssW - padL - padR, barH);
+      ctx.globalAlpha = 1;
+      ctx.fillStyle = TANK;
+      ctx.fillRect(padL, barTop, barW, barH);
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.25;
+      for (let kj = 5; kj < 35; kj += 5) {
+        const x = padL + ((cssW - padL - padR) * kj * 1000) / WMAX;
+        ctx.beginPath(); ctx.moveTo(x, barTop); ctx.lineTo(x, barTop + barH); ctx.stroke();
+      }
+      ctx.globalAlpha = 0.75; ctx.fillStyle = fg; ctx.textAlign = 'left';
+      ctx.fillText(
+        excess > 0
+          ? `bình xăng phụ W′ = ${vn(Wp / 1000)} kJ · rò ${excess} W ⇒ cạn sau ${Math.round(t)} s`
+          : `bình xăng phụ W′ = ${vn(Wp / 1000)} kJ · không rò: đang đạp dưới CP`,
+        padL, barTop - 6,
+      );
+      ctx.globalAlpha = 1;
+
+      let note: string;
+      if (excess <= 0) note = ' · <b>dưới ngưỡng: mô hình nói không giới hạn</b>';
+      else if (t < 120) note = ' · <b>dưới 2 phút: hyperbol thổi phồng, hệ phosphagen mới là chủ</b>';
+      else if (t > 900) note = ' · <b>trên 15 phút: W′ kịp nạp lại, mô hình quá lạc quan</b>';
+      else note = ' · vùng mô hình đã được kiểm chứng';
+
+      readout.innerHTML =
+        `CP = <b>${CP} W</b> · W′ = <b>${vn(Wp / 1000)} kJ</b> · đạp ${P} W` +
+        (excess > 0
+          ? ` (vượt ${excess} W) → cạn sau <b>${mmss(t)}</b>`
+          : ` → <b>không giới hạn</b>`) + note;
+    }
+
+    root.querySelectorAll('input').forEach((el) => el.addEventListener('input', draw));
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="cong-suat-toi-han-va-binh-xang-phu"]').forEach(setup);
+</script>

@@ -1,0 +1,97 @@
+---
+title: "Mặt Trời cháy bằng một điều bất khả: proton thiếu 532 lần năng lượng vẫn hợp nhất"
+seoTitle: "Đỉnh Gamow: vì sao phản ứng nhiệt hạch xảy ra dù nhiệt độ quá thấp"
+description: "Hai proton phải vượt hàng rào Coulomb 720 keV mới chạm được nhau, nhưng lõi Mặt Trời chỉ cho chúng 1,35 keV — thiếu 532 lần, xác suất cổ điển là 7,6×10⁻²³². Mặt Trời vẫn cháy vì phản ứng không xảy ra ở năng lượng trung bình mà ở đỉnh Gamow 6,07 keV, nơi hai hàm mũ ngược chiều gặp nhau."
+pubDate: 2026-09-02
+tags: ["vat-ly", "hat-nhan", "thien-van", "javascript"]
+translationId: "mat-troi-chay-bang-xuyen-ham-dinh-gamow"
+---
+
+import GamowPeak from '../../../components/demos/GamowPeak.astro';
+
+Lõi Mặt Trời nóng 15,7 triệu độ — nghe như đủ để nấu chảy bất cứ thứ gì.
+Nhưng với hai proton đang lao vào nhau, đó là cái lạnh thấu xương: chúng
+thiếu **532 lần** năng lượng cần thiết để chạm được nhau. Theo vật lý cổ
+điển, Mặt Trời không có quyền cháy.
+
+<GamowPeak />
+
+## Hàng rào 720 keV và một xác suất không có tên
+
+Hai proton đẩy nhau bằng lực Coulomb, càng gần càng mạnh. Lực hạt nhân mạnh
+— thứ duy nhất dán được chúng lại — chỉ với tay tới vài femtomet, nên hai
+proton phải tiến vào khoảng **2 fm**. Giá vé viết bằng thế năng Coulomb:
+
+```
+V = 1,44 MeV·fm / 2 fm = 720 keV
+```
+
+Còn nhiệt độ lõi trả được bao nhiêu? kT = 1,35 keV. Tỉ số **532**. Trong
+[phân bố nhiệt](/vi/posts/phan-bo-maxwell-khong-khi-nhanh-hon-am-thanh), cơ
+hội bắt gặp một cặp proton nhanh đến mức ấy đi kèm thừa số Boltzmann
+e^(−532) = **7,6×10⁻²³²**.
+
+Con số ấy không mang nghĩa "hiếm" — không ngôn ngữ nào có sẵn chữ cho nó.
+Mặt Trời chứa 1,2×10⁵⁷ proton. Cho mỗi proton thử một lần mỗi giây suốt
+13,8 tỉ năm tuổi vũ trụ: 5,2×10⁷⁴ lượt thử, kỳ vọng **4×10⁻¹⁵⁷ lần thành
+công**. Không phải khó: là chưa từng, và sẽ không bao giờ.
+
+## Vì sao đỉnh nằm ở 6,07 keV chứ không ở 1,35
+
+Chỗ hỏng của lập luận trên nằm ở chữ "leo qua". Proton không cần vượt rào —
+nó [xuyên thẳng qua](/vi/posts/xuyen-ham-luong-tu-trong-chiec-the-nho). Xác
+suất xuyên hầm có dạng e^(−√(E_G/E)), với năng lượng Gamow E_G = 490 keV cho
+một cặp proton: hạt càng nhanh, rào càng mỏng.
+
+Vậy là hai hàm mũ chạy ngược nhau trên cùng một trục. Phân bố nhiệt
+e^(−E/kT) tụt xuống — proton nhanh thì hiếm. Xuyên hầm e^(−√(E_G/E)) đi lên
+— proton chậm thì không lọt. Tích của chúng không cực đại ở đầu nào cả, mà
+ở **6,07 keV** — đỉnh Gamow; kéo thanh nhiệt độ trong demo, cả cái đỉnh nhọn
+ấy trượt theo.
+
+6,07 keV bằng **4,49 lần kT**: Mặt Trời không cháy bằng proton trung bình mà
+bằng khoảng **3% số cặp** ở đuôi nhanh của phân bố — cỡ một trong 34 cặp.
+Tại đúng năng lượng ấy, thừa số nhiệt còn 1,1×10⁻²,
+thừa số xuyên hầm là 1,3×10⁻⁴, nhân lại được **1,4×10⁻⁶**. So với lối cổ
+điển 7,6×10⁻²³², cửa sau lượng tử tốt hơn **225 bậc độ lớn**. Toàn bộ ngành
+thiên văn hạt nhân sống trong khoảng chênh đó.
+
+Đỉnh lại rất hẹp — bề rộng 6,6 keV: gần như mọi phản ứng của Mặt Trời chen
+chúc trong khe **2,8–9,4 keV**, ra khỏi đó một trong hai hàm mũ dập tắt ngay
+phần còn lại.
+
+## Mặt Trời yếu hơn cơ thể bạn
+
+Lấy công suất Mặt Trời 3,83×10²⁶ W chia cho thể tích 1,41×10²⁷ m³ được
+**0,27 W/m³**. Ngay tại tâm, nơi nóng và đặc nhất, mật độ công suất cũng chỉ
+**276 W/m³**. Bạn ngồi yên đọc bài này vẫn thải chừng 100 W trong 0,075 m³
+cơ thể, tức **1 300 W/m³**: một mét khối bạn nóng gấp gần năm lần một mét
+khối lõi Mặt Trời.
+
+Mặt Trời chói loà vì nó lớn, không vì nó dữ dội. Và nó không nổ tung ngay
+tuần đầu tiên chính nhờ thừa số e^(−9) của xuyên hầm: hiệu ứng lượng tử
+ở đây không phải cái làm phản ứng chạy, nó là cái **hãm** phản ứng lại đủ
+chậm để [ngọn núi sắt](/vi/posts/duong-cong-nang-luong-lien-ket-ngon-nui-sat)
+có mười tỉ năm mà leo. Xoá hàng rào Coulomb đi, mọi ngôi sao đốt sạch nhiên
+liệu trong vài phút sau khi ra đời, và không hành tinh nào kịp nguội.
+
+## Trường hợp biên: đổi sang CNO, số mũ nhảy từ 3,8 lên 19,5
+
+Đặt Z₁Z₂ = 7 và A_r = 0,93 trong demo — đó là p + ¹⁴N, nút cổ chai của chu
+trình CNO. Đỉnh Gamow nhảy từ 6,07 lên **27,3 keV**, tức 20 lần kT: điện
+tích lớn hơn dựng rào cao hơn, nên phản ứng phải đi vay năng lượng từ tận
+cùng cái đuôi phân bố. Cái giá là độ nhạy nhiệt độ. Với đỉnh nằm ở x = E₀/kT,
+tốc độ phản ứng đi như T^((3x−2)/3): chuỗi p–p cho **T^3,8** — lõi nóng thêm
+5% chỉ cháy nhanh gấp 1,21 lần; CNO cho **T^19,5** — cùng 5% ấy thành **2,59
+lần**. Đó là ranh giới giữa hai kiến trúc sao: lõi Mặt Trời sinh nhiệt hiền
+lành nên truyền nhiệt bằng bức xạ, còn lõi sao nặng chạy CNO phải sôi lên
+đối lưu mới tải kịp nhiệt.
+
+Ở chiều ngược lại, phải thú nhận một điều: với chuỗi p–p, xuyên hầm **không
+phải** nút thắt thật. Hai proton lọt được vào nhau vẫn chưa xong, vì
+chúng không dính thành hạt nhân nào cả: muốn ra deuteri, một trong hai phải
+kịp biến thành neutron ngay trong khoảnh khắc va chạm — việc của tương tác
+yếu. Kết quả là sau 4,6 tỉ năm Mặt Trời mới đốt hết khoảng nửa số hydro
+trong lõi, tức một proton ở đó chờ trung bình cỡ **mười tỉ năm**. Đỉnh Gamow
+mở cánh cửa; ngay sau cánh cửa là một quầy xét duyệt làm việc chậm bằng đúng
+tuổi thọ của một ngôi sao.

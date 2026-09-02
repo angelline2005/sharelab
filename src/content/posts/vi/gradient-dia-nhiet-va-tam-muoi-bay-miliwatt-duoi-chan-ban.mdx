@@ -1,0 +1,104 @@
+---
+title: "Cả Trái Đất chỉ toả 87 miliwatt mỗi mét vuông — cộng lại thành 44 terawatt"
+seoTitle: "Gradient địa nhiệt: xuống sâu 1 km thì đá nóng thêm bao nhiêu độ"
+description: "Dòng nhiệt từ lòng đất là 87 mW/m², bằng 1/11 500 nắng trưa — nhỏ tới mức không ai cảm thấy. Nhân với diện tích hành tinh: 44,4 terawatt, gấp 2,3 lần công suất năng lượng của cả loài người. Chia dòng nhiệt lục địa cho độ dẫn nhiệt của đá thì ra 26 °C mỗi kilômét, và một mỏ vàng sâu 3,9 km lẽ ra phải nóng 126 °C."
+pubDate: 2026-09-02
+tags: ["vat-ly", "nhiet-hoc", "khi-hau", "javascript"]
+translationId: "gradient-dia-nhiet-va-tam-muoi-bay-miliwatt-duoi-chan-ban"
+---
+
+import GeothermalGradient from '../../../components/demos/GeothermalGradient.astro';
+
+Cách bàn chân bạn 5 151 km có một quả cầu sắt nóng khoảng 5 700 °C, và
+nhiệt của nó rò lên mặt đất thật — liên tục, không nghỉ một giây nào kể từ
+khi hành tinh đông cứng. Cái bàn 1,2 × 0,6 mét bạn đang ngồi hứng trọn
+**47 miliwatt** trong khoản rò ấy. Đun sôi một tách trà bằng ngân sách đó
+mất mười chín ngày.
+
+<GeothermalGradient />
+
+## Một phần mười một nghìn của nắng trưa
+
+Con số nền là **87 mW/m²**, trung bình toàn cầu rút từ hơn hai chục nghìn lỗ
+khoan đo nhiệt (tổng hợp Pollack 1993). Đặt cạnh những dòng nhiệt bạn đã
+quen thì nó biến mất: nắng trưa trời quang rót xuống 1 000 W/m², **gấp
+11 500 lần**. Chính cơ thể bạn, 100 W toả qua 1,8 m² da, phát ra 56 W/m² —
+**gấp 640 lần** mặt đất đang đỡ bạn. Ai từng nằm xuống nền xi măng đều biết
+ai sưởi ai.
+
+Nên toàn bộ nhiệt của lòng đất nâng nhiệt độ bề mặt hành tinh lên đúng
+**0,016 °C**. Mùa, thời tiết, cái mát của nền gạch: tất cả là việc của Mặt
+Trời. [Cán cân bức xạ của Trái
+Đất](/vi/posts/can-bang-nhiet-trai-dat-va-tam-chan-33-do) làm tròn dòng địa
+nhiệt thành số không mà không mất một chữ số có nghĩa nào.
+
+## Nhân cho 510 triệu kilômét vuông thì đổi hạng cân
+
+Diện tích hành tinh là 4πR² = **510 triệu km²**:
+
+```
+P = q · 4πR² = 0,087 × 5,10·10^14 = 4,44·10^13 W = 44,4 TW
+```
+
+Cả loài người, tính đủ than dầu khí hạt nhân thuỷ điện gió mặt trời, tiêu
+thụ 620 EJ mỗi năm — **19,6 TW**. Lòng đất rò nhiệt mạnh **gấp 2,3 lần** mọi
+thứ chúng ta đốt và phát cộng lại. Khoảng một nửa là nhiệt phóng xạ từ urani,
+thori và kali-40 [phân rã trong vỏ và
+manti](/vi/posts/chu-ky-ban-ra-khong-hat-nao-biet-tuoi-minh), đếm được trực
+tiếp bằng hạt geoneutrino; nửa còn lại sót từ thời bồi tụ. Dù vậy 44 TW vẫn
+chỉ bằng **1/2 800** lượng nắng hành tinh hấp thụ: khổng lồ so với chúng ta,
+vô nghĩa so với khí hậu.
+
+## Chia cho đá thì ra 26 độ mỗi kilômét
+
+Nhiệt đi lên qua đá bằng dẫn nhiệt, nên theo định luật Fourier gradient chỉ
+là một phép chia:
+
+```
+dT/dz = q / k        →        T(z) = T_mặt_đất + (q/k)·z
+```
+
+Con số 87 gộp hai thế giới rất khác: đáy đại dương vỏ còn trẻ rò 101 mW/m²,
+lục địa già chỉ 65. Lấy vế lục địa chia cho độ dẫn nhiệt của đá vỏ, k ≈ 2,5
+W/m·K, ra **26 °C mỗi kilômét** — một độ cho mỗi 38,5 mét xuống sâu.
+
+Từ đó ra tất cả. Đá chạm 100 °C ở **2 885 m**. Đáy mỏ vàng Mponeng ở Nam
+Phi, sâu 3 900 m và là chỗ sâu nhất con người từng đứng, theo công thức phải
+**126 °C**. Còn giếng khoan siêu sâu Kola lật ngược dự đoán của chính đội
+khoan: họ tính đáy 12 262 m sẽ đạt 100 °C, thực đo **180 °C** — một lý do
+khiến mũi khoan phải dừng, vì đá nóng như thế dẻo như nhựa đường và lỗ khoan
+tự khép lại sau lưng.
+
+## Nhiệt dùng được không bao giờ đi bằng dẫn nhiệt
+
+26 °C/km là một bản án kinh tế: muốn hơi nước 200 °C quay tua-bin thì phải
+khoan **6,7 km**, mà cái lỗ ấy chỉ hút nhiệt lên qua vài chục centimét vuông
+tiết diện.
+
+Điện địa nhiệt vì thế chỉ tồn tại ở nơi nước nhận việc vận chuyển thay cho
+đá: nước ngầm thấm xuống, nóng lên, nhẹ đi rồi trồi lên theo đứt gãy, khuân
+nguyên một cột nhiệt thay vì nhỏ giọt qua dẫn nhiệt. Iceland sưởi gần như
+toàn bộ nhà ở bằng cơ chế ấy; suối Bình Châu sủi lên hơn 80 °C, đủ luộc chín
+quả trứng thả trong rọ tre, dù gradient của vùng chẳng có gì đặc biệt. Tổng
+công suất điện địa nhiệt lắp đặt trên toàn thế giới khoảng 16 GW — **0,036%**
+của 44 TW đang lặng lẽ chảy qua chân chúng ta.
+
+## Trường hợp biên: kéo đường thẳng ấy xuống tới tâm Trái Đất
+
+T(z) trong demo là đường thẳng nên rất cám dỗ kéo dài thêm. Nhân 26 °C/km
+với bán kính 6 371 km: **165 700 °C** ở tâm, trong khi giá trị thật cỡ
+**5 700**. Vống lên **29 lần**.
+
+Nó chết ở đáy thạch quyển, sâu chừng 100 km. Dưới mức đó đá thôi dẫn nhiệt
+mà bắt đầu bò, và trong một khối đang đối lưu thì gradient sụp còn **0,3
+°C/km**, gần như phẳng — Kelvin đã trả giá đắt cho đúng giả định này khi
+[tính ra Trái Đất 65 triệu năm
+tuổi](/vi/posts/kelvin-tinh-tuoi-trai-dat-va-cu-sai-bay-muoi-lan).
+
+Đường thẳng còn gãy theo chiều ngang. Ở sống núi giữa đại dương dòng nhiệt
+vượt **250 mW/m²**; trên nền cổ Nam Phi nó chỉ còn khoảng **41**, mà quartzite
+ở đó lại dẫn nhiệt tốt bất thường, k ≈ 3,5. Kéo hai thanh trượt về đúng cặp
+số ấy: gradient rơi xuống 11,7 °C/km và đáy Mponeng ra **66 °C** — đúng nhiệt
+độ đá mà thợ mỏ gặp thật, thay vì 126 °C mà số trung bình hứa hẹn. Họ vẫn
+phải bơm xuống hàng nghìn tấn nước đá mỗi ngày mới đứng làm việc được dưới
+đó; chỉ là đang cãi nhau với 66 độ, không phải 126.

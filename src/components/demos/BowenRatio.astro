@@ -1,0 +1,179 @@
+---
+// Cân bằng năng lượng bề mặt, chia theo tỉ số Bowen β = H/LE:
+//   Rn = LE + H + G ;  A = Rn − G ;  LE = A/(1+β) ;  H = A·β/(1+β)
+//   H = h·ΔT + ε·σ·((T_kk+ΔT)⁴ − T_kk⁴)   → giải ΔT bằng chia đôi (không tuyến tính hoá)
+// h theo McAdams (bề mặt ngoài trời): h = 5,7 + 3,8·u, hợp lệ với u ≤ 5 m/s → chặn slider ở 5.
+// Rn là bức xạ ròng "đẳng nhiệt" (tính với bề mặt ở đúng nhiệt độ không khí), nên phần
+// hồng ngoại dôi ra khi bề mặt nóng lên được cộng riêng bằng số hạng ε·σ·ΔT⁴ ở trên.
+// G/Rn nội suy giữa hai khoảng đo được: ~0,10 cho mặt nước/thảm thực vật tưới đủ và
+// ~0,33 cho mặt cứng khô (bê tông, nhựa đường): G/Rn = 0,10 + 0,25·β/(β+1).
+// T_kk cố định 33 °C (trưa hè đồng bằng), ε = 0,95, λ = 2,45 MJ/kg (FAO-56).
+// Chỉ hợp lệ cho ban ngày, Rn > 0: ban đêm Rn đổi dấu và β mất ý nghĩa (xem cuối bài).
+---
+
+<figure class="demo" data-demo="ruong-lua-mot-hecta-boc-hoi-het-mot-megawatt">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Bức xạ ròng Rn (W/m²) <output data-out="r"></output>
+      <input type="range" data-in="r" min="100" max="800" step="10" value="600" /></label>
+    <label>Tỉ số Bowen β = H/LE của mặt bên trái <output data-out="b"></output>
+      <input type="range" data-in="b" min="0.05" max="10" step="0.05" value="0.15" /></label>
+    <label>Tốc độ gió u (m/s) <output data-out="u"></output>
+      <input type="range" data-in="u" min="0.5" max="5" step="0.1" value="2" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Cùng một lượng năng lượng mặt trời rót xuống hai bề mặt, chia làm ba dòng:
+    xanh là nhiệt đem hoá hơi nước (LE), đỏ là nhiệt sưởi thẳng không khí (H),
+    cam là nhiệt nạp xuống đất/nước (G). Cột trái là bề mặt bạn đang chỉnh bằng
+    β, cột phải luôn là sân bê tông khô (β = 6). Kéo β từ 0,15 lên 6 để xem cùng
+    600 W/m² ấy chuyển từ dòng xanh sang dòng đỏ — và nhiệt độ mặt dưới chân cột
+    leo theo. Thực tế ruộng còn sẫm màu hơn bê tông nên *nhận* nhiều nắng hơn;
+    demo cho hai bên cùng Rn để tách riêng ảnh hưởng của nước.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const LE_C = '#2563eb', H_C = '#dc2626', G_C = '#f59e0b';
+  const SIG = 5.67e-8, EPS = 0.95, TAIR = 33, LAMBDA = 2.45e6, RMAX = 800;
+
+  const vn = (x: number, n: number) => x.toFixed(n).replace('.', ',');
+  const gFrac = (b: number) => 0.10 + 0.25 * b / (b + 1);
+  const hConv = (u: number) => 5.7 + 3.8 * u;
+
+  function excessT(H: number, u: number) {
+    const Ta = TAIR + 273.15;
+    const F = (d: number) => hConv(u) * d + EPS * SIG * (Math.pow(Ta + d, 4) - Math.pow(Ta, 4)) - H;
+    let lo = -60, hi = 120;
+    for (let i = 0; i < 70; i++) {
+      const m = (lo + hi) / 2;
+      if (F(m) > 0) { hi = m; } else { lo = m; }
+    }
+    return (lo + hi) / 2;
+  }
+
+  function split(Rn: number, b: number, u: number) {
+    const G = gFrac(b) * Rn, A = Rn - G;
+    const LE = A / (1 + b), H = A - LE;
+    return { G, LE, H, dT: excessT(H, u), mmh: LE * 3600 / LAMBDA };
+  }
+
+  function regime(b: number) {
+    if (b <= 0.3) return 'ruộng ngập, cây tưới đủ';
+    if (b <= 1.5) return 'đồng cỏ, ruộng đã ráo mặt';
+    if (b <= 4) return 'đất khô, cây thiếu nước';
+    return 'mặt cứng khô: bê tông, mái, đường nhựa';
+  }
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (k: string) => root.querySelector(`[data-in="${k}"]`) as HTMLInputElement;
+    const output = (k: string) => root.querySelector(`[data-out="${k}"]`) as HTMLOutputElement;
+
+    function draw() {
+      const Rn = Number(input('r').value);
+      const b = Math.round(Number(input('b').value) * 100) / 100;
+      const u = Math.round(Number(input('u').value) * 10) / 10;
+      output('r').textContent = String(Rn);
+      output('b').textContent = vn(b, 2);
+      output('u').textContent = vn(u, 1);
+
+      const left = split(Rn, b, u), right = split(Rn, 6, u);
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.54);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+
+      const padL = 56, padT = 30, padB = 48, padR = 12;
+      const plotW = cssW - padL - padR, base = cssH - padB;
+      const Y = (v: number) => base - (v / RMAX) * (base - padT);
+
+      ctx.font = '10px system-ui,sans-serif';
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.3;
+      ctx.beginPath(); ctx.moveTo(padL, padT); ctx.lineTo(padL, base); ctx.lineTo(cssW - padR, base); ctx.stroke();
+      ctx.globalAlpha = 0.55; ctx.fillStyle = fg; ctx.textAlign = 'right';
+      for (const v of [200, 400, 600, 800]) {
+        ctx.fillText(`${v}`, padL - 6, Y(v) + 3);
+        ctx.globalAlpha = 0.14; ctx.beginPath();
+        ctx.moveTo(padL, Y(v)); ctx.lineTo(cssW - padR, Y(v)); ctx.stroke();
+        ctx.globalAlpha = 0.55;
+      }
+      ctx.textAlign = 'left';
+      ctx.fillText('W/m²', padL - 50, padT - 12);
+      ctx.globalAlpha = 1;
+
+      // Legend.
+      ctx.textAlign = 'left';
+      const keys: Array<[string, string]> = [[LE_C, 'LE bốc hơi'], [H_C, 'H sưởi không khí'], [G_C, 'G vào đất']];
+      let lx = padL + 8;
+      for (const [col, lab] of keys) {
+        ctx.fillStyle = col; ctx.fillRect(lx, padT - 22, 9, 9);
+        ctx.fillStyle = fg; ctx.globalAlpha = 0.75;
+        ctx.fillText(lab, lx + 13, padT - 14);
+        ctx.globalAlpha = 1;
+        lx += 18 + ctx.measureText(lab).width;
+      }
+
+      const barW = Math.min(96, plotW * 0.24);
+      const cols: Array<[typeof left, number, string]> = [
+        [left, padL + plotW * 0.30, `β = ${vn(b, 2)}`],
+        [right, padL + plotW * 0.70, 'bê tông khô, β = 6'],
+      ];
+
+      for (const [d, cx, lab] of cols) {
+        const x = cx - barW / 2;
+        let acc = 0;
+        const segs: Array<[number, string]> = [[d.LE, LE_C], [d.H, H_C], [d.G, G_C]];
+        for (const [val, col] of segs) {
+          const y0 = Y(acc), y1 = Y(acc + val);
+          ctx.fillStyle = col; ctx.fillRect(x, y1, barW, y0 - y1);
+          if (y0 - y1 > 14) {
+            ctx.fillStyle = '#fff'; ctx.textAlign = 'center';
+            ctx.fillText(String(Math.round(val)), cx, (y0 + y1) / 2 + 3);
+          }
+          acc += val;
+        }
+        ctx.fillStyle = fg; ctx.textAlign = 'center'; ctx.globalAlpha = 0.75;
+        ctx.fillText(lab, cx, base + 16);
+        ctx.globalAlpha = 1;
+        ctx.fillStyle = H_C;
+        ctx.fillText(`mặt ${vn(TAIR + d.dT, 1)} °C  (+${vn(d.dT, 1)})`, cx, base + 31);
+      }
+
+      ctx.fillStyle = fg; ctx.globalAlpha = 0.55; ctx.textAlign = 'center';
+      ctx.fillText(`không khí ${TAIR} °C · gió ${vn(u, 1)} m/s`, padL + plotW / 2, base + 45);
+      ctx.globalAlpha = 1;
+
+      const gap = right.dT - left.dT;
+      const cmp = gap > 0.05
+        ? ` — mặt trái <b>mát hơn bê tông ${vn(gap, 1)} °C</b>`
+        : (gap < -0.05 ? ` — mặt trái <b>nóng hơn bê tông ${vn(-gap, 1)} °C</b>` : ' — hai mặt bằng nhau');
+      readout.innerHTML =
+        `Rn = ${Rn} W/m² · β = ${vn(b, 2)} (${regime(b)}) → LE <b>${Math.round(left.LE)} W/m²</b>` +
+        ` = ${vn(left.mmh, 2)} mm/h = ${vn(left.LE * 1e4 / 1e6, 2)} MW mỗi hecta · H ${Math.round(left.H)} · G ${Math.round(left.G)}` +
+        ` → mặt <b>${vn(TAIR + left.dT, 1)} °C</b>. Bê tông cùng nắng: H ${Math.round(right.H)} → ${vn(TAIR + right.dT, 1)} °C${cmp}.`;
+    }
+
+    root.querySelectorAll('input').forEach((el) => el.addEventListener('input', draw));
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="ruong-lua-mot-hecta-boc-hoi-het-mot-megawatt"]').forEach(setup);
+</script>

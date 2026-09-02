@@ -1,0 +1,194 @@
+---
+// Đường nóng chảy của nước đá Ih — IAPWS R14-08 (Revised Release on the Pressure
+// along the Melting and Sublimation Curves of Ordinary Water Substance, 2011):
+//   p/p_n = 1 + Σ a_i·[1 − (T/T_n)^b_i],  T_n = 273,16 K,  p_n = 611,657 Pa
+//   a = (1,19539337e6 ; 8,08183159e4 ; 3,33826860e3), b = (3 ; 25,75 ; 103,75)
+// Hợp lệ 273,16 K ≥ T ≥ 251,165 K, tức 0 → −21,985 °C, kết thúc ở điểm ba
+// Ih/III/lỏng: 208,57 MPa. Dưới nhiệt độ đó nước đá III đặc hơn nước, hết nở.
+//
+// Ứng suất vòng thành ống dày — công thức Lamé (đúng với MỌI tỉ số D/t, quy về
+// P·D/2t khi thành mỏng):  σ_θ = P·(r_o² + r_i²)/(r_o² − r_i²), lấy ở mặt trong.
+// Giới hạn chảy thép ống mềm (A53 Gr.B / CT38): σ_y = 250 MPa.
+---
+
+<figure class="demo" data-demo="nuoc-dong-bang-day-670-atm-vo-ong-thep">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Nhiệt độ (°C) <output data-out="t"></output>
+      <input type="range" data-in="t" min="-21.9" max="0" step="0.1" value="-5" /></label>
+    <label>Đường kính ngoài ống (mm) <output data-out="d"></output>
+      <input type="range" data-in="d" min="15" max="100" step="1" value="20" /></label>
+    <label>Bề dày thành ống (mm) <output data-out="w"></output>
+      <input type="range" data-in="w" min="1" max="6" step="0.5" value="2" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Giản đồ áp suất – nhiệt độ quanh điểm đóng băng. Đường nóng chảy của nước
+    nghiêng sang trái — nén vào thì nước đá tan, chứ không đông thêm — nên nó
+    cũng chính là <em>trần áp suất</em>: trong ống kín, nước đá đẩy đến khi chạm
+    đường ấy rồi ngừng đông. Vạch cam là áp suất làm thành ống bắt đầu chảy dẻo.
+    Kéo nhiệt độ xuống, chấm đỏ vượt vạch cam ở đâu thì ống vỡ ở đó.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const CURVE = '#2563eb', MARK = '#dc2626', LIM = '#f59e0b';
+  const Tn = 273.16, pn = 611.657;
+  const A = [1.19539337e6, 8.08183159e4, 3.3382686e3];
+  const B = [3.0, 25.75, 103.75];
+  const T_TRIPLE = -21.985, P_TRIPLE = 208.57, SIGMA_Y = 250;
+  const ATM = 0.101325;
+
+  // Áp suất nóng chảy (MPa) tại nhiệt độ tc (°C).
+  const pMelt = (tc: number) => {
+    const th = (273.15 + tc) / Tn;
+    let s = 1;
+    for (let i = 0; i < 3; i++) s += A[i] * (1 - Math.pow(th, B[i]));
+    return (s * pn) / 1e6;
+  };
+  // Nhiệt độ (°C) ứng với một áp suất nóng chảy cho trước.
+  const tMelt = (p: number) => {
+    let lo = T_TRIPLE, hi = 0;
+    for (let i = 0; i < 60; i++) {
+      const m = (lo + hi) / 2;
+      if (pMelt(m) > p) lo = m; else hi = m;
+    }
+    return (lo + hi) / 2;
+  };
+  // Hệ số Lamé: σ_θ = k·P.
+  const kHoop = (D: number, t: number) => {
+    const ro = D / 2, ri = Math.max(D / 2 - t, 0.5);
+    return (ro * ro + ri * ri) / (ro * ro - ri * ri);
+  };
+  const vi = (x: number, d: number) => x.toFixed(d).replace('.', ',').replace('-', '−');
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (k: string) => root.querySelector(`[data-in="${k}"]`) as HTMLInputElement;
+    const output = (k: string) => root.querySelector(`[data-out="${k}"]`) as HTMLOutputElement;
+
+    function draw() {
+      const tc = Number(input('t').value);
+      const D = Number(input('d').value);
+      const wt = Number(input('w').value);
+      output('t').textContent = vi(tc, 1);
+      output('d').textContent = String(D);
+      output('w').textContent = vi(wt, 1);
+
+      const pm = pMelt(tc);
+      const k = kHoop(D, wt);
+      const sigma = k * pm;
+      const pYield = SIGMA_Y / k;
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.5);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+
+      const padL = 54, padB = 26, padT = 14, padR = 12;
+      const xLo = -22, yHi = 240;
+      const X = (t: number) => padL + ((t - xLo) / (0 - xLo)) * (cssW - padL - padR);
+      const Y = (p: number) => cssH - padB - (p / yHi) * (cssH - padB - padT);
+
+      // Hai miền pha, ngăn nhau bởi chính đường nóng chảy.
+      const traceCurve = () => {
+        for (let i = 0; i <= 240; i++) {
+          const t = T_TRIPLE + ((0 - T_TRIPLE) * i) / 240;
+          ctx.lineTo(X(t), Y(pMelt(t)));
+        }
+      };
+      ctx.beginPath();
+      ctx.moveTo(X(xLo), cssH - padB);
+      traceCurve();
+      ctx.lineTo(X(0), cssH - padB);
+      ctx.closePath();
+      ctx.fillStyle = CURVE; ctx.globalAlpha = 0.14; ctx.fill();
+
+      ctx.beginPath();
+      ctx.moveTo(X(xLo), padT);
+      traceCurve();
+      ctx.lineTo(X(0), padT);
+      ctx.closePath();
+      ctx.fillStyle = LIM; ctx.globalAlpha = 0.09; ctx.fill();
+      ctx.globalAlpha = 1;
+
+      // Trục và vạch chia.
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.3;
+      ctx.beginPath(); ctx.moveTo(padL, padT); ctx.lineTo(padL, cssH - padB); ctx.lineTo(cssW - padR, cssH - padB); ctx.stroke();
+      ctx.globalAlpha = 0.55; ctx.fillStyle = fg; ctx.font = '10px system-ui,sans-serif';
+      ctx.textAlign = 'center';
+      for (const t of [-20, -15, -10, -5, 0]) ctx.fillText(`${vi(t, 0)}°C`, X(t), cssH - padB + 15);
+      ctx.textAlign = 'right';
+      for (const p of [50, 100, 150, 200]) ctx.fillText(`${p} MPa`, padL - 5, Y(p) + 3);
+      ctx.globalAlpha = 0.75;
+      ctx.textAlign = 'center';
+      ctx.fillText('NƯỚC ĐÁ — nở ra, đẩy thành ống', X(-8.5), Y(24));
+      ctx.fillText('NƯỚC LỎNG — bị nén, không đông được', X(-9.5), Y(222));
+      ctx.globalAlpha = 1;
+
+      // Ngưỡng chảy dẻo của thành ống.
+      if (pYield < yHi) {
+        ctx.strokeStyle = LIM; ctx.lineWidth = 2; ctx.setLineDash([6, 4]);
+        ctx.beginPath(); ctx.moveTo(padL, Y(pYield)); ctx.lineTo(cssW - padR, Y(pYield)); ctx.stroke();
+        ctx.setLineDash([]); ctx.lineWidth = 1;
+        ctx.fillStyle = LIM; ctx.textAlign = 'right';
+        ctx.fillText(`thành ống chảy dẻo: ${vi(pYield, 1)} MPa`, cssW - padR, Y(pYield) - 6);
+      }
+
+      // Đường nóng chảy.
+      ctx.strokeStyle = CURVE; ctx.lineWidth = 2.5; ctx.beginPath();
+      for (let i = 0; i <= 240; i++) {
+        const t = T_TRIPLE + ((0 - T_TRIPLE) * i) / 240;
+        i ? ctx.lineTo(X(t), Y(pMelt(t))) : ctx.moveTo(X(t), Y(pMelt(t)));
+      }
+      ctx.stroke(); ctx.lineWidth = 1;
+
+      // Điểm ba Ih/III: đường nóng chảy hết hiệu lực ở đây.
+      ctx.fillStyle = fg; ctx.globalAlpha = 0.6;
+      ctx.beginPath(); ctx.arc(X(T_TRIPLE), Y(P_TRIPLE), 3.5, 0, Math.PI * 2); ctx.fill();
+      ctx.textAlign = 'left';
+      ctx.fillText('điểm ba Ih/III — 208,6 MPa', X(T_TRIPLE) + 7, Y(P_TRIPLE) + 3);
+      ctx.globalAlpha = 1;
+
+      // Trạng thái đang chọn.
+      ctx.strokeStyle = MARK; ctx.globalAlpha = 0.45; ctx.setLineDash([4, 4]);
+      ctx.beginPath(); ctx.moveTo(X(tc), cssH - padB); ctx.lineTo(X(tc), Y(pm)); ctx.stroke();
+      ctx.setLineDash([]); ctx.globalAlpha = 1;
+      ctx.fillStyle = MARK;
+      ctx.beginPath(); ctx.arc(X(tc), Y(pm), 6, 0, Math.PI * 2); ctx.fill();
+
+      const burst = sigma > SIGMA_Y;
+      const verdict = pYield > P_TRIPLE
+        ? '<b>ống chịu được ở mọi nhiệt độ</b> — nước đá không bao giờ đẩy quá 208,6 MPa'
+        : burst
+          ? `<b>ống vỡ</b> — chỉ cần lạnh tới ${vi(tMelt(pYield), 1)} °C là đủ`
+          : '<b>ống còn nguyên</b> — nước đông hết mà thành ống chưa chảy dẻo';
+      readout.innerHTML =
+        `${vi(tc, 1)} °C → nước đá đẩy tối đa <b>${vi(pm, 1)} MPa</b> ` +
+        `(${Math.round(pm / ATM)} atm ≈ ${Math.round(pm * 10)} bar) · ` +
+        `ống Ø${D} mm dày ${vi(wt, 1)} mm chịu ứng suất vòng <b>${vi(sigma, 0)} MPa</b> ` +
+        `so với giới hạn chảy 250 MPa của thép → ${verdict}`;
+    }
+
+    root.querySelectorAll('input').forEach((el) => el.addEventListener('input', draw));
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="nuoc-dong-bang-day-670-atm-vo-ong-thep"]').forEach(setup);
+</script>

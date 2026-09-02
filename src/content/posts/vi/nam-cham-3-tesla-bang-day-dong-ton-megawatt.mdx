@@ -1,0 +1,101 @@
+---
+title: "3 tesla bằng dây đồng: 1,3 tấn đồng và 5,5 megawatt không nghỉ"
+seoTitle: "Ống dây tạo từ trường mạnh: công suất tiêu tán tỉ lệ bình phương từ trường"
+description: "Từ trường ống dây là B = µ₀nI — công thức không có lấy một chữ về giá. Muốn 3 tesla của máy MRI bằng đồng thường, ống dây phải đốt 5,54 megawatt liên tục, bằng 20 000 hộ gia đình, và uống 132 lít nước mỗi giây. Cuộn siêu dẫn làm y hệt với 0 watt trong dây — đổi lấy một cái van xả trên nóc bệnh viện."
+pubDate: 2026-09-02
+tags: ["vat-ly", "dien-tu", "nhiet-hoc", "javascript"]
+translationId: "nam-cham-3-tesla-bang-day-dong-ton-megawatt"
+---
+
+import ResistiveMagnet from '../../../components/demos/ResistiveMagnet.astro';
+
+Máy MRI trong bệnh viện giữ 3 tesla đứng yên suốt ngày — gấp 60 000 lần từ
+trường Trái Đất. Công thức làm ra nó ngắn đến mức đáng ngờ: quấn n vòng mỗi
+mét, đẩy vào I ampe, hết. Cho tới lúc bạn cầm hoá đơn tiền điện lên:
+
+<ResistiveMagnet />
+
+## Công thức không nói một chữ nào về giá
+
+`B = µ₀·n·I` chỉ có mật độ vòng và cường độ dòng — không bán kính, không
+chiều dài, không tiền. Muốn 3 T thì tích n·I phải bằng 3/µ₀ = **2,39 triệu
+ampe-vòng mỗi mét**; ống dài 1,5 m là tổng 3,58 triệu ampe-vòng.
+
+Chia thế nào cũng được — 1 000 vòng thì mỗi vòng gánh 3 580 A ở 1 550 V,
+gấp mười lần số vòng thì dòng nhỏ đi mười lần, công suất y hệt: nhiệt Joule
+không đếm vòng, nó đếm **mật độ dòng qua tiết diện đồng**. Chọn bán kính
+30 cm với
+lớp đồng dày 5 cm, mật độ dòng ra **47,7 A/mm²** — gấp gần mười lần dây
+điện trong tường nhà bạn, thứ đã đủ sức bốc cháy khi [chỉ một chỗ tiếp xúc
+bị lỏng](/vi/posts/dien-tro-tiep-xuc-o-cam-long-gay-chay).
+
+## Bình phương B là bức tường, không phải con dốc
+
+```
+P = ρ · (n·I)² · 2π·r·L / t
+```
+
+Đồng có ρ = 1,72·10⁻⁸ Ω·m. Thay số cho ống r = 30 cm, L = 1,5 m, t = 5 cm —
+tức **1,27 tấn đồng** — ra **5,54 megawatt**. Nam châm điện trở không *tích*
+từ trường, nó **thuê theo giờ**, trả từng giây suốt thời gian 3 tesla còn
+đứng đó.
+
+5,54 MW là công suất trung bình của khoảng **20 000 hộ** dùng 200 kWh mỗi
+tháng — theo giá điện sản xuất 1 900 đồng/kWh là **10,5 triệu đồng mỗi
+giờ**, 92 tỷ một năm. Toàn bộ thành nhiệt trong tấn đồng ấy: muốn nó chỉ ấm
+lên 10 K, phải bơm qua **132 lít nước mỗi giây**.
+
+Bình phương là chỗ tàn nhẫn: máy MRI 1,5 T phổ thông chỉ ngốn 1,39 MW, một
+phần tư, dù từ trường mới giảm một nửa. Vẫn là [luật I²R đã đẩy đường dây
+tải điện lên cao thế](/vi/posts/vi-sao-duong-day-tai-dien-phai-cao-the) —
+chỉ khác là đường dây lách được bằng cách nâng điện áp, còn ampe-vòng thì
+vật lý đòi đúng bằng đó.
+
+## Nhồi thêm đồng, hoặc thu nhỏ cái lỗ
+
+P tỉ lệ nghịch với t, nên kéo bề dày đồng lên gấp đôi thành 100 mm là công
+suất rơi còn 2,77 MW — cho tới khi nhìn con số bên cạnh: khối đồng cũng gấp
+đôi, **2,53 tấn**.
+
+Lối thoát thật nằm ở r, thứ mà P tỉ lệ thuận. Nam châm điện trở thuần mạnh
+nhất thế giới — 41,4 T ở Tallahassee, 2017 — ngốn 32 MW, nhưng lỗ của nó
+**Ø 32 mm**, vừa một ngón tay cái. Giữ cái lỗ 55 cm đủ nhét cả người vào rồi
+đẩy lên 45 T thì phép nhân trả về **1,25 gigawatt**, cỡ một tổ máy điện hạt
+nhân. Bằng đồng, bạn chỉ được chọn một: lỗ to, hoặc từ trường mạnh.
+
+Mà 5,54 MW còn hào phóng: cộng 16% bù cho ống dài hữu hạn với 30% chỗ đồng
+mất vào khe làm mát và cách điện, máy thật rơi vào khoảng **9 MW**.
+
+## Siêu dẫn: 0 watt trong dây, đổi lấy 4 kelvin
+
+Nên không máy MRI nào trên đời chạy bằng đồng. Cuộn dây là hợp kim
+niobi-titan ngâm trong heli lỏng ở 4,2 K, nơi điện trở không phải "rất nhỏ"
+mà **đúng bằng không**. Nạp dòng xong, người ta nối tắt hai đầu bằng một
+đoạn dây siêu dẫn rồi rút nguồn: 3,58 triệu ampe-vòng chạy vòng quanh nhiều
+năm, không ai cấp thêm gì.
+
+Cái giá chuyển chỗ chứ không biến mất — máy lạnh cryo giữ 4,2 K ăn cỡ 7 kW
+liên tục, vẫn ít hơn **gần 800 lần**. Nhưng niobi-titan có trần: trên
+khoảng 10 T ở 4,2 K là tính siêu dẫn sập, muốn cao hơn phải đổi sang Nb₃Sn
+hoặc làm nam châm lai — chèn cuộn đồng vào giữa lòng cuộn siêu dẫn và trả
+30 MW cho riêng phần đồng ấy.
+
+## Trường hợp biên: khi 0 ôm quay lại thành vô cực
+
+Chỉ cần một đoạn dây ấm lên quá nhiệt độ tới hạn. Đoạn đó có điện trở, điện
+trở sinh nhiệt, nhiệt lan sang đoạn kế bên — **quench**, phản ứng dây chuyền
+nuốt cả cuộn trong vài giây.
+
+Từ trường là năng lượng có thật, mật độ B²/2µ₀ — [cùng đại lượng cho viên
+nam châm neodymium lực giữ của
+nó](/vi/posts/luc-hut-nam-cham-va-khe-ho-mot-milimet). Ở 3 T mật độ ấy là
+3,58 MJ mỗi mét khối, nhân với 0,36 m³ lòng ống ra **1,28 megajoule**, và
+tất cả phải đi đâu đó trong vài giây. Nó đi vào heli: đủ đun sôi **488 lít
+heli lỏng**, nở ra **367 mét khối khí** — gấp bốn lần thể tích căn phòng
+chụp.
+
+Vì thế trần mọi phòng MRI đều có ống xả quench chạy thẳng lên nóc nhà: ống
+ấy mà tắc thì heli đẩy ôxy ra khỏi phòng, và tai nạn không còn liên quan gì
+tới từ trường nữa. Ống dây đồng thì không bao giờ quench — nó chẳng có gì
+để mất. Nó chỉ đều đặn gửi hoá đơn, mỗi giờ 10,5 triệu, cho tới ngày bạn
+tắt nó đi.

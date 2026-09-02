@@ -1,0 +1,96 @@
+---
+title: "Xe máy: chỉ 15% chỗ xăng đó thật sự đẩy bạn đi"
+seoTitle: "Hiệu suất động cơ xe máy: 2 L/100 km thì bao nhiêu phần trăm thành lực đẩy"
+description: "Chạy đều 40 km/h tốn 2 L/100 km nghĩa là đốt 7,18 kW xăng để đẩy một chiếc xe chỉ đòi 1,08 kW. Hiệu suất thật của chuyến đi: 15,0% — sáu kilôoát còn lại thành nhiệt, và bạn chở nó theo suốt quãng đường."
+pubDate: 2026-09-02
+tags: ["vat-ly", "nhiet-hoc", "co-hoc", "javascript"]
+translationId: "xe-may-muoi-lam-phan-tram-xang-huu-ich"
+---
+
+import MotorbikeEfficiency from '../../../components/demos/MotorbikeEfficiency.astro';
+
+Chiếc tay ga của bạn uống 2 lít xăng cho 100 km — con số đẹp, ai cũng gật.
+Nhưng hỏi lại bằng đơn vị công suất thì nó kể chuyện khác: chạy đều 40
+km/h, bạn đang đốt **7,18 kW** nhiên liệu để đẩy một cái xe chỉ đòi đúng
+**1,08 kW**.
+
+<MotorbikeEfficiency />
+
+## Bảy kilôoát vào, một kilôoát ra
+
+Ở 40 km/h, mức 2 L/100 km nghĩa là 0,8 lít mỗi giờ. Mỗi lít xăng mang
+**32,3 MJ** năng lượng hoá học, nên kim phun đang rót vào xi-lanh 7,18 kW.
+
+Chạy *đều* thì hợp lực bằng không: động cơ chỉ phải cân đúng hai lực cản.
+Ma sát lăn của lốp — hệ số 0,025 nhân trọng lượng của 200 kg cả xe lẫn
+người — cho **49 N**; lực cản khí, với diện tích cản 0,66 m² của một người
+ngồi thẳng, cho **48 N**. Tổng 97 N nhân 11,1 m/s: **1,08 kW**.
+
+```
+P_xăng = (L₁₀₀/100)·v·LHV            LHV = 32,3 MJ/L
+P_cản  = (C_lăn·m·g + ½·ρ·C_dA·v²)·v
+η      = P_cản / P_xăng
+```
+
+Chia ra được **η = 15,0%**. Khoản chênh 6,10 kW không biến đi đâu cả — nó
+là nhiệt, và bạn chở nó theo suốt đường: ba cái bếp từ 2 kW bật hết cỡ,
+kẹp giữa hai đầu gối. Trọn 100 km: 64,6 MJ xăng vào, 9,71 MJ công ra.
+
+## Đúng 40 km/h là chỗ gió bắt kịp lốp
+
+Ma sát lăn **không đổi theo tốc độ** — 49 N ở 20 km/h cũng đúng 49 N ở 90.
+Lực cản khí thì tỉ lệ v²: 12 N ở 20 km/h, 48 N ở 40, 192 N ở 80. Hai đường
+cắt nhau tại **40,4 km/h**, đúng cái tốc độ bạn chạy trong phố: dưới ngưỡng
+ấy bạn đấu với lốp, trên ngưỡng ấy bạn đấu với không khí và [cái giá tăng
+theo lũy thừa ba của tốc độ](/vi/posts/dap-xe-nhanh-gap-doi-tra-gia-gap-tam).
+
+Kéo thanh tốc độ lên 80 km/h: công cản đường nhảy từ 1,08 lên **5,36 kW**
+— nhanh gấp đôi, tốn gấp gần năm. Nhưng nghịch lý nằm ngay đó: nếu ở 80
+km/h xe uống 3 L/100 km thì hiệu suất lại là **24,9%**, hơn hẳn 15,0% lúc
+đi chậm. Động cơ *thích* chạy nhanh — nó làm việc gần công suất thiết kế,
+đỡ phải hé ga. Thứ bạn đánh đổi khi phóng là tiền xăng mỗi kilômét, không
+phải hiệu suất.
+
+## Sáu kilôoát kia đi đâu
+
+Phần lớn theo khí xả: hỗn hợp cháy rời xi-lanh khi vẫn còn vài trăm độ.
+Phần còn lại rò qua thành xi-lanh vào dầu máy và cánh tản nhiệt — mấy cánh
+nhôm xẻ rãnh trên đầu máy xe số là bộ tản của đúng khoản này.
+
+Muốn thấy 15% nhỏ cỡ nào thì hỏi ngược: quãng đường ấy cần bao nhiêu điện?
+9,71 MJ công cản đường là **2,70 kWh** tại bánh xe; kể cả khi pin và mô-tơ
+nuốt mất 20% dọc chuỗi, xe điện vẫn chỉ rút **3,4 kWh** khỏi ổ cắm — 12,2
+MJ, **một phần năm** chỗ năng lượng chiếc xe xăng phải nuốt.
+
+## Trong phố, 15% còn là con số lạc quan
+
+Mọi tính toán trên giả định bạn chạy đều; phố không cho phép điều đó. Dừng
+đèn đỏ, lực đẩy bằng 0 nên hiệu suất bằng **đúng 0%** — mỗi 0,1 lít xăng
+mỗi giờ máy nổ không tải là 0,9 kW đốt cho không gì hết.
+
+Mỗi cú phanh là một lần xoá sổ. Xe 200 kg chạy 40 km/h mang **12,3 kJ**
+động năng; để tích được chỗ ấy động cơ đã đốt 82 kJ xăng — **2,5 mL**, nên
+bốn chục lần dừng–đi là 0,1 lít bay vào cặp bố thắng. Mà 12,3 kJ cũng bằng
+đúng công cản đường của **127 mét** chạy đều: mỗi lần dừng đèn đỏ là ném đi
+hơn trăm mét đường đã trả tiền, chưa kể [chuyện xảy ra khi bạn phanh
+gấp](/vi/posts/duong-phanh-xe-may-va-toc-do-con-lai).
+
+Kéo thanh khối lượng 200 → 300 kg cho một người ngồi sau: ma sát lăn từ 49
+lên 74 N, công cản đường lên **1,35 kW**, mức tiêu thụ phải nhích lên
+khoảng 2,5 L/100 km.
+
+## Trường hợp biên: chậm lại không cứu được gì, và trần là 69%
+
+Trực giác tiết kiệm bảo đi chậm cho đỡ tốn. Kéo tốc độ về **20 km/h**: cản
+đường tụt còn 0,34 kW, nhẹ đi hơn ba lần — nhưng động cơ vẫn phải nuôi ma
+sát trong và công bơm khí của chính nó, nên với 2 L/100 km hiệu suất rơi
+xuống **9,5%**. Một kilômét bò trong ngõ đắt hơn một kilômét đường trường,
+dù cảm giác nói ngược lại.
+
+Còn đầu kia của thang đo? Chữa hết mọi khiếm khuyết cơ khí thì vẫn còn
+[một loại thuế không cỗ máy nào trốn
+được](/vi/posts/hieu-suat-carnot-loai-thue-khong-ai-tron-duoc): khí cháy
+trong xi-lanh cỡ 1 900 °C, thải ra khoảng 400 °C, và chỉ hai nhiệt độ ấy
+đã chặn trần ở **69,0%**. Khoảng từ 15% lên 69% là phần thuộc về kỹ sư; từ
+69% lên 100% thì không ai đòi được, kể cả khi bạn thay hẳn cỗ máy. Con số
+15% vẫn tệ — nó chỉ không tệ vì cái lý do mà phần lớn người ta tưởng.

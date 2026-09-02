@@ -1,0 +1,94 @@
+---
+title: "Cầu chì 10 A không đứt ở 13 A — nhưng ở 100 A nó đứt trong 6 phần nghìn giây"
+seoTitle: "Cầu chì hoạt động thế nào: quy luật I²t và thời gian đứt của dây chảy"
+description: "Dây chảy nóng nhanh đến mức không kịp toả nhiệt, nên thứ làm nó đứt là tích I²t chứ không phải một dòng ngưỡng. Với cầu chì 10 A (I²t ≈ 60 A²s): 100 A đứt sau 6,0 ms, 1 000 A đứt sau 60 micro giây — sớm hơn nửa chu kỳ điện lưới 166 lần."
+pubDate: 2026-09-02
+tags: ["vat-ly", "dien-hoc", "javascript"]
+translationId: "cau-chi-va-quy-luat-i-binh-phuong-t"
+---
+
+import FuseMelting from '../../../components/demos/FuseMelting.astro';
+
+Cầu chì 10 A trong xe máy chịu cả buổi chiều bạn cắm thêm dàn đèn phụ ăn
+13 ampe mà không hề hấn gì. Rồi một sợi dây cọ sờn chạm mát: nó đứt trước
+khi bạn kịp nghe tiếng nổ. Cùng một mẩu kim loại, hai hành xử chẳng liên
+quan gì nhau — ranh giới nằm ở một tích số:
+
+<FuseMelting />
+
+## Cầu chì không đo dòng, nó đếm năng lượng
+
+Trực giác nói cầu chì có "dòng ngưỡng": dưới thì cho qua, trên thì đứt.
+Sai — nó là một mẩu kim loại phải được **nung tới điểm nóng chảy**, mà nung
+thì tốn thời gian.
+
+Công suất toả trên dây chảy là I²R, [cùng đại lượng bắt đường dây tải điện
+phải leo lên cao thế](/vi/posts/vi-sao-duong-day-tai-dien-phai-cao-the).
+Dòng đủ lớn thì nhiệt sinh ra nhanh tới mức không kịp thoát đi đâu — chế độ
+**đoạn nhiệt** — mà năng lượng để nung chảy khối kim loại ấy lại là con số
+cố định, bất kể bạn rót vào nhanh hay chậm. Cân bằng hai vế, chiều dài dây
+triệt tiêu:
+
+```
+I² · t = K² · A²     ⇒     t = (K · A / I)²
+```
+
+A là tiết diện dây chảy (mm²), còn K gói cả vật liệu vào một số: khối lượng
+riêng, nhiệt dung, [nhiệt ẩn nóng
+chảy](/vi/posts/nhiet-an-hai-quang-nhiet-ke-dung-im) và điện trở suất. Vế
+phải không chứa I lẫn t — nên **tích I²t là hằng số riêng của từng cái cầu
+chì**, in thẳng trên datasheet của nó.
+
+## 60 A²s là sáu miligam bạc và hai joule
+
+Cầu chì thuỷ tinh 5×20 mm loại 10 A tác động nhanh có I²t nóng chảy cỡ
+**60 A²s** (các hãng cho 40–100). Ở 100 A, t = 60/100² = **6,0 ms**; ở
+1 000 A, 60 µs; ở 2 000 A, 15 µs.
+
+Đi ngược lại cũng được: 60 A²s bằng dây bạc (K = 283 A·s^½/mm²) đòi tiết
+diện **0,0274 mm²** — sợi dày 0,19 mm, mảnh hơn ruột bút chì kim. Dài 20 mm
+bắc giữa hai nắp đồng, nó nặng 5,8 mg và nung chảy hết vỏn vẹn **2,0
+joule**: đúng bằng thả quả táo 200 g từ độ cao một mét. Ở 10 A nó toả
+1,2 W, âm ấm; ở 1 000 A nó nhận 11,6 kW — cùng một sợi dây, hai chế độ
+cách nhau mười nghìn lần.
+
+Kéo con trượt vật liệu sang chì–thiếc (K = 45) là hiểu vì sao dây chì trong
+hộp cầu dao đời cũ mập đến khó tin: cùng 60 A²s, nó cần tiết diện gấp
+**6,3 lần** dây bạc, sợi dày 0,47 mm. Chì dẫn điện tồi hơn bạc 13 lần lại
+chảy ở 327 °C thay vì 962 °C — cả hai đều đẩy nó đứt sớm, nên chỉ còn cách
+cho nó to ra.
+
+## Đường thẳng dốc −2 và cuộc đua với nửa chu kỳ
+
+Trên trục log–log của demo, `t = (K·A/I)²` là một **đường thẳng dốc −2**:
+dòng gấp 10 thì thời gian đứt ngắn đi 100 lần. Cầu chì không đổi tính cách
+giữa quá tải và ngắn mạch — nó chỉ trượt trên cùng một đường thẳng.
+
+Vạch cam ở 10 ms là **nửa chu kỳ điện lưới 50 Hz**, và dòng ngắn mạch cần
+5 ms để leo từ 0 lên đỉnh. Ở 1 000 A, dây chảy tiêu hết 60 A²s trong 60 µs
+— sớm hơn nửa chu kỳ **166 lần**, tức mạch đã hở khi dòng còn đang leo dốc,
+chưa bao giờ chạm cái đỉnh lẽ ra nó đạt được. Nghề này có tên riêng: *hạn
+chế dòng* — cầu chì không chỉ ngắt sự cố, nó xén cụt biên độ của sự cố.
+
+## Trường hợp biên: 13 ampe, nơi công thức tự sát
+
+Kéo con trượt về 13 A. Công thức trả lời 0,36 giây; thực tế cầu chì 10 A
+ngồi đó vô hạn. Đó không phải sai số — đó là công thức nói dối.
+
+Chỗ gãy nằm ở hai chữ "đoạn nhiệt". Dải bạc 20 mm hàn vào hai nắp đồng có
+hằng số thời gian nhiệt **τ ≈ 0,26 s**: sau chừng ấy, nhiệt đã kịp chảy dọc
+dây ra hai đầu. Ở 100 A, thời gian đứt 6,0 ms chỉ bằng 0,023 τ — nhiệt
+chưa kịp đi đâu, công thức đúng tới từng phần trăm. Còn "0,36 s" ở 13 A lại
+là **1,4 τ**: chưa tới được mốc đó, dây chảy đã tìm ra một nhiệt độ cân
+bằng, sinh bao nhiêu thoát bấy nhiêu. Nếu cân bằng ấy dừng dưới 962 °C, sợi
+bạc sống mãi mãi — tính thô cho mẩu bạc trên, nó chỉ chạm điểm nóng chảy ở
+khoảng 11 A.
+
+Vì thế datasheet cầu chì nào cũng có con số thứ hai bên cạnh dòng định mức:
+*dòng chảy tối thiểu*, thường **1,3–1,6 lần định mức** — khoảng giữa hai
+con số ấy là vùng mù của luật I²t. Cũng vì nó mà aptomat phải mang hai cơ
+cấu: cuộn hút điện từ cho ngắn mạch (mili giây, đúng luật I²t) và lá lưỡng
+kim cho quá tải chậm (hàng phút, luật cân bằng nhiệt). Thứ **không cơ cấu
+nào bắt được** là ổ cắm lỏng: [chỗ tiếp xúc sụt 0,3 V đang ở 732 °C mà ăn
+chưa tới một oát](/vi/posts/dien-tro-tiep-xuc-o-cam-long-gay-chay) — dòng
+vẫn dưới định mức, I²t vẫn xấp xỉ không, và ngôi nhà vẫn cháy.

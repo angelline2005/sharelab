@@ -1,0 +1,218 @@
+---
+// I-131 sau điều trị tuyến giáp.
+// (1) Chu kỳ bán rã hiệu dụng: 1/T_hd = 1/T_vl + 1/T_sh,
+//     T_vl = 8,02 ngày (phân rã beta của I-131), T_sh = 80 ngày
+//     (ICRP: chu kỳ sinh học của i-ốt trong tuyến giáp) → T_hd = 7,289 ngày.
+// (2) Liều cho người ở cạnh: suất liều = Γ·A₀·2^(−t/T_hd)/d², với
+//     Γ(I-131) = 0,052 µSv·m²/(MBq·h) (hằng số kerma không khí).
+//     Liều tích luỹ sau n ngày, tiếp xúc h giờ mỗi ngày:
+//       D = (h/24)·Γ·A₀/d² · (24·T_hd/ln2) · (1 − 2^(−n/T_hd))
+//     Đây đúng là công thức hệ số chiếm chỗ của US NRC RG 8.39
+//     (D = 34,6·Γ·A₀·T·E/d², với 34,6 = 24/ln2).
+// Hiệu lực: nguồn điểm, không chắn, một thành phần thải trừ. Sai ở d < 0,3 m
+// (bệnh nhân không còn là điểm, beta 606 keV không nằm trong Γ) và với bệnh
+// nhân đã cắt tuyến giáp (thải nhanh hơn nhiều so với T_sh = 80 ngày).
+---
+
+<figure class="demo" data-demo="i-131-chu-ky-ban-ra-hieu-dung">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Khoảng cách d (m) <output data-out="d"></output>
+      <input type="range" data-in="d" min="0.3" max="4" step="0.1" value="1" /></label>
+    <label>Giờ ở cạnh mỗi ngày (h) <output data-out="h"></output>
+      <input type="range" data-in="h" min="0" max="16" step="1" value="8" /></label>
+    <label>Số ngày ở cạnh bệnh nhân <output data-out="n"></output>
+      <input type="range" data-in="n" min="0" max="21" step="1" value="7" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Trên: ba đường cùng đo phần i-ốt còn lại trong tuyến giáp. Hạt nhân tự
+    phân rã (8,02 ngày) và thận thải i-ốt ra ngoài (80 ngày) là hai lối
+    thoát chạy song song, nên đường hiệu dụng là tích của hai đường kia —
+    luôn dốc hơn cả hai, 7,29 ngày.
+    Dưới: liều mà người ở cạnh bệnh nhân uống 3,7 GBq tích luỹ trong n ngày
+    đầu, so với vạch 1 mSv — giới hạn liều công chúng mỗi năm. Đường cong
+    bão hoà vì nguồn tự tắt: mấy ngày đầu gánh gần hết.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const CURVE = '#2563eb', MARK = '#dc2626', THIRD = '#f59e0b';
+  const T_PHYS = 8.02, T_BIO = 80;
+  const T_EFF = 1 / (1 / T_PHYS + 1 / T_BIO); // 7,2893 ngày
+  const GAMMA = 0.052; // µSv·m²/(MBq·h)
+  const A0 = 3700;     // MBq = 3,7 GBq
+  const TAU_H = (24 * T_EFF) / Math.LN2; // hằng số 34,6·T_hd, tính bằng giờ
+
+  const frac = (t: number, T: number) => Math.pow(2, -t / T);
+  const rate0 = (d: number) => (GAMMA * A0) / (d * d);            // µSv/h lúc t = 0
+  const dose = (d: number, h: number, n: number) =>               // µSv
+    (h / 24) * rate0(d) * TAU_H * (1 - Math.pow(2, -n / T_EFF));
+  const vi = (x: number, k: number) => x.toFixed(k).replace('.', ',');
+
+  function niceMax(v: number) {
+    const p = Math.pow(10, Math.floor(Math.log10(Math.max(v, 1e-6))));
+    for (const m of [1, 1.5, 2, 2.5, 4, 5, 7.5]) if (m * p >= v) return m * p;
+    return 10 * p;
+  }
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (k: string) => root.querySelector(`[data-in="${k}"]`) as HTMLInputElement;
+    const output = (k: string) => root.querySelector(`[data-out="${k}"]`) as HTMLOutputElement;
+
+    function draw() {
+      const d = Number(input('d').value);
+      const h = Number(input('h').value);
+      const n = Number(input('n').value);
+      output('d').textContent = vi(d, 1);
+      output('h').textContent = String(h);
+      output('n').textContent = String(n);
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.80);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+      ctx.font = '10px system-ui,sans-serif';
+
+      const padL = 48, padR = 12, W = cssW - padL - padR;
+      const aTop = 14, aBot = Math.round(cssH * 0.40);
+      const bTop = Math.round(cssH * 0.57), bBot = cssH - 24;
+
+      // ---------- Bảng trên: phần i-ốt còn lại theo thời gian ----------
+      const X1 = (t: number) => padL + (t / 30) * W;
+      const Y1 = (f: number) => aBot - f * (aBot - aTop);
+
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.3; ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(padL, aTop); ctx.lineTo(padL, aBot); ctx.lineTo(cssW - padR, aBot); ctx.stroke();
+      ctx.globalAlpha = 0.55; ctx.fillStyle = fg;
+      ctx.textAlign = 'center';
+      for (const t of [10, 20, 30]) ctx.fillText(`${t} ngày`, X1(t), aBot + 14);
+      ctx.textAlign = 'right';
+      for (const f of [0, 0.25, 0.5, 0.75, 1]) ctx.fillText(`${Math.round(f * 100)}%`, padL - 5, Y1(f) + 3);
+      ctx.globalAlpha = 1;
+
+      // vạch 50%
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.25; ctx.setLineDash([4, 4]);
+      ctx.beginPath(); ctx.moveTo(padL, Y1(0.5)); ctx.lineTo(cssW - padR, Y1(0.5)); ctx.stroke();
+      ctx.setLineDash([]); ctx.globalAlpha = 1;
+
+      const curve = (T: number, color: string, wid: number, alpha: number) => {
+        ctx.strokeStyle = color; ctx.lineWidth = wid; ctx.globalAlpha = alpha;
+        ctx.beginPath();
+        for (let i = 0; i <= 240; i++) {
+          const t = (30 * i) / 240;
+          i ? ctx.lineTo(X1(t), Y1(frac(t, T))) : ctx.moveTo(X1(t), Y1(frac(t, T)));
+        }
+        ctx.stroke(); ctx.globalAlpha = 1; ctx.lineWidth = 1;
+      };
+      curve(T_BIO, fg, 1.5, 0.45);   // chỉ thải sinh học
+      curve(T_PHYS, THIRD, 2, 1);    // chỉ phân rã hạt nhân
+      curve(T_EFF, CURVE, 2.5, 1);   // hiệu dụng
+
+      // chấm tại giao điểm 50%
+      for (const [T, c] of [[T_PHYS, THIRD], [T_EFF, CURVE]] as Array<[number, string]>) {
+        ctx.fillStyle = c;
+        ctx.beginPath(); ctx.arc(X1(T), Y1(0.5), 3.5, 0, Math.PI * 2); ctx.fill();
+      }
+      ctx.fillStyle = CURVE; ctx.textAlign = 'center';
+      ctx.fillText('7,29', X1(T_EFF) - 12, Y1(0.5) + 16);
+      ctx.fillStyle = THIRD;
+      ctx.fillText('8,02', X1(T_PHYS) + 16, Y1(0.5) - 8);
+
+      // chú giải
+      const legend: Array<[string, string, number]> = [
+        ['sinh học 80 ngày', fg, 0.78],
+        ['vật lý 8,02 ngày', THIRD, 0.60],
+        ['hiệu dụng 7,29 ngày', CURVE, 0.46],
+      ];
+      const lx = padL + W * 0.55;
+      legend.forEach(([lab, col, fy]) => {
+        ctx.strokeStyle = col; ctx.lineWidth = 2.5;
+        ctx.globalAlpha = col === fg ? 0.45 : 1;
+        ctx.beginPath(); ctx.moveTo(lx, Y1(fy)); ctx.lineTo(lx + 18, Y1(fy)); ctx.stroke();
+        ctx.globalAlpha = 1; ctx.lineWidth = 1;
+        ctx.fillStyle = fg; ctx.globalAlpha = 0.75; ctx.textAlign = 'left';
+        ctx.fillText(lab, lx + 24, Y1(fy) + 3); ctx.globalAlpha = 1;
+      });
+
+      // vạch ngày hiện tại
+      ctx.strokeStyle = MARK; ctx.globalAlpha = 0.5;
+      ctx.beginPath(); ctx.moveTo(X1(n), aTop); ctx.lineTo(X1(n), aBot); ctx.stroke();
+      ctx.globalAlpha = 1;
+      ctx.fillStyle = MARK;
+      ctx.beginPath(); ctx.arc(X1(n), Y1(frac(n, T_EFF)), 5, 0, Math.PI * 2); ctx.fill();
+
+      // ---------- Bảng dưới: liều tích luỹ của người ở cạnh ----------
+      const yMax = niceMax(Math.max(dose(d, h, 21), 1400)); // µSv
+      const X2 = (k: number) => padL + (k / 21) * W;
+      const Y2 = (v: number) => bBot - (v / yMax) * (bBot - bTop);
+
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.3;
+      ctx.beginPath(); ctx.moveTo(padL, bTop); ctx.lineTo(padL, bBot); ctx.lineTo(cssW - padR, bBot); ctx.stroke();
+      ctx.globalAlpha = 0.55; ctx.fillStyle = fg;
+      ctx.textAlign = 'center';
+      for (const k of [7, 14, 21]) ctx.fillText(`${k} ngày`, X2(k), bBot + 14);
+      ctx.textAlign = 'right';
+      for (const q of [0, 0.5, 1]) {
+        const v = yMax * q;
+        const lab = v === 0 ? '0' : `${vi(v / 1000, v >= 10000 ? 0 : 1)} mSv`;
+        ctx.fillText(lab, padL - 5, Y2(v) + 3);
+      }
+      ctx.globalAlpha = 1;
+
+      // vạch giới hạn công chúng 1 mSv
+      if (yMax >= 1000) {
+        ctx.strokeStyle = MARK; ctx.globalAlpha = 0.55; ctx.setLineDash([5, 4]);
+        ctx.beginPath(); ctx.moveTo(padL, Y2(1000)); ctx.lineTo(cssW - padR, Y2(1000)); ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.fillStyle = MARK; ctx.textAlign = 'left'; ctx.globalAlpha = 0.85;
+        ctx.fillText('1 mSv — giới hạn công chúng mỗi năm', padL + 6, Y2(1000) - 5);
+        ctx.globalAlpha = 1;
+      }
+
+      ctx.strokeStyle = CURVE; ctx.lineWidth = 2.5; ctx.beginPath();
+      for (let i = 0; i <= 210; i++) {
+        const k = (21 * i) / 210;
+        i ? ctx.lineTo(X2(k), Y2(dose(d, h, k))) : ctx.moveTo(X2(k), Y2(dose(d, h, k)));
+      }
+      ctx.stroke(); ctx.lineWidth = 1;
+
+      const D = dose(d, h, n);
+      ctx.fillStyle = MARK;
+      ctx.beginPath(); ctx.arc(X2(n), Y2(D), 5, 0, Math.PI * 2); ctx.fill();
+
+      // ---------- Dòng số ----------
+      const r0 = rate0(d), rn = r0 * frac(n, T_EFF);
+      const verdict = D <= 1000
+        ? ' · <b>nằm dưới giới hạn 1 mSv</b>'
+        : ` · <b>gấp ${vi(D / 1000, 1)} lần giới hạn 1 mSv</b>`;
+      const near = d < 0.3001 ? ' · <b>dưới 0,3 m luật 1/d² hết hiệu lực</b>' : '';
+      readout.innerHTML =
+        `Ngay sau liều 3,7 GBq: <b>${vi(r0, 1)} µSv/h</b> ở ${vi(d, 1)} m — sau ${n} ngày còn ` +
+        `${vi(rn, 1)} µSv/h. Ở cạnh ${h} h mỗi ngày trong ${n} ngày → <b>${vi(D / 1000, 2)} mSv</b>` +
+        verdict + near;
+    }
+
+    root.querySelectorAll('input').forEach((el) => el.addEventListener('input', draw));
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="i-131-chu-ky-ban-ra-hieu-dung"]').forEach(setup);
+</script>

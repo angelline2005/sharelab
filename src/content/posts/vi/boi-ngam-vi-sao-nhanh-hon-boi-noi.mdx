@@ -1,0 +1,93 @@
+---
+title: "Lặn sâu 60 cm, lực cản sóng chỉ còn 5% — nên luật bơi phải cấm lặn quá 15 mét"
+seoTitle: "Lực cản tạo sóng khi bơi: vì sao bơi ngầm nhanh hơn bơi trên mặt"
+description: "Sóng do cơ thể tạo ra tắt theo hàm mũ khi lặn xuống: ở tốc độ 2 m/s, chìm 60 cm là lực cản tạo sóng chỉ còn 5,3%. Đó là lý do vận động viên đạp chân cá heo dưới nước nhanh hơn bơi nổi — và là lý do liên đoàn phải ra luật giới hạn 15 mét."
+pubDate: 2026-09-02
+tags: ["vat-ly", "chat-luu", "song", "javascript"]
+translationId: "boi-ngam-vi-sao-nhanh-hon-boi-noi"
+---
+
+import SwimWaveDrag from '../../../components/demos/SwimWaveDrag.astro';
+
+Vận động viên bơi ngửa rời bục xuất phát, biến mất dưới nước, rồi nhô lên
+ở mét thứ mười lăm — trước cả người bên cạnh đã quạt tay suốt quãng đó.
+Dưới nước tối, không thở được, tay gần như bó lại, vậy mà vẫn nhanh hơn.
+Thứ họ bỏ lại phía trên là một khoản chi phí bạn không nhìn thấy:
+
+<SwimWaveDrag />
+
+## Bơi nổi là kéo theo một đoàn sóng suốt cả đường bơi
+
+Đẩy thân người đi ngay dưới mặt thoáng, bạn không chỉ vẹt nước sang hai
+bên: bạn nâng nước lên rồi thả xuống, và nước trả lại bằng sóng. Đoàn sóng
+đó mang năng lượng đi mất vĩnh viễn — công suất bạn bơm vào nó gọi là **lực
+cản tạo sóng**. Nó không giống ma sát chút nào: không phải nước níu da bạn,
+mà là bạn phải nuôi một cái đuôi sóng chạy suốt sau lưng.
+
+Đuôi sóng ấy không tuỳ hứng. Muốn đứng yên so với cơ thể, nó phải chạy
+đúng bằng tốc độ bơi, mà sóng nước sâu đi nhanh bao nhiêu thì bước sóng
+phải dài bấy nhiêu bình phương:
+
+```
+λ = 2π·v²/g        k = 2π/λ = g/v²
+```
+
+Ở v = 2 m/s — cự ly 100 m tự do đỉnh cao mất chừng 46,4 giây, trung bình
+2,16 m/s — bước sóng ra **2,56 m**, dài hơn một thân người rưỡi.
+
+## Mỗi 14 xentimét, đoàn sóng lại yếu đi một nửa
+
+Sóng mặt nước là hiện tượng bám mặt: nước bên dưới chỉ lắc lư theo với
+biên độ tắt dần theo hàm mũ, thang độ sâu đúng bằng 1/k. Lật ngược quan hệ
+đó lại thì được điều đáng giá: một vật chìm ở độ sâu d chỉ khuấy nổi mặt
+nước bằng e^(−k·d) so với khi nó nằm ngay trên mặt. Lực cản tỉ lệ với bình
+phương biên độ sóng, nên số mũ nhân đôi:
+
+```
+F_sóng(d) / F_sóng(mặt) = e^(−2·g·d / v²)
+```
+
+Ở 2 m/s, k = 2,45 rad/m, và cứ chìm thêm **14 cm** là lực cản tạo sóng
+giảm một nửa — cùng lối đếm với [chu kỳ bán
+rã](/vi/posts/chu-ky-ban-ra-khong-hat-nao-biet-tuoi-minh), chỉ thay trục
+thời gian bằng trục độ sâu. Chìm 20 cm còn 37%, chìm 30 cm còn 23%, và
+**chìm 60 cm còn 5,3%**. Kéo thanh trượt độ sâu trong demo mà nhìn mặt
+nước: đoàn sóng không nhỏ dần cho có lệ, nó biến mất.
+
+Tạo sóng dĩ nhiên không phải toàn bộ lực cản, nhưng ở tốc độ thi đấu nó là
+phần lớn nhất. Cứ cho nó chiếm một nửa khi bơi nổi: chìm 60 cm, tổng lực
+cản còn **53%** — gần một nửa bị xoá chỉ bằng động tác hạ người xuống hai
+gang tay. Đó là lý do vật lý của cú đạp chân cá heo dưới nước, động tác mà
+kình ngư hiện đại tập kỹ chẳng kém kiểu bơi chính thức của mình.
+
+## Vì sao liên đoàn buộc phải kẻ vạch 15 mét
+
+Nếu bơi ngầm nhanh hơn bơi nổi thì cự ly 100 m bơi ngửa sẽ tự chuyển thể
+thành cuộc thi nín thở — và đã có lúc nó suýt chuyển thật. Luật hiện hành
+giới hạn phần bơi ngầm sau mỗi lần xuất phát và mỗi lần quay vòng ở **15
+mét**: quá vạch đó mà đầu chưa nhô lên là bị loại.
+
+Con số 15 không phải cho đẹp: trong bể ngắn 25 m, cự ly 100 m có bốn lần
+đạp tường, tức tối đa **60 trên 100 mét** hợp pháp nằm dưới nước. Bỏ vạch
+ấy đi thì phần bơi chỉ còn là chỗ ngoi lên lấy hơi.
+
+## Trường hợp biên: bơi càng nhanh, cái hố càng phải đào sâu
+
+Trong số mũ có v² nằm dưới mẫu, nên độ sâu cần thiết tăng theo bình phương
+tốc độ. Ở 2 m/s cần 61 cm để xuống dưới ngưỡng 5%; ở **2,5 m/s cần 95 cm**
+— gấp đúng 1,56 lần, hệt như bước sóng. Nghịch lý phũ phàng: người bơi
+nhanh nhất lại là người khó trốn khỏi sóng của chính mình nhất.
+
+Và đúng ở đó công thức đụng trần. Ở 2,5 m/s bước sóng đã dài 4,0 m, mà
+[sóng chỉ còn là sóng nước sâu khi đáy sâu hơn nửa bước
+sóng](/vi/posts/toc-do-song-than-va-can-bac-hai-cua-do-sau) — tức 2,0 m,
+đúng bằng độ sâu tối thiểu của một bể thi đấu. Bể nông hơn thì sóng bắt
+đầu "chạm đáy", và cả công thức lẫn chiến thuật lặn phải viết lại.
+
+Đầu kia của hàm mũ còn thẳng thừng hơn. Hàm e^(−2k·d) tiến về 0, nhưng lực
+cản thì không: nó chỉ xoá phần tạo sóng. Ma sát da và lực cản hình dạng —
+[phần việc của độ nhớt](/vi/posts/so-reynolds-vi-khuan-boi-trong-mat-ong) —
+chẳng quan tâm bạn đang ở độ sâu nào. Lặn 5 mét không nhanh hơn lặn 1 mét
+chút nào, chỉ tốn thêm oxy cho quãng xuống và quãng lên. Vạch 15 mét là
+luật do người viết ra và người sửa được; cái trần thật của tốc độ bơi thì
+do độ nhớt của nước đặt, và nó không nhận đơn khiếu nại.

@@ -1,0 +1,213 @@
+---
+// Ứng suất trên tiết diện eo của một cột đá vôi bị sóng khoét ngang mực triều.
+// Nén lệch tâm (Navier), tiết diện tròn đặc:
+//   sigma(x) = N/A + N·e·x/I,  A = pi·d^2/4,  I = pi·d^4/64,  bán kính lõi kern = d/8.
+// N = trọng lượng phần cột phía trên eo = rho·g·(pi·D^2/4)·H, D = 4,0 m, rho = 2 600 kg/m³.
+// Đá vôi đặc: nén ~60 MPa, kéo ~5 MPa (tỉ số 1/12 là mức điển hình của đá cacbonat).
+// Công thức Navier chỉ đúng khi tiết diện còn dính liền: một khi ứng suất kéo vượt 5 MPa,
+// mép nứt và tiết diện làm việc thu hẹp — demo báo ngưỡng đó thay vì vẽ tiếp.
+// Với e ≥ d/2 (đường trọng lực rơi ra ngoài eo) bài toán không còn là ứng suất mà là lật.
+---
+
+<figure class="demo" data-demo="cot-da-ha-long-va-cai-eo-29-cm">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Chiều cao cột trên eo H (m) <output data-out="h"></output>
+      <input type="range" data-in="h" min="5" max="30" step="0.5" value="12" /></label>
+    <label>Đường kính eo d (m) <output data-out="d"></output>
+      <input type="range" data-in="d" min="0.25" max="3" step="0.01" value="1.5" /></label>
+    <label>Lệch tâm trọng tâm e (m) <output data-out="e"></output>
+      <input type="range" data-in="e" min="0" max="0.8" step="0.01" value="0.35" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Trái: cột đá vôi đường kính 4,0 m bị nước lợ và hà biển khoét thành eo đúng ở
+    mực triều; chấm cam là trọng tâm, đường đứt là phương trọng lực rơi xuống eo.
+    Phải: ứng suất trên tiết diện eo — hình thang, nén (xanh) một bên, kéo (đỏ) bên
+    kia. Dải cam giữa eo là lõi kern rộng ±d/8: trọng lực còn rơi trong dải đó thì
+    cả tiết diện chịu nén; ra khỏi dải là mép đối diện bắt đầu bị kéo.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const CURVE = '#2563eb', MARK = '#dc2626', KERN = '#f59e0b';
+  const RHO = 2600, G = 9.81, D = 4.0, SC = 60, ST = 5; // MPa
+  const vi = (x: number, n = 2) => x.toFixed(n).replace('.', ',');
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (k: string) => root.querySelector(`[data-in="${k}"]`) as HTMLInputElement;
+    const output = (k: string) => root.querySelector(`[data-out="${k}"]`) as HTMLOutputElement;
+
+    function draw() {
+      const H = Number(input('h').value);
+      const d = Number(input('d').value);
+      const e = Number(input('e').value);
+      output('h').textContent = vi(H, 1);
+      output('d').textContent = vi(d, 2);
+      output('e').textContent = vi(e, 2);
+
+      const mass = RHO * (Math.PI * D * D / 4) * H;      // kg
+      const N = mass * G;                                 // N
+      const A = Math.PI * d * d / 4;                      // m²
+      const I = Math.PI * Math.pow(d, 4) / 64;            // m⁴
+      const s0 = N / A / 1e6;                             // MPa, nén trung bình
+      const bend = N * e * (d / 2) / I / 1e6;             // MPa, biên độ uốn
+      const sMax = s0 + bend, sMin = s0 - bend;
+      const kern = d / 8;
+      const dMin = Math.sqrt(4 * (N / (SC * 1e6)) / Math.PI); // eo tối thiểu nếu nén đúng tâm
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.56);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+      ctx.font = '10px system-ui,sans-serif';
+
+      /* ---------- Trái: mặt cắt đứng cột đá ---------- */
+      const Lw = Math.round(cssW * 0.40);
+      const cx = Lw / 2, top = 14, bot = cssH - 22;
+      const world = H + 4;                                 // 4 m chân đế dưới eo
+      const s = Math.min((Lw * 0.80) / D, (bot - top) / world);
+      const yNeck = bot - 4 * s;
+      const PX = (m: number) => cx + m * s;
+      const PY = (m: number) => yNeck - m * s;
+
+      // nước
+      ctx.fillStyle = CURVE; ctx.globalAlpha = 0.12;
+      ctx.fillRect(0, yNeck, Lw, bot + 22 - yNeck);
+      ctx.globalAlpha = 1;
+
+      // thân đá: bán kính theo độ cao
+      const rAt = (y: number) => {
+        const t = Math.min(1, Math.abs(y) / 1.3);
+        return d / 2 + (D / 2 - d / 2) * t * t;
+      };
+      ctx.fillStyle = fg; ctx.globalAlpha = 0.30; ctx.beginPath();
+      for (let y = H; y >= -4; y -= 0.1) { const x = PX(rAt(y)); y === H ? ctx.moveTo(x, PY(y)) : ctx.lineTo(x, PY(y)); }
+      for (let y = -4; y <= H; y += 0.1) ctx.lineTo(PX(-rAt(y)), PY(y));
+      ctx.closePath(); ctx.fill(); ctx.globalAlpha = 1;
+
+      // lõi kern trên tiết diện eo
+      ctx.strokeStyle = KERN; ctx.lineWidth = 3.5;
+      ctx.beginPath(); ctx.moveTo(PX(-kern), PY(0)); ctx.lineTo(PX(kern), PY(0)); ctx.stroke();
+      ctx.lineWidth = 1;
+
+      // trọng tâm và phương trọng lực
+      const inKern = e <= kern;
+      ctx.strokeStyle = inKern ? KERN : MARK; ctx.setLineDash([4, 3]);
+      ctx.beginPath(); ctx.moveTo(PX(e), PY(H / 2)); ctx.lineTo(PX(e), PY(-0.6)); ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillStyle = KERN;
+      ctx.beginPath(); ctx.arc(PX(e), PY(H / 2), 5, 0, Math.PI * 2); ctx.fill();
+
+      ctx.fillStyle = fg; ctx.globalAlpha = 0.6; ctx.textAlign = 'center';
+      ctx.fillText('mực triều', cx, yNeck + 14);
+      ctx.fillText(`${vi(mass / 1000, 0)} tấn`, PX(e), PY(H / 2) - 10);
+      ctx.textAlign = 'left';
+      ctx.fillText(`eo ${vi(d)} m`, PX(D / 2) + 2, PY(0.35));
+      ctx.globalAlpha = 1;
+
+      /* ---------- Phải: biểu đồ ứng suất trên tiết diện eo ---------- */
+      const padL = Lw + 42, padR = 12, padT = 16, padB = 26;
+      const span = Math.max(8, Math.ceil(Math.max(Math.abs(sMax), Math.abs(sMin), 6) * 1.15));
+      const X = (x: number) => padL + ((x + d / 2) / d) * (cssW - padL - padR);
+      const Y = (v: number) => padT + ((span - v) / (2 * span)) * (cssH - padT - padB);
+
+      // trục
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.3;
+      ctx.beginPath(); ctx.moveTo(padL, padT); ctx.lineTo(padL, cssH - padB); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(padL, Y(0)); ctx.lineTo(cssW - padR, Y(0)); ctx.stroke();
+      ctx.globalAlpha = 0.55; ctx.fillStyle = fg;
+      const step = span >= 40 ? 20 : span >= 16 ? 8 : 4;
+      ctx.textAlign = 'right';
+      for (let v = -span + (span % step); v <= span; v += step) {
+        if (Math.abs(v) > span) continue;
+        ctx.fillText(`${v > 0 ? '+' : v < 0 ? '−' : ''}${Math.abs(v)}`, padL - 4, Y(v) + 3);
+      }
+      ctx.textAlign = 'center';
+      ctx.fillText(`−${vi(d / 2)} m`, X(-d / 2) + 14, cssH - padB + 14);
+      ctx.fillText(`+${vi(d / 2)} m`, X(d / 2) - 14, cssH - padB + 14);
+      ctx.textAlign = 'left';
+      ctx.fillText('MPa: + nén / − kéo', padL + 4, padT + 8);
+      ctx.globalAlpha = 1;
+
+      // ngưỡng kéo −5 MPa
+      ctx.strokeStyle = MARK; ctx.globalAlpha = 0.55; ctx.setLineDash([5, 4]);
+      ctx.beginPath(); ctx.moveTo(padL, Y(-ST)); ctx.lineTo(cssW - padR, Y(-ST)); ctx.stroke();
+      ctx.setLineDash([]); ctx.globalAlpha = 0.75; ctx.fillStyle = MARK; ctx.textAlign = 'right';
+      ctx.fillText('đá vôi đứt kéo ở −5', cssW - padR, Y(-ST) - 4);
+      ctx.globalAlpha = 1;
+
+      // hình thang ứng suất: nén xanh, kéo đỏ
+      const sig = (x: number) => s0 + (N * e * x / I) / 1e6;
+      const xz = bend > 1e-9 ? -s0 * (d / 2) / bend : Infinity; // điểm ứng suất bằng 0
+      const segs: Array<[number, number]> = [];
+      if (!isFinite(xz) || xz <= -d / 2 || xz >= d / 2) segs.push([-d / 2, d / 2]);
+      else { segs.push([-d / 2, xz]); segs.push([xz, d / 2]); }
+      for (const [a, b] of segs) {
+        const mid = sig((a + b) / 2);
+        ctx.fillStyle = mid >= 0 ? CURVE : MARK; ctx.globalAlpha = 0.28;
+        ctx.beginPath();
+        ctx.moveTo(X(a), Y(0)); ctx.lineTo(X(a), Y(Math.max(-span, Math.min(span, sig(a)))));
+        ctx.lineTo(X(b), Y(Math.max(-span, Math.min(span, sig(b))))); ctx.lineTo(X(b), Y(0));
+        ctx.closePath(); ctx.fill(); ctx.globalAlpha = 1;
+      }
+      ctx.strokeStyle = CURVE; ctx.lineWidth = 2; ctx.beginPath();
+      ctx.moveTo(X(-d / 2), Y(Math.max(-span, Math.min(span, sMin))));
+      ctx.lineTo(X(d / 2), Y(Math.max(-span, Math.min(span, sMax))));
+      ctx.stroke(); ctx.lineWidth = 1;
+
+      // thước vị trí ngang tiết diện eo: dải kern (cam) và điểm đặt trọng lực (đỏ)
+      const ruler = cssH - padB;
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.3;
+      ctx.beginPath(); ctx.moveTo(X(-d / 2), ruler); ctx.lineTo(X(d / 2), ruler); ctx.stroke();
+      ctx.globalAlpha = 1;
+      ctx.strokeStyle = KERN; ctx.lineWidth = 3.5;
+      ctx.beginPath(); ctx.moveTo(X(-kern), ruler); ctx.lineTo(X(kern), ruler); ctx.stroke();
+      ctx.lineWidth = 1;
+      ctx.fillStyle = MARK;
+      ctx.beginPath(); ctx.arc(X(Math.min(e, d / 2)), ruler, 3.5, 0, Math.PI * 2); ctx.fill();
+
+      // hai đầu mút
+      ctx.fillStyle = MARK;
+      for (const [x, v] of [[-d / 2, sMin], [d / 2, sMax]] as Array<[number, number]>) {
+        if (Math.abs(v) <= span) { ctx.beginPath(); ctx.arc(X(x), Y(v), 4.5, 0, Math.PI * 2); ctx.fill(); }
+      }
+
+      /* ---------- Readout ---------- */
+      let flag: string;
+      if (e >= d / 2) flag = ' · <b>trọng lực rơi ra ngoài eo — cột lật, hết bài toán ứng suất</b>';
+      else if (sMax >= SC) flag = ' · <b>mép nén vượt 60 MPa — đá vụn ngay tại eo</b>';
+      else if (sMin >= 0) flag = ` · toàn tiết diện còn chịu nén, an toàn <b>${vi(SC / sMax, 1)} lần</b>`;
+      else if (-sMin >= ST) flag = ' · <b>mép kéo vượt 5 MPa — đá nứt và cột gãy ngang eo</b>';
+      else flag = ` · mép đã chịu kéo <b>${vi(-sMin)} MPa</b>, còn ${vi(ST / -sMin, 1)} lần dự trữ`;
+
+      readout.innerHTML =
+        `Cột ${vi(H, 1)} m, đường kính ${vi(D, 1)} m → <b>${vi(mass / 1000, 0)} tấn</b>` +
+        ` · eo ${vi(d)} m: nén trung bình <b>${vi(s0)} MPa</b>` +
+        ` (nếu nén đúng tâm chỉ cần eo ${vi(dMin * 100, 0)} cm)` +
+        ` · lệch tâm ${vi(e)} m so với lõi kern ±${vi(kern, kern < 0.1 ? 3 : 2)} m${flag}`;
+    }
+
+    root.querySelectorAll('input').forEach((el) => el.addEventListener('input', draw));
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="cot-da-ha-long-va-cai-eo-29-cm"]').forEach(setup);
+</script>

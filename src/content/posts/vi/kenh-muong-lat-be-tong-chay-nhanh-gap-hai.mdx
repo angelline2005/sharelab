@@ -1,0 +1,92 @@
+---
+title: "Cùng con mương, cùng độ dốc: lát bê tông thì nước chảy nhanh gấp 2,3 lần"
+seoTitle: "Công thức Manning: tính vận tốc và lưu lượng dòng chảy trong kênh mương"
+description: "Hệ số nhám của kênh đất là 0,030, của bê tông là 0,013 — tỉ số 2,31 chính là tỉ số vận tốc. Con mương đáy 2 m, nước sâu 0,6 m, dốc 0,5‰ chảy 0,42 m/s khi là kênh đất và 0,97 m/s khi lát bê tông: 654 L/s thành 1 510 L/s, không đào thêm một xẻng đất."
+pubDate: 2026-09-02
+tags: ["vat-ly", "chat-luu", "javascript"]
+translationId: "kenh-muong-lat-be-tong-chay-nhanh-gap-hai"
+---
+
+import ManningChannel from '../../../components/demos/ManningChannel.astro';
+
+Đoạn mương đất và đoạn mương đã lát bê tông nối liền nhau giữa cánh đồng:
+cùng một dòng nước, cùng một độ dốc. Bên lát, cọng rác trôi vèo qua; bên
+đất, nó lững thững. Không ai bơm thêm gì — chỉ có bề mặt lòng kênh đổi:
+
+<ManningChannel />
+
+## Hệ số nhám đứng một mình dưới mẫu số
+
+Công thức mọi kỹ sư thuỷ lợi dùng cho con mương ấy vỏn vẹn bốn ký hiệu:
+
+```
+v = (1/n)·R^(2/3)·√S     với R = A/P và Q = v·A
+```
+
+v là vận tốc trung bình (m/s), S độ dốc đáy, A diện tích ướt, P chu vi
+ướt, n là hệ số nhám của bề mặt lòng kênh. Để ý chỗ n đứng: dưới mẫu, một
+mình, không mũ mão gì. **Đổi bề mặt là đổi vận tốc theo đúng tỉ lệ
+nghịch.** Bảng tra kinh điển: kênh đất mới đào n = 0,030, bê tông xoa
+phẳng n = 0,013 — tỉ số **2,31**, và đó đã là toàn bộ câu chuyện.
+
+Con mương nội đồng cỡ phổ thông: đáy 2 m, mái dốc 1:1, nước sâu 0,6 m,
+đáy tụt 0,5‰ — nửa mét mỗi kilômét. A = 1,56 m², P = 3,70 m, R = 0,422 m.
+Là kênh đất: 0,42 m/s, **654 L/s**. Lát bê tông, không đào thêm xẻng đất
+nào: 0,97 m/s, **1 510 L/s** — 5 434 m³ mỗi giờ thay cho 2 355.
+
+## Nước chở bằng diện tích, mất sức vì chu vi
+
+R = A/P là chỗ hình học chen vào. A là phần nước được chở đi, P là đường
+viền nơi nước cọ vào lòng kênh và trả lại năng lượng — nên R chính là
+**bề dày nước trên mỗi mét mép cọ xát**. Cùng một khối đất đào vẫn ra hai
+con mương khác hẳn: giữ A = 1,56 m², dốc 0,5‰, đào hẹp mà sâu (đáy 0,5 m,
+nước 1,02 m) cho R = 0,459 m và 692 L/s; đào rộng mà bẹt (đáy 8 m, nước
+0,19 m) cho R = 0,183 m và 374 L/s — **1,85 lần chênh lệch cho cùng số mét
+khối đất bốc đi**. Dòng càng bẹt thì R càng tụt về đúng bằng chiều sâu.
+
+## Vì sao lát rẻ hơn đào, và rẻ hơn dốc
+
+Muốn con mương đất kia cũng chở 1 510 L/s, bạn còn hai đường. Dốc hơn: v
+chỉ tỉ lệ với √S nên phải nhân độ dốc lên 2,31² = **5,33 lần**, tức 2,66 m
+tụt mỗi kilômét thay vì 0,5 m — trên đồng bằng châu thổ, chênh cao ấy
+không có. Hoặc đào to hơn: giữ đáy 2 m thì phải dâng nước lên 0,96 m, mặt
+cắt phồng từ 1,56 lên 2,84 m² — **1,82 lần khối đất**, kèm bờ cao hơn và
+ruộng mất thêm.
+
+Lớp bê tông thì mua đứt đúng một con số, kèm khoản công thức không ghi:
+đất thịt bắt đầu xói ở 0,6–0,8 m/s, nên 0,97 m/s là tốc độ không con mương
+đất nào được phép chảy.
+
+## Một công thức đo được, không phải suy ra được
+
+Manning không suy từ Newton ra. Gauckler viết dạng này năm 1867, Robert
+Manning trình bày trước Hội Kỹ sư Ireland năm 1889; cả hai đều khớp số mũ
+vào dữ liệu đo. Manning không ưa đứa con của mình: nó **không thuần nhất
+thứ nguyên** — muốn v ra m/s thì 1/n buộc phải mang đơn vị m^(1/3) trên
+giây, tức n không phải một con số trần, và 2/3 chỉ là số mũ khớp đẹp nhất
+với dữ liệu thời đó.
+
+Bù lại nó đúng bền bỉ trong vùng đã đo: dòng đều, chảy rối hoàn toàn nhám.
+Con mương trên có Re = 4Rv/ν ≈ **7×10⁵**, [sâu trong vùng chảy
+rối](/vi/posts/so-reynolds-vi-khuan-boi-trong-mat-ong). Thuỷ lực thực dụng
+đầy hằng số kiểu ấy — [hệ số co dòng
+0,62](/vi/posts/torricelli-thoi-gian-can-cua-mot-be-nuoc) của Torricelli
+là một — và đó thường là phần trung thực nhất của công thức.
+
+## Trường hợp biên: n là trạng thái, không phải vật liệu
+
+Bảng tra ghi "kênh đất: 0,030" như thể đó là thuộc tính của đất. Vẫn con
+mương ấy sau ba tháng mưa, cỏ kín mái và bèo phủ mặt, n leo lên 0,060:
+lưu lượng rơi từ 654 xuống **327 L/s, mất đúng một nửa** — vào đúng tháng
+lũ về. Cắt cỏ nạo mương trước mùa mưa không phải chuyện gọn gàng, đó là
+chuyện dung tích.
+
+Đẩy tiếp thì công thức tự thú. Cho chiều sâu tiến về 0 thì R → 0 và v → 0:
+Manning bảo màng nước mỏng đứng yên — sai hiển nhiên, nước vẫn chảy trên
+kính chắn gió. Dưới R = 10 cm số mũ 2/3 hết khớp, và để tính nước tràn
+trên mặt ruộng người ta phải dùng n tới 0,4, gấp hơn mười lần giá trị "vật
+liệu" của chính lớp đất ấy — n lúc đó không còn đo độ nhám mà là cái sọt
+đựng mọi thứ công thức bỏ quên. Ở đầu kia, lát bê tông rồi hạ dốc xuống
+10‰, vận tốc vọt lên 4,33 m/s và [số
+Froude](/vi/posts/so-froude-khi-nao-di-bo-thanh-chay) vượt 1: dòng sang
+chế độ xiết, mặt nước dựng thành bước nhảy thuỷ lực và thôi phẳng để mà đo.

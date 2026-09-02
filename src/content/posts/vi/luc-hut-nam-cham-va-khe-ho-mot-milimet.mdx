@@ -1,0 +1,91 @@
+---
+title: "Nhích nam châm ra một centimet, lực hút rơi 88 lần"
+seoTitle: "Lực hút nam châm vĩnh cửu lên thép: công thức F = B²A/2µ₀ và ảnh hưởng của khe hở"
+description: "Nam châm neodymium N42 cỡ Ø10 × 10 mm giữ được 4,67 kg khi chạm sát thép. Chèn một tờ giấy 0,1 mm: còn 4,09 kg. Ốp lưng điện thoại 1,5 mm: còn một phần ba. Nới ra 1 cm: còn 53 gam. Lực đi theo bình phương từ trường trong khe — và từ trường tắt theo bán kính nam châm chứ không theo bề dày."
+pubDate: 2026-09-02
+tags: ["vat-ly", "dien-tu", "co-hoc", "javascript"]
+translationId: "luc-hut-nam-cham-va-khe-ho-mot-milimet"
+---
+
+import MagnetAirGap from '../../../components/demos/MagnetAirGap.astro';
+
+Viên nam châm bé bằng viên kẹo dính vào cánh cửa sắt chặt tới mức bạn phải
+lựa mép mà lẩy nó ra. Kẹp một tấm danh thiếp vào giữa: vẫn dính, nhưng lỏng
+thấy rõ. Cả hai cảm giác đều đúng, và khoảng cách giữa chúng là ba phần mười
+milimét:
+
+<MagnetAirGap />
+
+## Lực không nằm trong nam châm, nó nằm trong khe hở
+
+Chỗ nam châm bám vào thép, thứ đang kéo hai vật lại không phải "chất nam
+châm" nào cả — đó là **áp suất của từ trường trong khe**:
+
+```
+F = B² · A / (2µ₀)
+```
+
+B là từ trường trong khe, A là diện tích mặt cực. Chỉ có thế, và hãy nhìn kỹ
+số mũ: từ trường tụt một nửa thì lực tụt **bốn lần**.
+
+B lại bị chặn trên bởi từ dư của vật liệu. Neodymium loại N42 có Br = 1,32 T,
+nên áp suất hút không bao giờ vượt Br²/2µ₀ = 693 kPa, tức **7,07 kg trên mỗi
+centimét vuông** mặt cực. Viên trong demo là trụ Ø10 × 10 mm, mặt cực 0,785
+cm²: kịch trần là 5,55 kg. Nó đạt 4,67 kg — 84% trần.
+
+Lên gần trần được như thế là nhờ một chi tiết dễ bỏ sót: **một nửa từ trường
+trong khe do chính tấm thép sinh ra**. Thép dẫn từ tốt gấp hàng nghìn lần
+không khí, nên với nam châm nó là tấm gương — bên kia mặt phân cách hiện lên
+một "nam châm ảnh" hút ngược lại, và 1,18 T trong khe là tổng của hai nguồn.
+Thép chỉ đóng vai ấy chừng nào còn từ tính: [nung qua điểm
+Curie](/vi/posts/noi-com-dien-va-nam-cham-quen-tu-tinh), nó thành một miếng
+nhôm.
+
+## Tờ giấy ăn mất 12%, một milimét ăn mất quá nửa
+
+Kéo thanh trượt khe hở và đọc dọc xuống. Một **tờ giấy in 0,1 mm** — thứ đầu
+ngón tay bạn không cảm thấy — lấy đi 12% lực, còn 4,09 kg. Tấm danh thiếp
+0,3 mm: còn 3,40 kg. Ở **0,8 mm lực rụng đúng một nửa**. Chiếc ốp lưng điện
+thoại 1,5 mm chỉ để lại một phần ba: 1,50 kg. Khe 5 mm: 275 gam. Và ở **1 cm:
+53 gam — bằng 1/88 lúc chạm sát**.
+
+Sự tàn nhẫn ấy là hai phép nhân chồng nhau: rời mặt thép, từ thông loe ngay
+ra hai bên nên phần xuyên đúng vào mặt cực rụng rất nhanh — rồi số mũ 2 nhân
+đôi mức thiệt hại. Miếng đệm cao su chống xước bán kèm giá đỡ điện thoại nam
+châm dày 1 mm, và nó lấy đi hơn một nửa lực giữ; chiếc ốp nhựa lấy nốt phần
+lớn chỗ còn lại. Còn [miếng nam châm dẻo in hình trên tủ
+lạnh](/vi/posts/nam-cham-deo-tu-lanh-chi-dinh-mot-mat) tắt dữ hơn nữa — mất
+nửa lực chỉ sau 0,22 mm, vì các sọc cực xen kẽ bên trong triệt tiêu nhau
+ngay khi vừa rời mặt thép.
+
+## Muốn khoẻ ở xa thì phải bè ra, không phải dày lên
+
+Lấy viên Ø10 × 10 mm và **dày gấp đôi** thành Ø10 × 20 mm: lực chạm sát chỉ
+nhích từ 4,67 lên 5,28 kg — thêm 13% cho gấp đôi vật liệu, vì B trong khe đã
+ở 89% của Br rồi, mà Br là trần tuyệt đối. Bây giờ **rộng gấp đôi** thay vì
+dày gấp đôi — Ø20 × 10 mm: chạm sát lên 13,97 kg, gấp ba; còn ở khe 1 cm,
+viên bé giữ 53 gam mà viên to giữ 581 gam, **gấp mười một lần**. Bán kính
+không chỉ nhân diện tích lên bốn, nó còn là chiều dài đặc trưng của sự loe từ
+thông: khe làm mất nửa lực dịch từ 0,80 mm lên 1,32 mm. Muốn hút xuyên qua
+một lớp vỏ dày, người ta không đặt nam châm dài hơn — người ta đặt nam châm
+to ngang hơn.
+
+## Trường hợp biên: cánh cửa tủ lạnh quá mỏng để chở hết từ thông
+
+Mọi con số trên đều giả định tấm thép dày vô hạn, tha hồ nhận từ thông. Cửa
+tủ lạnh thì không. Viên Ø10 × 10 mm đẩy vào mặt thép chừng 93 µWb; đến mép
+nam châm, chỗ từ thông phải chảy ngang ra trong lớp tôn, tiết diện chỉ còn
+vành 2πR × 0,5 mm = 15,7 mm² — muốn tải hết, tôn phải mang **5,9 T**. Thép
+bão hoà ở 1,5–2 T, nên cửa tủ chở nổi chừng một phần ba, phần dư tràn ra
+ngoài và lực thực thấp hơn hẳn công thức; phải dày **2 mm** mới đủ. Vì thế
+mẹo cũ vẫn đúng: úp thêm một miếng thép dày sau lưng chỗ dán, nam châm khoẻ
+lên thấy rõ.
+
+Đi về phía kia thì công thức không sai, nó biến mất. Đặt nam châm lên nhôm
+hay lên inox 304 của bồn rửa — mặt kim loại sáng loáng y hệt thép, độ từ thẩm
+bằng đúng không khí, không có nam châm ảnh, **lực bằng 0** ở mọi khe hở. Trừ
+đúng một khoảnh khắc: lúc bạn cho nó trượt. Từ thông quét qua tấm kim loại
+[sinh ra dòng điện xoáy chống lại chính chuyển động
+ấy](/vi/posts/cam-ung-faraday-hai-cu-hich-nguoc-dau) — lực cản tỉ lệ với tốc
+độ, không phải với khoảng cách. Thả viên nam châm dọc một ống nhôm, nó rơi
+chậm như trong mật ong, dù ống nhôm chẳng hút nó lấy một gam.

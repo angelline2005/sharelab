@@ -1,0 +1,95 @@
+---
+title: "Sau lưng chiếc A380 là hai cơn lốc 28,5 m/s — và chúng sống thêm ba phút"
+seoTitle: "Xoáy đầu cánh: vì sao máy bay phải giữ khoảng cách khi hạ cánh"
+description: "Cái cánh đang nâng 560 tấn để lại một lưu số 895 m²/s, cho gió quay 28,5 m/s ở cách lõi 5 mét — đúng vạch bão cấp 11, treo lơ lửng giữa trời và không nhìn thấy được. Chúng không tan: đài không lưu giãn máy bay ra ba phút để chờ hai cái xoáy ấy chìm 409 mét."
+pubDate: 2026-09-02
+tags: ["vat-ly", "chat-luu", "co-hoc", "javascript"]
+translationId: "xoay-dau-canh-va-khoang-cach-ba-phut"
+---
+
+import WakeTurbulence from '../../../components/demos/WakeTurbulence.astro';
+
+Chiếc A380 rời đường băng, và đài kiểm soát bắt chiếc máy bay nhỏ phía sau
+chờ thêm ba phút. Bầu trời trước mặt trống trơn. Thứ nó đang đợi trôi đi là
+hai vật vô hình:
+
+<WakeTurbulence />
+
+## Cánh nâng được là vì nó để lại một cái xoáy
+
+Không có cách nào nâng 560 tấn mà không trả giá bằng một cái xoáy. Lực nâng
+đòi dòng khí trên mặt cánh chạy nhanh hơn dòng dưới bụng ([chênh tốc là
+chênh áp](/vi/posts/nguyen-ly-bernoulli-nhanh-hon-la-loang-ap-hon)), và
+chênh lệch ấy gói vào một đại lượng: **lưu số Γ**, lượng "vòng quay" mà
+cánh lôi theo mình — đúng thứ bẻ cong [quả bóng
+xoáy](/vi/posts/cu-sut-xoay-magnus-lech-ba-met). Nó không được phép biến
+mất ở đầu cánh: nó trượt khỏi mép, cuộn thành hai ống xoáy ngược chiều sau
+lưng máy bay.
+
+Với phân bố lực nâng hình elip:
+
+```
+Γ = 4W / (π · ρ · V · b)
+```
+
+W là trọng lượng, ρ mật độ không khí, V tốc độ, b sải cánh. A380 560 tấn
+rời đất ở 80 m/s, sải 79,75 m: **Γ = 895 m²/s**, hai lõi cách nhau
+b₀ = πb/4 = 62,6 m. Gió quay quanh mỗi lõi bằng Γ/(2πr) — cách lõi 5 mét:
+**28,5 m/s**, đúng vạch mở đầu bão cấp 11 trên thang Beaufort; ở mép lõi
+bán kính 3,2 m, đỉnh lên 44,7 m/s, trên cấp 12.
+
+## Nặng gấp bảy lần, xoáy chỉ mạnh gấp ba
+
+Nhìn kỹ mẫu số: Γ tỉ lệ nghịch với cả tốc độ lẫn **sải cánh**. Kéo thanh
+trượt từ B737-800 sang A380 ở cùng 80 m/s — khối lượng nhân 7,1 lần mà lưu
+số chỉ nhân 3,2, từ 281 lên 895 m²/s — cánh dài 79,75 m trải cùng một lực
+nâng ra cột khí rộng gấp đôi. Còn V ở mẫu số cho biết *khi nào* phải sợ:
+đẩy tốc độ chiếc A380 ấy lên 250 m/s như lúc hành trình, Γ tụt còn
+286 m²/s — ngang một chiếc 737 vừa rời đường băng. Xoáy dữ nhất đúng lúc
+máy bay nặng nhất, chậm nhất và thấp nhất: cất và hạ cánh, cũng là lúc máy
+bay khác đứng gần nó nhất.
+
+## Chúng không tan — chúng chìm
+
+Mỗi lõi nằm trong dòng khí của lõi kia, nên cả cặp tự lái mình đi xuống với
+tốc độ Γ/(2π·b₀) = **2,27 m/s**. Đó mới là logic thật của quy tắc giãn
+cách: đài không lưu không chờ xoáy tan, mà chờ nó **rơi khỏi đường bay** —
+ba phút là 409 mét, sâu hơn hẳn quỹ đạo tiếp cận của chiếc sau. Tiêu chuẩn
+radar 8 hải lý (14,8 km) sau một chiếc A380 chính là 185 giây bay ở 80 m/s,
+cùng con số ấy đọc theo cách khác.
+
+Đừng trông vào độ nhớt — số Reynolds của cái xoáy này là Γ/ν ≈ 6·10⁷, ở cỡ
+ấy ma sát nhớt [gần như không tồn
+tại](/vi/posts/so-reynolds-vi-khuan-boi-trong-mat-ong). Thứ giết nó là bất
+ổn định hình học: hai ống song song uốn sóng với bước sóng 8,6 lần khoảng
+cách hai lõi — với A380 là 539 m — rồi chạm nhau, khép thành chuỗi vòng
+khói. Mất một tới ba phút: ba phút của đài không lưu là con số đo được,
+không phải con số cho chắc.
+
+## Vì sao nạn nhân luôn là máy bay nhỏ
+
+Demo đặt một máy bay hạng nhẹ sải 11 m, bay 45 m/s, đầu cánh gần cách lõi
+5 m. Hai đầu cánh của nó ngâm trong hai tốc độ dựng đứng rất khác nhau;
+chênh lệch ấy là **mô men lật gấp 2,6 lần** mô men tối đa mà cánh liệng tạo
+được (hệ số `C_l` cỡ 0,06), và phải ra tới 10,5 m mới tụt về đúng 1,0 lần.
+Trong khoảng ấy, phi công đánh hết cần lái vẫn bị lật — không phải vì phản
+xạ chậm mà vì đã hết quyền điều khiển. Chiếc sải rộng thì ngược lại: 60 mét
+cánh vắt ngang cả vùng gió bốc lên lẫn vùng gió dìm xuống, hai nửa triệt
+tiêu gần hết: cùng một cái xoáy, với người này là cú xóc, với người kia là
+tai nạn.
+
+## Trường hợp biên: khi cái xoáy không chịu đi
+
+Γ/(2πr) cho tốc độ vô hạn tại r = 0, điều dĩ nhiên không xảy ra: trong lõi,
+không khí quay như một khối rắn nên v tỉ lệ *thuận* với r — đỉnh hữu hạn
+44,7 m/s, nằm ngay ở mép lõi. Chỗ vô lý của công thức lại đúng là chỗ nó tự
+chữa.
+
+Rắc rối thật nằm sát mặt đất: chìm tới độ cao cỡ b₀/2 ≈ 31 m thì mặt đất
+chặn, và cả chuyển động ấy đổi sang phương ngang — mỗi lõi trườn ra một bên
+với đúng 2,27 m/s, tức 4,4 knot. Thêm cơn gió ngang nhẹ 4 knot thổi ngược
+chiều lõi phía trên gió: nó đứng yên ngay trên tim đường băng, đợi chiếc
+tiếp theo chạm bánh — còn lõi kia bị đẩy trọn sang đường băng song song.
+Gió ngang mạnh thổi bay xoáy đi thì tốt; **gió ngang nhẹ mới là ác mộng**,
+cảnh báo có trong mọi cuốn sổ tay phi công, sinh ra từ phép trừ hai vận tốc
+bằng nhau.

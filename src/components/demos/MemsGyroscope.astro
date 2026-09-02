@@ -1,0 +1,187 @@
+---
+// MEMS vibratory gyroscope, first-order model (Yazdi/Ayazi/Najafi, "Micromachined
+// inertial sensors", Proc. IEEE 86(8), 1998; Acar & Shkel, MEMS Vibratory Gyroscopes, 2009):
+//   drive velocity   v = A·2πf
+//   Coriolis force   F = 2·m·v·Ω
+//   sense stiffness  k = m·(2πf)²   (sense spring taken equal to the drive spring)
+//   deflection       x = F/k = A·Ω/(π·f)      — the proof mass cancels out
+// Quasi-static (off-resonance) sense response: no mode-matching gain Q_sense, so x is a
+// LOWER bound for real mode-matched devices. Valid while x ≪ A (small signal), i.e. Ω ≪ π·f,
+// which holds across the whole slider range (Ω ≤ 10 rad/s vs π·f ≥ 15 700 rad/s).
+// Proof mass fixed at m = 2,0 ng only to report the force; it does not affect the deflection.
+---
+
+<figure class="demo" data-demo="con-quay-trong-dien-thoai-khong-he-quay">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Tốc độ quay Ω (rad/s) <output data-out="om"></output>
+      <input type="range" data-in="om" min="0.05" max="10" step="0.05" value="1" /></label>
+    <label>Tần số rung dẫn động (kHz) <output data-out="f"></output>
+      <input type="range" data-in="f" min="5" max="40" step="0.5" value="20" /></label>
+    <label>Biên độ rung A (µm) <output data-out="a"></output>
+      <input type="range" data-in="a" min="1" max="10" step="0.1" value="5" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Nhìn từ trên xuống con chip. Khối silic treo trên lò xo bị đẩy rung qua
+    lại theo trục ngang (mũi tên xanh) — đó là toàn bộ "chuyển động quay" của
+    cái con quay này. Khi bạn xoay điện thoại, lực Coriolis đẩy khối lệch
+    theo phương vuông góc, về phía một trong hai điện cực tụ (vàng): khung
+    đứt đỏ là vị trí lệch, phóng đại theo hệ số ghi rõ vì thật ra nó nhỏ hơn
+    một nguyên tử. Đồ thị dưới: độ lệch tỉ lệ thẳng với tốc độ quay.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const CURVE = '#2563eb', MARK = '#dc2626', ELEC = '#f59e0b';
+  const MASS = 2.0e-12;          // kg — 2,0 nanogram
+  const OM_MAX = 10;             // rad/s, right edge of the chart
+  const fmt = (n: number, d: number) => n.toFixed(d).replace('.', ',');
+
+  // Coriolis deflection in metres: x = A·Ω/(π·f). A in m, f in Hz, Ω in rad/s.
+  const defl = (A: number, f: number, Om: number) => (A * Om) / (Math.PI * f);
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (k: string) => root.querySelector(`[data-in="${k}"]`) as HTMLInputElement;
+    const output = (k: string) => root.querySelector(`[data-out="${k}"]`) as HTMLOutputElement;
+
+    function draw() {
+      const Om = Number(input('om').value);
+      const fk = Number(input('f').value);
+      const Aum = Number(input('a').value);
+      output('om').textContent = `${fmt(Om, 2)} = ${fmt(Om * 180 / Math.PI, 0)} °/s`;
+      output('f').textContent = fmt(fk, 1);
+      output('a').textContent = fmt(Aum, 1);
+
+      const f = fk * 1000, A = Aum * 1e-6;
+      const w = 2 * Math.PI * f;
+      const v = A * w;                       // drive velocity amplitude, m/s
+      const k = MASS * w * w;                // sense stiffness, N/m
+      const F = 2 * MASS * v * Om;           // Coriolis force, N
+      const x = F / k;                       // deflection, m (= defl(A, f, Om))
+      const ratio = A / x;                   // = π·f/Ω
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.70);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+      ctx.font = '10px system-ui,sans-serif';
+
+      /* ---------- top half: the chip seen from above ---------- */
+      const s = Math.max(0.55, Math.min(1, cssW / 700));   // schematic scale
+      const chipH = Math.round(cssH * 0.46);
+      const cx = cssW / 2;
+      const cy = Math.max(chipH * 0.5, 83 * s + 15);
+      const mW = 108 * s, mH = 60 * s, gap = 46 * s, bar = 7 * s;
+
+      // magnification of the deflection: the power of ten nearest to 12·s pixels,
+      // so the dashed frame always lands between ~3,8·s and ~38·s px — inside the gap.
+      const pxA = 46 * s;                                  // pixels standing for amplitude A
+      const base = pxA / ratio;
+      const M = Math.pow(10, Math.round(Math.log10((12 * s) / base)));
+      const redPx = base * M;
+
+      // fixed capacitor electrodes above and below the mass
+      ctx.fillStyle = ELEC;
+      ctx.fillRect(cx - 76 * s, cy - mH / 2 - gap - bar, 152 * s, bar);
+      ctx.fillRect(cx - 76 * s, cy + mH / 2 + gap, 152 * s, bar);
+      ctx.fillStyle = fg; ctx.globalAlpha = 0.6; ctx.textAlign = 'center';
+      ctx.fillText('điện cực tụ cố định', cx, cy - mH / 2 - gap - bar - 5);
+      ctx.globalAlpha = 1;
+
+      // proof mass at rest
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.55; ctx.lineWidth = 1.5;
+      ctx.strokeRect(cx - mW / 2, cy - mH / 2, mW, mH);
+      ctx.fillStyle = fg; ctx.globalAlpha = 0.07;
+      ctx.fillRect(cx - mW / 2, cy - mH / 2, mW, mH);
+      ctx.globalAlpha = 1; ctx.lineWidth = 1;
+
+      // deflected position, dashed and magnified
+      ctx.strokeStyle = MARK; ctx.setLineDash([4, 3]); ctx.lineWidth = 1.5;
+      ctx.strokeRect(cx - mW / 2, cy - mH / 2 + redPx, mW, mH);
+      ctx.setLineDash([]); ctx.lineWidth = 1;
+
+      // drive motion: horizontal double arrow through the mass
+      ctx.strokeStyle = CURVE; ctx.fillStyle = CURVE; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.moveTo(cx - pxA, cy); ctx.lineTo(cx + pxA, cy); ctx.stroke();
+      for (const dir of [-1, 1]) {
+        ctx.beginPath();
+        ctx.moveTo(cx + dir * pxA, cy);
+        ctx.lineTo(cx + dir * (pxA - 8), cy - 4);
+        ctx.lineTo(cx + dir * (pxA - 8), cy + 4);
+        ctx.closePath(); ctx.fill();
+      }
+      ctx.lineWidth = 1; ctx.textAlign = 'center';
+      ctx.fillText(`rung ${fmt(fk, 1)} kHz · A = ${fmt(Aum, 1)} µm`, cx, cy - mH / 2 - 6);
+
+      // Coriolis deflection: vertical arrow just outside the mass
+      const ax = cx + mW / 2 + 14 * s;
+      ctx.strokeStyle = MARK; ctx.fillStyle = MARK; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.moveTo(ax, cy - 4); ctx.lineTo(ax, cy + redPx + 4); ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(ax, cy + redPx + 9);
+      ctx.lineTo(ax - 4, cy + redPx + 1);
+      ctx.lineTo(ax + 4, cy + redPx + 1);
+      ctx.closePath(); ctx.fill();
+      ctx.lineWidth = 1; ctx.textAlign = 'left';
+      ctx.fillText('lệch Coriolis', ax + 7, cy - 1);
+      ctx.fillText(`×${M.toLocaleString('vi-VN')}`, ax + 7, cy + 11);
+      ctx.textAlign = 'right'; ctx.fillStyle = fg; ctx.globalAlpha = 0.6;
+      ctx.fillText('khối rung', cx - mW / 2 - 7, cy + 4);
+      ctx.globalAlpha = 1;
+
+      /* ---------- bottom half: deflection vs rotation rate ---------- */
+      const padL = 54, padR = 12, padT = chipH + 14, padB = 26;
+      const yMax = defl(A, f, OM_MAX) * 1e12;            // pm at the right edge
+      const X = (o: number) => padL + (o / OM_MAX) * (cssW - padL - padR);
+      const Y = (p: number) => cssH - padB - (p / yMax) * (cssH - padB - padT);
+
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.3;
+      ctx.beginPath();
+      ctx.moveTo(padL, padT); ctx.lineTo(padL, cssH - padB); ctx.lineTo(cssW - padR, cssH - padB);
+      ctx.stroke();
+      ctx.globalAlpha = 0.55; ctx.fillStyle = fg; ctx.textAlign = 'center';
+      for (const o of [2, 4, 6, 8, 10]) ctx.fillText(`${o} rad/s`, X(o), cssH - padB + 14);
+      ctx.textAlign = 'right';
+      for (const q of [0.25, 0.5, 0.75, 1]) ctx.fillText(`${fmt(yMax * q, 0)} pm`, padL - 4, Y(yMax * q) + 3);
+      ctx.globalAlpha = 1;
+
+      ctx.strokeStyle = CURVE; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.moveTo(X(0), Y(0)); ctx.lineTo(X(OM_MAX), Y(yMax)); ctx.stroke();
+      ctx.lineWidth = 1;
+
+      ctx.fillStyle = MARK;
+      ctx.beginPath(); ctx.arc(X(Om), Y(x * 1e12), 6, 0, Math.PI * 2); ctx.fill();
+
+      const nm = x * 1e9 >= 0.001 ? ` = ${fmt(x * 1e9, 3)} nm` : '';
+      const note = x * 1e12 < 106 ? ' · <b>nhỏ hơn đường kính nguyên tử hydro (106 pm)</b>' : '';
+      readout.innerHTML =
+        `m = 2,0 ng, rung ${fmt(fk, 1)} kHz biên độ ${fmt(Aum, 1)} µm → v = <b>${fmt(v, 3)} m/s</b>` +
+        ` · quay ${fmt(Om, 2)} rad/s (${fmt(Om * 180 / Math.PI, 1)} °/s) → F = <b>${fmt(F * 1e12, 2)} pN</b>,` +
+        ` lệch <b>${fmt(x * 1e12, 1)} pm</b>${nm}${note}` +
+        ` · nhỏ hơn biên độ rung ${Math.round(ratio).toLocaleString('vi-VN')} lần`;
+    }
+
+    root.querySelectorAll('input').forEach((el) => el.addEventListener('input', draw));
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="con-quay-trong-dien-thoai-khong-he-quay"]').forEach(setup);
+</script>

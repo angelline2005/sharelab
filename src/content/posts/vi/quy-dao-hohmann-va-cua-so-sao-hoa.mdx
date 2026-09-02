@@ -1,0 +1,88 @@
+---
+title: "Bay tới Sao Hoả: lỡ cửa sổ ba tuần là phải chờ thêm 26 tháng"
+seoTitle: "Quỹ đạo Hohmann và cửa sổ phóng lên Sao Hoả: 259 ngày, 44,3°"
+description: "Đường rẻ nhất tới Sao Hoả là nửa ellipse chạm cả hai quỹ đạo, mất 259 ngày và hai lần đốt tổng cộng 5,59 km/s. Muốn tới đúng chỗ hẹn, lúc rời Trái Đất hành tinh đỏ phải đang ở trước ta đúng 44,3° — hình dạng chỉ lặp lại mỗi 25,6 tháng."
+pubDate: 2026-09-02
+tags: ["vat-ly", "thien-van", "co-hoc", "javascript"]
+translationId: "quy-dao-hohmann-va-cua-so-sao-hoa"
+---
+
+import HohmannWindow from '../../../components/demos/HohmannWindow.astro';
+
+Tàu thăm dò rời bệ phóng ở Florida, nhưng nó không bay về phía Sao Hoả. Nó
+bay về phía chỗ Sao Hoả **sẽ** có mặt tám tháng rưỡi sau — và nếu hôm ấy
+hành tinh đỏ không đứng đúng chỗ trên bầu trời, cả chuyến bay phải hoãn hơn
+hai năm:
+
+<HohmannWindow />
+
+## Nửa ellipse chạm cả hai vòng tròn
+
+Walter Hohmann, kỹ sư xây dựng ở Essen, tính ra năm 1925 — 32 năm trước
+Sputnik — rằng đường nối hai quỹ đạo tròn tốn ít nhiên liệu nhất là một
+ellipse chạm cả hai: cận nhật nằm trên quỹ đạo Trái Đất, viễn nhật nằm trên
+quỹ đạo Sao Hoả. Bán trục lớn của nó chỉ là trung bình cộng, và [chu kỳ
+Kepler](/vi/posts/dinh-luat-kepler-iii-va-duong-thang-cua-he-mat-troi) của
+chính ellipse ấy — 1,417 năm — cho thời gian bay là đúng một nửa:
+
+```
+a_t = (r₁ + r₂)/2 = (1 + 1,524)/2 = 1,262 AU
+t   = π·√(a_t³/GM) = 259 ngày
+```
+
+Cả chuyến chỉ có **hai lần đốt**. Đang trôi cùng Trái Đất ở 29,78 km/s, bạn
+đốt thêm **2,94 km/s** cho thành 32,73 km/s — thế là đủ để rơi ra tới tận
+quỹ đạo Sao Hoả. Rồi tắt máy 259 ngày. Tới nơi, tàu chỉ còn **21,48 km/s**,
+tức *chậm hơn* Sao Hoả đang chạy 24,13 km/s: leo cao trong giếng hấp dẫn thì
+phải chậm lại, đúng cái [nghịch lý khiến phi công muốn đuổi kịp lại phải
+phanh](/vi/posts/nghich-ly-quy-dao-duoi-kip-bang-cach-phanh). Lần đốt thứ
+hai, **2,65 km/s**, chỉ để bắt kịp hành tinh đang tiến tới từ phía sau lưng.
+Tổng hoá đơn: 5,59 km/s.
+
+## Bạn nhắm vào chỗ hẹn, không nhắm vào hành tinh
+
+Điểm tới của nửa ellipse nằm đối diện điểm phóng — lệch đúng 180° quanh Mặt
+Trời. Nhưng trong 259 ngày ấy Sao Hoả chậm chạp chỉ kịp quét **135,7°** trên
+quỹ đạo của nó (Trái Đất trong cùng thời gian quét 255,0°). Vậy vào giây bạn
+rời bệ, hành tinh đỏ phải đang đứng ở 180 − 135,7 = **44,3° phía trước Trái
+Đất** — không hề "thẳng hàng" như trực giác mách. Nhắm vào chính Sao Hoả lúc
+phóng là cách chắc chắn nhất để bay tới một chỗ trống.
+
+## Cửa sổ 25,6 tháng và cái giá của việc lỡ hẹn
+
+Dáng đứng 44,3° ấy không phải muốn có là có. Trái Đất chạy nhanh hơn nên mỗi
+vòng lại ăn thêm của Sao Hoả một khoảng góc, và phải mất trọn chu kỳ giao
+hội `1/S = 1/T₁ − 1/T₂` — **25,6 tháng** — hai hành tinh mới trở lại đúng
+hình dạng cũ.
+
+Trên thực tế cửa sổ rộng khoảng ba tuần: chịu tốn thêm Δv thì lệch vài độ
+vẫn tới được. Perseverance rời bệ ngày 30/7/2020, hạn chót cửa sổ là 15/8.
+Qua đó là hết — lần kế tiếp năm 2022. Vì thế lịch của một chương trình Sao
+Hoả không do cơ quan vũ trụ đặt mà do cơ học thiên thể đặt: một chiếc dù hãm
+giao trễ sáu tuần không làm chậm dự án sáu tuần, nó làm chậm 26 tháng.
+
+Cũng vì thế mà không tàu nào bay Hohmann thuần: Curiosity mất 254 ngày,
+Perseverance chỉ 203. Họ mua thời gian bằng nhiên liệu — thứ [đắt theo hàm
+logarit](/vi/posts/phuong-trinh-ten-lua-che-do-doc-tai-cua-logarit), nên
+mua được rất ít.
+
+## Trường hợp biên: khi Hohmann thôi là đường rẻ nhất
+
+Kéo thanh trượt về 0,723 AU và mọi dấu lộn ngược: đi Sao Kim thì góc pha là
+**−54,0°** — phải phóng khi Sao Kim còn ở *sau* Trái Đất, và cả hai lần đốt
+đều ngược chiều bay để hạ quỹ đạo thay vì nâng. Cửa sổ Sao Kim lặp mỗi 19,2
+tháng, thưa hơn Sao Hoả.
+
+Kéo ra phía ngoài thì công thức tự phản bội mình. Khi tỉ số bán kính vượt
+**11,94**, một đường *ba* lần đốt vòng qua tận vô cực lại tốn ít Δv hơn nửa
+ellipse Hohmann: lên thật cao thì tàu bò chậm tới mức bẻ hướng gần như miễn
+phí. Với Sao Hải Vương (tỉ số 30,1) Hohmann hết tối ưu — dù ngoài đời chẳng
+ai bay đường nào trong hai đường ấy: người ta đi [mượn tốc độ của hành tinh
+khác](/vi/posts/tro-luc-hap-dan-muon-toc-do-hanh-tinh).
+
+Và vết nứt lớn nhất nằm ngay tại Sao Hoả: quỹ đạo nó không tròn, e = 0,0934,
+cận nhật 1,381 AU còn viễn nhật 1,666 AU. Cửa sổ nào có điểm hẹn rơi vào
+phía gần Mặt Trời thì Δv tối thiểu chỉ 4,41 km/s; cửa sổ xui thì 6,60 —
+**gấp rưỡi**. Cùng đích đến, cùng công thức, hai chuyến chênh nhau nguyên
+một tầng tên lửa, chỉ vì hành tinh đỏ vẽ ellipse chứ không chịu vẽ vòng
+tròn.

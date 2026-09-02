@@ -1,0 +1,96 @@
+---
+title: "Mùa hè Bắc bán cầu dài hơn mùa đông 4,66 ngày — Kepler biết vì sao"
+seoTitle: "Độ dài bốn mùa không bằng nhau: định luật diện tích Kepler II"
+description: "Bốn mùa chiếm bốn cung 90° bằng nhau trên hoàng đạo, nhưng xuân dài 92,75 ngày còn đông chỉ 88,99. Quỹ đạo Trái Đất tròn tới 139 phần triệu — cái lệch nằm ở chỗ Mặt Trời ngồi lệch tâm 2,50 triệu km, và định luật diện tích khuếch đại nó lên 92 lần."
+pubDate: 2026-09-02
+tags: ["vat-ly", "thien-van", "javascript"]
+translationId: "bon-mua-dai-ngan-khac-nhau-luat-dien-tich"
+---
+
+import SeasonDurations from '../../../components/demos/SeasonDurations.astro';
+
+Bốn mùa chia một năm làm bốn — nghe như một phép chia thuần tuý. Nhưng đếm
+lịch từ xuân phân tới hạ chí rồi tới thu phân, bạn sẽ thấy mùa hè Bắc bán
+cầu dài hơn mùa đông gần năm ngày trọn. Không ai cộng ngày cho mùa hè cả:
+Trái Đất chỉ đi chậm lại đúng chỗ.
+
+<SeasonDurations />
+
+## Bốn cung 90° bằng nhau, bốn múi diện tích khác nhau
+
+Ranh giới bốn mùa không do khí hậu đặt mà do hình học: hai phân điểm và hai
+chí điểm cắt vòng hoàng đạo thành bốn cung **chính xác 90°**. Đi đều trên
+một vòng tròn thì mỗi mùa dài gọn gàng P/4 = **91,31 ngày**.
+
+Trái Đất không đi đều. Định luật thứ hai của Kepler: đoạn nối Mặt Trời với
+Trái Đất **quét những diện tích bằng nhau trong những khoảng thời gian bằng
+nhau** — nên thời gian đi hết một cung tỉ lệ với *diện tích* múi quạt, chứ
+không tỉ lệ với góc. Bốn múi cùng 90°, múi nào ở xa Mặt Trời thì béo hơn và
+ngốn nhiều ngày hơn.
+
+Đầu tháng Giêng Trái Đất qua cận nhật — đúng giữa mùa đông Bắc bán cầu — và
+chạy nhanh nhất: **30,29 km/s**, so với 29,29 km/s ở viễn nhật đầu tháng
+Bảy; cùng cơ chế [kéo sao chổi Halley từ 54 km/s xuống chậm hơn máy
+bay](/vi/posts/sao-choi-halley-luc-phong-54-km-moi-giay-luc-bo-di-bo). Hai
+mùa lạnh của bán cầu Bắc rơi trọn vào đoạn chạy nhanh ấy nên bị rút ngắn:
+**xuân 92,75 · hạ 93,65 · thu 89,84 · đông 88,99
+ngày**. Hạ trừ đông: **4,66 ngày** — mùa hè dài hơn mùa đông 5,2%.
+
+## Một quỹ đạo tròn tới 139 phần triệu
+
+Chỗ dễ hiểu sai nằm ở chữ "elip". Với e = 0,0167, tỉ số hai bán trục quỹ
+đạo Trái Đất là b/a = 0,999861: vẽ nó lên giấy A4, **hình lệch khỏi vòng
+tròn 139 phần triệu** — mỏng hơn nét bút chì. Cái lệch thật không nằm ở
+hình dạng đường cong mà ở chỗ ngồi của Mặt Trời, lệch khỏi tâm elip **2,50
+triệu km**: Trái Đất khi thì cách 147,10 triệu km, khi thì 152,10.
+
+Điểm đáng nhớ: độ dẹt của hình phụ thuộc **e²**, còn độ lệch thời gian phụ
+thuộc **e** — bậc nhất. Kéo thanh e trong demo lên gấp đôi: chênh lệch mùa
+gấp đúng đôi, còn hình vẽ chỉ méo thêm gấp bốn của gần-như-không. Ở Trái
+Đất, 0,0139% méo hình đẻ ra 1,28% lệch thời gian — **khuếch đại 92 lần**.
+
+```
+độ dài mùa = (M₂ − M₁)/2π × P
+M = E − e·sin E,  tan(E/2) = √((1−e)/(1+e))·tan(ν/2)
+```
+
+Phép thử duy nhất của mô hình: ở mọi giá trị e, bốn độ dài luôn cộng đúng
+bằng chu kỳ — tất cả chỉ là chia lại một vòng quay.
+
+## Mùa đông Bắc bán cầu: ngắn nhất, gần Mặt Trời nhất, vẫn lạnh nhất
+
+Cận nhật rơi vào tháng Một nghĩa là bán cầu Bắc ăn nắng mạnh hơn **6,9%**
+đúng vào mùa đông của nó, lại còn qua mùa đông nhanh nhất trong bốn mùa. Cả
+hai đều đẩy về phía ấm, và cả hai đều thua [cái trục nghiêng
+23,4°](/vi/posts/vi-sao-mua-dong-lanh-du-trai-dat-gan-mat-troi-hon) — thứ
+quyết định mùa bằng góc chiếu chứ không bằng khoảng cách. Nhưng e nhỏ không
+im lặng hẳn: nó giữ Mặt Trời ở nửa bắc thiên cầu lâu hơn nửa nam **7,57
+ngày** mỗi năm, và là một trong hai thủ phạm [kéo giữa trưa trôi thành hình
+số tám](/vi/posts/phuong-trinh-thoi-gian-va-hinh-so-tam).
+
+## Sao Hoả: cùng công thức, biên độ gấp mười
+
+Đặt e = 0,0934, P = 686,98 ngày, cận nhật ở kinh độ 251°: mùa xuân bắc bán
+cầu Sao Hoả dài **198,60 ngày Trái Đất**, mùa thu chỉ 146,66 — lệch **51,94
+ngày**, tức 50,55 sol. Cận nhật rơi sát chí điểm mùa hè phương nam, nên mùa
+hè nam bán cầu vừa ngắn hơn hẳn mùa hè phương bắc — 158,24 so với 183,48
+ngày — vừa được nắng mạnh hơn. Chính cửa sổ ngắn và gắt ấy là mùa của những
+**cơn bão bụi phủ kín cả hành tinh**, thứ đã bỏ đói năng lượng robot
+Opportunity năm 2018.
+
+## Trường hợp biên: 10 500 năm nữa, mùa đông là mùa dài nhất
+
+Điểm cận nhật không đứng yên: tuế sai kéo nó đi trọn một vòng so với các
+phân điểm sau khoảng **21 000 năm**, nên chỉ cần nửa chu kỳ để nó lật sang
+phía đối diện. Kéo kinh độ cận nhật từ 283° về 103°, bảng số không đổi giá
+trị mà chỉ hoán vị: đông 93,65, thu 92,75, hạ tụt còn 88,99. Mùa đông Bắc
+bán cầu thành mùa dài nhất năm — và cách đây 10 500 năm nó đã đúng như vậy.
+Đó là một chân trong bộ ba chu kỳ Milankovitch điều khiển nhịp các kỳ băng
+hà.
+
+Đẩy e đủ lớn thì hình dạng quỹ đạo thôi làm nền và bắt đầu cầm lái. Sao
+Thuỷ, e = 0,2056: chia vòng của nó thành bốn cung 90° với cận nhật nằm ngay
+ranh giới, hai cung ôm cận nhật chỉ còn **16,28 ngày** trong khi hai cung
+kia kéo dài **27,71** — tỉ lệ **1,70 lần**, thuần tuý hình học, trong khi
+trục Sao Thuỷ nghiêng vỏn vẹn 0,03°. Trục nghiêng quyết định mùa nào nóng;
+Kepler quyết định mùa nào dài.

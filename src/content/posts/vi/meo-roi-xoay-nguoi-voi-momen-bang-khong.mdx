@@ -1,0 +1,110 @@
+---
+title: "Mèo xoay 180° giữa không trung mà momen động lượng vẫn bằng 0"
+seoTitle: "Phản xạ tiếp đất của mèo: xoay người khi momen động lượng bằng không"
+description: "Không có gì để đạp, không có momen động lượng ban đầu — vậy mà con mèo vẫn xoay đủ nửa vòng. Bí quyết là thu một nửa thân lại rồi vặn: với tỉ số quán tính 4:1, mỗi nhịp lãi 54°, nên cần 3,33 nhịp cho 180° — khoảng 0,3 giây, tức độ cao tối thiểu 44 cm."
+pubDate: 2026-09-02
+tags: ["vat-ly", "co-hoc", "mo-phong", "javascript"]
+translationId: "meo-roi-xoay-nguoi-voi-momen-bang-khong"
+---
+
+import CatTwist from '../../../components/demos/CatTwist.astro';
+
+Cầm con mèo ngửa bụng, lưng chúc xuống, thả từ ngang hông — nó tiếp đất
+bằng bốn chân. Quay chậm lại mới thấy chỗ khó chịu: suốt cú rơi không có gì
+chạm vào nó. Không khí quá loãng để đạp, không ai vặn nó, và momen động
+lượng lúc rời tay bạn bằng đúng 0 — con số mà định luật bảo toàn bắt phải ở
+nguyên 0 tới lúc chạm sàn:
+
+<CatTwist />
+
+## Vật rắn thì đã thua từ đầu
+
+Trọng lực kéo vào khối tâm nên không tạo nổi momen lực quanh chính khối
+tâm, còn lực cản ở 3 m/s chỉ cỡ 1% trọng lượng và đối xứng. Vậy `L = 0`
+phải giữ nguyên suốt đường rơi. Với một **vật rắn**, momen quán tính I là
+hằng số, nên L = Iω = 0 kéo theo ω = 0 vĩnh viễn: viên gạch thả ra không tự
+xoay được một độ nào — không phải khó, mà là không thể.
+
+Nhưng L = 0 ràng buộc *tốc độ quay*, không ràng buộc *hướng*. Chẻ con mèo
+làm hai nửa quay quanh trục cột sống chung, nó chỉ đòi:
+
+```
+I_trước · Δθ_trước + I_sau · Δθ_sau = 0
+```
+
+Hai số hạng được phép lớn tuỳ ý, miễn triệt tiêu nhau — và I thôi làm hằng
+số ngay khi con vật biết co duỗi.
+
+## Thu một nửa, vặn, rồi đổi vai
+
+Mèo ép hai chân trước vào ngực: nửa trước co thành khối bán kính ~6 cm
+quanh trục. Hai chân sau duỗi thẳng ra ngoài: nửa sau thành khối bán kính
+~12 cm. Vì `I ∝ R²`, **bán kính gấp đôi là quán tính gấp bốn** — tỉ số
+r = I_duỗi/I_thu ≈ 4.
+
+Giờ nó vặn cột sống một góc α = 90° giữa hai nửa. Góc ấy không chia đôi
+45/45 mà chia *ngược* với quán tính, nửa nhẹ quay nhiều: **nửa trước +72°,
+nửa sau −18°**. Rồi mèo đổi vai — duỗi chân trước, thu chân sau, tháo vặn
+về 0. Lần này nửa trước mới là nửa nặng nên chỉ trả lại 18°, còn nửa sau ăn
+trọn 72°. Hết nhịp, hai nửa thẳng hàng trở lại, cùng đứng ở **+54°**:
+
+```
+G = α · (r − 1) / (r + 1) = 90° × 3/5 = 54°
+```
+
+Hai đường zíc-zắc trong demo là hai nửa thân thay nhau vọt lên rồi lùi lại;
+đường nét đứt đi giữa chúng là góc thân thật, leo đều 54° mỗi nhịp mà không
+giây nào cần đến một chút momen động lượng.
+
+## Ba nhịp rưỡi, và cái giá tính bằng centimet
+
+180° chia 54° ra **3,33 nhịp**. Phim tốc độ cao — từ loạt ảnh liên hoàn
+Marey chụp năm 1894 tới máy quay hôm nay — đều gói cả phản xạ trong khoảng
+0,3 s, tức mỗi nhịp ~90 ms. Rơi tự do 0,3 s là **44 cm**.
+
+| r = I_duỗi/I_thu | Lãi mỗi nhịp (α = 90°) | Nhịp cần cho 180° | Độ cao tối thiểu |
+| --- | --- | --- | --- |
+| 1,5 | 18,0° | 10,0 | 3,97 m |
+| 2 | 30,0° | 6,00 | 1,43 m |
+| 4 | 54,0° | 3,33 | 0,44 m |
+| 6 | 64,3° | 2,80 | 0,31 m |
+| 8 | 70,0° | 2,57 | 0,26 m |
+
+Cột cuối dốc đến vô lý: co chân chặt thêm chút nữa là cả bài toán độ cao
+đổi hạng. Mèo vẫn xoay kịp từ 30 cm — vỏn vẹn 0,247 s — nhưng khi ấy phải
+lãi 65,5° mỗi nhịp: vặn sâu hơn (α = 120° cho 72° mỗi nhịp) hoặc ép chân
+sát hơn nữa (r ≈ 6,4). Đúng hai núm ấy là hai slider đầu của demo, và cũng
+đúng là hai thứ duy nhất con mèo điều khiển được khi đang rơi.
+
+## Cái đuôi không làm việc đó
+
+Truyền thuyết phổ biến: mèo lái bằng đuôi. Đặt số vào là hết truyền thuyết.
+Thân mèo 3,9 kg quanh trục dọc có I ≈ 0,0070 kg·m², còn cái đuôi 100 g dài
+25 cm quay quanh cùng trục ấy chỉ được 0,0021 kg·m² — kém 3,4 lần. Muốn
+thân quay nửa vòng, đuôi phải quay **1,7 vòng** trong 0,3 giây, tức **5,6
+vòng mỗi giây**. Không con mèo nào làm nổi, còn mèo Manx không đuôi vẫn
+tiếp đất bình thường: đuôi là bánh lái tinh chỉnh, không phải động cơ. Hoá
+đơn quán tính ở đây cùng loại với [cú thu tay của vận động viên
+xoay](/vi/posts/bao-toan-momen-dong-luong-cu-xoay-khong-mien-phi) — bên kia
+I đổi làm ω đổi, bên này I đổi làm hai nửa chia nhau góc quay khác đi — và
+cùng một quyền tự do với [cú nhảy
+Fosbury](/vi/posts/nhay-cao-trong-tam-di-duoi-xa-ngang): thân đổi hình được
+thì từng bộ phận không còn bị buộc đi theo quỹ đạo của khối tâm.
+
+## Trường hợp biên: khi tỉ số quán tính bằng 1
+
+Kéo slider r về **1,0** — con mèo cứng đơ, hai nửa quán tính như nhau. Hai
+đường zíc-zắc vẫn dao động ±45°, nhưng đường nét đứt nằm bẹp ở 0: G = α ×
+0/2 = 0. Vặn một nhịp hay một nghìn nhịp, nó tiếp đất đúng tư thế lúc thả.
+Đó là định lý vật rắn viết lại bằng ngôn ngữ hình dạng, và cũng là lý do
+phi hành gia lơ lửng giữa khoang ISS không quay mặt lại được bằng cách gồng
+người: phải vung một cánh tay thành hình nón, tức chạy đúng demo này với r
+nhỉnh hơn 1, nên vung rất nhiều vòng mới đổi được một góc nhỏ.
+
+Ở đầu kia, thêm độ cao thôi không giúp nữa: qua khoảng một mét thì tư thế
+đã xong, mọi centimet tiếp theo chỉ cộng vào tốc độ chạm đất và bài toán
+chuyển hẳn sang [vận tốc tới hạn](/vi/posts/roi-tu-do-va-van-toc-toi-han).
+Con mèo cũng đổi chiến thuật đúng lúc ấy: duỗi cả bốn chân, xoè người ra —
+vừa tăng lực cản, vừa dựng sẵn bốn cái giảm xóc. Nó không phá định luật
+nào; nó chỉ nhận ra trước chúng ta rằng momen động lượng bằng 0 ràng buộc
+tốc độ quay, chứ không ràng buộc hướng quay về.

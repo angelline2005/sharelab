@@ -1,0 +1,95 @@
+---
+title: "Miếng chèn cửa không bật ra vì góc của nó nhỏ hơn 43,6°"
+seoTitle: "Nêm tự hãm: vì sao chèn cửa, rìu và trục côn không bị bắn ngược"
+description: "Đóng một cái nêm vào rồi buông tay — nó ở lại hay bật ngược? Toàn bộ câu trả lời là tan(α/2) < μ: với ma sát thép–gỗ 0,4 thì mọi nêm dưới 43,6° đều tự hãm. Nhưng nêm 15° chỉ nhân lực 3,80 lần trên giấy — có ma sát thật, con số tụt còn 0,89."
+pubDate: 2026-09-02
+tags: ["vat-ly", "co-hoc", "javascript"]
+translationId: "nem-goc-15-do-nhan-luc-38-lan"
+---
+
+import WedgeSelfLocking from '../../../components/demos/WedgeSelfLocking.astro';
+
+Đá miếng chèn vào khe cửa rồi rút chân ra: cánh cửa ba chục kilô tì lên nó cả
+buổi mà không nhúc nhích. Con dao bổ vào khúc củi cũng vậy: gỗ ép hai bên
+lưỡi mấy trăm newton mà nó không bắn ngược ra. Ranh giới giữa "ở lại" và "văng
+ra" chỉ là một bất đẳng thức, và nó không thèm hỏi bạn đã đóng mạnh cỡ nào:
+
+<WedgeSelfLocking />
+
+## Bất đẳng thức không quan tâm bạn đóng mạnh cỡ nào
+
+Vật liệu ép vuông góc vào mặt nêm một lực N. Mặt nêm nghiêng so với trục đúng
+nửa góc nêm, nên N có một thành phần dọc trục **đẩy nêm bật ngược ra**:
+N·sin(α/2). Chống lại nó chỉ có ma sát trượt dọc mặt nêm: μN·cos(α/2).
+
+```
+N·sin(α/2) < μ·N·cos(α/2)   ⇔   tan(α/2) < μ   ⇔   α < 2·arctan(μ)
+```
+
+N có mặt ở cả hai vế rồi biến mất — **kết luận không phụ thuộc lực đóng**.
+Cùng miếng chèn ấy giữ cửa gỗ 8 kg lẫn cửa chống cháy 80 kg: cửa nặng hơn ép
+mạnh hơn, ma sát cũng tăng đúng theo tỉ lệ. Còn arctan(μ) là góc ma
+sát, [đúng góc nghiêng mà một vật bắt đầu trượt trên tấm
+ván](/vi/posts/mat-phang-nghieng-va-goc-bat-dau-truot). Miếng chèn cửa một mặt
+phẳng cũng ra công thức ấy, với hai góc ma sát của hai mặt cộng lại:
+`α < φ_sàn + φ_cửa`. Thép trên gỗ, μ ≈ 0,4: ngưỡng **43,6°**. Đánh
+bóng cho μ tụt còn 0,15 thì ngưỡng rơi xuống **17,1°**.
+
+## Nhân lực 3,80 lần — nhưng chỉ trên giấy
+
+Nêm là [đòn bẩy trá hình](/vi/posts/don-bay-cho-toi-mot-diem-tua): đóng nêm
+15° sâu thêm 1 cm, hai mặt chỉ banh ra **0,263 cm**. Quãng đường ngắn đi 3,80
+lần thì lực mạnh lên đúng 3,80 lần — **nêm 15° nhân lực 3,80 lần**. Trên
+giấy. Bỏ ma sát vào bài toán:
+
+```
+lực banh / lực đóng = (1 − μ·tan(α/2)) / (2·(tan(α/2) + μ))
+```
+
+Với μ = 0,4, nêm 15° chỉ còn **0,89**: đè vào 1 000 N thì mỗi bên gỗ nhận 890
+N; chỉ nêm dưới **9,5°** mới thật sự khuếch đại được lực. Hạ μ
+về 0,15, hệ số vọt lên 1,74 — nhưng ngưỡng tự hãm khi ấy chỉ còn 17,1° và nêm
+15° đã chực bật. **Cùng một μ vừa khoá nêm lại vừa ăn hết lợi thế của nó.**
+
+## Vì sao rìu bổ củi cố tình để lưỡi tù
+
+Lưỡi rìu bổ củi mở khoảng 30°, tức hệ số nhân lực chỉ **0,67** ở μ = 0,4. Rìu
+không phải máy nhân lực mà là máy nhận động năng: đầu 2 kg vung 15 m/s mang
+**225 J**, trút hết trong vài mili giây — gỗ tách vì thớ chịu kéo
+ngang rất kém trước cú xung ấy, không vì đòn bẩy hình học.
+
+Và 30° nằm gọn dưới 43,6°, nên **rìu kẹt trong khúc củi không phải sự cố: đó
+là chính bất đẳng thức đang làm việc**. Lực rút ra bằng
+(μ − tan(α/2))/(μ + tan(α/2)) lần lực đã đóng vào — rìu bổ củi 30° tốn
+**20%**, rìu đốn cây mỏng chừng 20° tốn **39%**. Lưỡi càng mảnh càng lún sâu
+vào vùng khoá — đừng bổ củi bằng rìu đốn cây.
+
+## Côn Morse 3° giữ mũi khoan mà không cần một con ốc nào
+
+Chuôi côn Morse của mũi khoan máy chỉ mở khoảng 3°, nên ngưỡng ma sát nó đòi
+là tan(1,5°) = **0,026**. Thép trượt trên thép dính dầu vẫn còn μ ≈ 0,1, cho
+ngưỡng 11,4° — dư gần bốn lần. Chuôi côn vì thế ghì mũi khoan chịu mô-men cắt
+suốt ca làm mà không cần một sợi ren; muốn tháo phải đóng một cái nêm khác vào
+rãnh ngang để đẩy ra.
+
+Miếng chèn cửa cao 4 cm, dài 12 cm là góc arctan(4/12) = **18,4°**. Cao su
+trên gỗ có μ ≈ 0,7, góc ma sát 35° — riêng mặt cao su đã thừa gánh cả hai.
+Nhưng vì hai góc cộng lại nên phải *cả hai* mặt cùng trơn mới hỏng: chèn nhựa
+trên nền gạch vừa lau bóng, hai phía cùng về μ = 0,15, ngưỡng còn 17,1° — thấp
+hơn chính góc của nó, và nó phóng đi khi bạn vừa buông tay.
+
+## Trường hợp biên: mài nhọn đến vô cùng, lực vẫn dừng ở 1/(2μ)
+
+Cho α → 0, công thức hình học hứa hệ số nhân lực 1/(2·tan(α/2)) chạy ra vô
+cực. Công thức có ma sát thì dừng lại ở **1/(2μ)**: đúng **1,25** khi μ = 0,4,
+và 3,33 khi μ = 0,15. Ma sát đặt trần lên tham vọng của hình học — trong khi
+cùng con số μ ấy, [quấn quanh cọc
+bích](/vi/posts/day-quan-coc-mot-nguoi-giu-con-tau) lại nhân lực theo hàm mũ.
+
+Mà nêm thường thua trước khi chạm tới cái trần đó: lưỡi đủ mỏng để bén gần 0°
+sẽ oằn hoặc mẻ trước khi gỗ kịp tách — lưỡi lam dám mỏng vì nó không bao
+giờ phải banh cái gì, chỉ cắt đứt từng sợi. Và có một biên nữa nơi cả bài toán
+đổi luật: với vật liệu dẻo — bơ, đất sét, kim loại nung — nêm không tách gì
+cả, nó ép vật liệu chảy sang hai bên, và thứ quyết định không còn là ma sát
+với đường nứt mà là giới hạn chảy. Dao cắt bơ với rìu bổ củi giống nhau đúng
+mỗi hình dạng.

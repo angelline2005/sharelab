@@ -1,0 +1,210 @@
+---
+// Roche limit, fluid (deformable) form: d = 2.44·R_p·(ρ_p/ρ_s)^(1/3);
+// rigid form d = 1.26·R_p·(ρ_p/ρ_s)^(1/3), i.e. 0.516 of the fluid one.
+// Valid for a strengthless satellite much smaller than the primary and in a
+// circular orbit — the case for rubble piles and ring particles. Planet radii
+// and mean densities from NASA planetary fact sheets; orbital radii are mean
+// distances from the primary's centre. Half-plane cross-section, static redraw.
+---
+
+<figure class="demo" data-demo="gioi-han-roche-va-so-phan-cua-phobos">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Hành tinh <output data-out="p"></output>
+      <input type="range" data-in="p" min="0" max="3" step="1" value="1" /></label>
+    <label>Mật độ vệ tinh (kg/m³) <output data-out="rho"></output>
+      <input type="range" data-in="rho" min="300" max="8000" step="1" value="1876" /></label>
+    <label>Bán kính quỹ đạo (× bán kính hành tinh) <output data-out="a"></output>
+      <input type="range" data-in="a" min="1" max="12" step="0.002" value="2.766" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Mặt cắt nửa mặt phẳng, vẽ đúng tỉ lệ: đĩa xám là hành tinh, vòng nét đứt
+    đỏ là giới hạn Roche ứng với mật độ vệ tinh bạn chọn. Chấm cam là vệ tinh
+    và vành đai thật; chấm nào lọt vào trong vòng nét đứt sẽ chuyển đỏ. Chấm
+    xanh là "vệ tinh thử" bạn kéo theo thanh trượt. Đổi hành tinh sẽ tự đặt
+    lại mật độ và quỹ đạo về trường hợp tiêu biểu của nó.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const PROBE = '#2563eb', DANGER = '#dc2626', REAL = '#f59e0b';
+  const EXT = 12;                  // khung vẽ: 12 bán kính hành tinh
+  const RIGID = 1.26 / 2.44;       // giới hạn cứng = 0,516 lần giới hạn lỏng
+
+  type Planet = {
+    name: string; R: number; rho: number; kmTick: number;
+    rho0: number; a0: number;
+    bodies: Array<[string, number]>;
+    rings: Array<[number, number]>;
+  };
+
+  const PLANETS: Planet[] = [
+    {
+      name: 'Trái Đất', R: 6371, rho: 5513, kmTick: 20000, rho0: 3344, a0: 6.618,
+      bodies: [['ISS', 6791], ['địa tĩnh', 42164], ['Mặt Trăng', 384400]],
+      rings: [],
+    },
+    {
+      name: 'Sao Hoả', R: 3389.5, rho: 3934, kmTick: 10000, rho0: 1876, a0: 2.766,
+      bodies: [['Phobos', 9376], ['Deimos', 23458]],
+      rings: [],
+    },
+    {
+      name: 'Sao Thổ', R: 58232, rho: 687, kmTick: 200000, rho0: 900, a0: 2.35,
+      bodies: [['mép ngoài vành A', 136775], ['Mimas', 185539]],
+      rings: [[74658, 91975], [91975, 117507], [122340, 136775]],
+    },
+    {
+      name: 'Sao Mộc', R: 69911, rho: 1326, kmTick: 200000, rho0: 857, a0: 2.596,
+      bodies: [['Metis', 128000], ['Amalthea', 181400], ['Io', 421800]],
+      rings: [[122500, 129000]],
+    },
+  ];
+
+  const vi = (x: number, d = 0) =>
+    x.toLocaleString('vi-VN', { minimumFractionDigits: d, maximumFractionDigits: d });
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (k: string) => root.querySelector(`[data-in="${k}"]`) as HTMLInputElement;
+    const output = (k: string) => root.querySelector(`[data-out="${k}"]`) as HTMLOutputElement;
+    let lastP = Number(input('p').value);
+
+    function draw() {
+      const pi = Number(input('p').value);
+      if (pi !== lastP) {                       // đổi hành tinh → nạp lại ca tiêu biểu
+        lastP = pi;
+        input('rho').value = String(PLANETS[pi].rho0);
+        input('a').value = String(PLANETS[pi].a0);
+      }
+      const P = PLANETS[pi];
+      const rhoS = Number(input('rho').value);
+      const aR = Number(input('a').value);
+
+      const dRoche = 2.44 * P.R * Math.cbrt(P.rho / rhoS);   // km
+      const aKm = aR * P.R;
+      const ratio = aKm / dRoche;
+
+      output('p').textContent = P.name;
+      output('rho').textContent = vi(rhoS);
+      output('a').textContent = vi(aR, 3);
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.56);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+      ctx.font = '10px system-ui,sans-serif';
+
+      const padT = 14, padB = 26, padR = 8;
+      const cx = cssW / 2, cy = cssH - padB;
+      const s = Math.min((cssW / 2 - padR) / EXT, (cssH - padT - padB) / EXT);
+      const half = (r: number) => { ctx.beginPath(); ctx.arc(cx, cy, r * s, Math.PI, 2 * Math.PI); };
+
+      // Trục: vạch bán kính (phải, theo R hành tinh) và vạch km (trái).
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.3;
+      ctx.beginPath(); ctx.moveTo(cx - EXT * s, cy); ctx.lineTo(cx + EXT * s, cy); ctx.stroke();
+      ctx.globalAlpha = 0.55; ctx.fillStyle = fg; ctx.textAlign = 'center';
+      for (const k of [2, 4, 6, 8, 10, 12]) {
+        ctx.globalAlpha = 0.3;
+        ctx.beginPath(); ctx.moveTo(cx + k * s, cy); ctx.lineTo(cx + k * s, cy + 4); ctx.stroke();
+        ctx.globalAlpha = 0.55;
+        ctx.fillText(`${k} R`, cx + k * s, cy + 15);
+      }
+      for (let km = P.kmTick; km <= EXT * P.R; km += P.kmTick) {
+        const x = cx - (km / P.R) * s;
+        ctx.globalAlpha = 0.3;
+        ctx.beginPath(); ctx.moveTo(x, cy); ctx.lineTo(x, cy + 4); ctx.stroke();
+        ctx.globalAlpha = 0.55;
+        ctx.fillText(`${vi(km)} km`, x, cy + 15);
+      }
+      ctx.globalAlpha = 1;
+
+      // Hành tinh, vẽ đúng tỉ lệ.
+      ctx.fillStyle = fg; ctx.globalAlpha = 0.22; half(1); ctx.fill(); ctx.globalAlpha = 1;
+      ctx.fillStyle = fg; ctx.globalAlpha = 0.7; ctx.textAlign = 'center';
+      ctx.fillText(P.name, cx, cy - 5); ctx.globalAlpha = 1;
+
+      // Vành đai (dải cam).
+      ctx.fillStyle = REAL; ctx.globalAlpha = 0.45;
+      for (const [i0, i1] of P.rings) {
+        ctx.beginPath();
+        ctx.arc(cx, cy, (i1 / P.R) * s, Math.PI, 2 * Math.PI);
+        ctx.arc(cx, cy, (i0 / P.R) * s, 2 * Math.PI, Math.PI, true);
+        ctx.closePath(); ctx.fill();
+      }
+      ctx.globalAlpha = 1;
+
+      // Giới hạn Roche: vòng nét đứt.
+      ctx.strokeStyle = DANGER; ctx.lineWidth = 2; ctx.setLineDash([6, 5]);
+      half(dRoche / P.R); ctx.stroke();
+      ctx.setLineDash([]); ctx.lineWidth = 1;
+      if (dRoche / P.R < EXT) {
+        ctx.fillStyle = DANGER; ctx.textAlign = 'center';
+        ctx.fillText('giới hạn Roche', cx, cy - (dRoche / P.R) * s - 6);
+      }
+
+      // Vệ tinh thật: quỹ đạo mảnh + chấm ở 1,28π, nhãn về bên trái.
+      for (const [nm, km] of P.bodies) {
+        const r = km / P.R;
+        const inside = km < dRoche;
+        if (r > EXT) {
+          ctx.fillStyle = REAL; ctx.textAlign = 'right'; ctx.globalAlpha = 0.85;
+          ctx.fillText(`${nm} → ${vi(r, 1)} R`, cx + EXT * s, cy - 8);
+          ctx.globalAlpha = 1;
+          continue;
+        }
+        ctx.strokeStyle = inside ? DANGER : REAL; ctx.globalAlpha = 0.35;
+        half(r); ctx.stroke(); ctx.globalAlpha = 1;
+        const x = cx + Math.cos(1.28 * Math.PI) * r * s;
+        const y = cy + Math.sin(1.28 * Math.PI) * r * s;
+        ctx.fillStyle = inside ? DANGER : REAL;
+        ctx.beginPath(); ctx.arc(x, y, 4.5, 0, Math.PI * 2); ctx.fill();
+        ctx.textAlign = 'right'; ctx.fillText(nm, x - 7, y + 3);
+      }
+
+      // Vệ tinh thử.
+      if (aR <= EXT) {
+        ctx.strokeStyle = PROBE; ctx.globalAlpha = 0.5; half(aR); ctx.stroke(); ctx.globalAlpha = 1;
+        const x = cx + Math.cos(1.72 * Math.PI) * aR * s;
+        const y = cy + Math.sin(1.72 * Math.PI) * aR * s;
+        ctx.fillStyle = PROBE;
+        ctx.beginPath(); ctx.arc(x, y, 6, 0, Math.PI * 2); ctx.fill();
+        ctx.textAlign = 'left';
+        ctx.fillText(`${vi(ratio, 3)}× giới hạn`, x + 8, y + 3);
+      }
+
+      const regime =
+        ratio >= 1
+          ? 'ngoài giới hạn — <b>an toàn</b>, vật chất tự tụ lại thành mặt trăng'
+          : ratio >= RIGID
+            ? 'trong giới hạn lỏng — <b>đống gạch vụn thì nứt dần</b>, khối đá đặc còn trụ được'
+            : 'trong cả giới hạn cứng — <b>không sức bền nào giữ nổi</b>';
+      readout.innerHTML =
+        `${P.name} (R = ${vi(P.R)} km, ρ = ${vi(P.rho)} kg/m³) · vệ tinh ρ = ${vi(rhoS)} kg/m³ → ` +
+        `giới hạn Roche <b>${vi(dRoche)} km</b> = ${vi(dRoche / P.R, 2)} R<br />` +
+        `Quỹ đạo thử ${vi(aKm)} km = <b>${vi(ratio, 3)}×</b> giới hạn: ${regime}`;
+    }
+
+    root.querySelectorAll('input').forEach((el) => el.addEventListener('input', draw));
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="gioi-han-roche-va-so-phan-cua-phobos"]').forEach(setup);
+</script>

@@ -1,0 +1,98 @@
+---
+title: "Gương cầu lồi mở góc nhìn 2,2 lần — và đẩy chiếc xe sau ra xa đúng 2,2 lần"
+seoTitle: "Gương cầu lồi ô tô: vì sao vật trong gương gần hơn vẻ ngoài"
+description: "Gương bán kính 1 m mở tầm nhìn từ 14,3° lên 31,5°, rộng gấp 2,20 lần. Cùng hệ số ấy đẩy chiếc xe cách 10 m ra thành 22 m — hệ số mở góc và hệ số đẩy xa là một con số, đều bằng 1 + 2L/R. Dòng chữ in trên gương chính là hoá đơn."
+pubDate: 2026-09-02
+tags: ["vat-ly", "quang-hoc", "javascript"]
+translationId: "guong-cau-loi-doi-do-meo-lay-goc-nhin"
+---
+
+import ConvexMirror from '../../../components/demos/ConvexMirror.astro';
+
+Liếc gương chiếu hậu bên phải: chiếc xe máy phía sau còn xa, thừa chỗ để
+tạt vào làn. Bạn đánh lái — và tiếng còi rú lên ngay sát hông. Gương không
+nói dối, nó chỉ đang báo giá:
+
+<ConvexMirror />
+
+## Mỗi milimét ra mép gương bẻ tia đi gấp đôi
+
+Mặt gương lồi là một mẩu mặt cầu bán kính R. Tại điểm cách tâm gương một
+đoạn x, pháp tuyến đã nghiêng đi góc x/R — mà phản xạ thì khuếch đại mọi độ
+nghiêng của gương lên **gấp đôi**: tia bật ra lệch thêm 2x/R. Cộng với góc
+x/L do chính vị trí ấy tạo ra khi nhìn từ mắt cách gương L, mép gương tại
+x = w/2 hất tầm mắt bạn ra tới:
+
+```
+FOV = w · (1/L + 2/R)      (radian; gương phẳng là R → ∞)
+```
+
+Gương cạnh cửa rộng **w = 15 cm**, mắt cách **L = 0,6 m**: nếu phẳng nó cho
+14,3°, đúng bằng bề rộng chia khoảng cách. Uốn cong bán kính **R = 1,0 m**,
+vẫn tấm kính ấy mở ra **31,5°**. Hệ số nhân không dính gì tới bề rộng gương
+— nó rút gọn thành một biểu thức trần trụi, 1 + 2L/R, ở đây bằng **2,20**.
+
+## Hoá đơn ghi đúng con số 2,20 ấy
+
+Gương lồi cho [ảnh ảo nhỏ hơn
+vật](/vi/posts/thau-kinh-hoi-tu-anh-that-anh-ao), hệ số thu nhỏ
+
+```
+m = (R/2) / (u + R/2)
+```
+
+Chiếc xe cách gương u = 10 m: m = 0,5/10,5 = 1/21, ảnh bé đi **21 lần**.
+Nhưng não bạn không đo cái ảnh trên mặt kính, nó đo **góc**. Vậy hỏi ngược:
+một chiếc xe thật phải lùi ra bao xa để trong gương phẳng cũng trông bé
+đúng chừng ấy? Đại số rút gọn đến mức khó tin:
+
+```
+u biểu kiến = u · (1 + 2L/R)
+```
+
+Đúng cái hệ số vừa nhân tầm nhìn. Chiếc xe cách 10 m **hiện ra như đang
+cách 22 m**. Mở góc 2,2 lần thì đẩy mọi thứ ra xa 2,2 lần — cùng một độ
+nghiêng pháp tuyến 2x/R, đọc theo hai hướng.
+
+## Nhỏ 21 lần, mà chỉ "xa" thêm 2,13 lần
+
+21 và 2,2 lệch nhau gần chục lần, và chỗ lệch nằm ở nơi cái ảnh đứng. Ảnh
+ảo của chiếc xe không lùi ra sau gương 10 m; nó nằm sau lớp kính đúng **47,6
+cm**. Mắt bạn cách nó 1,08 m thay vì 10,6 m — gần hơn 9,85 lần, bù lại gần
+hết 21 lần thu nhỏ. Phần dư, **2,13 lần**, mới là mức chiếc xe teo đi trên
+võng mạc.
+
+Chính chỗ đó gương lồi đánh mất chiều sâu: u chạy từ 2 m ra 30 m mà ảnh chỉ
+trườn từ 40,0 cm ra 49,2 cm sau kính — **cả 28 mét đường nén vào 9,2 cm**.
+Vật càng xa càng dồn về mặt phẳng cách kính R/2 = 50 cm, và [bộ não vốn suy
+khoảng cách từ kích thước góc](/vi/posts/mat-trang-o-chan-troi-nho-hon-that)
+không còn manh mối nào tách 20 m khỏi 30 m.
+
+## Dòng chữ in trên gương là cảnh báo về thời gian
+
+Mỹ xử lý bằng luật: FMVSS 111 buộc gương bên lái của xe con phải **phẳng**,
+chỉ bên phụ được lồi, bán kính không dưới **889 mm**, và phải khắc câu
+"Objects in mirror are closer than they appear". Châu Âu cho lồi cả hai bên
+nhưng siết độ cong — ECE R46 đòi **R ≥ 1 200 mm** cho gương ngoài chính,
+kéo hệ số xuống đúng 2,00.
+
+Đơn vị đáng sợ ở đây không phải mét mà là giây. Chiếc xe máy vượt phải với
+tốc độ tương đối 30 km/h: bạn đọc "22 m" rồi nhẩm mình còn 2,6 giây, trong
+khi nó cách 10 m, tức **1,2 giây** — ngắn hơn cả [quãng phản xạ trước khi má
+phanh kịp chạm đĩa](/vi/posts/duong-phanh-xe-may-va-toc-do-con-lai).
+
+## Trường hợp biên: R ra vô cùng, rồi co về 0,4 m
+
+Cho R → ∞ thì số hạng 2/R biến mất và 1 + 2L/R về đúng 1: công thức tự trả
+lại gương phẳng, 14,3°, khoảng cách biểu kiến bằng khoảng cách thật — đó là
+lý do gương trong xe, nhìn thẳng qua kính hậu nên chẳng cần mở góc, gần như
+luôn phẳng.
+
+Đầu kia dữ dội hơn. Miếng gương tròn dán ở góc gương chính, bán kèm lời hứa
+"xoá điểm mù", có R cỡ **0,4 m**: tầm nhìn vọt lên **57,3°**, đổi lại hệ số
+thành 4,0 — chiếc xe máy cách 30 m hiện ra bé đúng bằng một chiếc cách
+**120 m**, vỏn vẹn 0,71° chiều cao, cỡ góc mà não xếp thẳng vào ngăn "xa,
+chưa cần bận tâm". Lời hứa cũng hão nốt: gương chỉ mở góc trong mặt phẳng
+của riêng nó, còn vùng khuất sau cột B, sau vai bạn, sau chính cái khung
+gương thì không bán kính cong nào với tới. Muốn xoá điểm mù thật vẫn phải
+quay đầu — nửa giây mà chưa tấm kính cong nào trên đời thay thế nổi.

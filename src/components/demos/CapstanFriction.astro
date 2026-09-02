@@ -1,0 +1,196 @@
+---
+// Capstan / Euler–Eytelwein equation: T_tai = T_giu · e^(μ·β),
+// β = tổng góc ôm tính bằng radian (1 vòng = 2π). Nguồn: cân bằng lực trên
+// vi phân cung dθ, dN = T·dθ và dT = μ·T·dθ — bán kính cọc triệt tiêu.
+// Miền hợp lệ: dây mềm, không dãn, khối lượng bỏ qua, trên trụ cứng, ở
+// NGƯỠNG SẮP TRƯỢT (μ nghỉ). Bỏ qua độ cứng uốn của dây — sai khi đường
+// kính cọc nhỏ hơn vài lần đường kính dây. Thanh trượt: 0,25–6 vòng,
+// μ 0,10–0,60 (dây sợi trên thép/gỗ), lực ghì tay 5–100 kgf.
+---
+
+<figure class="demo" data-demo="day-quan-coc-mot-nguoi-giu-con-tau">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Số vòng quấn <output data-out="n"></output>
+      <input type="range" data-in="n" min="0.25" max="6" step="0.25" value="3" /></label>
+    <label>Hệ số ma sát dây–cọc μ <output data-out="mu"></output>
+      <input type="range" data-in="mu" min="0.10" max="0.60" step="0.01" value="0.30" /></label>
+    <label>Lực ghì tay (kgf) <output data-out="f"></output>
+      <input type="range" data-in="f" min="5" max="100" step="1" value="50" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Trái: nhìn từ trên xuống một cọc tròn, sợi dây quấn quanh — phần ôm cọc
+    đậm dần theo góc ôm, hai mũi tên là lực ở hai đầu dây. Phải: hệ số nhân
+    theo số vòng, trục tung thang logarit (đường cam là mốc μ = 0,30). Bán
+    kính cọc không có trong công thức, chỉ tổng góc ôm β và μ mới có.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const CURVE = '#2563eb', MARK = '#dc2626', REF = '#f59e0b';
+  const LOGMAX = 5;
+  const mult = (mu: number, turns: number) => Math.exp(mu * 2 * Math.PI * turns);
+  const vi = (x: number, d: number) => x.toFixed(d).replace('.', ',');
+
+  function loadLabel(kgf: number) {
+    if (kgf < 1000) return `${vi(kgf, 0)} kgf`;
+    if (kgf < 10000) return `${vi(kgf / 1000, 2)} tấn`;
+    return `${Math.round(kgf / 1000).toLocaleString('vi-VN')} tấn`;
+  }
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (k: string) => root.querySelector(`[data-in="${k}"]`) as HTMLInputElement;
+    const output = (k: string) => root.querySelector(`[data-out="${k}"]`) as HTMLOutputElement;
+
+    function arrow(x: number, y: number, dx: number, dy: number, len: number, lw: number, color: string) {
+      const ex = x + dx * len, ey = y + dy * len;
+      ctx.strokeStyle = color; ctx.lineWidth = lw;
+      ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(ex, ey); ctx.stroke();
+      const a = Math.atan2(dy, dx), h = 5 + lw;
+      ctx.beginPath(); ctx.moveTo(ex, ey);
+      ctx.lineTo(ex - h * Math.cos(a - 0.42), ey - h * Math.sin(a - 0.42));
+      ctx.lineTo(ex - h * Math.cos(a + 0.42), ey - h * Math.sin(a + 0.42));
+      ctx.closePath(); ctx.fillStyle = color; ctx.fill();
+      ctx.lineWidth = 1;
+      return [ex, ey];
+    }
+
+    function draw() {
+      const n = Number(input('n').value);
+      const mu = Number(input('mu').value);
+      const F = Number(input('f').value);
+      output('n').textContent = vi(n, 2);
+      output('mu').textContent = vi(mu, 2);
+      output('f').textContent = String(F);
+
+      const beta = 2 * Math.PI * n;
+      const k = mult(mu, n);
+      const load = F * k;
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.46);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+      ctx.font = '10px system-ui,sans-serif';
+
+      // ---- Panel trái: cọc nhìn từ trên xuống ----
+      const LW = Math.min(190, cssW * 0.36);
+      const cx = LW * 0.42, cy = cssH * 0.52;
+      const R = Math.min(LW * 0.2, cssH * 0.2);
+
+      ctx.save();
+      ctx.beginPath(); ctx.rect(0, 0, LW, cssH); ctx.clip();
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.45; ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.arc(cx, cy, R, 0, Math.PI * 2); ctx.stroke();
+      ctx.globalAlpha = 0.12; ctx.fillStyle = fg; ctx.fill();
+      ctx.globalAlpha = 0.6; ctx.fillStyle = fg; ctx.textAlign = 'center';
+      ctx.fillText('cọc, nhìn từ trên', cx, 14);
+      ctx.globalAlpha = 1; ctx.lineWidth = 1;
+
+      const A0 = -Math.PI / 2;
+      const rAt = (th: number) => R + 3.5 + (th / (2 * Math.PI)) * 2.8;
+      const px = (th: number) => cx + rAt(th) * Math.cos(A0 + th);
+      const py = (th: number) => cy + rAt(th) * Math.sin(A0 + th);
+      const STEPS = 240;
+      ctx.strokeStyle = CURVE; ctx.lineWidth = 2.6; ctx.lineCap = 'round';
+      for (let i = 0; i < STEPS; i++) {
+        const t0 = (beta * i) / STEPS, t1 = (beta * (i + 1)) / STEPS;
+        ctx.globalAlpha = 0.28 + 0.72 * (i / STEPS);
+        ctx.beginPath(); ctx.moveTo(px(t0), py(t0)); ctx.lineTo(px(t1), py(t1)); ctx.stroke();
+      }
+      ctx.globalAlpha = 1; ctx.lineWidth = 1; ctx.lineCap = 'butt';
+
+      // Hai đuôi dây, vẽ theo phương tiếp tuyến.
+      const g = Math.min(1, Math.log10(Math.max(k, 1)) / 3);
+      const tanx = (th: number) => -Math.sin(A0 + th), tany = (th: number) => Math.cos(A0 + th);
+      const hx = px(0), hy = py(0);
+      arrow(hx, hy, -tanx(0), -tany(0), 20, 2, fg);
+      const lx = px(beta), ly = py(beta);
+      const [ex, ey] = arrow(lx, ly, tanx(beta), tany(beta), 20 + 20 * g, 2.5 + 7 * g, MARK);
+
+      ctx.globalAlpha = 0.85; ctx.fillStyle = fg; ctx.textAlign = 'center';
+      ctx.fillText(`tay ghì ${F} kgf`, hx, hy - 10);
+      ctx.fillStyle = MARK;
+      ctx.fillText(loadLabel(load), ex, ey + (ey < cy ? -9 : 17));
+      ctx.globalAlpha = 1;
+      ctx.restore();
+
+      // ---- Panel phải: hệ số nhân theo số vòng, trục tung log ----
+      const padL = 56, padB = 34, padT = 16, padR = 10;
+      const x0 = LW + padL;
+      const NMAX = 6;
+      const X = (nn: number) => x0 + (nn / NMAX) * (cssW - padR - x0);
+      const Y = (m: number) =>
+        padT + (1 - Math.min(Math.log10(Math.max(m, 1)), LOGMAX) / LOGMAX) * (cssH - padB - padT);
+
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.3;
+      ctx.beginPath(); ctx.moveTo(x0, padT); ctx.lineTo(x0, cssH - padB); ctx.lineTo(cssW - padR, cssH - padB); ctx.stroke();
+      ctx.globalAlpha = 0.55; ctx.fillStyle = fg;
+      ctx.textAlign = 'center';
+      const tickStep = (cssW - padR - x0) / NMAX < 26 ? 2 : 1;
+      for (let t = tickStep; t <= NMAX; t += tickStep) ctx.fillText(String(t), X(t), cssH - padB + 13);
+      ctx.fillText('số vòng quấn', (x0 + cssW - padR) / 2, cssH - padB + 27);
+      ctx.textAlign = 'right';
+      const TICKS: Array<[number, string]> = [[1, '×1'], [10, '×10'], [100, '×100'], [1000, '×1 000'], [10000, '×10 000']];
+      for (const [m, lab] of TICKS) {
+        ctx.fillText(lab, x0 - 5, Y(m) + 3);
+        ctx.globalAlpha = 0.14; ctx.beginPath(); ctx.moveTo(x0, Y(m)); ctx.lineTo(cssW - padR, Y(m)); ctx.stroke();
+        ctx.globalAlpha = 0.55;
+      }
+      ctx.globalAlpha = 1;
+
+      // Đường mốc μ = 0,30.
+      if (Math.abs(mu - 0.3) > 0.005) {
+        ctx.strokeStyle = REF; ctx.lineWidth = 1.5; ctx.globalAlpha = 0.8; ctx.beginPath();
+        for (let i = 0; i <= 160; i++) {
+          const nn = (NMAX * i) / 160, y = Y(mult(0.3, nn));
+          i ? ctx.lineTo(X(nn), y) : ctx.moveTo(X(nn), y);
+        }
+        ctx.stroke(); ctx.globalAlpha = 1; ctx.lineWidth = 1;
+      }
+
+      ctx.strokeStyle = CURVE; ctx.lineWidth = 2; ctx.beginPath();
+      for (let i = 0; i <= 160; i++) {
+        const nn = (NMAX * i) / 160, y = Y(mult(mu, nn));
+        i ? ctx.lineTo(X(nn), y) : ctx.moveTo(X(nn), y);
+      }
+      ctx.stroke(); ctx.lineWidth = 1;
+
+      ctx.fillStyle = MARK;
+      ctx.beginPath(); ctx.arc(X(n), Y(k), 6, 0, Math.PI * 2); ctx.fill();
+
+      const note =
+        load >= 100000
+          ? ' · <b>vượt lực đứt của mọi dây thừng: dây đứt trước khi trượt</b>'
+          : k >= 100
+            ? ' · <b>vùng khoá: đầu tải coi như neo chết</b>'
+            : '';
+      readout.innerHTML =
+        `μ = ${vi(mu, 2)} · ${vi(n, 2)} vòng (β = ${vi(beta, 1)} rad) → nhân <b>${k < 100 ? vi(k, 1) : Math.round(k).toLocaleString('vi-VN')} lần</b>` +
+        ` · ghì ${F} kgf ⇒ đầu kia chịu được <b>${loadLabel(load)}</b>${note}`;
+    }
+
+    root.querySelectorAll('input').forEach((el) => el.addEventListener('input', draw));
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="day-quan-coc-mot-nguoi-giu-con-tau"]').forEach(setup);
+</script>

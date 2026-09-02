@@ -1,0 +1,89 @@
+---
+title: "Đứng yên là ngã liên tục: lệch nửa độ, bạn có đúng một giây"
+seoTitle: "Con lắc ngược: vì sao đứng thẳng là một bài toán mất ổn định"
+description: "Cơ thể đứng là con lắc ngược quanh mắt cá: nghiêng bao nhiêu thì mô-men lật lớn bấy nhiêu, nên nghiệm là cosh chứ không phải sin. Người cao 1,70 m có τ = 0,34 s — lệch ra sau nửa độ thì 0,97 giây nữa là hết mép gót, còn trẻ con chỉ có 0,80 giây."
+pubDate: 2026-09-02
+tags: ["vat-ly", "co-hoc", "dao-dong", "javascript"]
+translationId: "dung-yen-la-chuoi-nga-lien-tiep-mot-giay"
+---
+
+import AnkleBalance from '../../../components/demos/AnkleBalance.astro';
+
+Đứng chờ đèn đỏ, bạn tin mình đang đứng yên. Cởi giày ra mà nhìn: gân bàn
+chân căng lên rồi chùng xuống vài lần mỗi giây, không nghỉ. Bạn không đứng
+— bạn đang **ngã, và bắt lại kịp**, liên tục:
+
+<AnkleBalance />
+
+## Treo xuống thì đung đưa, dựng lên thì bỏ chạy
+
+Con lắc treo có một đặc ân: lệch bao nhiêu, trọng lực sinh mô-men **kéo
+về** bấy nhiêu — `θ̈ = −θ/τ²`, nghiệm là sin, và [chu kỳ gần như không đổi
+theo biên
+độ](/vi/posts/chu-ky-con-lac-don-co-that-su-khong-phu-thuoc-bien-do). Dựng
+con lắc ấy lên, gót chân xuống đất, thì đúng một dấu trừ biến mất: trọng
+tâm nằm *trên* điểm tựa, nên lệch bao nhiêu thì mô-men **lật đi** bấy
+nhiêu, `θ̈ = +θ/τ²`. Sin thành cosh, dao động thành bỏ chạy.
+
+```
+θ(t) = θ₀ · cosh(t/τ)     với    τ = √(2H/(3g))
+```
+
+Coi cơ thể là thanh đồng chất cao H quay quanh mắt cá, τ chỉ phụ thuộc
+chiều cao: người **1,70 m có τ = 0,34 giây**. Cùng con số ấy, treo ngược
+xuống thì cho chu kỳ đung đưa 2πτ = 2,14 giây — êm ả; dựng lên, nó thành
+thời gian nhân đôi: mỗi **0,24 giây** góc nghiêng của bạn tăng gấp đôi.
+(Trọng tâm người thật ở 55% chiều cao chứ không phải 50%: mô hình đầy đủ
+cho τ ≈ 0,35 s, lệch 3%.)
+
+## 6,5 cm phía sau, 19,5 cm phía trước
+
+Cái cứu bạn là bàn chân: chừng nào hình chiếu trọng tâm còn rơi trong lòng
+bàn chân, mắt cá còn dời được **tâm áp lực** ra đón mà kéo về. Nhưng mắt cá
+không nằm giữa bàn chân — nó ở khoảng một phần tư tính từ gót, nên bàn chân
+26 cm chỉ có **6,5 cm dự trữ phía sau, 19,5 cm phía trước**.
+
+Trọng tâm cao 0,85 m, điều kiện lật là `sin θ = d/h`: ngã ngửa bắt đầu ở
+**4,4°**, ngã sấp mãi tới **13,3°**. Cho cả hai cùng một cú lệch ban đầu
+nửa độ — đúng cỡ biên độ lắc của người đứng bình thường — rồi bấm giờ:
+**0,97 giây** để hết mép gót, 1,35 giây để hết mũi chân. Ngã ngửa nguy hiểm
+hơn hẳn vì thế: quỹ thời gian ngắn hơn một phần ba, lại rơi đúng về hướng
+duy nhất mắt bạn không nhìn thấy.
+
+## Dây thần kinh dài hơn cái đồng hồ 0,34 giây
+
+Phản xạ căng cơ ở cẳng chân mất khoảng 0,1 giây, vòng sửa lỗi có mắt tham
+gia mất chừng 0,2 giây — [dẫn truyền thần kinh có tốc độ hữu
+hạn](/vi/posts/dap-ngon-chan-vi-sao-mot-nhip-sau-moi-thay-dau). Trong 0,1
+giây ấy sai số đã nhân **1,34 lần**, trong 0,2 giây nhân **1,80 lần**: lệnh
+sửa luôn về muộn, và luôn về với một cái lỗi lớn hơn cái lỗi nó được tính
+cho. Hệ thần kinh vì thế buộc phải **sửa dư**, đẩy bạn vượt qua phương
+thẳng đứng sang phía bên kia — đó chính là chuỗi ngã nối nhau. Quy mô thì
+tí hon: nghiêng 0,5° chỉ dời trọng tâm ngang **7,4 mm**, nên suốt ngày bàn
+chân 26 cm của bạn làm mỗi một việc là canh vài milimét.
+
+## Trẻ con lảo đảo vì đồng hồ chạy nhanh hơn
+
+τ tỉ lệ với căn bậc hai chiều cao. Đứa trẻ 1,10 m có τ = **0,27 giây**; bàn
+chân 18 cm cho nó ngưỡng ngã ngửa 4,7°, rộng hơn người lớn chút ít vì bàn
+chân trẻ dài hơn theo tỉ lệ chiều cao — nhưng đồng hồ chạy nhanh vẫn thắng:
+từ nửa độ tới ngưỡng chỉ **0,80 giây**, ít hơn người lớn 18%, mà phải giải
+bằng bộ dây thần kinh chưa bọc myelin xong.
+
+## Trường hợp biên: khi mắt cá hết mô-men
+
+Người ta hay bảo cosh chỉ đúng cho góc nhỏ. Thực ra tích phân số phương
+trình đầy đủ `θ̈ = (3g/2H)·sin θ` cho thời gian chạm ngưỡng lệch khỏi công
+thức trên đúng **0,03%** trong toàn dải slider: toán học không phải thứ
+hỏng trước. Hỏng trước là cơ bắp — dồn tâm áp lực ra tận mũi chân đòi mắt
+cá sinh **1,9 N·m cho mỗi kg cân nặng** (134 N·m ở người 70 kg), sát trần
+mô-men gập bàn chân của người khoẻ.
+
+Qua ngưỡng đó, cơ thể bỏ luật chơi cũ: gập hông lấy quán tính, rồi **bước
+một bước** — thôi dời tâm áp lực mà dời hẳn điểm tựa, một bài toán khác.
+Người già ngã không phải vì yếu mà vì bước ra chậm hơn chừng ba phần mười
+giây, và trong ba phần mười giây ấy cosh đã kịp nhân góc nghiêng lên **2,4
+lần**. Muốn thắng cái dấu cộng ấy mà không cần cơ nào cả thì chỉ còn một
+cửa: [rung điểm tựa thật
+nhanh](/vi/posts/con-lac-nguoc-dung-vung-nho-rung-nhanh) — khi ấy cosh hoá
+lại thành sin, và con lắc ngược tự đứng.

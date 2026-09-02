@@ -1,0 +1,211 @@
+---
+// Inductive flyback (kick) when a coil's current is interrupted.
+//   Ideal linear ramp to zero:  V = L·(dI/dt) = L·I/Δt   (magnitude)
+//   Stored energy:              W = ½·L·I²
+//   With a freewheel diode (Vf = 0,7 V) across a coil of resistance R = Vs/I:
+//     i(t) = (I + Vf/R)·e^(−t/τ) − Vf/R,  τ = L/R,  reaching 0 at τ·ln(1 + I·R/Vf)
+// Supply fixed at Vs = 12 V, so R follows from the holding current.
+// Validity: lumped ideal inductor, no parasitic capacitance, no arcing. The
+// linear-ramp form is a stand-in for the real LC ring; above a few hundred
+// volts the real circuit is clamped by arcing (readout flags this regime).
+---
+
+<figure class="demo" data-demo="cuon-day-ngat-dong-va-cu-da-2500-von">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Điện cảm cuộn dây L (mH) <output data-out="l"></output>
+      <input type="range" data-in="l" min="1" max="1000" step="1" value="500" /></label>
+    <label>Dòng đang chạy I (mA) <output data-out="i"></output>
+      <input type="range" data-in="i" min="10" max="500" step="5" value="50" /></label>
+    <label>Thời gian mở tiếp điểm Δt <output data-out="d"></output>
+      <input type="range" data-in="d" min="0" max="300" step="1" value="200" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Trục thời gian thang lôga, tính từ lúc tiếp điểm bắt đầu mở. Khung trên:
+    dòng qua cuộn dây. Khung dưới: điện áp trên cuộn dây, cũng thang lôga.
+    Đỏ là mạch trần — dòng bị cắt trong Δt, điện áp vọt thành gai. Xanh là
+    mạch có diode dập xung — gai bị ghim ở 0,7 V, đổi lại dòng tắt chậm hơn
+    hàng trăm lần. Vạch cam là ngưỡng 40 V mà một transistor nhỏ chịu được.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const SAFE = '#2563eb', KICK = '#dc2626', LIMIT = '#f59e0b';
+  const VS = 12, VF = 0.7, VRATING = 40;
+  const T_LO = 3e-8, T_HI = 0.2;      // s, log time axis
+  const V_LO = 0.1, V_HI = 1e7;        // V, log voltage axis
+
+  const co = (x: number, d = 1) => x.toFixed(d).replace('.', ',');
+  // Thousands grouped with a thin space, as the site's Vietnamese copy does.
+  function group(n: number) {
+    const s = String(n);
+    let out = '';
+    for (let i = 0; i < s.length; i++) {
+      const left = s.length - i;
+      out += s[i];
+      if (left > 1 && (left - 1) % 3 === 0) out += ' ';
+    }
+    return out;
+  }
+
+  function fmtV(v: number) {
+    if (v >= 1e6) return co(v / 1e6, 2) + ' MV';
+    if (v >= 1e4) return co(v / 1000, 1) + ' kV';
+    if (v >= 100) return group(Math.round(v)) + ' V';
+    return co(v, 1) + ' V';
+  }
+  function fmtT(s: number) {
+    if (s < 1e-6) return co(s * 1e9, 0) + ' ns';
+    if (s < 1e-3) return co(s * 1e6, s * 1e6 < 10 ? 1 : 0) + ' µs';
+    if (s < 1) return co(s * 1000, s * 1000 < 10 ? 2 : 1) + ' ms';
+    return co(s, 2) + ' s';
+  }
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (k: string) => root.querySelector(`[data-in="${k}"]`) as HTMLInputElement;
+    const output = (k: string) => root.querySelector(`[data-out="${k}"]`) as HTMLOutputElement;
+
+    function draw() {
+      const Lmh = Number(input('l').value);
+      const Ima = Number(input('i').value);
+      const didx = Number(input('d').value);
+
+      const L = Lmh / 1000;                       // H
+      const I = Ima / 1000;                       // A
+      const dt = Math.pow(10, didx / 100 - 1) * 1e-6;  // s, 0,1 µs … 100 µs
+      const V = L * I / dt;                       // V, ideal spike
+      const W = 0.5 * L * I * I;                  // J
+      const R = VS / I;                           // ohm
+      const tau = L / R;                          // s
+      const tZero = tau * Math.log(1 + I * R / VF);
+      const P = W / dt;                           // W, during the break
+
+      output('l').textContent = Lmh >= 1000 ? '1000 mH = 1 H' : Lmh + ' mH';
+      output('i').textContent = Ima + ' mA';
+      output('d').textContent = fmtT(dt);
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.66);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+
+      const padL = 54, padR = 12, padT = 14, padB = 26, gap = 34;
+      const ph = (cssH - padT - padB - gap) / 2;
+      const topY = padT, botY = padT + ph + gap;
+      const lo = Math.log10(T_LO), hi = Math.log10(T_HI);
+      const X = (t: number) => padL + ((Math.log10(Math.max(t, T_LO)) - lo) / (hi - lo)) * (cssW - padL - padR);
+      const Yi = (a: number) => topY + (1 - a / (I * 1.14)) * ph;
+      const vlo = Math.log10(V_LO), vhi = Math.log10(V_HI);
+      const Yv = (v: number) => botY + ((vhi - Math.log10(Math.min(Math.max(v, V_LO), V_HI))) / (vhi - vlo)) * ph;
+
+      ctx.font = '10px system-ui,sans-serif';
+      ctx.strokeStyle = fg; ctx.fillStyle = fg;
+
+      // Frames.
+      ctx.globalAlpha = 0.3;
+      ctx.beginPath();
+      ctx.moveTo(padL, topY); ctx.lineTo(padL, topY + ph); ctx.lineTo(cssW - padR, topY + ph);
+      ctx.moveTo(padL, botY); ctx.lineTo(padL, botY + ph); ctx.lineTo(cssW - padR, botY + ph);
+      ctx.stroke();
+
+      // Decade gridlines on the shared time axis.
+      ctx.globalAlpha = 0.12; ctx.beginPath();
+      for (let e = -7; e <= -1; e++) {
+        const x = X(Math.pow(10, e));
+        ctx.moveTo(x, topY); ctx.lineTo(x, topY + ph);
+        ctx.moveTo(x, botY); ctx.lineTo(x, botY + ph);
+      }
+      ctx.stroke();
+
+      ctx.globalAlpha = 0.55; ctx.textAlign = 'center';
+      for (const e of [-7, -5, -3, -1]) ctx.fillText(fmtT(Math.pow(10, e)), X(Math.pow(10, e)), botY + ph + 15);
+      ctx.textAlign = 'right';
+      for (const a of [0.25, 0.5, 0.75, 1]) ctx.fillText(co(a * Ima, 0) + ' mA', padL - 4, Yi(a * I) + 3);
+      for (const e of [0, 2, 4, 6]) ctx.fillText(fmtV(Math.pow(10, e)), padL - 4, Yv(Math.pow(10, e)) + 3);
+      ctx.globalAlpha = 1;
+
+      // ---- Top panel: current.
+      const N = 260;
+      const tAt = (k: number) => Math.pow(10, lo + ((hi - lo) * k) / N);
+
+      ctx.strokeStyle = SAFE; ctx.lineWidth = 2; ctx.beginPath();  // with diode
+      for (let k = 0; k <= N; k++) {
+        const t = tAt(k);
+        const a = t >= tZero ? 0 : Math.max(0, (I + VF / R) * Math.exp(-t / tau) - VF / R);
+        k ? ctx.lineTo(X(t), Yi(a)) : ctx.moveTo(X(t), Yi(a));
+      }
+      ctx.stroke();
+
+      ctx.strokeStyle = KICK; ctx.beginPath();                      // bare contact
+      for (let k = 0; k <= N; k++) {
+        const t = tAt(k);
+        const a = t >= dt ? 0 : I * (1 - t / dt);
+        k ? ctx.lineTo(X(t), Yi(a)) : ctx.moveTo(X(t), Yi(a));
+      }
+      ctx.stroke();
+
+      // ---- Bottom panel: coil voltage.
+      ctx.strokeStyle = LIMIT; ctx.lineWidth = 1; ctx.setLineDash([4, 3]);
+      ctx.beginPath(); ctx.moveTo(padL, Yv(VRATING)); ctx.lineTo(cssW - padR, Yv(VRATING)); ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillStyle = LIMIT; ctx.textAlign = 'left';
+      ctx.fillText('40 V — transistor nhỏ chịu tới đây', padL + 6, Yv(VRATING) - 4);
+
+      ctx.strokeStyle = KICK; ctx.lineWidth = 2; ctx.beginPath();
+      ctx.moveTo(padL, Yv(V)); ctx.lineTo(X(dt), Yv(V)); ctx.lineTo(X(dt), botY + ph);
+      ctx.stroke();
+
+      ctx.strokeStyle = SAFE; ctx.beginPath();
+      ctx.moveTo(padL, Yv(VF)); ctx.lineTo(X(tZero), Yv(VF)); ctx.lineTo(X(tZero), botY + ph);
+      ctx.stroke();
+      ctx.lineWidth = 1;
+
+      // Labels on the curves.
+      ctx.textAlign = 'left';
+      ctx.fillStyle = KICK; ctx.fillText('không diode: gai ' + fmtV(V), padL + 6, Yv(V) - 5);
+      ctx.fillStyle = SAFE; ctx.fillText('có diode: ' + co(VF) + ' V', padL + 6, Yv(VF) - 5);
+      ctx.fillStyle = fg; ctx.globalAlpha = 0.55;
+      ctx.fillText('dòng qua cuộn dây', padL + 6, topY + 11);
+      ctx.fillText('điện áp trên cuộn dây', padL + 6, botY + 11);
+      ctx.globalAlpha = 1;
+
+      // Markers where each curve dies.
+      ctx.fillStyle = KICK;
+      ctx.beginPath(); ctx.arc(X(dt), Yi(0), 4.5, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = SAFE;
+      ctx.beginPath(); ctx.arc(X(tZero), Yi(0), 4.5, 0, Math.PI * 2); ctx.fill();
+
+      const note = V > 330
+        ? ' · <b>trên 330 V: thực tế hồ quang giữa hai tiếp điểm sẽ ghim gai lại và ăn mòn tiếp điểm</b>'
+        : ' · gai thấp hơn 330 V nên chưa đủ mồi hồ quang';
+      readout.innerHTML =
+        `L = ${Lmh >= 1000 ? '1 H' : Lmh + ' mH'} · I = ${Ima} mA · ngắt trong ${fmtT(dt)} → gai <b>${fmtV(V)}</b>` +
+        ` (gấp ${co(V / VS, 0)} lần nguồn 12 V) · năng lượng ${co(W * 1000, 2)} mJ dồn vào ${co(P, 1)} W${note}.<br />` +
+        `Có diode dập xung: đỉnh chỉ ${co(VF)} V, nhưng dòng tắt theo τ = L/R = ${fmtT(tau)}` +
+        ` (R cuộn = ${co(R, 0)} Ω), về 0 sau <b>${fmtT(tZero)}</b> — chậm gấp ${co(tZero / dt, 0)} lần.`;
+    }
+
+    root.querySelectorAll('input').forEach((el) => el.addEventListener('input', draw));
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="cuon-day-ngat-dong-va-cu-da-2500-von"]').forEach(setup);
+</script>

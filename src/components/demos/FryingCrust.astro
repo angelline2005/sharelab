@@ -1,0 +1,148 @@
+---
+// Chiên ngập dầu: bài toán biên di động (Stefan) chuẩn tựa dừng cho lớp vỏ.
+// Cân bằng năng lượng tại mặt sôi: k·(T_dầu − 100)/s = ρ·w·L_v·(ds/dt)
+//   ⇒ s = √( 2·k·(T_dầu − 100)·t / (ρ·w·L_v) )
+// Tham số: k = 0,065 W/(m·K) (dẫn nhiệt hiệu dụng của lớp vỏ xốp khô, đo được
+// trong khoảng 0,05–0,2), ρ = 1050 kg/m³ (khoai tây), L_v = 2 260 kJ/kg.
+// Nguồn dạng mô hình: Farkas–Singh–Rumsey, moving-boundary model of immersion
+// frying (J. Food Eng. 1996). Miếng chuẩn trong demo: lát dày 4,0 mm, vỏ mọc
+// từ cả hai mặt.
+// Miền hợp lệ: t ≥ 30 s (dưới ~8 s trở kháng màng dầu h≈300 W/(m²·K) mới là
+// khâu quyết định, mô hình này bỏ qua nó) và s ≤ 2,0 mm (mặt sôi chưa chạm
+// tâm — quá mốc đó không còn nước để ghim 100 °C, công thức mất nghĩa).
+// Số Stefan c·ΔT/(w·L) = 0,082 ≪ 1 nên giả thiết tựa dừng là chính đáng.
+---
+
+<figure class="demo" data-demo="chien-ngap-dau-180-do-ma-khong-chay">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Nhiệt độ dầu (°C) <output data-out="T"></output>
+      <input type="range" data-in="T" min="140" max="200" step="1" value="180" /></label>
+    <label>Thời gian chiên (s) <output data-out="t"></output>
+      <input type="range" data-in="t" min="30" max="600" step="5" value="180" /></label>
+    <label>Nước trong thực phẩm (%) <output data-out="w"></output>
+      <input type="range" data-in="w" min="40" max="90" step="1" value="78" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Mặt cắt một lát khoai dày 4,0 mm nằm trong chảo dầu. Vùng nâu ở hai rìa là
+    lớp vỏ đã khô cạn nước; vạch đỏ là mặt sôi, nơi nước còn lại đang bốc hơi ở
+    đúng 100 °C. Đường xanh là nhiệt độ: tụt thẳng từ nhiệt độ dầu ở mặt ngoài
+    xuống 100 °C tại mặt sôi, rồi nằm ngang suốt phần ruột. Mặt sôi lùi vào theo
+    căn bậc hai thời gian — muốn vỏ dày gấp đôi phải chiên gấp bốn lần lâu.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const CURVE = '#2563eb', MARK = '#dc2626', CRUST = '#f59e0b';
+  const K = 0.065, RHO = 1050, LV = 2.26e6, D = 0.004; // m, kg/m³, J/kg, m
+  const vi = (x: number, n: number) => x.toFixed(n).replace('.', ',');
+
+  // Bề dày vỏ mỗi mặt (m), chưa chặn ở nửa bề dày miếng.
+  const crust = (T: number, t: number, w: number) =>
+    Math.sqrt((2 * K * (T - 100) * t) / (RHO * w * LV));
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (k: string) => root.querySelector(`[data-in="${k}"]`) as HTMLInputElement;
+    const output = (k: string) => root.querySelector(`[data-out="${k}"]`) as HTMLOutputElement;
+
+    function draw() {
+      const T = Number(input('T').value);
+      const t = Number(input('t').value);
+      const wPct = Number(input('w').value);
+      const w = wPct / 100;
+      output('T').textContent = String(T);
+      output('t').textContent = String(t);
+      output('w').textContent = String(wPct);
+
+      const sRaw = crust(T, t, w);
+      const dried = sRaw >= D / 2;
+      const s = Math.min(sRaw, D / 2);
+      const sMm = s * 1000;
+      const coreMm = (D - 2 * s) * 1000;
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.5);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+
+      const padL = 46, padB = 26, padT = 14, padR = 12;
+      const yLo = 90, yHi = 210;
+      const X = (mm: number) => padL + (mm / 4) * (cssW - padL - padR);
+      const Y = (c: number) => padT + ((yHi - c) / (yHi - yLo)) * (cssH - padB - padT);
+
+      // Lát khoai nhìn nghiêng: nền nhạt = phần ruột còn ướt, hai rìa nâu = vỏ.
+      const top = padT, bot = cssH - padB;
+      ctx.fillStyle = fg; ctx.globalAlpha = 0.07;
+      ctx.fillRect(X(0), top, X(4) - X(0), bot - top);
+      ctx.fillStyle = CRUST; ctx.globalAlpha = 0.3;
+      ctx.fillRect(X(0), top, X(sMm) - X(0), bot - top);
+      ctx.fillRect(X(4 - sMm), top, X(4) - X(4 - sMm), bot - top);
+      ctx.globalAlpha = 1;
+
+      // Trục.
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.3;
+      ctx.beginPath(); ctx.moveTo(padL, padT); ctx.lineTo(padL, bot); ctx.lineTo(cssW - padR, bot); ctx.stroke();
+      ctx.setLineDash([3, 3]);
+      ctx.beginPath(); ctx.moveTo(padL, Y(100)); ctx.lineTo(cssW - padR, Y(100)); ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.globalAlpha = 0.55; ctx.fillStyle = fg; ctx.font = '10px system-ui,sans-serif';
+      ctx.textAlign = 'center';
+      for (const mm of [0, 1, 2, 3, 4]) ctx.fillText(`${mm} mm`, X(mm), bot + 14);
+      ctx.textAlign = 'right';
+      for (const c of [100, 140, 180, 200]) ctx.fillText(`${c}°`, padL - 4, Y(c) + 3);
+      ctx.globalAlpha = 1;
+
+      // Đường nhiệt độ: T_dầu ở hai mặt → 100 °C tại mặt sôi → phẳng trong ruột.
+      ctx.strokeStyle = CURVE; ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(X(0), Y(T));
+      ctx.lineTo(X(sMm), Y(100));
+      ctx.lineTo(X(4 - sMm), Y(100));
+      ctx.lineTo(X(4), Y(T));
+      ctx.stroke(); ctx.lineWidth = 1;
+
+      // Mặt sôi.
+      ctx.fillStyle = MARK;
+      ctx.beginPath(); ctx.arc(X(sMm), Y(100), 5, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.arc(X(4 - sMm), Y(100), 5, 0, Math.PI * 2); ctx.fill();
+      ctx.globalAlpha = 0.75; ctx.textAlign = 'center'; ctx.font = '10px system-ui,sans-serif';
+      ctx.fillText('mặt sôi 100 °C', X(2), Y(100) + 16);
+      ctx.fillStyle = fg; ctx.globalAlpha = 0.6;
+      ctx.textAlign = 'left'; ctx.fillText('vỏ', X(sMm / 2) - 6, top + 14);
+      ctx.textAlign = 'center'; ctx.fillText('ruột đang bị luộc', X(2), top + 14);
+      ctx.globalAlpha = 1;
+
+      const flag = dried
+        ? ' · <b>hết nước: mốc 100 °C sụp, cả lát lao lên nhiệt độ dầu và cháy trong vài giây</b>'
+        : '';
+      readout.innerHTML =
+        `Dầu ${T} °C · ${t} s · ${wPct}% nước → vỏ <b>${vi(sMm, 2)} mm</b> mỗi mặt` +
+        ` · ruột còn ${vi(coreMm, 2)} mm ở đúng 100 °C` +
+        ` · ${vi((200 * s) / D, 1)}% bề dày đã thành vỏ` +
+        ` · dòng nhiệt qua vỏ ${vi((K * (T - 100)) / s / 1000, 2)} kW/m²${flag}`;
+    }
+
+    root.querySelectorAll('input').forEach((el) => el.addEventListener('input', draw));
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="chien-ngap-dau-180-do-ma-khong-chay"]').forEach(setup);
+</script>

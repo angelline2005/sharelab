@@ -1,0 +1,93 @@
+---
+title: "Bánh xe vali lệch 90° tự quay về đúng hướng sau vỏn vẹn 16 centimet"
+seoTitle: "Bánh xe xoay (caster): độ lệch trục và quy luật tự chỉnh hướng"
+description: "Bánh xe đẩy xoay quanh một trục đặt trước điểm chạm đất một đoạn d. Với d = 5 cm, góc lệch 90° tụt còn 5° sau đúng 15,7 cm — nghiệm là hàm mũ của quãng đường, không phải của thời gian. Rút d còn 2 cm chỉ mất 6,3 cm, nhưng bạn sẽ nghe thấy cái giá phải trả."
+pubDate: 2026-09-02
+tags: ["vat-ly", "co-hoc", "mo-phong", "javascript"]
+translationId: "banh-xe-vali-tu-chinh-huong"
+---
+
+import CasterTrail from '../../../components/demos/CasterTrail.astro';
+
+Đặt vali xuống sảnh sân bay, bốn bánh xe chĩa bốn hướng như vừa cãi nhau.
+Bạn bước một bước — cả bốn đã ngoan ngoãn quay về cùng chiều. Không động
+cơ, không ai lái, chỉ có một đoạn lệch tâm vài centimet làm việc theo một
+con số rất cụ thể:
+
+<CasterTrail />
+
+## Cái bánh xe không nằm dưới trục của chính nó
+
+Nhìn kỹ một bánh xe đẩy: trục xoay thẳng đứng **không** xuyên qua tâm
+bánh. Điểm chạm đất bị đặt lùi phía sau trục một đoạn d — dân kỹ thuật gọi
+là độ lệch trục (*trail*). Đó là toàn bộ cơ cấu tự lái.
+
+Bánh đang lăn thì không trượt ngang được. Khi bạn đẩy vali đi thẳng, trục
+xoay bị lôi theo hướng đẩy; nếu bánh còn chĩa lệch góc θ, vận tốc ấy có
+thành phần v·sin θ vuông góc với mặt phẳng bánh — thứ mà bánh cấm. Cách
+duy nhất để dung hoà là cả cụm xoay quanh trục:
+
+```
+dθ/ds = −sin(θ) / d
+```
+
+s là quãng đường trục xoay đã đi. Để ý thứ vừa biến mất: **vận tốc** — nó
+có ở cả hai vế và bị ước sạch. Bánh xe không tự chỉnh hướng theo *thời
+gian* mà theo *quãng đường*: bạn thong thả đi bộ hay chạy vắt chân lên cổ
+cho kịp giờ bay, vali vẫn cần đúng chừng ấy centimet mới thẳng hàng. (Còn
+[nên kéo hay đẩy, và nghiêng bao nhiêu
+độ](/vi/posts/keo-hay-day-va-goc-toi-uu-arctan-mu) lại là bài toán khác.)
+
+## 15,7 centimet, và nửa sau lười hơn hẳn nửa đầu
+
+Phương trình ấy giải được kín:
+
+```
+tan(θ/2) = tan(θ₀/2) · e^(−s/d)
+```
+
+Với bánh vali cỡ d = 5 cm bắt đầu lệch vuông góc, θ₀ = 90°: sau 5 cm còn
+40,4°, sau 10 cm còn 15,4°, và chạm ngưỡng 5° — mức mắt thường không phân
+biệt nổi với thẳng hàng — ở **15,7 cm**. Chưa hết một bước chân.
+
+Nhưng đường cong không đi đều tay: 7,8 cm đầu xử lý gọn **66,4°** trong
+tổng số 85° phải sửa, toàn bộ nửa sau chỉ còn 18,6°. Đó là chữ ký của hàm
+mũ, [y như chu kỳ bán
+rã](/vi/posts/chu-ky-ban-ra-khong-hat-nao-biet-tuoi-minh): khi góc đã nhỏ,
+cứ mỗi d·ln2 = 3,47 cm là độ lệch bị cắt đôi, mãi mãi, không bao giờ chạm
+số không. Kéo vali nửa mét, bánh xe vẫn đang lệch — 0,005°.
+
+## Muốn nhanh gấp đôi thì rút d còn một nửa, đúng theo tỉ lệ
+
+Vì d chỉ đứng ở số mũ, quãng đường tự chỉnh tỉ lệ **thuần tuyến tính** với
+nó: hạ d từ 5 cm xuống 2 cm thì 15,7 rơi xuống 6,3 cm, đúng 2,5 lần; nới
+lên 10 cm phải mất 31,3 cm.
+
+Vậy sao không làm d thật bé cho gọn? Vì mô hình trên giả định bánh cứng và
+không quán tính, còn bánh thật thì có khối lượng và lốp biến dạng ngang.
+Chính d là cánh tay đòn sinh mômen hồi vị: d ngắn thì mômen ấy yếu đi
+trong khi quán tính cụm bánh giữ nguyên, và qua một tốc độ tới hạn, hệ
+chuyển từ tắt dần sang **dao động tự kích** — bánh lắc trái phải quanh vị
+trí thẳng thay vì lún êm vào nó, đúng cái ranh giới [giữa giảm chấn đủ và
+không đủ](/vi/posts/dao-dong-tat-dan-diem-vang-cua-giam-xoc). Tiếng lạch
+cạch của xe đẩy siêu thị lúc chạy nhanh là âm thanh của một cái d quá
+ngắn; đẩy d về đúng 0 thì bánh mất sạch khả năng tự lái, chỉ còn nước
+trượt ngang.
+
+## Trường hợp biên: đúng 180° và cú kéo lùi
+
+Đặt θ₀ = 180° — bánh chĩa ngược hoàn toàn hướng bạn đi. Khi ấy sin 180° = 0,
+nên dθ/ds = 0: **không có gì bắt nó quay cả**, trên lý thuyết chiếc bánh cứ
+thế lăn giật lùi tới hết sảnh sân bay. Nhưng đây là cân bằng không bền:
+lệch khỏi 180° một chút thì sai số ấy *lớn lên* theo hàm mũ, cũng với hằng
+số d. Một hạt sạn làm lệch 0,1° thôi cũng đủ để sau 35,2 cm bánh đã xoay
+được 90°. Công thức nói y hệt: `tan(180°/2)` = tan 90° = vô cực, quãng
+đường cần thiết là vô hạn. Thanh trượt trong demo vì thế dừng ở 179° — nơi
+đã cần 39,4 cm, gấp 2,5 lần so với xuất phát từ 90°.
+
+Còn khi bạn **kéo lùi** chiếc xe đẩy, s đổi dấu và dấu trừ trong phương
+trình thành dấu cộng. Mọi kết luận lộn ngược: 0° thành không bền, 180°
+thành bền, mọi góc lệch tí xíu đều bị khuếch đại thay vì dập tắt. Từ 1°
+vênh, chỉ 23,7 cm sau bánh đã lệch 90° và còn quay tiếp. Đó là lý do chiếc
+xe đẩy ngoan như cún lúc bạn đẩy tới lại giãy lên lạch cạch ngay khi bạn
+kéo nó lùi: bạn không làm gì sai cả, bạn chỉ vừa đổi dấu một phương trình.

@@ -1,0 +1,206 @@
+---
+// Transformer EMF equation (sinusoidal, RMS): U = 4.44·f·N·B·A
+//   → A = U / (4.44·f·N·B)   [A in m², B in T, f in Hz]
+// 4.44 = 2π/√2 is the sine form factor; a square-wave switcher uses 4.0
+// instead, i.e. a real GaN charger core is ~10% smaller than plotted here.
+// This gives the FLUX-limited minimum core area only; a real core is larger
+// because the window must also fit the copper (area-product design).
+// Core loss density: Steinmetz P = k·f^1.6·B^2.3, normalised here to
+// 70 kW/m³ at 100 kHz / 200 mT (typical MnZn power ferrite, e.g. 3C90 class).
+// The Steinmetz fit is only drawn over 20 kHz – 1 MHz, its ferrite validity
+// band; below that the material would be silicon steel with other exponents.
+// U fixed at 12 V. Reference core fixed at 50 Hz, N = 100, B = 1.2 T.
+---
+
+<figure class="demo" data-demo="cuc-sac-nho-di-nho-tan-so-cao">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Tần số băm f <output data-out="f"></output>
+      <input type="range" data-in="f" min="0" max="24" step="1" value="18" /></label>
+    <label>Số vòng sơ cấp N (vòng) <output data-out="n"></output>
+      <input type="range" data-in="n" min="5" max="200" step="1" value="20" /></label>
+    <label>Mật độ từ thông B (T) <output data-out="b"></output>
+      <input type="range" data-in="b" min="0.05" max="1.5" step="0.01" value="0.2" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Hai hình vuông bên trái là tiết diện lõi vẽ đúng tỉ lệ với nhau: khung
+    cam là lõi 50 Hz (100 vòng, 1,2 T) đứng yên làm mốc, ô xanh là lõi ở
+    thiết lập bạn chọn. Đồ thị là A = U/(4,44·f·N·B) trên trục log — một
+    đường thẳng dốc xuống, vì gấp đôi tần số là chia đôi tiết diện. Đường
+    cam đi lên là tổn hao lõi ferrite theo Steinmetz, thứ chặn không cho
+    đẩy tần số lên mãi. Điện áp cuộn dây giữ nguyên 12 V.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const CURVE = '#2563eb', MARK = '#dc2626', LOSS = '#f59e0b';
+  const U = 12, FORM = 4.44;
+  const FREQS = [
+    50, 60, 100, 150, 250, 400, 600, 1000, 1600, 2500, 4000, 6000, 10000,
+    15000, 20000, 30000, 45000, 65000, 100000, 150000, 220000, 330000,
+    500000, 700000, 1000000,
+  ];
+  const F_LO = 50, F_HI = 1000000, FERRITE_LO = 20000;
+  const P_LO = 1, P_HI = 100000;
+
+  // Core cross-section in mm² from the transformer EMF equation.
+  const area = (f: number, N: number, B: number) => (U / (FORM * f * N * B)) * 1e6;
+  // Steinmetz loss density in kW/m³, normalised to 70 at 100 kHz / 0,2 T.
+  const loss = (f: number, B: number) =>
+    70 * Math.pow(f / 1e5, 1.6) * Math.pow(B / 0.2, 2.3);
+
+  const A_REF = area(50, 100, 1.2); // 450,45 mm² = 4,50 cm²
+
+  const vi = (x: number, d: number) => x.toFixed(d).replace('.', ',');
+  const kilo = (x: number) => (x % 1 === 0 ? String(x) : vi(x, 1));
+  const fLabel = (f: number) =>
+    f >= 1e6 ? `${kilo(f / 1e6)} MHz` : f >= 1000 ? `${kilo(f / 1000)} kHz` : `${f} Hz`;
+  const aLabel = (mm2: number) =>
+    mm2 >= 100 ? `${vi(mm2 / 100, 2)} cm²` : `${vi(mm2, mm2 < 1 ? 3 : 2)} mm²`;
+  const decade = (e: number) =>
+    e >= 3 ? Math.pow(10, e).toLocaleString('vi-VN') : e >= 0 ? String(Math.pow(10, e)) : vi(Math.pow(10, e), -e);
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (k: string) => root.querySelector(`[data-in="${k}"]`) as HTMLInputElement;
+    const output = (k: string) => root.querySelector(`[data-out="${k}"]`) as HTMLOutputElement;
+
+    function draw() {
+      const f = FREQS[Number(input('f').value)];
+      const N = Number(input('n').value);
+      const B = Number(input('b').value);
+      output('f').textContent = fLabel(f);
+      output('n').textContent = String(N);
+      output('b').textContent = vi(B, 2);
+
+      const A = area(f, N, B);
+      const side = Math.sqrt(A); // mm
+      const P = loss(f, B);
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.5);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+      ctx.font = '10px system-ui,sans-serif';
+
+      const Lw = Math.max(104, Math.min(168, cssW * 0.3));
+      const padL = Lw + 44, padR = 44, padT = 22, padB = 26;
+      const plotW = cssW - padL - padR, plotH = cssH - padT - padB;
+
+      // Vertical range: cover the whole A(f) sweep at this N, B plus the mốc.
+      const yHi = Math.max(area(F_LO, N, B), A_REF) * 1.6;
+      const yLo = Math.min(area(F_HI, N, B), A_REF) / 1.6;
+      const lx = (v: number) => Math.log10(v);
+      const X = (ff: number) => padL + ((lx(ff) - lx(F_LO)) / (lx(F_HI) - lx(F_LO))) * plotW;
+      const Y = (mm2: number) => padT + ((lx(yHi) - lx(mm2)) / (lx(yHi) - lx(yLo))) * plotH;
+      const YP = (kw: number) => padT + ((lx(P_HI) - lx(kw)) / (lx(P_HI) - lx(P_LO))) * plotH;
+
+      // ---- left panel: the two cross-sections, drawn to one scale ----
+      const refPx = Lw * 0.52;
+      const curPx = Math.max(1.5, Math.min(refPx * Math.sqrt(A / A_REF), Lw * 0.9));
+      const x0 = 8, by = cssH - padB - 4;
+      ctx.strokeStyle = LOSS; ctx.lineWidth = 1.5;
+      ctx.strokeRect(x0, by - refPx, refPx, refPx);
+      ctx.fillStyle = CURVE;
+      ctx.fillRect(x0, by - curPx, curPx, curPx);
+      ctx.lineWidth = 1;
+      ctx.textAlign = 'left';
+      ctx.fillStyle = LOSS;
+      ctx.fillText(`50 Hz: ${aLabel(A_REF)}`, x0, 11);
+      ctx.fillStyle = CURVE;
+      ctx.fillText(`${fLabel(f)}: ${aLabel(A)}`, x0, 22);
+
+      // ---- axes ----
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.3;
+      ctx.beginPath();
+      ctx.moveTo(padL, padT); ctx.lineTo(padL, cssH - padB); ctx.lineTo(cssW - padR, cssH - padB);
+      ctx.stroke();
+      ctx.globalAlpha = 0.55; ctx.fillStyle = fg;
+      const TICKS = [50, 1000, 20000, 100000, 1000000];
+      TICKS.forEach((ff, i) => {
+        ctx.textAlign = i === 0 ? 'left' : i === TICKS.length - 1 ? 'right' : 'center';
+        ctx.fillText(fLabel(ff), X(ff), cssH - padB + 14);
+      });
+      ctx.textAlign = 'right';
+      for (let e = Math.ceil(lx(yLo)); e <= Math.floor(lx(yHi)); e++) {
+        ctx.fillText(decade(e), padL - 4, Y(Math.pow(10, e)) + 3);
+      }
+      ctx.fillText('mm²', padL - 4, padT - 6);
+      ctx.textAlign = 'left';
+      ctx.fillStyle = LOSS;
+      for (const e of [0, 2, 4]) ctx.fillText(decade(e), cssW - padR + 4, YP(Math.pow(10, e)) + 3);
+      ctx.fillText('kW/m³', cssW - padR + 4, padT - 6);
+      ctx.globalAlpha = 1;
+
+      // ---- A(f) at the chosen N, B ----
+      ctx.strokeStyle = CURVE; ctx.lineWidth = 2; ctx.beginPath();
+      for (let i = 0; i <= 160; i++) {
+        const ff = Math.pow(10, lx(F_LO) + ((lx(F_HI) - lx(F_LO)) * i) / 160);
+        const y = Y(area(ff, N, B));
+        i ? ctx.lineTo(X(ff), y) : ctx.moveTo(X(ff), y);
+      }
+      ctx.stroke();
+
+      // ---- Steinmetz loss density, ferrite band only ----
+      ctx.strokeStyle = LOSS; ctx.lineWidth = 1.5; ctx.setLineDash([4, 3]); ctx.beginPath();
+      for (let i = 0; i <= 100; i++) {
+        const ff = Math.pow(10, lx(FERRITE_LO) + ((lx(F_HI) - lx(FERRITE_LO)) * i) / 100);
+        const y = Math.max(padT, Math.min(cssH - padB, YP(loss(ff, B))));
+        i ? ctx.lineTo(X(ff), y) : ctx.moveTo(X(ff), y);
+      }
+      ctx.stroke(); ctx.setLineDash([]); ctx.lineWidth = 1;
+
+      // ---- the 50 Hz reference point and the current marker ----
+      ctx.fillStyle = LOSS;
+      ctx.beginPath(); ctx.arc(X(50), Y(A_REF), 4, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = MARK;
+      ctx.beginPath(); ctx.arc(X(f), Y(A), 6, 0, Math.PI * 2); ctx.fill();
+      if (f >= FERRITE_LO) {
+        const yp = YP(P);
+        if (yp >= padT && yp <= cssH - padB) {
+          ctx.fillStyle = LOSS;
+          ctx.beginPath(); ctx.arc(X(f), yp, 4, 0, Math.PI * 2); ctx.fill();
+        }
+      }
+
+      // ---- readout ----
+      const ratio = A_REF / A;
+      const cmp = ratio >= 1
+        ? `nhỏ hơn mốc 50 Hz <b>${vi(ratio, 1)} lần</b>`
+        : `<b>to hơn</b> mốc 50 Hz ${vi(1 / ratio, 1)} lần`;
+      let note = '';
+      if (f < FERRITE_LO) {
+        note = ' · <b>dưới 20 kHz: tai người còn nghe tiếng rít, và lõi phải là thép silic</b>';
+      } else if (B > 0.4) {
+        note = ` · <b>${vi(B, 2)} T vượt bão hoà của ferrite (~0,4 T)</b>`;
+      } else {
+        note = ` · tổn hao lõi ${P < 10 ? vi(P, 2) : vi(P, 0)} kW/m³`;
+      }
+      readout.innerHTML =
+        `12 V · ${fLabel(f)} · N = ${N} vòng · B = ${vi(B, 2)} T → A = <b>${aLabel(A)}</b>` +
+        ` (vuông ${vi(side, 2)} mm cạnh) — ${cmp}${note}`;
+    }
+
+    root.querySelectorAll('input').forEach((el) => el.addEventListener('input', draw));
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="cuc-sac-nho-di-nho-tan-so-cao"]').forEach(setup);
+</script>

@@ -1,0 +1,90 @@
+---
+title: "Cân hiệu chỉnh ở Paris mang về Hà Nội đọc thiếu 232 gram trên mỗi 100 kg"
+seoTitle: "Gia tốc trọng trường thay đổi theo vĩ độ: g ở xích đạo và ở cực khác nhau bao nhiêu"
+description: "g ở cực là 9,8322 m/s², ở xích đạo 9,7803 — chênh 0,53%, mà hai phần ba khoản đó là do Trái Đất tự quay. Người 60 kg đứng ở cực 'nặng' hơn ở xích đạo 318 gram, và mọi cân điện tử bán ra đều phải khai báo vùng trọng lực."
+pubDate: 2026-09-02
+tags: ["vat-ly", "co-hoc", "thien-van", "javascript"]
+translationId: "can-nang-cua-ban-doi-theo-vi-do-va-do-cao"
+---
+
+import LatitudeGravity from '../../../components/demos/LatitudeGravity.astro';
+
+Cùng một bao gạo, cùng một cái cân điện tử — nhưng đặt ở Hà Nội và đặt ở
+Paris, mặt hiển thị ra hai con số khác nhau. Bao gạo không hao đi hạt nào,
+cái cân cũng không hỏng. Thứ đổi là mặt đất dưới chân:
+
+<LatitudeGravity />
+
+## Trái Đất tự quay, và cái cân biết điều đó
+
+Ở xích đạo g = 9,7803 m/s², ở cực 9,8322 — chênh 0,0519, tức **0,53%**. Hai
+thủ phạm, và tỉ lệ giữa chúng ít người đoán đúng.
+
+Thứ nhất là **lực ly tâm**. Đứng ở xích đạo, bạn bị quăng theo vòng bán kính
+6 378 km với chu kỳ một ngày: ω²R = 0,0339 m/s² trừ thẳng khỏi trọng lực —
+**65%** khoản chênh. Ở cực bạn đứng ngay trên trục, bán kính vòng quay bằng
+không, không mất gì. Cùng phép tính ấy là nền của [trọng lực nhân
+tạo](/vi/posts/trong-luc-nhan-tao-va-cai-gia-cua-vong-quay), chỉ chạy ngược
+chiều; cùng vòng quay ấy [bẻ cong đường đi của
+bão](/vi/posts/hieu-ung-coriolis-va-huyen-thoai-bon-cau).
+
+Thứ hai: chính vòng quay đó đã nặn Trái Đất phình ở bụng — bán kính xích đạo
+lớn hơn bán kính cực **21,4 km**, nên đứng ở xích đạo là đứng xa tâm hơn và bị
+hút yếu hơn. Đó là 35% còn lại. Cộng cả hai: cân hiệu chỉnh ở xích đạo mang
+tới cực sẽ hiện người 60 kg thành 60,318 kg — **318 gram** không đến từ đâu cả.
+
+## Từ Paris về Hà Nội, 100 kg bốc hơi 232 gram
+
+Chỗ mấu chốt: cân điện tử **không đo khối lượng**. Nó đo *lực* — một load cell
+bị nén, biến dạng vài micromét — rồi chia cho hằng số g nạp sẵn lúc hiệu
+chỉnh. Đem cân đi nơi khác, tử số đổi mà mẫu số thì không.
+
+Paris ở 48,9°: g = 9,8097. Hà Nội ở 21,0°, cao 10 m: g = 9,7869. Tỉ số
+0,99768, nên đúng 100 kg hiện thành **99,768 kg** — hụt **232 gram**, gấp hơn
+mười lần một vạch chia của cân thương mại. Vì thế cân công nghiệp bán ra kèm
+mã "vùng trọng lực", và quy định đo lường buộc hiệu chỉnh tại nơi dùng, không
+phải tại nhà máy.
+
+Không cần đi xa vậy: cân chỉnh ở Hà Nội đem vào TP.HCM (10,8°) thiếu 49 g mỗi
+100 kg — đủ để một xe 40 tấn **bốc hơi 19,6 kg** mỗi lượt qua trạm cân. Ngay
+con số 9,80665 m/s² trong sách giáo khoa cũng chỉ là một điểm trên đường cong:
+công thức hiện đại trả đúng nó ở vĩ độ 45,50°.
+
+## Mỗi mét lên cao lấy đi 3,086 phần triệu
+
+Trục thứ hai của demo cộng vào theo một hằng số đẹp: rời mặt biển là ra xa
+tâm, g giảm **3,086 µm/s² mỗi mét**. Hà Nội lên Đà Lạt (11,9°, cao 1 500 m)
+thiếu 92 g trên mỗi 100 kg, và khoản ấy **chia gần đôi**: 47 g do độ cao, 45 g
+do vĩ độ. Còn lên Everest 8 848 m thì riêng số hạng độ cao lấy mất
+0,0273 m/s², bằng **53% cả khoảng chênh cực–xích đạo**.
+
+## Chiếc đồng hồ quả lắc đi tàu ra xích đạo
+
+Người đầu tiên vấp phải chuyện này không mang theo cái cân nào. Năm 1672 Jean
+Richer chở một đồng hồ quả lắc từ Paris tới Cayenne (4,9° Bắc), và đồng hồ cứ
+chạy chậm. Vì [chu kỳ con
+lắc](/vi/posts/chu-ky-con-lac-don-co-that-su-khong-phu-thuoc-bien-do) là
+`T = 2π√(L/g)`: g nhỏ đi 0,296% thì nhịp giãn ra nửa chừng ấy — **128 giây mỗi
+ngày**, đúng cỡ hai phút Richer ghi trong sổ. Ông phải cưa ngắn quả lắc gần
+3 mm mới kéo đồng hồ về đúng giờ. Newton đọc báo cáo đó và dùng làm bằng chứng
+Trái Đất dẹt ở hai cực: một cây kim loại đung đưa đã cân được hình dạng của cả
+hành tinh.
+
+## Trường hợp biên: khi tảng đá dưới chân kéo ngược lại
+
+Số hạng −3,086 µm/s² mỗi mét mang tên "không khí tự do", và cái tên chính là
+điều kiện của nó: chỉ đúng khi bên dưới bạn là không khí — trên khinh khí cầu,
+trên đài quan sát. Đứng trên cao nguyên thì sai: 1 500 m đá dưới chân cũng có
+khối lượng và cũng kéo bạn xuống. Bản đá mật độ 2 670 kg/m³ thêm vào
+2πGρ = 1,12 µm/s² mỗi mét, **bù lại 36%** khoản vừa mất.
+
+Đúng khe hở giữa hai hiệu chỉnh ấy là một nghề: đo g thật, trừ phần vĩ độ, trừ
+phần độ cao, trừ phần đá — cái còn dư chính là thứ đang nằm dưới chân bạn. Một
+thân quặng sắt chôn sâu đẩy g lên vài mGal, cỡ vài phần triệu, mà trọng lực kế
+hiện trường thì phân giải tới 0,001 mGal — một phần tỷ.
+
+Còn cái cân đòn hai đĩa của bà bán gạo thì miễn nhiễm với tất cả: quả cân bên
+này và bao gạo bên kia chịu chung một g, và g rút gọn khỏi phương trình. Nó
+không biết mình đang ở vĩ độ nào — nên nó không bao giờ sai. Suốt hơn một thế
+kỷ, quả cân kilogram chuẩn ở Sèvres cũng được so đúng bằng cách ấy: hai đĩa,
+một đòn, và một đại lượng tự triệt tiêu.

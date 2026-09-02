@@ -1,0 +1,185 @@
+---
+// Wave-making resistance of a submerged body (Havelock, deep water):
+// R_wave(d) / R_wave(0) = exp(−2·k·d) with k = g/v² the wavenumber of the
+// transverse wave train, wavelength λ = 2π·v²/g.
+// Valid for: fully submerged body (d ≳ nửa bề dày thân, ~0,2 m ở người),
+// steady speed, deep water (đáy sâu hơn λ/2). d = 0 chỉ là mốc quy chiếu
+// "bơi nổi", không phải nghiệm của bài toán vật thể xuyên mặt nước.
+// Sliders: depth 0–1,5 m, speed 1–2,5 m/s (bể bơi thi đấu sâu 2–3 m).
+---
+
+<figure class="demo" data-demo="boi-ngam-vi-sao-nhanh-hon-boi-noi">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Độ sâu thân người d (m) <output data-out="d"></output>
+      <input type="range" data-in="d" min="0" max="1.5" step="0.05" value="0.6" /></label>
+    <label>Tốc độ bơi v (m/s) <output data-out="v"></output>
+      <input type="range" data-in="v" min="1" max="2.5" step="0.05" value="2" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Trên: mặt cắt bể bơi, người bơi sang phải và kéo theo đoàn sóng phía
+    sau. Bước sóng λ = 2π·v²/g vẽ đúng tỉ lệ với thước mét; biên độ sóng
+    tụt theo e^(−k·d) nên chỉ cần chìm vài chục xentimét là mặt nước phẳng
+    lại. Dưới: phần trăm lực cản tạo sóng còn lại, mốc 100% là bơi nổi.
+    Đường đứt nét là ngưỡng 5%.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const G = 9.81, CURVE = '#2563eb', MARK = '#dc2626', WAVE = '#f59e0b';
+  const A0 = 0.20;          // biên độ sóng quy chiếu khi bơi nổi (m)
+  const SPAN = 8;           // bề ngang khung cảnh (m)
+  const FLOOR = 2.0;        // đáy bể (m)
+  const SX_M = 6.0;         // vị trí người bơi trên trục x (m)
+  const num = (x: number, n = 2) => x.toFixed(n).replace('.', ',');
+  const kOf = (v: number) => G / (v * v);
+  const lamOf = (v: number) => (2 * Math.PI * v * v) / G;
+  const frac = (v: number, d: number) => Math.exp(-2 * kOf(v) * d);
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (k: string) => root.querySelector(`[data-in="${k}"]`) as HTMLInputElement;
+    const output = (k: string) => root.querySelector(`[data-out="${k}"]`) as HTMLOutputElement;
+
+    function draw() {
+      const d = Number(input('d').value), v = Number(input('v').value);
+      output('d').textContent = num(d);
+      output('v').textContent = num(v);
+      const lam = lamOf(v), k = kOf(v), f = frac(v, d);
+      const d5 = Math.log(20) / (2 * k);
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.66);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+
+      const padL = 46, padR = 12, padT = 10, padB = 24, gap = 30;
+      const plotW = cssW - padL - padR;
+      const sceneH = Math.round((cssH - padT - padB - gap) * 0.54);
+      const chartT = padT + sceneH + gap;
+      const chartH = cssH - padB - chartT;
+
+      // ---- Khung cảnh: mặt cắt bể bơi -------------------------------------
+      const HEAD = 0.30;                                   // khoảng trống trên mặt nước (m)
+      const SX = (xm: number) => padL + (xm / SPAN) * plotW;
+      const SY = (dm: number) => padT + ((dm + HEAD) / (FLOOR + HEAD)) * sceneH;
+      const eta = (xm: number) =>
+        xm > SX_M ? 0 : A0 * f * Math.cos((2 * Math.PI * (SX_M - xm)) / lam);
+
+      ctx.fillStyle = CURVE; ctx.globalAlpha = 0.08;
+      ctx.fillRect(padL, SY(0), plotW, SY(FLOOR) - SY(0));
+      ctx.globalAlpha = 1;
+
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.3;          // đáy bể
+      ctx.beginPath(); ctx.moveTo(padL, SY(FLOOR)); ctx.lineTo(cssW - padR, SY(FLOOR)); ctx.stroke();
+      ctx.globalAlpha = 0.18;                               // mực nước tĩnh
+      ctx.beginPath(); ctx.moveTo(padL, SY(0)); ctx.lineTo(cssW - padR, SY(0)); ctx.stroke();
+      ctx.globalAlpha = 1;
+
+      ctx.strokeStyle = WAVE; ctx.lineWidth = 2; ctx.beginPath();
+      for (let i = 0; i <= 400; i++) {
+        const xm = (SPAN * i) / 400, y = SY(-eta(xm));
+        i ? ctx.lineTo(SX(xm), y) : ctx.moveTo(SX(xm), y);
+      }
+      ctx.stroke(); ctx.lineWidth = 1;
+
+      // thước bước sóng giữa hai đỉnh liên tiếp
+      if (SX_M - lam > 0.25) {
+        const yA = SY(0.55);
+        ctx.strokeStyle = WAVE; ctx.globalAlpha = 0.75;
+        ctx.beginPath(); ctx.moveTo(SX(SX_M - lam), yA); ctx.lineTo(SX(SX_M), yA); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(SX(SX_M - lam), yA - 4); ctx.lineTo(SX(SX_M - lam), yA + 4);
+        ctx.moveTo(SX(SX_M), yA - 4); ctx.lineTo(SX(SX_M), yA + 4); ctx.stroke();
+        ctx.globalAlpha = 1; ctx.fillStyle = WAVE;
+        ctx.font = '10px system-ui,sans-serif'; ctx.textAlign = 'center';
+        ctx.fillText(`λ = ${num(lam)} m`, SX(SX_M - lam / 2), yA - 7);
+      }
+
+      // người bơi + mũi tên độ sâu
+      ctx.fillStyle = MARK;
+      ctx.beginPath();
+      ctx.ellipse(SX(SX_M), SY(d), (0.85 / SPAN) * plotW, (0.13 / (FLOOR + HEAD)) * sceneH, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = MARK; ctx.globalAlpha = 0.65;
+      ctx.beginPath(); ctx.moveTo(SX(SX_M), SY(0)); ctx.lineTo(SX(SX_M), SY(d)); ctx.stroke();
+      ctx.globalAlpha = 1;
+
+      ctx.fillStyle = fg; ctx.globalAlpha = 0.55;
+      ctx.font = '10px system-ui,sans-serif'; ctx.textAlign = 'right';
+      for (const dm of [0, 1, 2]) ctx.fillText(`${dm} m`, padL - 4, SY(dm) + 3);
+      ctx.textAlign = 'left';
+      ctx.fillText(`d = ${num(d)} m`, SX(SX_M) + 8, SY(d) + 3);
+      ctx.fillText('mặt nước', padL + 4, SY(0) - 5);
+      ctx.textAlign = 'center';
+      for (const xm of [2, 4, 6]) ctx.fillText(`${xm} m`, SX(xm), SY(FLOOR) + 12);
+      ctx.globalAlpha = 1;
+
+      // ---- Đồ thị: % lực cản tạo sóng còn lại theo độ sâu -----------------
+      const CX = (dm: number) => padL + (dm / 1.5) * plotW;
+      const CY = (pc: number) => chartT + chartH - (pc / 100) * chartH;
+
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.3;
+      ctx.beginPath(); ctx.moveTo(padL, chartT); ctx.lineTo(padL, chartT + chartH);
+      ctx.lineTo(cssW - padR, chartT + chartH); ctx.stroke();
+      ctx.globalAlpha = 0.55; ctx.fillStyle = fg;
+      ctx.font = '10px system-ui,sans-serif'; ctx.textAlign = 'right';
+      for (const pc of [0, 25, 50, 75, 100]) ctx.fillText(`${pc}%`, padL - 4, CY(pc) + 3);
+      ctx.textAlign = 'center';
+      for (const dm of [0.5, 1.0, 1.5]) ctx.fillText(`${num(dm, 1)} m`, CX(dm), chartT + chartH + 14);
+      ctx.globalAlpha = 1;
+
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.4; ctx.setLineDash([4, 4]);
+      ctx.beginPath(); ctx.moveTo(padL, CY(5)); ctx.lineTo(cssW - padR, CY(5)); ctx.stroke();
+      ctx.setLineDash([]); ctx.globalAlpha = 0.55; ctx.fillStyle = fg; ctx.textAlign = 'left';
+      ctx.fillText('ngưỡng 5%', padL + 6, CY(5) - 4);
+      ctx.globalAlpha = 1;
+
+      ctx.strokeStyle = CURVE; ctx.lineWidth = 2; ctx.beginPath();
+      for (let i = 0; i <= 240; i++) {
+        const dm = (1.5 * i) / 240, y = CY(100 * frac(v, dm));
+        i ? ctx.lineTo(CX(dm), y) : ctx.moveTo(CX(dm), y);
+      }
+      ctx.stroke(); ctx.lineWidth = 1;
+
+      ctx.fillStyle = MARK;
+      ctx.beginPath(); ctx.arc(CX(d), CY(100 * f), 6, 0, Math.PI * 2); ctx.fill();
+
+      // ---- Readout --------------------------------------------------------
+      const pct = 100 * f;
+      const zone = pct >= 50
+        ? ' · <b>vẫn gần như bơi nổi</b>'
+        : pct <= 5
+          ? ' · <b>vùng đã xoá sạch lực cản tạo sóng</b>'
+          : '';
+      const deep = lam / 2 > FLOOR
+        ? ` · λ/2 = ${num(lam / 2)} m vượt đáy bể 2 m — sóng bắt đầu "chạm đáy", công thức nước sâu hết hiệu lực`
+        : '';
+      readout.innerHTML =
+        `v = ${num(v)} m/s → λ = <b>${num(lam)} m</b>, k = ${num(k)} rad/m · chìm ${num(d)} m: ` +
+        `lực cản tạo sóng còn <b>${num(pct, pct < 10 ? 2 : 1)}%</b>${zone}` +
+        ` · cần <b>${num(d5)} m</b> để xuống dưới 5%${deep}`;
+    }
+
+    root.querySelectorAll('input').forEach((el) => el.addEventListener('input', draw));
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="boi-ngam-vi-sao-nhanh-hon-boi-noi"]').forEach(setup);
+</script>

@@ -1,0 +1,91 @@
+---
+title: "Bạn có một bình xăng phụ 20 kJ — và nó cạn sau đúng 400 giây"
+seoTitle: "Công suất tới hạn CP và W′: vì sao nước rút chỉ mua được vài trăm mét"
+description: "Mọi nỗ lực đều nằm trên P = CP + W′/t: một ngưỡng bền vững gần như vô hạn, cộng một bình chứa hữu hạn cỡ 20 kJ. Đạp 300 W khi CP = 250 W, bình cạn sau đúng 400 giây. Và dù tiêu nhanh hay chậm, cả bình ấy chỉ mua cho bạn khoảng 200–290 mét đường."
+pubDate: 2026-09-02
+tags: ["vat-ly", "co-hoc", "javascript"]
+translationId: "cong-suat-toi-han-va-binh-xang-phu"
+---
+
+import CriticalPower from '../../../components/demos/CriticalPower.astro';
+
+Bạn leo con dốc quen thuộc. Nửa đầu chân vẫn nhẹ, rồi tới một điểm không
+hề báo trước, đùi cứng lại và tốc độ sụp — dù bạn không đạp mạnh thêm
+chút nào. Cảm giác "hết pin" ấy không phải ẩn dụ mềm: có một cái bình vừa
+cạn, và bạn tính được đúng giây nó cạn.
+
+<CriticalPower />
+
+## Một ngưỡng, một cái bình, hết
+
+Hàng nghìn bài kiểm tra kiệt sức trong phòng lab từ thập niên 1960 hội tụ
+về một quan hệ hai tham số bướng bỉnh đến khó tin:
+
+```
+P(t) = CP + W′/t        ⇔        t = W′ / (P − CP)
+```
+
+**CP** — công suất tới hạn — là ngưỡng mà dưới nó cơ thể còn kịp dọn sạch
+những gì nó thải ra: mô hình cho `t` vô hạn. **W′** là một kho năng lượng
+*hữu hạn*, đo bằng joule, chỉ tiêu được khi bạn đạp trên ngưỡng — và nó
+không quan tâm bạn tiêu kiểu gì, nó chỉ đếm tổng. Với một tay đua phong
+trào tử tế, CP = 250 W và W′ = 20 kJ: đạp 300 W thì rò 50 W
+mỗi giây, cạn sau **400 giây**; đạp 450 W thì rò 200 W, cạn sau **100
+giây**; đạp 583 W còn đúng **60 giây**. Ba dòng, cùng một con số 20 000 J:
+không có tỉ giá ưu đãi nào dành cho người gan lì.
+
+## Cái bình ấy chứa chưa tới 5 kilocalo
+
+Hãy cảm nhận độ lớn của 20 kJ: **4,78 kcal**, tức công cơ học trong
+khoảng 1,2 gam đường. Toàn bộ khả năng vượt ngưỡng của bạn, mọi cú bứt
+tốc trong đời đi xe, gói gọn trong một mẩu kẹo.
+
+Nó nhỏ tới mức qua mốc một giờ thì gần như biến mất khỏi phép tính: thay
+`t` = 3 600 s, P = 250 + 5,6 = **255,6 W**, hơn CP đúng 2%. Bài kiểm tra
+"công suất một giờ" mà dân đạp xe tôn thờ hoá ra đang đo CP chứ không gì
+khác. Ngược lại, ở thang một phút thì cái bình *là* toàn bộ câu
+chuyện: trong 583 W kia, 250 W đến từ ngưỡng và 333 W đến từ bình.
+
+## Nước rút chỉ mua được vài trăm mét — càng gắng càng ít
+
+Câu hỏi thực dụng: đổ hết bình ra đường thì được bao nhiêu mét? Lấy một
+tay đua 80 kg cả xe, `CdA` = 0,32 m², hệ số lăn 0,005, rồi so với chính
+anh ta nếu cứ ngồi yên ở CP suốt quãng thời gian đó:
+
+| Đạp | Trụ được | Hơn được |
+|---|---|---|
+| 300 W | 400 s | **284 m** |
+| 450 W | 100 s | **244 m** |
+| 600 W | 57 s | **217 m** |
+| 900 W | 31 s | **183 m** |
+
+Cùng một bình 20 kJ, càng tiêu hung càng lãi ít. Thủ phạm là
+[chế độ v³ của sức cản không khí](/vi/posts/dap-xe-nhanh-gap-doi-tra-gia-gap-tam):
+joule rút ra ở 50 km/h phải nộp tô cho không khí nhiều hơn hẳn cùng joule
+ấy tiêu ở 39 km/h. Vậy **W′ của bạn đáng giá 200 đến 290 mét đường bằng,
+không hơn**. Vì thế cuộc đua đường trường luôn ngã ngũ trong 200 m cuối,
+và cú tấn công đơn độc từ xa gần như luôn bị bắt lại: người trốn không
+thiếu ý chí, anh ta chỉ có một ngân sách hữu hạn — độc tài y hệt
+[Δv của một quả tên lửa](/vi/posts/phuong-trinh-ten-lua-che-do-doc-tai-cua-logarit).
+
+## Trường hợp biên: hyperbol nói bạn đạp được 2 250 W trong 10 giây
+
+Đẩy công thức về phía trái, nó vỡ ngay lập tức. Thay `t` = 10 s: P = 250
++ 2 000 = **2 250 W**. Một người có CP 250 W đạt đỉnh khoảng 900–1 000 W,
+còn kỷ lục của dân nước rút lòng chảo cũng chỉ quanh 2 000 W và giữ được
+hai giây. Dưới mốc hai phút, thứ cấp năng lượng không còn là W′ mà là hệ
+ATP–creatine phosphate: một bể chứa khác, động học khác. Đó là dải mờ đỏ
+dưới đáy đồ thị.
+
+Đầu kia gãy êm hơn nhưng sâu hơn. Thay P = 251 W, chỉ trên ngưỡng đúng
+một watt: mô hình hứa **20 000 giây**, tức 5 giờ 33 phút liên tục. Giả
+định "W′ là hằng số" mới là chỗ sai — hạ xuống dưới CP là bình *tự nạp
+lại*, theo đúng kiểu [tiệm cận hàm mũ quen
+thuộc](/vi/posts/chu-ky-ban-ra-khong-hat-nao-biet-tuoi-minh): ngồi thấp
+hơn CP chừng 100 W thì hằng số thời gian nạp cỡ 517 giây, tức **sáu phút
+lấy lại nửa bình**.
+
+Chỗ gãy ấy lại là chỗ hay nhất. Nếu bình nạp lại được thì trong một cuộc
+đua criterium một tiếng, bạn không tiêu 20 kJ — bạn tiêu 20 kJ *nhiều
+lần*, mỗi lần cách nhau vài phút thả trôi trong đoàn. Cái bình không quan
+tâm bạn tiêu nhanh hay chậm, nhưng nó đếm rất kỹ số lần bạn kịp đổ đầy lại.

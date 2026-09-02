@@ -1,0 +1,206 @@
+---
+// Parametric pumping of a swing (standing pump).
+// Sudden shortening at the bottom conserves angular momentum about the pivot:
+//   m·l1²·ω1 = m·l2²·ω2  →  v2/v1 = l1/l2  →  KE ×(l1/l2)²
+// Rising to the new extreme with length l2, then lengthening back to l1 at
+// the extreme (where θ̇ = 0, so no angular-momentum penalty) gives the exact
+// half-cycle law:  (1 − cos θ) ×(l1/l2)³.
+// Derivation is exact for any Δ and any amplitude; the physical assumptions
+// are (a) the stand/squat is fast compared with the period and (b) a point
+// mass on a massless chain. Damping is a lumped 5 % of the swing energy per
+// half cycle (air drag + pivot friction); real drag is quadratic in speed, so
+// the true loss fraction grows with amplitude.
+// Plot is clipped at 90°: past that a chain swing goes slack (tension at the
+// extreme is mg·cos θmax, which changes sign at 90°).
+---
+
+<figure class="demo" data-demo="bom-xich-du-bang-dung-len-ngoi-xuong">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Chiều dài xích khi ngồi l₁ (m) <output data-out="l"></output>
+      <input type="range" data-in="l" min="1.5" max="4" step="0.1" value="2.5" /></label>
+    <label>Nâng trọng tâm khi đứng lên Δ (cm) <output data-out="d"></output>
+      <input type="range" data-in="d" min="5" max="50" step="1" value="30" /></label>
+    <label>Biên độ ban đầu (độ) <output data-out="a"></output>
+      <input type="range" data-in="a" min="2" max="15" step="0.5" value="5" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Trái: ở hai đầu vòng cung bạn ngồi (xích dài l₁), qua đáy bạn đứng lên
+    (xích ngắn còn l₂ = l₁ − Δ). Phải: biên độ sau mỗi nhịp đứng-ngồi. Mỗi
+    bậc nhân đại lượng (1 − cos θ) với (l₁/l₂)³ — đường xanh là lý tưởng,
+    đường cam đã trừ 5% hao mỗi nhịp cho cản không khí và ma sát trục.
+    Đường đỏ là mốc 30°; đồ thị cắt ở 90° vì quá đó xích chùng.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const CURVE = '#2563eb', MARK = '#dc2626', SECOND = '#f59e0b';
+  const G = 9.81, LOSS = 0.05, NMAX = 18, TARGET = 30;
+  const RAD = Math.PI / 180;
+  const vi = (x: number, n = 2) => x.toFixed(n).replace('.', ',');
+  const degOf = (a: number) => Math.acos(1 - Math.min(a, 1)) / RAD;
+
+  // First half-cycle count that reaches TARGET, or null if it never does.
+  function pumpsTo(a0: number, k: number) {
+    const aT = 1 - Math.cos(TARGET * RAD);
+    if (k <= 1) return null;
+    const n = Math.ceil(Math.log(aT / a0) / Math.log(k));
+    return n > 400 ? null : Math.max(n, 0);
+  }
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (k: string) => root.querySelector(`[data-in="${k}"]`) as HTMLInputElement;
+    const output = (k: string) => root.querySelector(`[data-out="${k}"]`) as HTMLOutputElement;
+
+    function draw() {
+      const l1 = Number(input('l').value);
+      const dcm = Number(input('d').value);
+      const th0 = Number(input('a').value);
+      output('l').textContent = vi(l1, 2);
+      output('d').textContent = String(dcm);
+      output('a').textContent = vi(th0, 1);
+
+      const l2 = Math.max(0.25, l1 - dcm / 100);
+      const rat = l1 / l2;
+      const kIdeal = rat ** 3;
+      const kDamp = kIdeal * (1 - LOSS);
+      const a0 = 1 - Math.cos(th0 * RAD);
+
+      const ideal: number[] = [], damped: number[] = [];
+      let ai = a0, ad = a0;
+      for (let n = 0; n <= NMAX; n++) {
+        ideal.push(degOf(ai)); damped.push(degOf(ad));
+        ai *= kIdeal; ad *= kDamp;
+      }
+      const nI = pumpsTo(a0, kIdeal), nD = pumpsTo(a0, kDamp);
+      const half = Math.PI * Math.sqrt((l1 + l2) / 2 / G);
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.46);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+      ctx.font = '10px system-ui,sans-serif';
+
+      // ---- left panel: the swing in its two postures, drawn at 30° ----
+      const panelW = Math.min(178, cssW * 0.33);
+      const th = TARGET * RAD;
+      // Fit the arc inside the panel both ways: height, and the 2·L·sin30 span.
+      const L = Math.min(cssH - 74, (panelW - 26) / (2 * Math.sin(th)));
+      const px = panelW / 2, py = Math.max(18, (cssH - 40 - L) / 2);
+      const sc = L / l1;
+      const sx = px + sc * l1 * Math.sin(th), sy = py + sc * l1 * Math.cos(th);
+
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.25;
+      ctx.beginPath();
+      ctx.arc(px, py, sc * l1, Math.PI / 2 - th, Math.PI / 2 + th);
+      ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(px, py);
+      ctx.lineTo(px - sc * l1 * Math.sin(th), sy); ctx.stroke();
+      ctx.setLineDash([3, 3]);
+      ctx.beginPath(); ctx.moveTo(px, py); ctx.lineTo(px, py + sc * l1); ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.globalAlpha = 1;
+
+      ctx.strokeStyle = SECOND; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.moveTo(px, py); ctx.lineTo(sx, sy); ctx.stroke();
+      ctx.fillStyle = SECOND; ctx.beginPath(); ctx.arc(sx, sy, 5, 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle = CURVE;
+      ctx.beginPath(); ctx.moveTo(px, py); ctx.lineTo(px, py + sc * l2); ctx.stroke();
+      ctx.fillStyle = CURVE; ctx.beginPath(); ctx.arc(px, py + sc * l2, 5, 0, Math.PI * 2); ctx.fill();
+      ctx.lineWidth = 1;
+
+      ctx.strokeStyle = MARK;
+      ctx.beginPath();
+      ctx.moveTo(px - 9, py + sc * l2); ctx.lineTo(px - 9, py + sc * l1);
+      ctx.moveTo(px - 13, py + sc * l2); ctx.lineTo(px - 5, py + sc * l2);
+      ctx.moveTo(px - 13, py + sc * l1); ctx.lineTo(px - 5, py + sc * l1);
+      ctx.stroke();
+      ctx.fillStyle = MARK; ctx.textAlign = 'right';
+      ctx.fillText('Δ', px - 14, py + sc * (l1 + l2) / 2 + 3);
+
+      ctx.fillStyle = fg; ctx.globalAlpha = 0.75; ctx.textAlign = 'center';
+      ctx.fillText('30°', px + 14, py + 26);
+      ctx.textAlign = 'left';
+      ctx.globalAlpha = 1;
+      ctx.fillStyle = SECOND;
+      ctx.fillText(`ngồi l₁ = ${vi(l1, 2)} m`, 2, cssH - 21);
+      ctx.fillStyle = CURVE;
+      ctx.fillText(`đứng l₂ = ${vi(l2, 2)} m`, 2, cssH - 8);
+
+      // ---- right panel: amplitude staircase ----
+      const padL = panelW + 34, padB = 26, padT = 14, padR = 8;
+      const X = (n: number) => padL + (n / NMAX) * (cssW - padL - padR);
+      const Y = (deg: number) => padT + ((90 - deg) / 90) * (cssH - padB - padT);
+
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.3;
+      ctx.beginPath();
+      ctx.moveTo(padL, padT); ctx.lineTo(padL, cssH - padB); ctx.lineTo(cssW - padR, cssH - padB);
+      ctx.stroke();
+      ctx.globalAlpha = 0.55; ctx.fillStyle = fg; ctx.textAlign = 'center';
+      for (const n of [0, 6, 12, 18]) ctx.fillText(`${n}`, X(n), cssH - padB + 14);
+      ctx.fillText('số nhịp đứng-ngồi', (padL + cssW - padR) / 2, cssH - padB + 25);
+      ctx.textAlign = 'right';
+      for (const dg of [30, 60, 90]) ctx.fillText(`${dg}°`, padL - 4, Y(dg) + 3);
+      ctx.globalAlpha = 1;
+
+      ctx.strokeStyle = MARK; ctx.globalAlpha = 0.7; ctx.setLineDash([4, 4]);
+      ctx.beginPath(); ctx.moveTo(padL, Y(TARGET)); ctx.lineTo(cssW - padR, Y(TARGET)); ctx.stroke();
+      ctx.setLineDash([]); ctx.globalAlpha = 1;
+
+      const stair = (arr: number[], color: string, alpha: number) => {
+        ctx.strokeStyle = color; ctx.globalAlpha = alpha; ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.moveTo(X(0), Y(arr[0]));
+        for (let n = 0; n < NMAX; n++) {
+          ctx.lineTo(X(n + 1), Y(arr[n]));
+          ctx.lineTo(X(n + 1), Y(arr[n + 1]));
+        }
+        ctx.stroke(); ctx.lineWidth = 1; ctx.globalAlpha = 1;
+      };
+      stair(damped, SECOND, 0.85);
+      stair(ideal, CURVE, 1);
+
+      if (nD !== null && nD <= NMAX) {
+        ctx.fillStyle = MARK;
+        ctx.beginPath(); ctx.arc(X(nD), Y(TARGET), 5, 0, Math.PI * 2); ctx.fill();
+      }
+      ctx.fillStyle = CURVE; ctx.textAlign = 'left';
+      ctx.fillText('lý tưởng', X(0) + 6, padT + 10);
+      ctx.fillStyle = SECOND;
+      ctx.fillText('có hao 5%/nhịp', X(0) + 6, padT + 23);
+
+      const nText = nD === null
+        ? 'không bao giờ tới 30°'
+        : `<b>${nD} nhịp</b> để vượt 30° (lý tưởng ${nI} nhịp) ≈ ${vi(nD * half, 1)} s`;
+      const flag = kDamp <= 1
+        ? ' · <b>dưới ngưỡng: hao lớn hơn thu, nhún cả buổi xích đu vẫn tắt dần</b>'
+        : '';
+      readout.innerHTML =
+        `Ngồi l₁ = ${vi(l1, 2)} m, đứng lên nâng trọng tâm ${vi(dcm / 100, 2)} m → l₂ = ${vi(l2, 2)} m.` +
+        ` Động năng lúc đứng lên ×<b>${vi(rat ** 2, 3)}</b>; cả nhịp (1 − cos θ) ×<b>${vi(kIdeal, 3)}</b>.` +
+        ` Từ ${vi(th0, 1)}°: ${nText}${flag}`;
+    }
+
+    root.querySelectorAll('input').forEach((el) => el.addEventListener('input', draw));
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="bom-xich-du-bang-dung-len-ngoi-xuong"]').forEach(setup);
+</script>

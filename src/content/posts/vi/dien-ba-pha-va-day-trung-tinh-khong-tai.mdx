@@ -1,0 +1,100 @@
+---
+title: "Ba dòng 10 ampe cộng lại bằng 0"
+seoTitle: "Điện ba pha và dây trung tính: công thức dòng khi tải lệch pha"
+description: "Trong tủ điện ba pha cân bằng, ba dòng 10 A cộng lại đúng bằng 0 và dây trung tính nằm chơi. Chỉ cần lệch thành 9–10–11 A, nó gánh ngay 1,73 A — đúng căn ba lần độ lệch. Còn với đèn LED và sạc điện thoại, sợi dây ấy có thể nóng hơn cả dây pha."
+pubDate: 2026-09-02
+tags: ["vat-ly", "dien-hoc", "dao-dong", "javascript"]
+translationId: "dien-ba-pha-va-day-trung-tinh-khong-tai"
+---
+
+import ThreePhaseNeutral from '../../../components/demos/ThreePhaseNeutral.astro';
+
+Kẹp ampe kìm lần lượt vào ba dây pha trong tủ điện: 10 A, 10 A, 10 A. Kẹp
+tiếp sợi thứ tư chạy ngay bên cạnh — dây trung tính — và kim đứng yên ở
+**0**. Ba mươi ampe vừa đi đâu, mà sợi dây kia lấy quyền gì để được nghỉ?
+
+<ThreePhaseNeutral />
+
+## Ba vector khép kín thành tam giác đều
+
+Ba dòng ấy không lớn cùng lúc. Lưới ba pha cấp ba điện áp lệch nhau **120°**
+về thời gian: pha B trễ pha A một phần ba chu kỳ (6,67 ms ở 50 Hz), pha C
+trễ thêm một phần ba nữa. Nhìn panel trên của demo, lúc dòng A lên đỉnh thì
+B và C đều đang âm, mỗi cái đúng một nửa đỉnh của A — cộng lại bằng 0.
+Không phải trung bình bằng 0, mà **bằng 0 ở từng khoảnh khắc**, suốt cả
+chu kỳ.
+
+Panel dưới nói gọn hơn. Ba dòng là ba vector chĩa ra ba hướng cách nhau
+120°; nối đuôi nhau, chúng khép thành **tam giác đều** và điểm cuối rơi
+đúng về gốc. Dây trung tính chỉ phải mang đoạn hở giữa gốc và điểm cuối;
+tam giác khép kín thì đoạn hở không tồn tại.
+
+Đoạn hở ấy tính bằng định lý cosin:
+
+```
+I_N = √(I_A² + I_B² + I_C² − I_A·I_B − I_B·I_C − I_C·I_A)
+```
+
+và viết lại được thành một dạng nói thẳng hơn:
+
+```
+I_N = √( ½·[ (I_A−I_B)² + (I_B−I_C)² + (I_C−I_A)² ] )
+```
+
+Dây trung tính **không quan tâm ba dòng lớn bao nhiêu, chỉ quan tâm chúng
+khác nhau bao nhiêu**.
+
+## Lệch một ampe, trung tính gánh 1,73
+
+Kéo thanh trượt cho lệch nhẹ — 9, 10, 11 A, mức lệch mà tủ điện nào cũng có
+— và dây trung tính lập tức mang **1,73 A**. Không phải 1 A như trực giác
+mách, mà **√3 lần** độ lệch, vì ba vector giờ hở ra theo phương xiên chứ
+không cùng phương. Lệch gấp đôi, 8–10–12, cho 3,46 A.
+
+Đầu kia của thang mới đáng nhìn: **mất hẳn một pha**. Cầu chì pha C đứt,
+còn 10–10–0, và dây trung tính vọt lên **10 A tròn** — bằng nguyên một dây
+pha. Đó là trần của công thức, và trần ấy rất chặt: quét khắp không gian ba
+dòng, I_N **không bao giờ vượt dòng pha lớn nhất**. Nhớ lấy câu đó — lát
+nữa nó bị phá.
+
+## Vì sao lưới điện đi bốn dây thay vì sáu
+
+Con số 0 kia là lý do kinh tế của cả ngành điện. Ba mạch một pha riêng lẻ
+cần **sáu sợi dây**: ba dây nóng, ba dây nguội, mỗi dây nguội cõng đủ dòng
+quay về [điểm sao của máy biến
+áp](/vi/posts/may-bien-ap-doi-ap-lay-dong-va-nguoc-lai). Gộp lại cho lệch
+120°, ba đường về tự triệt tiêu và bạn chỉ còn **bốn sợi**, sợi thứ tư gần
+như rỗng — bớt một phần ba khối đồng cho cùng lượng điện.
+
+Phần thưởng thứ hai đắt hơn. Với 10 A mỗi dây ở lưới 380 V, hệ ba pha
+chuyển **6,58 kW**; chuyển từng ấy công suất qua một mạch 220 V cần
+**29,9 A** — gấp ba dòng, mà tổn hao I²R thì [đi theo bình
+phương](/vi/posts/vi-sao-duong-day-tai-dien-phai-cao-the): gần **6 lần**
+nhiệt vứt dọc đường với cùng tiết diện dây. Còn món quà chỉ động cơ mới
+hưởng: công suất tức thời của tải ba pha cân bằng là **hằng số phẳng lì**,
+trong khi mạch một pha đập từ 0 lên gấp đôi công suất trung bình 100 lần
+mỗi giây — máy nén và thang máy quay êm vì thế.
+
+## Trường hợp biên: đèn LED phá trần của công thức
+
+Cả công thức trên đứng trên một giả định: dòng **hình sin**. Đèn LED, sạc
+điện thoại và máy tính thì không — chúng hút dòng thành từng nhát nhọn quanh
+đỉnh sóng, và trong đám hài sinh ra, **hài bậc ba** là kẻ phá luật. Hài bậc
+ba của ba pha lệch nhau 3 × 120° = 360°, tức **đồng pha hoàn toàn**: chúng
+không triệt tiêu trong dây trung tính mà **cộng dồn gấp ba**.
+
+Cái trần vừa nói sập ngay tại đó. Dòng pha chứa 70,7% hài bậc ba thì trung
+tính mang đúng **1,73 lần dòng pha** — ba dây pha 10 A, dây trung tính
+17,3 A. Tải méo tới mức thuần hài bậc ba thì tỉ số chạm **3 lần**. Trong khi
+lối đi dây cũ lại cho phép dây trung tính **nhỏ hơn** dây pha, vì "nó có tải
+bao giờ đâu": sợi bé nhất trong ống hoá ra nóng nhất, và nó không có aptomat
+riêng để nhảy — [đúng kiểu chỗ tiếp xúc
+lỏng](/vi/posts/dien-tro-tiep-xuc-o-cam-long-gay-chay) âm thầm nướng ổ cắm.
+
+Kiểu hỏng tệ hơn cháy dây là **đứt dây trung tính** giữa lúc tải đang lệch.
+Mất điểm trung tính, hai pha có tải thành ra mắc nối tiếp nhau ngang
+**380 V** dây–dây, rồi chia áp theo điện trở. Một dãy đèn 100 W nối tiếp
+một bếp điện 2 000 W: dãy đèn — kẻ nhẹ tải — lãnh **362 V** thay cho 220 V,
+ăn 271 W, gấp 2,7 lần định mức, và nổ trong vài giây. Sợi dây "không tải" ấy
+hoá ra là thứ duy nhất giữ cho 220 V của bạn đúng là 220 V; phần lớn người
+dùng điện chỉ biết nó tồn tại vào đúng cái đêm nó đứt.

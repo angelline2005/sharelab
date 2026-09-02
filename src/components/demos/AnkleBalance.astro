@@ -1,0 +1,177 @@
+---
+// Inverted pendulum of quiet standing. Uniform rod of height H pivoting at
+// the ankle: I = mH²/3, COM at h = H/2 → θ̈ = θ/τ² with τ = √(2H/(3g)),
+// so θ(t) = θ₀·cosh(t/τ) — runaway, not oscillation.
+// Tipping threshold: COM ground projection leaves the base of support,
+// sin θ_max = d/h, with d the ankle→toe (0,75·L) or ankle→heel (0,25·L) arm.
+// Validity: linearisation θ̈ = θ/τ² vs the exact θ̈ = (3g/2H)·sin θ differs by
+// 0,03% in time-to-threshold over the whole slider range (θ ≤ 15°), so the
+// closed form is safe here; what fails first is ankle torque, not the maths.
+---
+
+<figure class="demo" data-demo="dung-yen-la-chuoi-nga-lien-tiep-mot-giay">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Chiều cao cơ thể (m) <output data-out="h"></output>
+      <input type="range" data-in="h" min="1.10" max="2.00" step="0.01" value="1.70" /></label>
+    <label>Góc lệch ban đầu (độ) <output data-out="a"></output>
+      <input type="range" data-in="a" min="0.1" max="3.0" step="0.1" value="0.5" /></label>
+    <label>Chiều dài bàn chân (cm) <output data-out="f"></output>
+      <input type="range" data-in="f" min="15" max="35" step="0.5" value="26" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Trái: người nhìn ngang, bàn chân vẽ đúng tỉ lệ với thân, mắt cá nằm ở
+    khoảng 1/4 bàn chân tính từ gót. Hai tia là hai tư thế tới hạn — trọng
+    tâm rơi đúng mép gót (đỏ) và đúng mũi chân (cam). Phải: góc nghiêng theo
+    thời gian. Đường cong là cosh chứ không phải sin: nó không quay lại, chỉ
+    vọt đi, và vạch đứng là lúc mắt cá hết đường cứu.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const G = 9.81;
+  const CURVE = '#2563eb', MARK = '#dc2626', LM = '#f59e0b';
+  const vi = (x: number, n = 2) => x.toFixed(n).replace('.', ',');
+  const acosh = (x: number) => Math.log(x + Math.sqrt(x * x - 1));
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (k: string) => root.querySelector(`[data-in="${k}"]`) as HTMLInputElement;
+    const output = (k: string) => root.querySelector(`[data-out="${k}"]`) as HTMLOutputElement;
+
+    function draw() {
+      const H = Number(input('h').value);
+      const a0 = Number(input('a').value);
+      const L = Number(input('f').value) / 100;
+      output('h').textContent = vi(H);
+      output('a').textContent = vi(a0, 1);
+      output('f').textContent = vi(Number(input('f').value), 1);
+
+      const tau = Math.sqrt((2 * H) / (3 * G));
+      const hc = H / 2;
+      const dHeel = 0.25 * L, dToe = 0.75 * L;
+      const thB = (Math.asin(Math.min(1, dHeel / hc)) * 180) / Math.PI;
+      const thF = (Math.asin(Math.min(1, dToe / hc)) * 180) / Math.PI;
+      const tB = a0 >= thB ? 0 : tau * acosh(thB / a0);
+      const tF = a0 >= thF ? 0 : tau * acosh(thF / a0);
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.5);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+      ctx.font = '10px system-ui,sans-serif';
+      ctx.lineWidth = 1;
+
+      // ---------- left panel: side view, body and foot to one scale ----------
+      const xs = Math.round(cssW * 0.38);
+      const gy = cssH - 30, topPad = 16;
+      const s = (gy - topPad) / 2.1;               // px per metre
+      const ax = Math.round(xs * 0.46);            // ankle x
+
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.3;
+      ctx.beginPath(); ctx.moveTo(6, gy); ctx.lineTo(xs - 12, gy); ctx.stroke();
+      ctx.setLineDash([3, 3]); ctx.globalAlpha = 0.22;
+      ctx.beginPath(); ctx.moveTo(ax, gy); ctx.lineTo(ax, gy - H * s); ctx.stroke();
+      ctx.setLineDash([]);
+
+      // foot, drawn on the same scale as the body
+      ctx.globalAlpha = 0.55; ctx.strokeStyle = fg; ctx.lineWidth = 4;
+      ctx.beginPath(); ctx.moveTo(ax - dHeel * s, gy); ctx.lineTo(ax + dToe * s, gy); ctx.stroke();
+      ctx.lineWidth = 1; ctx.globalAlpha = 1;
+
+      const body = (deg: number, dir: number, col: string, wdt: number) => {
+        const r = (deg * Math.PI) / 180;
+        ctx.strokeStyle = col; ctx.lineWidth = wdt;
+        ctx.beginPath(); ctx.moveTo(ax, gy);
+        ctx.lineTo(ax + dir * H * s * Math.sin(r), gy - H * s * Math.cos(r));
+        ctx.stroke();
+        const cx = ax + dir * hc * s * Math.sin(r), cy = gy - hc * s * Math.cos(r);
+        ctx.fillStyle = col;
+        ctx.beginPath(); ctx.arc(cx, cy, 3.5, 0, Math.PI * 2); ctx.fill();
+        ctx.setLineDash([2, 3]); ctx.globalAlpha = 0.7;
+        ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(cx, gy); ctx.stroke();
+        ctx.setLineDash([]); ctx.globalAlpha = 1; ctx.lineWidth = 1;
+      };
+      body(thF, 1, LM, 2);
+      body(thB, -1, MARK, 3);
+
+      ctx.fillStyle = fg; ctx.globalAlpha = 0.6; ctx.textAlign = 'center';
+      ctx.fillText('gót', ax - dHeel * s, gy + 13);
+      ctx.fillText('mũi', ax + dToe * s, gy + 24);
+      ctx.globalAlpha = 1;
+      ctx.fillStyle = MARK; ctx.textAlign = 'left';
+      ctx.fillText(`ngã sau ${vi(thB, 1)}°`, 6, topPad + 2);
+      ctx.fillStyle = LM; ctx.textAlign = 'right';
+      ctx.fillText(`ngã trước ${vi(thF, 1)}°`, xs - 12, topPad + 2);
+
+      // ---------- right panel: theta(t) ----------
+      const pL = xs + 40, pR = 10, pT = 16, pB = 30;
+      const tMax = Math.max(0.35, tF * 1.18);
+      const yMax = thF * 1.28;
+      const X = (t: number) => pL + (t / tMax) * (cssW - pL - pR);
+      const Y = (d: number) => cssH - pB - (d / yMax) * (cssH - pB - pT);
+
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.3;
+      ctx.beginPath(); ctx.moveTo(pL, pT); ctx.lineTo(pL, cssH - pB); ctx.lineTo(cssW - pR, cssH - pB); ctx.stroke();
+      ctx.globalAlpha = 0.55; ctx.fillStyle = fg; ctx.textAlign = 'center';
+      for (let t = 0.5; t <= tMax; t += 0.5) ctx.fillText(`${vi(t, 1)} s`, X(t), cssH - pB + 14);
+      ctx.textAlign = 'right';
+      for (const d of [5, 10, 15, 20]) if (d < yMax) ctx.fillText(`${d}°`, pL - 4, Y(d) + 3);
+      ctx.globalAlpha = 1;
+
+      const thres = (d: number, t: number, col: string, lab: string, up: number) => {
+        ctx.strokeStyle = col; ctx.globalAlpha = 0.75; ctx.setLineDash([4, 3]);
+        ctx.beginPath(); ctx.moveTo(pL, Y(d)); ctx.lineTo(cssW - pR, Y(d)); ctx.stroke();
+        if (t > 0) { ctx.beginPath(); ctx.moveTo(X(t), Y(d)); ctx.lineTo(X(t), cssH - pB); ctx.stroke(); }
+        ctx.setLineDash([]); ctx.globalAlpha = 1; ctx.fillStyle = col; ctx.textAlign = 'left';
+        ctx.fillText(lab, pL + 4, Y(d) - up);
+      };
+      thres(thF, tF, LM, `mũi chân ${vi(thF, 1)}° → ${vi(tF)} s`, 5);
+      thres(thB, tB, MARK, `mép gót ${vi(thB, 1)}° → ${vi(tB)} s`, 5);
+
+      ctx.strokeStyle = CURVE; ctx.lineWidth = 2; ctx.beginPath();
+      for (let i = 0; i <= 240; i++) {
+        const t = (tMax * i) / 240;
+        const d = Math.min(a0 * Math.cosh(t / tau), yMax * 1.05);
+        i ? ctx.lineTo(X(t), Y(d)) : ctx.moveTo(X(t), Y(d));
+      }
+      ctx.stroke(); ctx.lineWidth = 1;
+      ctx.fillStyle = CURVE;
+      ctx.beginPath(); ctx.arc(X(0), Y(a0), 4.5, 0, Math.PI * 2); ctx.fill();
+      ctx.textAlign = 'left'; ctx.globalAlpha = 0.85;
+      ctx.fillText(`θ = ${vi(a0, 1)}°·cosh(t/${vi(tau)})`, pL + 4, cssH - pB - 6);
+      ctx.globalAlpha = 1;
+
+      const late = a0 >= thB
+        ? ' · <b>đã quá mép gót: mắt cá không còn mô-men, chỉ còn bước chân</b>'
+        : tB < 0.85 ? ' · <b>dưới 0,85 s — hụt hơn một nhịp phản xạ nhìn-rồi-sửa</b>' : '';
+      readout.innerHTML =
+        `Cao ${vi(H)} m, bàn chân ${vi(L * 100, 1)} cm → τ = <b>${vi(tau)} s</b>, ` +
+        `góc nghiêng nhân đôi mỗi ${vi(tau * Math.LN2)} s · ` +
+        `lệch ${vi(a0, 1)}° ra sau chạm ngưỡng ${vi(thB, 1)}° sau <b>${vi(tB)} s</b>` +
+        ` (ra trước: ${vi(thF, 1)}° sau ${vi(tF)} s)${late}`;
+    }
+
+    root.querySelectorAll('input').forEach((el) => el.addEventListener('input', draw));
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="dung-yen-la-chuoi-nga-lien-tiep-mot-giay"]').forEach(setup);
+</script>

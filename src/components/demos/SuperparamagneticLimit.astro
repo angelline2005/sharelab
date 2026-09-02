@@ -1,0 +1,181 @@
+---
+// Néel–Arrhenius: τ = τ₀·exp(Ku·V/(k_B·T)), V = π·D³/6, τ₀ ≈ 1e−9 s.
+// Valid for single-domain, non-interacting grains well below the Curie point.
+// Ku is held constant here, so the T slider stops at 450 K — above that Ku(T)
+// itself collapses (Tc ≈ 700 K for CoCrPt, 750 K for FePt) and the closed form
+// would badly understate the loss. Reference values: CoCrPt granular media
+// Ku ≈ 5e5 J/m³, L1₀ FePt Ku ≈ 7e6 J/m³.
+---
+
+<figure class="demo" data-demo="gioi-han-sieu-thuan-tu-cua-o-cung">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Đường kính hạt D (nm) <output data-out="d"></output>
+      <input type="range" data-in="d" min="5" max="15" step="0.1" value="9" /></label>
+    <label>Hằng số dị hướng Ku (J/m³) <output data-out="k"></output>
+      <input type="range" data-in="k" min="1" max="100" step="0.5" value="5" /></label>
+    <label>Nhiệt độ T (K) <output data-out="t"></output>
+      <input type="range" data-in="t" min="250" max="450" step="1" value="300" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Mỗi hạt tinh thể từ là một cái công tắc hai chiều, và nhiệt độ phòng thử
+    lật nó khoảng một tỉ lần mỗi giây. Trục tung là thời gian trung bình hạt
+    còn nhớ chiều của mình — thang logarit, trải ba mươi bậc. Ba đường vàng là
+    ba mốc: một giây, mười năm (chuẩn lưu trữ), và tuổi Trái Đất. Vòng tròn bên
+    phải vẽ hạt đúng tỉ lệ. Ku giữ cố định theo nhiệt độ nên thang T dừng ở
+    450 K; gần điểm Curie thì chính Ku sụp và công thức này quá lạc quan.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const CURVE = '#2563eb', MARK = '#dc2626', REF = '#f59e0b';
+  const KB = 1.380649e-23, TAU0 = 1e-9, YR = 3.15576e7;
+
+  const vol = (D: number) => (Math.PI * Math.pow(D * 1e-9, 3)) / 6;
+  const ratio = (D: number, Ku: number, T: number) => (Ku * vol(D)) / (KB * T);
+  const logTau = (D: number, Ku: number, T: number) => -9 + ratio(D, Ku, T) / Math.LN10;
+
+  const vi = (n: number, d = 1) => n.toFixed(d).replace('.', ',');
+  const SUP = '⁰¹²³⁴⁵⁶⁷⁸⁹';
+  const sup = (n: number) => String(n).split('').map((c) => SUP[Number(c)]).join('');
+
+  function fmtTau(lg: number): string {
+    if (lg < -6) return vi((Math.pow(10, lg) * 1e9)) + ' ns';
+    if (lg < -3) return vi(Math.pow(10, lg) * 1e6) + ' µs';
+    if (lg < 0) return vi(Math.pow(10, lg) * 1e3) + ' ms';
+    const s = Math.pow(10, lg);
+    if (lg < 2) return vi(s) + ' giây';
+    if (lg < 3.7) return vi(s / 60) + ' phút';
+    if (lg < 5.3) return vi(s / 3600) + ' giờ';
+    if (lg < Math.log10(YR)) return vi(s / 86400) + ' ngày';
+    const y = lg - Math.log10(YR);
+    if (y < 4) return Math.round(Math.pow(10, y)).toLocaleString('vi-VN').replace(/\./g, ' ') + ' năm';
+    if (y < 6) return vi(Math.pow(10, y - 3)) + ' nghìn năm';
+    if (y < 9) return vi(Math.pow(10, y - 6)) + ' triệu năm';
+    if (y < 13) return vi(Math.pow(10, y - 9)) + ' tỉ năm';
+    return '10' + sup(Math.round(y)) + ' năm';
+  }
+
+  function fmtKu(u: number) {
+    return u < 10 ? vi(u) + '·10⁵ J/m³' : vi(u / 10) + '·10⁶ J/m³';
+  }
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (k: string) => root.querySelector(`[data-in="${k}"]`) as HTMLInputElement;
+    const output = (k: string) => root.querySelector(`[data-out="${k}"]`) as HTMLOutputElement;
+
+    function draw() {
+      const D = Number(input('d').value);
+      const kuU = Number(input('k').value);
+      const Ku = kuU * 1e5;
+      const T = Number(input('t').value);
+
+      output('d').textContent = vi(D);
+      output('k').textContent = fmtKu(kuU);
+      output('t').textContent = `${T} K (${Math.round(T - 273.15)} °C)`;
+
+      const x = ratio(D, Ku, T);
+      const lg = logTau(D, Ku, T);
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.5);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+
+      const strip = 92;
+      const padL = 50, padT = 14, padB = 30, padR = 10 + strip;
+      const x0 = padL, x1 = cssW - padR, y0 = padT, y1 = cssH - padB;
+      const LO = -9, HI = 21;
+      const X = (d: number) => x0 + ((d - 5) / 10) * (x1 - x0);
+      const Y = (l: number) => y0 + ((HI - l) / (HI - LO)) * (y1 - y0);
+
+      ctx.font = '10px system-ui,sans-serif';
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.3;
+      ctx.beginPath(); ctx.moveTo(x0, y0); ctx.lineTo(x0, y1); ctx.lineTo(x1, y1); ctx.stroke();
+      ctx.globalAlpha = 0.55; ctx.fillStyle = fg;
+      ctx.textAlign = 'center';
+      for (const d of [5, 7, 9, 11, 13, 15]) ctx.fillText(`${d}`, X(d), y1 + 13);
+      ctx.fillText('đường kính hạt D (nm)', (x0 + x1) / 2, y1 + 25);
+      ctx.textAlign = 'right';
+      for (const l of [-9, -3, 3, 9, 15, 21]) {
+        const lab = l < 0 ? `10⁻${sup(-l)} s` : `10${sup(l)} s`;
+        ctx.fillText(lab, x0 - 4, Y(l) + 3);
+      }
+      ctx.globalAlpha = 1;
+
+      // Three reference horizons.
+      const REFS: Array<[number, string]> = [
+        [0, '1 giây'], [Math.log10(10 * YR), '10 năm'], [Math.log10(4.54e9 * YR), 'tuổi Trái Đất'],
+      ];
+      ctx.setLineDash([4, 4]); ctx.strokeStyle = REF;
+      for (const [l, lab] of REFS) {
+        ctx.beginPath(); ctx.moveTo(x0, Y(l)); ctx.lineTo(x1, Y(l)); ctx.stroke();
+        ctx.fillStyle = REF; ctx.textAlign = 'left';
+        ctx.fillText(lab, x0 + 5, Y(l) - 4);
+      }
+      ctx.setLineDash([]);
+
+      // Retention curve vs grain diameter, clipped to the plot box.
+      ctx.save();
+      ctx.beginPath(); ctx.rect(x0, y0, x1 - x0, y1 - y0); ctx.clip();
+      ctx.strokeStyle = CURVE; ctx.lineWidth = 2; ctx.beginPath();
+      for (let i = 0; i <= 240; i++) {
+        const d = 5 + (10 * i) / 240;
+        const yy = Y(logTau(d, Ku, T));
+        i ? ctx.lineTo(X(d), yy) : ctx.moveTo(X(d), yy);
+      }
+      ctx.stroke(); ctx.lineWidth = 1;
+      ctx.restore();
+
+      ctx.fillStyle = MARK;
+      ctx.beginPath();
+      ctx.arc(X(D), Y(Math.max(LO, Math.min(HI, lg))), 6, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Grain drawn to scale in the right strip: 15 nm spans 66 px.
+      const cx = x1 + strip / 2, cy = (y0 + y1) / 2, px = 66 / 15;
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.35;
+      ctx.beginPath(); ctx.arc(cx, cy, (15 * px) / 2, 0, Math.PI * 2); ctx.stroke();
+      ctx.globalAlpha = 1;
+      ctx.fillStyle = lg < 0 ? MARK : CURVE;
+      ctx.beginPath(); ctx.arc(cx, cy, (D * px) / 2, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = fg; ctx.globalAlpha = 0.6; ctx.textAlign = 'center';
+      ctx.fillText('hạt · vòng ngoài 15 nm', cx, cy + 46);
+      ctx.fillText(`D = ${vi(D)} nm`, cx, cy - 40);
+      ctx.globalAlpha = 1;
+
+      const reg =
+        x < 2 ? ' · <b>siêu thuận từ hoàn toàn</b> — hạt lật tự do, không mang nổi một bit'
+        : lg < 0 ? ' · <b>vùng siêu thuận từ</b> — dữ liệu bay trước khi bạn kịp đọc'
+        : lg < Math.log10(10 * YR) ? ' · dưới chuẩn lưu trữ 10 năm'
+        : ' · đủ bền để làm ổ cứng';
+
+      readout.innerHTML =
+        `D = ${vi(D)} nm · Ku = ${fmtKu(kuU)} · T = ${T} K (${Math.round(T - 273.15)} °C)` +
+        ` → Ku·V/(k<sub>B</sub>T) = <b>${vi(x)}</b> → τ ≈ <b>${fmtTau(lg)}</b>${reg}`;
+    }
+
+    root.querySelectorAll('input').forEach((el) => el.addEventListener('input', draw));
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="gioi-han-sieu-thuan-tu-cua-o-cung"]').forEach(setup);
+</script>

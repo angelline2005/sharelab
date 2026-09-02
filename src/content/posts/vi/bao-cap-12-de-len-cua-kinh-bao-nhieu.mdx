@@ -1,0 +1,90 @@
+---
+title: "Bão cấp 12 đè lên cửa kính gần một tạ — còn mái nhà thì bị hút lên"
+seoTitle: "Hệ số áp lực gió C_p: vì sao bão bốc mái chứ không đè sập tường"
+description: "Gió 33 m/s ép tường đón gió 54 kg mỗi mét vuông, nhưng mép mái chịu C_p = −1,2: nó bị kéo LÊN bằng 82 kg mỗi mét vuông, mạnh gấp 1,5 lần. Mái tôn 60 m² nhận 2,24 tấn nhấc thẳng đứng trong khi chỉ nặng 0,9 tấn — và tự bay từ gió cấp 9."
+pubDate: 2026-09-02
+tags: ["vat-ly", "chat-luu", "khi-hau", "javascript"]
+translationId: "bao-cap-12-de-len-cua-kinh-bao-nhieu"
+---
+
+import RoofUplift from '../../../components/demos/RoofUplift.astro';
+
+Đêm bão, tấm cửa kính phòng khách phồng vào trong rồi rung lên từng đợt, và
+bạn tự hỏi nó đang gánh bao nhiêu. Câu trả lời có một con số — nhưng con số
+đáng sợ hơn nằm trên đầu bạn, và nó kéo lên chứ không đẩy vào:
+
+<RoofUplift />
+
+## Một tạ ép lên tấm kính
+
+Gió mang động năng; chặn nó lại thì động năng thành áp suất:
+
+```
+p = ½ · ρ · v²
+```
+
+Với ρ = 1,225 kg/m³ và gió cấp 12 — 33 m/s — ra **667 Pa**. Bề mặt thật bẻ
+dòng khí vòng qua chứ không chặn đứng, nên áp thực trên mỗi mét vuông bằng p
+nhân một hệ số hình dạng C_p. Tường đón gió có C_p = +0,80: **534 Pa, tức
+54 kg mỗi mét vuông**. Ô cửa kính 1,5 × 1,2 m gánh **98 kg** ép đều lên tấm
+kính dày 5 mm.
+
+Con số ấy đi theo **bình phương** tốc độ. Gió cấp 8 (19 m/s) chỉ ép 18 kg
+mỗi mét vuông; lên cấp 12, gió nhanh gấp 1,74 lần mà lực gấp **3,0 lần** —
+thang cấp gió thì đều đặn, thứ đập vào nhà bạn thì không.
+
+## Mái không bị thổi bay — nó bị hút lên
+
+Kéo độ dốc về 5°, mức thoải điển hình của mái tôn nhà cấp 4, rồi nhìn hướng
+mũi tên: chỉ đúng một mặt bị đẩy vào, còn lại đỏ hết — áp âm, bị **hút ra
+khỏi ngôi nhà**.
+
+Dòng khí phải vòng qua khối nhà, mà [chỗ chảy nhanh là chỗ áp
+thấp](/vi/posts/nguyen-ly-bernoulli-nhanh-hon-la-loang-ap-hon). Tại mép mái
+đón gió, dòng bị bẻ gấp, tách khỏi bề mặt và tăng tốc — điểm áp thấp nhất
+trên cả căn nhà: C_p = **−1,2** theo bảng EN 1991-1-4. Ở 33 m/s, mỗi mét
+vuông mép mái bị kéo thẳng lên bằng **800 Pa, tức 82 kg**: mạnh **gấp 1,5
+lần** lực đẩy vào tường, theo đúng phương không ai thiết kế mái để chống.
+
+Tấm mái lúc ấy là một cánh máy bay bị buộc dây. Trung bình cả hai mặt mái,
+C_p ≈ −0,55: mái 60 m² nhận **22,0 kN — 2,24 tấn nhấc thẳng đứng** — trong
+khi tôn cộng xà gồ nặng chừng 15 kg/m², tổng 0,90 tấn. Gấp **2,5 lần**.
+
+## Mái dốc thoải là mái chết sớm nhất
+
+Kéo độ dốc lên thì đường cong tụt: 15° còn −0,40, 30° còn −0,35, 45° còn
+−0,25. Trên mái dốc đứng, dòng khí đâm thẳng vào mặt đón gió thay vì lướt
+qua đỉnh; hệ số ở mép mái chạy từ −1,2 về **0,00** tại 45°, hết sạch lực hút
+ở đúng chỗ nguy hiểm nhất. Mái ngói dốc 30–40° sống sót qua cơn bão bốc mái
+tôn thoải bên cạnh không phải vì nó nặng gấp bốn, mà vì hình dạng.
+
+Chỗ đường cong cắt đường ngang là tốc độ gió tới hạn: mái tôn 15 kg/m² dốc
+5° **tự bay ở 20,9 m/s — gió cấp 9**, con số nhiều tỉnh gặp mỗi năm; mái
+ngói 60 kg/m² dốc 30° cần tới 52,4 m/s, cấp 16, coi như bất khả.
+
+Để ý điều thanh diện tích **không** làm được: kéo từ 10 lên 120 m², lực nhấc
+và trọng lượng cùng nhân lên, điểm cắt đứng yên. Mái to không an toàn hơn
+mái nhỏ — thứ giữ mái lại không phải khối lượng mà là mấy chục con vít bắt
+xuống xà gồ, mỗi con cõng khoảng 0,6 m² mép mái: ở gió 33 m/s là 480 N, gần
+**49 kg treo trên một đầu vít**.
+
+## Trường hợp biên: nhà chết từ trong ra
+
+Mọi con số trên là gió **duy trì**. Gió giật mạnh hơn chừng 1,4 lần, mà lực
+theo bình phương: **gấp 1,96 lần trong vài giây**. Cấp 12 duy trì 33 m/s
+giật tới 46,2 m/s — vừa đúng ngưỡng cấp 15 — và mép mái nhảy từ 82 lên
+**160 kg mỗi mét vuông**.
+
+Cú kết liễu thì đến từ bên trong. Nhà kín có áp trong hơi âm, C_p,i ≈ −0,3,
+nên lực ròng lên mép mái chỉ là −1,2 − (−0,3) = −0,9. Vỡ một ô cửa phía đón
+gió, cả căn nhà thành cái túi bị bơm: C_p,i vọt lên +0,6, lực ròng thành
+−1,8 — **gấp đúng hai lần, trong một nhịp thở**. Mái bay *sau* khi cửa vỡ
+chứ không phải trước, vì [chênh áp nhân diện tích luôn ra đơn vị
+tấn](/vi/posts/tui-snack-tren-may-bay-va-ham-mu-cua-bau-troi), và giờ nó đẩy
+từ trong ra, cùng chiều với lực hút bên ngoài.
+
+Nên lời dặn nghe vặt vãnh nhất trước bão lại là mệnh lệnh vật lý: chằng cửa
+đón gió trước khi lo cho mái, và đừng mở hé cửa "cho cân bằng áp suất" — mở
+là bơm. Còn [tấm tôn 70 độ giữa
+trưa](/vi/posts/mai-ton-72-do-va-lop-son-trang) mùa bão đổi vai: hôm nắng là
+cái chảo, đêm bão là cánh diều 60 mét vuông treo trên vài chục con vít.

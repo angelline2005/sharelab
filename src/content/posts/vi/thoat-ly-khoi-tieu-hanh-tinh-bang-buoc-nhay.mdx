@@ -1,0 +1,98 @@
+---
+title: "Trên tiểu hành tinh 1 km, bước đi hơi nhanh là bạn bay luôn khỏi nó"
+seoTitle: "Vận tốc thoát ly trên tiểu hành tinh: 1,06 m/s cho mỗi km bán kính"
+description: "Vận tốc thoát ly tỉ lệ thuận với bán kính, không phải với căn của nó — nên trên hòn đá bán kính 1 km, bức tường 11,2 km/s của Trái Đất hạ xuống còn 1,06 m/s. Người đi bộ đạt 1,4 m/s. Và chu kỳ một vòng sát bề mặt — 140 phút — không phụ thuộc kích thước, chỉ phụ thuộc mật độ."
+pubDate: 2026-09-02
+tags: ["vat-ly", "thien-van", "co-hoc", "javascript"]
+translationId: "thoat-ly-khoi-tieu-hanh-tinh-bang-buoc-nhay"
+---
+
+import AsteroidEscape from '../../../components/demos/AsteroidEscape.astro';
+
+Vận tốc thoát ly của Trái Đất là 11,2 km/s — con số nghe như một bức
+tường. Trên hòn đá bán kính một cây số ngoài vành đai tiểu hành tinh, bức
+tường ấy hạ xuống còn **1,06 mét mỗi giây**: chậm hơn bước bạn đi ra đầu
+ngõ.
+
+<AsteroidEscape />
+
+## Vì sao bức tường sụp nhanh đến thế
+
+`v_thoát = √(2GM/R)` có R dưới mẫu, nên trực giác bảo thiên thể càng nhỏ
+càng khó thoát. Trực giác nhầm, vì M không độc lập với R: hòn đá mật độ ρ
+có khối lượng (4/3)πρR³. Thay vào:
+
+```
+v_thoát = R · √(8πGρ/3)
+```
+
+R nhảy lên tử số. **Vận tốc thoát ly tỉ lệ thuận với bán kính**, hệ số tỉ
+lệ chỉ phụ thuộc mật độ — với ρ = 2 000 kg/m³, mật độ điển hình của một
+đống đá vụn dính nhau bằng hấp dẫn, hệ số ấy là **1,06 m/s mỗi kilômét bán
+kính**. Cùng dòng đại số ấy cho Trái Đất (ρ = 5 514, R = 6 371 km) ra
+11,19 km/s, đúng con số sách giáo khoa.
+
+Cái thang ấy có thật: Bennu (bán kính 245 m) thoát ở **0,20 m/s**, Ryugu
+(448 m) ở 0,37, sao chổi 67P ở khoảng 1, Phobos (11,1 km) ở 11,4, còn
+Ceres (470 km) đã lên 510 m/s. Người đi bộ đạt 1,4 m/s — đủ rời vĩnh viễn
+khỏi **mọi thiên thể mật độ 2 000 có bán kính dưới 1,32 km**.
+
+## Bạn mất chỗ bám trước cả khi kịp thoát ly
+
+Đi bộ cần ma sát, ma sát cần áp lực pháp tuyến, mà áp lực ấy là
+`N = m(g − v²/R)`: đi vòng quanh một quả cầu thì lực ly tâm ăn dần vào
+trọng lượng của chính bạn. N về 0 khi v = √(gR) — đúng vận tốc quỹ đạo sát
+bề mặt, **0,748 m/s** trên hòn đá 1 km. Giới hạn thật vì thế không phải
+1,06 mà là 0,75 m/s: tốc độ lê chân của người vừa đi vừa nhìn điện thoại.
+
+Khoảng hẹp giữa 0,75 và 1,06 là vùng kỳ lạ nhất: bạn không rơi xuống, cũng
+không đi mất, mà thành [vệ tinh của chính hòn đá vừa đứng
+lên](/vi/posts/toc-do-vu-tru-va-khau-dai-bac-cua-newton) — đường vàng khép
+kín trong demo.
+
+## Cú nhảy tại chỗ còn dễ hơn cú đi bộ
+
+Bật nhảy nâng trọng tâm khoảng 0,5 m — [phần bật thật sự của người không
+tập luyện](/vi/posts/nhay-cao-trong-tam-di-duoi-xa-ngang) — đòi tốc độ rời
+đất **3,13 m/s**, vượt vận tốc thoát ly của mọi thiên thể ρ = 2 000 bán
+kính dưới **2,96 km**. Trên phần lớn tiểu hành tinh có tên, một cú nhún
+chân là chuyến đi một chiều.
+
+Tháng 11/2014, tàu Philae hạ xuống sao chổi 67P với mũi lao neo không chịu
+bắn; nó nảy lên, trôi **1 giờ 51 phút** rồi chạm lại cách chỗ cũ chừng một
+cây số — thiếu chút nữa thì vượt ngưỡng 1 m/s và đi luôn. Trên Phobos,
+3,13 m/s chưa đủ thoát nhưng vẫn ném bạn lên **844 m** và giữ trên không
+18 phút.
+
+## Chu kỳ 140 phút không quan tâm hòn đá to bằng nào
+
+Lấy `T = 2π√(R³/GM)` rồi thay M = (4/3)πρR³ lần nữa:
+
+```
+T = √(3π / Gρ)
+```
+
+R triệt tiêu sạch: chu kỳ một vòng sát bề mặt **chỉ phụ thuộc mật độ**.
+140 phút ở ρ = 2 000; Bennu và Ryugu cùng mật độ 1 190 kg/m³ nên dù Ryugu
+rộng gấp 1,83 lần, cả hai chung đúng con số **182 phút**. Đó vẫn là [định
+luật Kepler III](/vi/posts/dinh-luat-kepler-iii-va-duong-thang-cua-he-mat-troi)
+nói bằng giọng khác: T² tỉ lệ R³ chia khối lượng, mà khối lượng lại tỉ lệ
+R³.
+
+## Trường hợp biên: đứng yên vẫn không sao — và 84,3 phút của Trái Đất
+
+Gia tốc trọng trường trên hòn đá 1 km là 5,59×10⁻⁴ m/s², bằng **1/17 545**
+của Trái Đất — nghe như đủ để bạn tự bốc lên. Không hề: thả hòn sỏi từ
+ngang thắt lưng, nó vẫn rơi xuống, chỉ mất **59,8 giây**. Đứng im thì tuyệt
+đối an toàn; toàn bộ rắc rối nằm ở thành phần vận tốc *ngang*, và đó là lý
+do tàu thăm dò tiểu hành tinh sợ cú chạm nghiêng hơn cú rơi thẳng.
+
+Còn công thức chu kỳ thì lớn hơn vẻ ngoài. Cắm ρ = 5 514 kg/m³ vào:
+**84,3 phút** — vừa là chu kỳ quỹ đạo ngắn nhất có thể quanh Trái Đất (ISS
+ở 400 km mất 92,4 phút), vừa, với một Trái Đất mật độ đều đúng như giả
+thiết cả bài này dùng, đúng bằng thời gian một vật rơi qua đường hầm khoan
+xuyên tâm rồi quay lại chỗ thả. Đẩy R theo chiều ngược lại thì công thức tự
+kết liễu: vì v_thoát tỉ lệ thuận với R, nó chạm tốc độ ánh sáng ở một bán
+kính hữu hạn — với ρ = 2 000 là **1,90 đơn vị thiên văn**, rộng hơn quỹ đạo
+sao Hoả. Cùng một dòng đại số đưa bạn từ cú nhún chân trên Bennu tới chân
+trời sự kiện; thứ duy nhất thay đổi là bạn đẩy chữ R đi xa tới đâu.

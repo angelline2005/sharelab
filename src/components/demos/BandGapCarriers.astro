@@ -1,0 +1,211 @@
+---
+// Mật độ hạt tải nội tại của bán dẫn theo vùng cấm và nhiệt độ:
+//   n_i = N_c·(T/300)^1.5 · exp(−Eg / 2kT),  N_c = 2,5×10^19 cm⁻³
+// (Sze, Physics of Semiconductor Devices — dạng rút gọn dùng chung một
+// tiền hệ số cho mọi vật liệu; với silic ở 300 K cho 9,8×10⁹ cm⁻³, khớp
+// giá trị đo 1,0×10¹⁰. Với Ge/GaAs sai số cỡ vài lần do khối lượng hiệu
+// dụng khác nhau — độ dốc theo Eg mới là thứ demo này muốn nói.)
+// Có pha tạp, hạt tải đa số là nghiệm dương của n(n−N_D) = n_i²:
+//   n = N_D/2 + sqrt((N_D/2)² + n_i²)
+// Eg coi như hằng số theo T (bỏ qua hiệu chỉnh Varshni ~0,45 meV/K).
+// Miền hợp lệ: 250–450 K, Eg 0,2–6,0 eV, pha tạp không suy biến.
+---
+
+<figure class="demo" data-demo="vung-cam-vi-sao-kim-cuong-khong-dan-dien">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Vùng cấm Eg (eV) <output data-out="eg"></output>
+      <input type="range" data-in="eg" min="0.2" max="6" step="0.01" value="1.12" /></label>
+    <label>Nhiệt độ T <output data-out="t"></output>
+      <input type="range" data-in="t" min="250" max="450" step="1" value="300" /></label>
+    <label>Pha tạp N_D (cm⁻³) <output data-out="nd"></output>
+      <input type="range" data-in="nd" min="0" max="17" step="1" value="0" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Trục đứng là log₁₀ mật độ hạt tải — mỗi vạch là mười lần. Đường xanh là
+    hạt tải do nhiệt sinh ra, dốc thẳng đứng theo vùng cấm: Ge, Si, GaAs,
+    SiC và kim cương nằm trên cùng một đường, chỉ khác chỗ đứng. Kéo thanh
+    pha tạp, đường cam xuất hiện và gãy ngang — mật độ hạt tải bị ghim,
+    không thèm nghe nhiệt độ nữa. Cột bên phải vẽ khe cấm đúng tỉ lệ cùng
+    số electron đã trèo lên được vùng dẫn.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const CURVE = '#2563eb', MARK = '#dc2626', DOPED = '#f59e0b';
+  const K = 8.617333262e-5;          // eV/K
+  const NC = 2.5e19;                 // cm^-3, tiền hệ số chung ở 300 K
+  const EG_MAX = 6, L_HI = 20, L_LO = -45;
+
+  const MATS: Array<[number, string]> = [
+    [0.67, 'Ge'], [1.12, 'Si'], [1.42, 'GaAs'], [3.26, 'SiC'], [5.47, 'kim cương'],
+  ];
+  const SUP: Record<string, string> = {
+    '0': '⁰', '1': '¹', '2': '²', '3': '³', '4': '⁴',
+    '5': '⁵', '6': '⁶', '7': '⁷', '8': '⁸', '9': '⁹', '-': '⁻',
+  };
+  const sup = (n: number) => String(n).split('').map((c) => SUP[c] || c).join('');
+  const vi = (x: number, d: number) => x.toFixed(d).replace('.', ',');
+  const sci = (x: number) => {
+    if (x <= 0) return '0';
+    const e = Math.floor(Math.log10(x));
+    return `${vi(x / Math.pow(10, e), 1)}×10${sup(e)}`;
+  };
+
+  const niOf = (Eg: number, T: number) =>
+    NC * Math.pow(T / 300, 1.5) * Math.exp(-Eg / (2 * K * T));
+  const nOf = (Eg: number, T: number, ND: number) => {
+    const ni = niOf(Eg, T);
+    return ND / 2 + Math.sqrt((ND / 2) * (ND / 2) + ni * ni);
+  };
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (k: string) => root.querySelector(`[data-in="${k}"]`) as HTMLInputElement;
+    const output = (k: string) => root.querySelector(`[data-out="${k}"]`) as HTMLOutputElement;
+
+    function draw() {
+      const Eg = Number(input('eg').value);
+      const T = Number(input('t').value);
+      const p = Number(input('nd').value);
+      const ND = p === 0 ? 0 : Math.pow(10, p);
+
+      const mat = MATS.find(([e]) => Math.abs(e - Eg) < 0.005);
+      output('eg').textContent = vi(Eg, 2) + (mat ? ` — ${mat[1]}` : '');
+      output('t').textContent = `${T} K = ${vi(T - 273.15, 0)} °C`;
+      output('nd').textContent = ND === 0 ? 'tinh khiết (0)' : `10${sup(p)}`;
+
+      const ni = niOf(Eg, T);
+      const n = nOf(Eg, T, ND);
+      const grow = nOf(Eg, T + 10, ND) / n;
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.5);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+      ctx.font = '10px system-ui,sans-serif';
+
+      const bandW = Math.min(104, Math.round(cssW * 0.26));
+      const padL = 44, padT = 14, padB = 26, padR = bandW + 20;
+      const x0 = padL, x1 = cssW - padR, y0 = padT, y1 = cssH - padB;
+      const X = (e: number) => x0 + (e / EG_MAX) * (x1 - x0);
+      const Y = (L: number) =>
+        Math.max(y0 - 2, Math.min(y1 + 2, y0 + ((L_HI - L) / (L_HI - L_LO)) * (y1 - y0)));
+
+      // ---- trục ----
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.3;
+      ctx.beginPath(); ctx.moveTo(x0, y0); ctx.lineTo(x0, y1); ctx.lineTo(x1, y1); ctx.stroke();
+      ctx.globalAlpha = 0.55; ctx.fillStyle = fg;
+      ctx.textAlign = 'center';
+      for (const e of [1, 2, 3, 4, 5, 6]) ctx.fillText(`${e} eV`, X(e), y1 + 14);
+      ctx.textAlign = 'right';
+      for (const L of [20, 10, 0, -10, -20, -30, -40]) {
+        ctx.fillText(`10${sup(L)}`, x0 - 4, Y(L) + 3);
+        ctx.globalAlpha = 0.12; ctx.beginPath();
+        ctx.moveTo(x0, Y(L)); ctx.lineTo(x1, Y(L)); ctx.stroke(); ctx.globalAlpha = 0.55;
+      }
+      ctx.textAlign = 'left';
+      ctx.fillText('hạt tải / cm³', x0 + 4, y0 + 9);
+      ctx.globalAlpha = 1;
+
+      // ---- đường nội tại ----
+      ctx.strokeStyle = CURVE; ctx.lineWidth = 2; ctx.beginPath();
+      for (let i = 0; i <= 240; i++) {
+        const e = 0.2 + (5.8 * i) / 240;
+        const y = Y(Math.log10(niOf(e, T)));
+        i ? ctx.lineTo(X(e), y) : ctx.moveTo(X(e), y);
+      }
+      ctx.stroke();
+
+      // ---- đường có pha tạp ----
+      if (ND > 0) {
+        ctx.strokeStyle = DOPED; ctx.beginPath();
+        for (let i = 0; i <= 240; i++) {
+          const e = 0.2 + (5.8 * i) / 240;
+          const y = Y(Math.log10(nOf(e, T, ND)));
+          i ? ctx.lineTo(X(e), y) : ctx.moveTo(X(e), y);
+        }
+        ctx.stroke();
+        ctx.fillStyle = DOPED; ctx.textAlign = 'left'; ctx.globalAlpha = 0.85;
+        ctx.fillText(`sàn pha tạp 10${sup(p)}`, x0 + 6, Y(p) - 5);
+        ctx.globalAlpha = 1;
+      }
+      ctx.lineWidth = 1;
+
+      // ---- các vật liệu thật trên đường nội tại ----
+      MATS.forEach(([e, lab], k) => {
+        const y = Y(Math.log10(niOf(e, T)));
+        ctx.fillStyle = fg; ctx.globalAlpha = 0.45;
+        ctx.beginPath(); ctx.arc(X(e), y, 3, 0, Math.PI * 2); ctx.fill();
+        ctx.globalAlpha = 0.75; ctx.textAlign = e > 4 ? 'right' : 'left';
+        ctx.fillText(lab, X(e) + (e > 4 ? -7 : 7), y + 3 + (k % 2 ? 9 : 0));
+        ctx.globalAlpha = 1;
+      });
+
+      // ---- điểm đang chọn ----
+      ctx.fillStyle = MARK;
+      ctx.beginPath(); ctx.arc(X(Eg), Y(Math.log10(n)), 6, 0, Math.PI * 2); ctx.fill();
+
+      // ---- cột sơ đồ vùng ----
+      const bx = cssW - bandW - 6, bw = bandW;
+      const gapPx = (Eg / EG_MAX) * (y1 - y0 - 44);
+      const vTop = y1 - 18, cBot = vTop - gapPx;
+      ctx.fillStyle = fg; ctx.globalAlpha = 0.22;
+      ctx.fillRect(bx, vTop, bw, 18);
+      ctx.fillRect(bx, cBot - 18, bw, 18);
+      ctx.globalAlpha = 0.6; ctx.textAlign = 'center';
+      ctx.fillText('vùng dẫn', bx + bw / 2, cBot - 22);
+      ctx.fillText('vùng hoá trị', bx + bw / 2, y1 + 14);
+      ctx.globalAlpha = 0.35;
+      ctx.beginPath(); ctx.moveTo(bx + bw / 2, vTop); ctx.lineTo(bx + bw / 2, cBot); ctx.stroke();
+      ctx.globalAlpha = 0.8;
+      ctx.fillText(`Eg = ${vi(Eg, 2)}`, bx + bw / 2, (vTop + cBot) / 2 + 3);
+      ctx.globalAlpha = 1;
+
+      const dots = Math.max(0, Math.min(10, Math.round((Math.log10(n) + 4) / 2.2)));
+      ctx.fillStyle = MARK;
+      for (let i = 0; i < dots; i++) {
+        ctx.beginPath();
+        ctx.arc(bx + 9 + (i % 5) * ((bw - 18) / 4), cBot - 13 + Math.floor(i / 5) * 9, 2.6, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      if (dots === 0) {
+        ctx.fillStyle = fg; ctx.globalAlpha = 0.55;
+        ctx.fillText('trống', bx + bw / 2, cBot - 6); ctx.globalAlpha = 1;
+      }
+
+      // ---- readout ----
+      const regime = ND === 0 || ni > 10 * ND
+        ? 'chế độ <b>nội tại</b> — nhiệt độ quyết định tất cả'
+        : ND > 10 * ni
+          ? 'chế độ <b>pha tạp</b> — mật độ hạt tải bị ghim, gần như điếc với nhiệt độ'
+          : '<b>giao thời</b> — hạt tải nhiệt đang đuổi kịp pha tạp, linh kiện bắt đầu trôi';
+      readout.innerHTML =
+        `Eg = ${vi(Eg, 2)} eV${mat ? ` (${mat[1]})` : ''} ở ${T} K = ${vi(T - 273.15, 0)} °C → ` +
+        `n = <b>${sci(n)} cm⁻³</b> (log₁₀ = ${vi(Math.log10(n), 2)})` +
+        ` · nóng thêm 10 K: <b>×${vi(grow, 2)}</b> · ${regime}`;
+    }
+
+    root.querySelectorAll('input').forEach((el) => el.addEventListener('input', draw));
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="vung-cam-vi-sao-kim-cuong-khong-dan-dien"]').forEach(setup);
+</script>

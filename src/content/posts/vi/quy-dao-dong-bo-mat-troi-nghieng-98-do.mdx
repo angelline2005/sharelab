@@ -1,0 +1,103 @@
+---
+title: "Vệ tinh chụp ảnh Trái Đất bay ngược chiều hành tinh — và luôn bấm máy lúc 10 giờ 30"
+seoTitle: "Quỹ đạo đồng bộ Mặt Trời: vì sao góc nghiêng phải là 98,19°"
+description: "Trái Đất phình xích đạo 21,4 km làm mặt phẳng quỹ đạo vệ tinh xoay dần. Chọn đúng góc nghiêng thì tốc độ xoay ấy khớp 0,9856 °/ngày với Mặt Trời — vệ tinh mãi mãi bay qua mỗi điểm vào cùng một giờ địa phương. Ở 700 km, góc ấy là 98,19°: cosin của nó âm, nghĩa là quỹ đạo buộc phải nghịch hành."
+pubDate: 2026-09-02
+tags: ["vat-ly", "thien-van", "co-hoc", "javascript"]
+translationId: "quy-dao-dong-bo-mat-troi-nghieng-98-do"
+---
+
+import SunSyncOrbit from '../../../components/demos/SunSyncOrbit.astro';
+
+Mở chồng ảnh Landsat chụp cùng một mảnh rừng suốt hai mươi năm: bóng cây
+luôn đổ về cùng một phía, dài gần như nhau, tháng Giêng cũng như tháng
+Bảy. Không phần mềm nào chỉnh việc đó — nó được mua bằng một góc nghiêng
+lớn hơn 90 độ:
+
+<SunSyncOrbit />
+
+## Trái Đất phình bụng, và quỹ đạo bị xoắn
+
+Trái Đất quay nên xích đạo phình ra: bán kính 6 378,1 km ở xích đạo so với
+6 356,8 km ở cực, chênh **21,4 km**. Vành thịt thừa ấy lệch khỏi mặt phẳng
+của quỹ đạo nghiêng và kéo vệ tinh về phía xích đạo mỗi lần nó lên vĩ độ
+cao. Hệ số đo độ phình, J2 = 1,083×10⁻³, bé tí nhưng là nhiễu loạn lớn
+nhất mọi quỹ đạo thấp phải sống chung.
+
+Mô men lực ấy vuông góc với mô men động lượng, nên gây đúng cái mà [bánh
+xe hồi chuyển](/vi/posts/con-quay-hoi-chuyen-vi-sao-khong-chiu-do) làm khi
+bị treo lệch trục: không đổ, mà **tuế sai** — cả mặt phẳng quỹ đạo xoay
+chậm quanh trục Trái Đất.
+
+```
+dΩ/dt = −(3/2)·J2·(R/a)²·n·cos i
+```
+
+Trạm ISS (420 km, nghiêng 51,6°) tuế sai −4,95 °/ngày, quét trọn vòng
+trong **72,7 ngày** — lý do trạm bay qua nhà bạn vài đêm liền rồi biệt tăm
+hàng tháng.
+
+## Một lỗi được trả lương: 0,9856 độ mỗi ngày
+
+Với vệ tinh quan trắc, tuế sai là tai hoạ — trừ khi nó chạy đúng nhịp. Mỗi
+năm Mặt Trời trôi trọn 360° trên nền sao: 360/365,2422 = **0,9856 °/ngày**.
+Cho quỹ đạo xoay đúng chừng ấy, cùng chiều, thì góc giữa nó và hướng Mặt
+Trời đứng yên vĩnh viễn — vệ tinh cắt xích đạo vào cùng một giờ địa
+phương, năm này qua năm khác. Đặt hai vế bằng nhau rồi giải theo góc
+nghiêng:
+
+```
+cos i = −2·ω_S·a^3,5 / (3·J2·R²·√(GM))
+```
+
+Ở 700 km vế phải ra **−0,142**, và dấu trừ là toàn bộ câu chuyện: cosin âm
+nghĩa là i > 90°, quỹ đạo bắt buộc **nghịch hành** — nghiêng **98,19°**,
+bay ngược chiều Trái Đất tự quay. Với i nhỏ hơn 90° nút trôi về phía tây,
+sai dấu; chỉ quỹ đạo đi ngược mới đẩy nút về phía đông. Công thức đòi
+98,21° ở 705 km và 98,70° ở 824 km — hồ sơ phóng của Landsat 9 ghi 98,2°,
+của Suomi NPP ghi 98,7°.
+
+## Vì sao mọi tấm ảnh có cùng một bóng đổ
+
+Sentinel-2 cắt xích đạo theo chiều bắc–nam lúc **10 giờ 30 sáng** giờ địa
+phương, mọi vòng, mọi năm. Ở 700 km, một vòng mất 98,8 phút với [tốc độ
+7,50 km/s](/vi/posts/toc-do-vu-tru-va-khau-dai-bac-cua-newton) — 14,58
+vòng mỗi ngày — và mỗi lần trở lại xích đạo, hành tinh đã xoay thêm 24,7°
+dưới chân nó: vệt quét dịch **2 750 km** về phía tây, vài ngày là phủ kín
+địa cầu, chỗ nào cũng chụp lúc 10 giờ 30.
+
+Vì sao không phải giữa trưa? Mặt Trời dựng đứng thì bóng biến mất, ảnh mất
+hết chiều sâu địa hình; 10 giờ 30 giữ bóng đủ dài để đọc sườn dốc, đủ sớm
+để mây đối lưu buổi chiều chưa kịp mọc. Nhờ vậy so hai tấm ảnh cách nhau
+mười năm mới có nghĩa: rừng thưa đi thật, không phải Mặt Trời hôm ấy thấp
+hơn. Đổi giờ là đổi nhiệm vụ — quỹ đạo "bình minh–hoàng hôn" cắt xích đạo
+lúc 6 giờ, bay dọc ranh giới ngày–đêm nên pin phơi nắng gần như không
+nghỉ: đúng thứ radar ngốn điện của Sentinel-1 cần.
+
+## Lệch một độ, ảnh trôi ba tiếng
+
+Ở 700 km, sai **1°** góc nghiêng làm tuế sai đổi 0,120 °/ngày. Cộng dồn:
+1,45 giờ sau nửa năm, **2,91 giờ mỗi năm** — ba năm là "ảnh 10 giờ 30"
+thành ảnh chiều muộn. Sửa thì đắt: đổi góc nghiêng là thao tác tốn nhiên
+liệu nhất trên quỹ đạo, khác hẳn [trò lên xuống độ
+cao](/vi/posts/nghich-ly-quy-dao-duoi-kip-bang-cach-phanh) vốn rẻ như cho.
+
+Kéo thanh trượt về đúng **90°** — quỹ đạo cực hoàn hảo — và tuế sai bằng
+0: mặt phẳng đứng yên trong không gian, còn Mặt Trời thì không. Sau nửa
+năm khe hở là **12 giờ tròn**: vệ tinh ban ngày thành vệ tinh ban đêm,
+camera quang học chụp toàn bóng tối.
+
+## Trường hợp biên: trên 5 974 km thì không góc nào cứu nổi
+
+Vế phải tăng theo a^3,5, còn cosin bị nhốt giữa −1 và 1. Giải cho cos i =
+−1 được a = 12 352 km, tức độ cao **5 974 km**: cao hơn thế thì cái bụng
+phình 21,4 km không đủ mô men xoay quỹ đạo cho kịp nhịp 0,9856 °/ngày, và
+đồng bộ Mặt Trời không còn tồn tại. Mà ngay tại ngưỡng, nghiệm đã tự phản
+bội: i = 180° là quỹ đạo xích đạo chạy ngược, không bao giờ rời vĩ độ 0 —
+quỹ đạo cuối cùng còn đồng bộ được thì lại không nhìn thấy cực nào.
+
+Cùng cái phình ấy đối xử với tàu khác kém tử tế hơn: nó còn làm điểm cận
+địa của quỹ đạo elip trôi đi, nên vệ tinh Molniya buộc phải nằm ở
+**63,43°**, nơi số hạng (5·cos²i − 1) triệt tiêu. J2 không thiên vị ai:
+hoặc bạn giải phương trình của nó, hoặc bạn đốt nhiên liệu chống nó tới
+ngày cạn bình.

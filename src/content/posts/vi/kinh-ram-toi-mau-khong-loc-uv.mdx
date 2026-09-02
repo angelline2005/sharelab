@@ -1,0 +1,99 @@
+---
+title: "Kính râm vỉa hè nhân liều tia UV lên 1,9 lần — không phải 9 lần"
+seoTitle: "Kính râm không lọc UV có hại không: tính bằng đường kính đồng tử"
+description: "Dưới cảnh chói 4 000 cd/m², tròng kính tối cho qua 3% ánh sáng làm đồng tử giãn từ 2,36 lên 3,22 mm — diện tích tăng 1,86 lần. Nếu tròng không chặn tia tử ngoại thì đó đúng là hệ số nhân liều UV vào trong mắt. Con số thật là 1,9 chứ không phải 9 như lời đồn — nhưng cùng tròng ấy mà đạt chuẩn UV400 lại cho ra 0,019."
+pubDate: 2026-09-02
+tags: ["vat-ly", "quang-hoc", "javascript"]
+translationId: "kinh-ram-toi-mau-khong-loc-uv"
+---
+
+import PupilUvDose from '../../../components/demos/PupilUvDose.astro';
+
+Cặp kính râm 50 nghìn mua ở vỉa hè, tròng đen kịt, đeo vào mát mắt tức thì.
+Rồi ai đó doạ bạn: kính không lọc UV còn hại hơn không đeo — nó làm đồng tử
+giãn ra, tia tử ngoại đổ vào gấp chín lần. Lời doạ ấy đúng một nửa, và nửa
+kia đo được:
+
+<PupilUvDose />
+
+## Tối màu và chặn UV là hai tính chất rời nhau
+
+Độ tối của tròng — dân trong nghề gọi là VLT, phần trăm ánh sáng nhìn thấy
+cho qua — nói về dải 380–780 nm. Tia tử ngoại nằm dưới 400 nm, ngoài dải ấy.
+Không có định luật nào bắt một chất màu hấp thụ tốt ánh sáng vàng lục thì
+phải hấp thụ luôn tia UV: đó là hai câu hỏi khác nhau đặt cho cùng một tấm
+nhựa. Bằng chứng ngược cũng đầy: kính bảo hộ **trong suốt** bằng
+polycarbonate ở hàng kim khí đã chặn gần trọn tia UV dưới 385 nm — bản thân
+vật liệu hút, không cần lớp phủ nào. Còn một tròng acrylic nhuộm thật đậm
+thì cho qua phần lớn UVA. Vì thế trên tem kính có hai dòng riêng: một dòng
+cấp độ tối, một dòng "UV400".
+
+Chuyện tia UV nguy hiểm hơn ánh sáng thường không nằm ở cường độ mà ở
+[năng lượng mỗi photon](/vi/posts/hieu-ung-quang-dien-anh-sang-tra-tien-le):
+photon đỏ 700 nm mang 1,77 eV, photon tím rìa 400 nm mang **3,10 eV**, còn
+UVB 310 nm mang 4,00 eV — vừa đủ bẻ các liên kết hoá học trong protein của
+mắt. Ánh sáng đỏ dù chói tới đâu cũng chỉ hâm nóng; tia UV thì phá từng liên
+kết một.
+
+## Đồng tử giãn bao nhiêu, và vì sao không phải chín lần
+
+Đường kính đồng tử theo độ chói cảnh có công thức thực nghiệm cổ điển của
+Moon và Spencer (1944):
+
+```
+d = 4,9 − 3·tanh(0,4·(log₁₀L − 0,5))     d tính bằng mm, L bằng cd/m²
+```
+
+Giữa trưa ngoài đường, cảnh vật quanh bạn sáng cỡ **4 000 cd/m²**; công thức
+cho đồng tử 2,36 mm. Đeo tròng VLT 3%, mắt chỉ còn thấy 120 cd/m² và mở ra
+3,22 mm. Lượng sáng — và lượng UV — lọt vào tỉ lệ với **diện tích lỗ**, đúng
+luật khẩu độ của [ống kính thiên
+văn](/vi/posts/kinh-thien-van-khau-do-mua-anh-sang): 3,22 chia 2,36 rồi bình
+phương ra **1,86**. Cặp kính vỉa hè tệ nhất, nếu tròng thật sự trong suốt với
+UV, nhân liều lên chưa tới hai lần. Với tròng cấp 3 bình thường (VLT 15%) hệ
+số chỉ là 1,34.
+
+Con số chín ở đâu ra? Nó giả định đồng tử nhảy từ 2 mm ngoài nắng lên 6 mm
+như trong phòng tối — 3 bình phương. Nhưng để kéo mắt xuống 6 mm từ cảnh
+4 000 cd/m², tròng kính phải cho qua **0,0086% ánh sáng**, tức tối hơn cặp
+VLT 3% kia thêm **347 lần** — tối hơn cả kính thợ hàn, không ai đeo nổi ra
+đường. Hàm tanh là thủ phạm: toàn bộ hành trình 1,9 → 7,9 mm của đồng tử
+trải trên sáu bậc mười của độ chói, còn một tròng kính râm chỉ dịch bạn đi
+một bậc rưỡi.
+
+## Con ngươi không che chắn cho giác mạc
+
+Hệ số 1,86 chỉ áp cho phần **sau đồng tử**. Mống mắt nằm sau giác mạc và
+trước thể thuỷ tinh, nên giác mạc — nơi hứng gần trọn tia UVB và là nơi phát
+bệnh viêm giác mạc do ánh sáng, cái đau mắt rát như có cát mà thợ hàn và dân
+trượt tuyết đều biết — nhận cùng một liều bất kể đồng tử to nhỏ. Thứ thật sự
+bị nhân lên là liều rơi vào thể thuỷ tinh, tức đồng hồ đếm ngược tới đục thuỷ
+tinh thể. Võng mạc gần như không dính gì: thể thuỷ tinh của người lớn tự nó
+là một tấm lọc UV.
+
+Nên kết luận đúng không phải "kính tối không lọc UV thì thà đừng đeo", mà là
+một phép so tỉ lệ: cùng tròng VLT 3% ấy, chỉ thêm khả năng chặn 99% UV, liều
+vào trong mắt tụt xuống **×0,019** — bằng một phần **54** so với mắt trần.
+**Khoảng cách giữa kính tốt và kính dỏm là một trăm lần; khoảng cách giữa
+kính dỏm và không đeo gì chỉ là 1,9 lần.**
+
+## Trường hợp biên: tia UV không đi qua tròng kính
+
+Kéo thanh độ chói sang trái và trực giác lộn ngược. Ở **140 cd/m²** — chiều
+muộn, dưới tán cây — cùng cặp kính 3% đưa đồng tử từ 3,17 lên 4,75 mm, hệ số
+**×2,25**, lớn nhất mà công thức cho phép trong khoảng này: tanh dốc nhất
+quanh tâm của nó chứ không phải ở đầu sáng. Nhưng hệ số không phải liều: tia
+UV ngoài trời cũng nhạt đi cùng cảnh vật, và liều thật sau cùng tròng ấy giữa
+trưa vẫn gấp **13 lần** buổi chiều râm. Cặp kính nguy hiểm nhất vẫn là cặp
+đeo giữa trưa — chỉ là vì lý do ngược với lý do người ta hay kể.
+
+Chỗ công thức chết hẳn thì nằm ngoài mắt. Cả phép tính này giả định mọi tia
+đều đi xuyên tròng, nên nó bỏ sót con đường nguy hiểm nhất trên mặt nước và
+trên tuyết: tuyết mới phản xạ tới **80%** tia UV, cát biển khô khoảng
+**15%**, và luồng UV dội ngược từ dưới lên chui vào qua khe hở giữa gọng và
+gò má — chưa từng gặp lớp phủ nào. Trong nhánh ấy hệ số chặn UV của tròng
+biến mất khỏi phương trình, chỉ còn **dáng kính** nói chuyện. Kính leo núi
+tuyết vì thế có tấm che hai bên, và trên mặt nước thì một cặp ôm mặt
+[cắt được ánh chói phân
+cực](/vi/posts/goc-brewster-goc-lam-mat-nuoc-het-choi) đáng giá hơn hẳn một
+cặp phẳng dán tem UV400 mà hở toang hai bên thái dương.

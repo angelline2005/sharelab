@@ -1,0 +1,100 @@
+---
+title: "Xe khách giường nằm lật ở 0,71 g — trong khi lốp của nó còn bám tới 0,8 g"
+seoTitle: "Hệ số ổn định tĩnh SSF: vì sao xe khách lật còn xe con thì trượt"
+description: "SSF = vệt bánh chia đôi chiều cao trọng tâm. Xe con: 1,41 — không lốp đường trường nào tạo nổi 1,41 g nên xe trượt trước khi kịp lật. Xe khách hai tầng: 0,71 — lốp còn dư bám thì xe đã nghiêng qua điểm không quay lại. Trên cua bán kính 60 m, ngưỡng ấy rơi vào 73,8 km/h."
+pubDate: 2026-09-02
+tags: ["vat-ly", "co-hoc", "javascript"]
+translationId: "xe-khach-lat-truoc-khi-lop-truot"
+---
+
+import RolloverThreshold from '../../../components/demos/RolloverThreshold.astro';
+
+Cùng một khúc cua, hai kết cục khác nhau. Chiếc xe con phía trước rít lốp
+rồi văng ngang vào hộ lan. Chiếc xe khách giường nằm phía sau không rít một
+tiếng nào — nó nghiêng, rồi đổ. Khác biệt nằm gọn trong một tỉ số bạn đo
+được bằng thước dây:
+
+<RolloverThreshold />
+
+## Vệt bánh chia đôi chiều cao trọng tâm
+
+Vào cua, lực quán tính đẩy ngang đặt tại trọng tâm, cánh tay đòn của nó là
+chiều cao `h`. Trọng lượng kéo xe lại, cánh tay đòn là **nửa vệt bánh** —
+khoảng cách ngang từ trọng tâm ra mép bánh ngoài. Lấy mô-men quanh chính
+mép bánh ấy, hai vế hoà nhau ở đúng một chỗ:
+
+```
+SSF = t / (2h)
+xe bắt đầu lật khi a_ngang / g > SSF
+```
+
+Khối lượng biến mất khỏi công thức: xe nặng hay nhẹ lật ở cùng một mức gia
+tốc, y như [chồng sách nhô ra mép bàn](/vi/posts/chong-sach-nho-ra-khoi-mep-ban-bao-xa)
+đổ đúng vào lúc đường thẳng đứng qua trọng tâm chạy ra ngoài chân đế.
+
+Xe con: vệt bánh 1,55 m, trọng tâm cao 0,55 m → **SSF = 1,41** — đúng bằng
+mức trung bình mà NHTSA đo được cho xe con đời 2003. Xe khách hai tầng: vệt
+bánh 2,00 m nhưng trọng tâm 1,40 m → **SSF = 0,71**. Vệt bánh rộng hơn 29%,
+song trọng tâm cao gấp 2,5 lần, mà `h` thì nằm dưới mẫu số. Nói bằng góc:
+phải kê mặt đường nghiêng ngang tới 54,6° mới lật nổi chiếc xe con, còn
+chiếc xe khách đổ ở 35,5°.
+
+## Lốp chỉ cho vay 0,8 g
+
+SSF chỉ có nghĩa khi đặt cạnh thứ tạo ra gia tốc ngang: **ma sát lốp**. Lốp
+đường trường trên nhựa khô cho khoảng 0,7–0,9 g, mưa xuống còn 0,4–0,5. Đó
+là một hạn mức chứ không phải nguồn vô hạn, và [góc bắt đầu trượt của mặt
+phẳng nghiêng](/vi/posts/mat-phang-nghieng-va-goc-bat-dau-truot) chính là
+cách đo hạn mức ấy.
+
+Đặt hai con số cạnh nhau thì mọi chuyện sáng ra. Xe con cần **1,41 g** mới
+lật, mà không lốp đường trường nào cấp nổi chừng ấy — nó luôn trượt trước,
+và trượt là kết cục nhẹ hơn nhiều. Xe khách chỉ cần **0,71 g**, trong khi
+lốp còn giữ tới 0,8: bánh phía trong nhấc khỏi mặt đường trong lúc lốp ngoài
+vẫn bám chắc như thường, và cú nhấc đó không có đường lùi. Đổi ra tốc độ
+trên cua bán kính R:
+
+```
+v_lật = √(SSF · g · R)
+```
+
+Cua R = 60 m — cỡ một nhánh rẽ cao tốc — chiếc xe khách lật ở **73,8 km/h**,
+trong khi ngưỡng trượt của chính nó là 78,1 km/h: toàn bộ khoảng cách giữa
+"kịp cứu" và "không kịp" rộng đúng **4,3 km/h**. Vào cua gấp đô thị R = 20 m,
+ngưỡng lật tụt xuống 42,6 km/h.
+
+## Trọng tâm không chịu đứng yên
+
+`h` không phải hằng số in trong catalogue: hành khách và hành lý luôn chất
+**lên trên**, không bao giờ xuống dưới. Chiếc xe hai tầng rỗng 12 tấn với
+trọng tâm 1,30 m có SSF 0,77. Bán hết 60 vé tầng trên (68 kg mỗi khách, ngồi
+ở độ cao 2,40 m) là thêm 4,08 tấn đặt trên nóc: trọng tâm chung dâng lên
+**1,58 m**, SSF rơi còn 0,63, và ngưỡng lật trên cua R = 60 m tụt từ 76,6
+xuống **69,5 km/h**. Riêng chuyện đủ khách tầng trên đã ăn mất 7,1 km/h.
+
+Xe cũng không đợi tới ngưỡng mới trở nặng một bên. Phần trọng lượng dồn lên
+hai bánh phía ngoài bằng `0,5 + (h/t)·(a/g)`: ở gia tốc ngang khiêm tốn
+0,35 g — mức bạn gặp khi ôm cua hơi nhanh — xe con mới dồn ra ngoài 62%,
+còn xe khách đã 74,5%. Nước đi đáp trả của ngành đường bộ nằm ở mặt đường
+chứ không ở chiếc xe: [khúc cua nghiêng vào
+trong](/vi/posts/duong-cong-nghieng-khuc-cua-khong-can-ma-sat) hạ lực ngang
+mà thân xe phải chịu, nên nó vừa chống trượt vừa chống lật bằng một động tác.
+
+## Trường hợp biên: cú vấp, khi xe trượt xong mới lật
+
+SSF giả định xe là khối cứng. Xe thật có lò xo treo: vào cua, thân xe nghiêng
+thêm vài độ ra ngoài và kéo trọng tâm dịch theo, hành khách trượt cùng hướng
+— ngưỡng thật thấp hơn con số hình học chừng 10–20%. Quy chuẩn châu Âu vì
+thế không tin phép chia: xe buýt phải nằm trên bàn nghiêng, chở đủ tải,
+**nghiêng 28° mà bánh không rời mặt bàn**. Tang của 28° chỉ là 0,53 — đặt
+thấp hẳn so với 0,71 tính bằng thước dây, đúng bằng khoảng cách giữa mô hình
+và chiếc xe biết lún.
+
+Còn cú lật nguy hiểm nhất thì không nằm trong bất kỳ công thức nào ở trên.
+Phần lớn vụ lật ngoài đời là **lật vấp**: xe trượt ngang trước — đúng như dự
+báo dành cho chiếc xe con SSF 1,41 — rồi bánh vướng bó vỉa, mép nhựa cao hay
+vệt đất mềm. Lúc ấy thứ lật xe không còn là lực ngang đều đều mà là **động
+năng ngang bị chặn đứng**: điểm tựa nhảy ra ngoài mép lốp, và cả khối xe
+đang chạy quay quanh nó. Ngưỡng lật khi ấy thấp hơn SSF rất xa. Cho nên SSF
+chỉ trả lời trung thực đúng một câu hỏi — xe có tự lật nổi trên mặt đường
+sạch hay không. Bó vỉa thì chưa bao giờ hỏi SSF.

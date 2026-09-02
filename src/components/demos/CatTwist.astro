@@ -1,0 +1,179 @@
+---
+// Mô hình "hai hình trụ" của phản xạ tiếp đất ở mèo (Rademaker–ter Braak 1935,
+// dạng giải tích trong Kane & Scher 1969). Hai nửa thân quay quanh trục cột
+// sống chung, momen động lượng tổng luôn bằng 0:
+//   I_truoc·dθ_truoc + I_sau·dθ_sau = 0, với φ = θ_truoc − θ_sau (góc vặn cơ bắp)
+//   ⇒ dθ_truoc = [I_sau/(I_truoc+I_sau)]·dφ, dθ_sau = −[I_truoc/(I_truoc+I_sau)]·dφ
+// Một nhịp = vặn tới φ = α (nửa trước thu, I = 1; nửa sau duỗi, I = r) rồi tháo
+// vặn về φ = 0 sau khi đổi vai. Lãi ròng mỗi nhịp:
+//   G = α·(r − 1)/(r + 1),  r = I_duoi/I_thu
+// Kiểm chứng: r = 4, α = 90° → nửa trước +72,0°, nửa sau −18,0°, G = 54,0°.
+// Giới hạn đúng: r = 1 → G = 0 (định lý vật rắn); r → ∞ → G → α.
+// Công thức đúng trên toàn dải slider (r ≥ 1, 0 < α ≤ 120°). α chặn ở 120° vì
+// cột sống mèo không vặn hơn thế. Thời gian một nhịp lấy 90 ms, hiệu chỉnh từ
+// quan sát phim tốc độ cao: cả phản xạ hoàn tất trong khoảng 0,3 s.
+---
+
+<figure class="demo" data-demo="meo-roi-xoay-nguoi-voi-momen-bang-khong">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Tỉ số quán tính duỗi/thu (r) <output data-out="r"></output>
+      <input type="range" data-in="r" min="1" max="8" step="0.1" value="4" /></label>
+    <label>Góc vặn mỗi pha α (°) <output data-out="a"></output>
+      <input type="range" data-in="a" min="30" max="120" step="5" value="90" /></label>
+    <label>Đã thực hiện (nhịp) <output data-out="p"></output>
+      <input type="range" data-in="p" min="0" max="6" step="0.01" value="1.5" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Nhìn dọc trục cột sống: nửa trước (xanh) và nửa sau (cam), kim đỏ là hướng
+    lưng — bắt đầu chúc xuống, tiếp đất được khi quay đủ 180°. Bán kính mỗi đĩa
+    vẽ theo quán tính của nó: co chân lại là đĩa nhỏ đi. Đồ thị dưới cho thấy
+    hai nửa thay nhau vọt lên rồi lùi lại quanh đường "góc thân" nét đứt, trong
+    khi momen động lượng tổng bằng 0 ở mọi thời điểm.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const FRONT = '#2563eb', MARK = '#dc2626', BACK = '#f59e0b';
+  const T_NHIP = 0.09, G_ACC = 9.81;
+  const vn = (x: number, n: number) => x.toFixed(n).replace('.', ',');
+
+  // Góc hai nửa sau tiến trình p nhịp (phần lẻ của p = pha trong nhịp).
+  function poses(p: number, alpha: number, r: number) {
+    const G = (alpha * (r - 1)) / (r + 1);
+    const k = Math.floor(p), u = p - k, base = k * G;
+    const hi = (alpha * r) / (1 + r), lo = alpha / (1 + r);
+    let f: number, b: number;
+    if (u < 0.5) { const s = 2 * u; f = base + s * hi; b = base - s * lo; }
+    else { const s = 2 * u - 1; f = base + hi - s * lo; b = base - lo + s * hi; }
+    return { f, b, mean: G * p, G, frontTucked: u < 0.5 };
+  }
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (k: string) => root.querySelector(`[data-in="${k}"]`) as HTMLInputElement;
+    const output = (k: string) => root.querySelector(`[data-out="${k}"]`) as HTMLOutputElement;
+
+    function draw() {
+      const r = Number(input('r').value), alpha = Number(input('a').value), p = Number(input('p').value);
+      output('r').textContent = vn(r, 1);
+      output('a').textContent = vn(alpha, 0);
+      output('p').textContent = vn(p, 2);
+
+      const st = poses(p, alpha, r);
+      const G = st.G;
+      const nCan = G > 0 ? 180 / G : Infinity;
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.62);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+      ctx.font = '10px system-ui,sans-serif';
+
+      // --- Khung trên: hai đĩa nhìn dọc trục cột sống ---
+      const topH = cssH * 0.5;
+      const Rmax = Math.min(topH * 0.32, cssW * 0.14);
+      const cy = topH * 0.5;
+      const disc = (cx: number, ang: number, rad: number, col: string, lab: string, tucked: boolean) => {
+        ctx.strokeStyle = fg; ctx.globalAlpha = 0.25;
+        ctx.beginPath(); ctx.arc(cx, cy, Rmax, 0, Math.PI * 2); ctx.stroke();
+        ctx.setLineDash([3, 3]);
+        ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(cx, cy + Rmax + 8); ctx.stroke();
+        ctx.setLineDash([]); ctx.globalAlpha = 1;
+        ctx.strokeStyle = col; ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.arc(cx, cy, rad, 0, Math.PI * 2); ctx.stroke();
+        const th = (ang * Math.PI) / 180;
+        const dx = Math.sin(th), dy = Math.cos(th);
+        ctx.strokeStyle = MARK;
+        ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(cx + dx * rad, cy + dy * rad); ctx.stroke();
+        ctx.fillStyle = MARK;
+        ctx.beginPath(); ctx.arc(cx + dx * rad, cy + dy * rad, 4, 0, Math.PI * 2); ctx.fill();
+        ctx.lineWidth = 1;
+        ctx.fillStyle = fg; ctx.globalAlpha = 0.75; ctx.textAlign = 'center';
+        ctx.fillText(lab, cx, cy + Rmax + 20);
+        ctx.fillText(`${vn(ang, 1)}° ${tucked ? '(thu)' : '(duỗi)'}`, cx, cy + Rmax + 32);
+        ctx.globalAlpha = 1;
+      };
+      const rThu = Rmax / Math.sqrt(r);
+      const ft = st.frontTucked;
+      disc(cssW * 0.3, st.f, ft ? rThu : Rmax, FRONT, 'nửa trước', ft);
+      disc(cssW * 0.7, st.b, ft ? Rmax : rThu, BACK, 'nửa sau', !ft);
+      ctx.fillStyle = fg; ctx.globalAlpha = 0.55; ctx.textAlign = 'center';
+      ctx.fillText('kim đỏ = hướng lưng · chúc xuống là 0°, tiếp đất là 180°', cssW * 0.5, 11);
+      ctx.globalAlpha = 1;
+
+      // --- Khung dưới: góc quay theo số nhịp ---
+      const padL = 44, padR = 10, gTop = topH + 20, gBot = cssH - 22;
+      const X = (pp: number) => padL + (pp / 6) * (cssW - padL - padR);
+      const Y = (a: number) => gBot - (Math.max(0, Math.min(360, a)) / 360) * (gBot - gTop);
+
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.3;
+      ctx.beginPath(); ctx.moveTo(padL, gTop); ctx.lineTo(padL, gBot); ctx.lineTo(cssW - padR, gBot); ctx.stroke();
+      ctx.globalAlpha = 0.55; ctx.fillStyle = fg; ctx.textAlign = 'center';
+      for (const k of [1, 2, 3, 4, 5, 6]) ctx.fillText(`${k} nhịp`, X(k), gBot + 14);
+      ctx.textAlign = 'right';
+      for (const a of [90, 180, 270, 360]) ctx.fillText(`${a}°`, padL - 4, Y(a) + 3);
+      ctx.globalAlpha = 1;
+
+      ctx.strokeStyle = MARK; ctx.globalAlpha = 0.6; ctx.setLineDash([5, 4]);
+      ctx.beginPath(); ctx.moveTo(padL, Y(180)); ctx.lineTo(cssW - padR, Y(180)); ctx.stroke();
+      ctx.setLineDash([]); ctx.globalAlpha = 1;
+
+      const series = (pick: (s: { f: number; b: number; mean: number }) => number, col: string, wdt: number, dash: number[]) => {
+        ctx.strokeStyle = col; ctx.lineWidth = wdt; ctx.setLineDash(dash); ctx.beginPath();
+        for (let i = 0; i <= 480; i++) {
+          const pp = (6 * i) / 480, y = Y(pick(poses(pp, alpha, r)));
+          i ? ctx.lineTo(X(pp), y) : ctx.moveTo(X(pp), y);
+        }
+        ctx.stroke(); ctx.setLineDash([]); ctx.lineWidth = 1;
+      };
+      series((s) => s.f, FRONT, 1.6, []);
+      series((s) => s.b, BACK, 1.6, []);
+      series((s) => s.mean, fg, 2, [6, 3]);
+
+      ctx.fillStyle = MARK;
+      ctx.beginPath(); ctx.arc(X(p), Y(st.mean), 5, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = FRONT; ctx.textAlign = 'left'; ctx.fillText('nửa trước', X(0.08), gTop + 10);
+      ctx.fillStyle = BACK; ctx.fillText('nửa sau', X(0.08), gTop + 22);
+      ctx.fillStyle = fg; ctx.globalAlpha = 0.7; ctx.fillText('góc thân (nét đứt)', X(0.08), gTop + 34);
+      ctx.globalAlpha = 1;
+
+      // --- Readout ---
+      const hi = (alpha * r) / (1 + r), lo = alpha / (1 + r);
+      let tail: string;
+      if (!isFinite(nCan)) {
+        tail = ' → lãi <b>0,0°/nhịp</b>: thân cứng thì <b>không cách nào xoay</b>, vặn bao nhiêu nhịp cũng vậy';
+      } else {
+        const t = nCan * T_NHIP, h = 0.5 * G_ACC * t * t;
+        tail = ` → lãi <b>${vn(G, 1)}°/nhịp</b> → cần <b>${vn(nCan, 2)} nhịp</b> cho 180°`
+          + ` · ~${vn(t, 2)} s → rơi tối thiểu <b>${vn(h, 2)} m</b>`;
+      }
+      const done = st.mean >= 180 ? ' · <b>đã xoay đủ: bốn chân xuống trước</b>' : '';
+      readout.innerHTML =
+        `Vặn ${vn(alpha, 0)}° mỗi pha, tỉ số ${vn(r, 1)} → nửa thu +${vn(hi, 1)}°, nửa duỗi −${vn(lo, 1)}°${tail}`
+        + `<br />Sau ${vn(p, 2)} nhịp: nửa trước ${vn(st.f, 1)}°, nửa sau ${vn(st.b, 1)}° → thân đã xoay ${vn(st.mean, 1)}°${done}`;
+    }
+
+    root.querySelectorAll('input').forEach((el) => el.addEventListener('input', draw));
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="meo-roi-xoay-nguoi-voi-momen-bang-khong"]').forEach(setup);
+</script>

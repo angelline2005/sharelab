@@ -1,0 +1,206 @@
+---
+// Kepler II (equal areas) -> unequal season lengths.
+// Season k spans solar longitude Ls in [90k, 90k+90); true anomaly nu = Ls - Ls_perihelion.
+// Exact (no iteration): E = 2*atan2(sqrt(1-e)*sin(nu/2), sqrt(1+e)*cos(nu/2)),
+// M = E - e*sin(E), length_k = (M2 - M1)/(2*pi) * P. Sector area fraction = time fraction.
+// Semi-major axis from Kepler III for a heliocentric orbit: a[AU] = (P/365.2422)^(2/3);
+// v_peri = (2*pi*a/P)*sqrt((1+e)/(1-e)). Valid for any 0 <= e < 1; slider capped at 0.25
+// (planetary range). Sum of the four lengths equals P identically — the built-in check.
+---
+
+<figure class="demo" data-demo="bon-mua-dai-ngan-khac-nhau-luat-dien-tich">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Độ lệch tâm e <output data-out="e"></output>
+      <input type="range" data-in="e" min="0" max="0.25" step="0.0001" value="0.0167" /></label>
+    <label>Kinh độ Mặt Trời lúc cận nhật (°) <output data-out="lp"></output>
+      <input type="range" data-in="lp" min="0" max="359" step="1" value="283" /></label>
+    <label>Chu kỳ quỹ đạo P (ngày) <output data-out="p"></output>
+      <input type="range" data-in="p" min="80" max="700" step="0.0002" value="365.2422" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Bốn mùa chiếm bốn cung 90° bằng nhau trên vòng hoàng đạo, nhưng định luật
+    diện tích buộc thời gian tỉ lệ với diện tích múi — mà bốn múi không bằng
+    nhau khi Mặt Trời lệch khỏi tâm. Vạch đứt là P/4, độ dài mỗi mùa nếu quỹ
+    đạo tròn. Ở e thật của Trái Đất (0,0167) elip trông tròn xoe mà chênh lệch
+    đã 4,66 ngày; kéo e lên để thấy cùng cơ chế phóng to.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const BLUE = '#2563eb', RED = '#dc2626', AMBER = '#f59e0b';
+  const NAMES = ['Xuân', 'Hạ', 'Thu', 'Đông'];
+  const AU = 149.597871e6; // km
+  const D = Math.PI / 180;
+  const vn = (x: number, d: number) => x.toFixed(d).replace('.', ',');
+
+  // Mean anomaly from true anomaly (exact, no iteration).
+  const meanAnomaly = (nu: number, e: number) => {
+    const E = 2 * Math.atan2(Math.sqrt(1 - e) * Math.sin(nu / 2), Math.sqrt(1 + e) * Math.cos(nu / 2));
+    return E - e * Math.sin(E);
+  };
+
+  function seasonDays(e: number, lp: number, P: number) {
+    const out: number[] = [];
+    for (let k = 0; k < 4; k++) {
+      const n1 = (90 * k - lp) * D, n2 = (90 * k + 90 - lp) * D;
+      let dM = meanAnomaly(n2, e) - meanAnomaly(n1, e);
+      dM = ((dM % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI);
+      out.push((dM / (2 * Math.PI)) * P);
+    }
+    return out;
+  }
+
+  const niceStep = (max: number) => {
+    for (const s of [5, 10, 20, 25, 50, 100, 200]) if (max / s <= 5) return s;
+    return 500;
+  };
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (k: string) => root.querySelector(`[data-in="${k}"]`) as HTMLInputElement;
+    const output = (k: string) => root.querySelector(`[data-out="${k}"]`) as HTMLOutputElement;
+
+    function draw() {
+      const e = Number(input('e').value);
+      const lp = Number(input('lp').value);
+      const P = Number(input('p').value);
+      output('e').textContent = vn(e, 4);
+      output('lp').textContent = String(lp);
+      output('p').textContent = vn(P, 2);
+
+      const days = seasonDays(e, lp, P);
+      const dMax = Math.max(...days), dMin = Math.min(...days);
+      const aAU = Math.pow(P / 365.2422, 2 / 3);
+      const vPeri = ((2 * Math.PI * aAU * AU) / (P * 86400)) * Math.sqrt((1 + e) / (1 - e));
+      const vAph = ((2 * Math.PI * aAU * AU) / (P * 86400)) * Math.sqrt((1 - e) / (1 + e));
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.5);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+      const COL = [BLUE, RED, AMBER, fg];
+      ctx.font = '10px system-ui,sans-serif';
+
+      // ---------- left panel: the orbit, cut into four longitude sectors ----------
+      const ox0 = 6, ox1 = Math.round(cssW * 0.44);
+      const cx = (ox0 + ox1) / 2, cy = cssH / 2;
+      const scale = Math.min((ox1 - ox0) / 2 - 24, cssH / 2 - 26);
+      const bRel = Math.sqrt(1 - e * e);
+      // Sun sits at the focus; perihelion points to +x. a = 1 in these units.
+      const sunX = cx + scale * e, sunY = cy;
+      const rOf = (nu: number) => (1 - e * e) / (1 + e * Math.cos(nu));
+      const PX = (nu: number) => cx + scale * (rOf(nu) * Math.cos(nu) + e);
+      const PY = (nu: number) => cy - scale * (rOf(nu) * Math.sin(nu));
+
+      for (let k = 0; k < 4; k++) {
+        const n1 = (90 * k - lp) * D, n2 = (90 * k + 90 - lp) * D;
+        ctx.beginPath(); ctx.moveTo(sunX, sunY);
+        for (let i = 0; i <= 40; i++) {
+          const nu = n1 + ((n2 - n1) * i) / 40;
+          ctx.lineTo(PX(nu), PY(nu));
+        }
+        ctx.closePath();
+        ctx.fillStyle = COL[k]; ctx.globalAlpha = 0.26; ctx.fill();
+        ctx.globalAlpha = 0.35; ctx.strokeStyle = fg; ctx.stroke();
+        ctx.globalAlpha = 1;
+        // label inside the sector, at the middle of its arc
+        const nm = (n1 + n2) / 2;
+        const lx = sunX + scale * rOf(nm) * Math.cos(nm) * 0.56;
+        const ly = sunY - scale * rOf(nm) * Math.sin(nm) * 0.56;
+        ctx.fillStyle = fg; ctx.textAlign = 'center';
+        ctx.globalAlpha = 0.85; ctx.fillText(NAMES[k], lx, ly - 1);
+        ctx.globalAlpha = 0.6; ctx.fillText(vn(days[k], 2), lx, ly + 11);
+        ctx.globalAlpha = 1;
+      }
+
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.55; ctx.beginPath();
+      for (let i = 0; i <= 180; i++) {
+        const nu = (2 * Math.PI * i) / 180;
+        i ? ctx.lineTo(PX(nu), PY(nu)) : ctx.moveTo(PX(nu), PY(nu));
+      }
+      ctx.closePath(); ctx.stroke(); ctx.globalAlpha = 1;
+
+      ctx.fillStyle = AMBER;
+      ctx.beginPath(); ctx.arc(sunX, sunY, 5, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = RED;
+      ctx.beginPath(); ctx.arc(PX(0), PY(0), 3.5, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.arc(PX(Math.PI), PY(Math.PI), 3.5, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = fg; ctx.globalAlpha = 0.65;
+      ctx.textAlign = 'right';
+      ctx.fillText(`viễn nhật ${vn(aAU * (1 + e), 3)} AU`, PX(Math.PI) + 46, PY(Math.PI) - 8);
+      ctx.textAlign = 'left';
+      ctx.fillText(`cận nhật ${vn(aAU * (1 - e), 3)} AU`, PX(0) - 42, PY(0) + 16);
+      ctx.globalAlpha = 1;
+
+      // ---------- right panel: season lengths as bars, on a day axis ----------
+      const bx0 = Math.round(cssW * 0.44) + 40, bx1 = cssW - 12;
+      const barTop = 22, axisY = cssH - 30;
+      const slot = (axisY - barTop) / 4, barH = slot * 0.56;
+      const dayMax = dMax * 1.14;
+      const BX = (d: number) => bx0 + (d / dayMax) * (bx1 - bx0);
+
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.3;
+      ctx.beginPath(); ctx.moveTo(bx0, barTop - 6); ctx.lineTo(bx0, axisY); ctx.lineTo(bx1, axisY); ctx.stroke();
+      ctx.globalAlpha = 0.55; ctx.fillStyle = fg; ctx.textAlign = 'center';
+      const step = niceStep(dayMax);
+      for (let d = step; d <= dayMax; d += step) ctx.fillText(String(d), BX(d), axisY + 14);
+      ctx.fillText('ngày', BX(dayMax) - 4, axisY + 26);
+      ctx.globalAlpha = 1;
+
+      for (let k = 0; k < 4; k++) {
+        const y = barTop + slot * k + (slot - barH) / 2;
+        ctx.fillStyle = COL[k]; ctx.globalAlpha = 0.8;
+        ctx.fillRect(bx0, y, BX(days[k]) - bx0, barH);
+        ctx.globalAlpha = 1;
+        ctx.fillStyle = fg; ctx.textAlign = 'right'; ctx.globalAlpha = 0.8;
+        ctx.fillText(NAMES[k], bx0 - 6, y + barH / 2 + 3);
+        ctx.textAlign = 'left';
+        ctx.fillText(vn(days[k], 2), BX(days[k]) + 5, y + barH / 2 + 3);
+        ctx.globalAlpha = 1;
+      }
+
+      // P/4 — what every season would last on a circular orbit
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.7; ctx.setLineDash([4, 3]);
+      ctx.beginPath(); ctx.moveTo(BX(P / 4), barTop - 6); ctx.lineTo(BX(P / 4), axisY); ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillStyle = fg; ctx.textAlign = 'center';
+      ctx.fillText(`P/4 = ${vn(P / 4, 2)}`, BX(P / 4), barTop - 10);
+      ctx.globalAlpha = 1;
+
+      const spread = dMax - dMin;
+      const flag = spread < 1
+        ? ' · quỹ đạo gần tròn: bốn mùa gần bằng nhau'
+        : spread > 20
+          ? ' · <b>lệch tâm mạnh: hình dạng quỹ đạo lấn át</b>'
+          : '';
+      readout.innerHTML =
+        `e = ${vn(e, 4)} · P = ${vn(P, 2)} ngày · cận nhật ở kinh độ ${lp}° → ` +
+        `Xuân ${vn(days[0], 2)} · Hạ ${vn(days[1], 2)} · Thu ${vn(days[2], 2)} · Đông ${vn(days[3], 2)} ngày` +
+        ` · dài nhất − ngắn nhất = <b>${vn(spread, 2)} ngày</b>` +
+        ` · tốc độ ${vn(vPeri, 2)} km/s ở cận nhật, ${vn(vAph, 2)} km/s ở viễn nhật${flag}`;
+    }
+
+    root.querySelectorAll('input').forEach((el) => el.addEventListener('input', draw));
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="bon-mua-dai-ngan-khac-nhau-luat-dien-tich"]').forEach(setup);
+</script>

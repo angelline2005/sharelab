@@ -1,0 +1,96 @@
+---
+title: "Tung điện thoại lộn nhào: chưa hết một vòng đã lật ngửa"
+seoTitle: "Định lý trục trung gian (hiệu ứng Dzhanibekov): vì sao trục giữa luôn mất ổn định"
+description: "Vật rắn quay ổn định quanh trục dài nhất và trục ngắn nhất, nhưng quanh trục GIỮA thì không bao giờ. Với chiếc điện thoại 15×7×0,8 cm quay 2 vòng/giây, sai lệch 1° phồng thành 90° chỉ sau 0,45 giây — chưa hết 0,91 vòng."
+pubDate: 2026-09-02
+tags: ["vat-ly", "co-hoc", "mo-phong", "javascript"]
+translationId: "dinh-ly-truc-trung-gian-tung-dien-thoai"
+---
+
+import IntermediateAxis from '../../../components/demos/IntermediateAxis.astro';
+
+Cầm điện thoại nằm ngang, tung nhẹ cho nó lộn nhào đầu-đuôi một vòng rồi
+bắt lại: màn hình đã úp xuống. Làm lại mười lần, mười lần lật. Nhưng xoay
+nó quanh trục dọc thân máy như xiên nướng, hay quay dẹt như đĩa ném, thì
+không lần nào lật cả:
+
+<IntermediateAxis />
+
+## Ba trục, và đúng một trục phản bội
+
+Mọi vật rắn đều có ba **trục quán tính chính** vuông góc nhau. Chiếc điện
+thoại 15×7×0,8 cm nặng 200 g cho ba mô-men quán tính khác hẳn nhau: quanh
+trục dọc thân máy `I₁ = 8,27·10⁻⁵`, quanh trục song song cạnh 7 cm
+`I₂ = 3,76·10⁻⁴`, quanh trục xuyên màn hình `I₃ = 4,57·10⁻⁴ kg·m²` — như
+[cuộc đua vật lăn](/vi/posts/dua-vat-lan-hinh-dang-thang-khoi-luong), tất
+cả nằm ở chỗ khối lượng được xếp xa trục bao nhiêu.
+
+Đưa ba số ấy vào phương trình Euler cho vật quay tự do rồi hỏi "lệch trục
+một chút thì sao", bạn nhận hai câu trả lời trái ngược. Quanh trục có I
+nhỏ nhất và trục có I lớn nhất, sai lệch chỉ *dao động* quanh vị trí cũ.
+Quanh trục ở giữa, nó **lớn theo hàm mũ**:
+
+```
+σ = ω·√( (I₂−I₁)(I₃−I₂) / (I₁·I₃) )
+```
+
+Hai thừa số trong ngoặc cùng dương *chỉ khi* I₂ nằm giữa; với hai trục kia
+biểu thức đổi dấu và căn bậc hai thành số ảo. Đó là toàn bộ định lý: ba
+thanh trong demo, hai thanh đúng bằng 0, một thanh đỏ.
+
+## Một độ thành chín mươi độ sau 0,45 giây
+
+Tung 2 vòng/giây, tức ω = 12,57 rad/s, điện thoại cho **σ = 9,94 1/s**:
+sai lệch đi theo `θ(t) = θ₀·e^(σt)`, cứ **70 mili-giây là nhân đôi**. Bạn
+không bao giờ thả tay hoàn hảo — cho 1° lệch ban đầu, đã rất khéo — thì
+ln(90)/σ = **0,45 giây** là đủ để nó thành 90°.
+
+Ở 2 vòng/giây, 0,45 giây mới được **0,91 vòng**. Cú lật xong trước khi máy
+quay hết một vòng, nên bạn chẳng kịp thấy giai đoạn "hơi nghiêng" nào. Mỗi
+vòng khuếch đại sai lệch **144 lần**: vòng đầu biến 1° thành 90°, và không
+có vòng thứ hai.
+
+## Tung chậm lại không mua thêm được vòng nào
+
+σ tỉ lệ thuận với ω, nên tung chậm thì cú lật đến muộn hơn — nhưng số
+*vòng* trước khi lật không đổi một li: 0,91 vòng ở 0,5 vòng/giây, 0,91
+vòng ở 5 vòng/giây. Kéo thanh trượt tốc độ mà xem — điểm đỏ chạy dọc trục
+thời gian, hàng số "vòng" bên dưới đứng yên. Vật quay không đếm giây.
+
+Khối lượng cũng vô can — σ chỉ ăn tỉ số giữa ba mô-men. Còn khéo tay thì
+sao? Thả chuẩn gấp mười lần, lệch 0,1° thay vì 1°, chỉ mua thêm **0,46
+vòng**. Hàm mũ ăn mọi nỗ lực của bạn theo kiểu logarit: muốn quay trọn hai
+vòng, bạn phải thả chính xác tới 0,004°.
+
+## Cái đai ốc của Dzhanibekov
+
+Tháng 6 năm 1985 trên trạm Salyut 7, nhà du hành Vladimir Dzhanibekov búng
+một con đai ốc tai hồng trôi trong khoang: nó quay một lúc, lật, rồi lại
+quay, lại lật. Đoạn phim khiến hiệu ứng mang tên ông, dù Euler đã viết ra
+phương trình từ thế kỷ 18 và dân quần vợt vẫn gọi nó là "định lý vợt
+tennis".
+
+Hình dáng đổi được tốc độ chứ không đổi được kết cục: chiếc thước dẹt
+25×4,5 cm còn dữ hơn điện thoại — **0,76 vòng**; ép về gần vuông thì hai
+mô-men xích lại gần nhau, tấm 15×14 cm cầm cự được **2,74 vòng**.
+
+## Trường hợp biên: khi vật không còn cứng
+
+Kéo chiều rộng lên đúng 15 cm, thành tấm vuông: I₁ = I₂, thanh đỏ biến
+mất, **σ = 0** tuyệt đối — không còn trục nào "ở giữa" để mà mất ổn định.
+Đĩa tròn, hình trụ, quả bóng cũng vậy. Đó là lối thoát duy nhất, và ngành
+vệ tinh đã trả học phí để biết.
+
+Vì ngoài đời chẳng vật nào cứng tuyệt đối. Ăng-ten rung, nhiên liệu sóng
+sánh, kim loại uốn — tất cả đều *tiêu tán năng lượng*, trong khi [momen
+động lượng thì được bảo
+toàn](/vi/posts/bao-toan-momen-dong-luong-cu-xoay-khong-mien-phi). Với L
+cố định, động năng quay bằng L²/(2I), nên vật càng mất năng lượng càng
+trôi về trục có **I lớn nhất**: điện thoại quay dẹt tốn ít hơn quay dọc
+thân tới 82%. Vệ tinh Explorer 1 phóng tháng 2 năm 1958 được cho quay
+quanh trục dọc — *ổn định* theo định lý trên, nhưng lại là trục I nhỏ
+nhất. Bốn cần ăng-ten mềm rung nhẹ, và chỉ vài giờ sau nó nằm ngửa quay
+dẹt, mất luôn hướng ngắm. Luật ngành đổi hẳn từ đó: vệ tinh quay ổn định
+phải quay quanh trục béo nhất của nó. Còn cú lật trên tay bạn thì [con
+quay MEMS trong máy](/vi/posts/con-quay-trong-dien-thoai-khong-he-quay)
+ghi lại trọn vẹn — nó chỉ chờ bạn tung thêm lần nữa.

@@ -1,0 +1,111 @@
+---
+title: "Hạt từ 7 nanomet: dữ liệu của bạn sống được 2,6 giây"
+seoTitle: "Giới hạn siêu thuận từ của ổ cứng: vì sao bit không thể nhỏ mãi"
+description: "Một bit trên ổ cứng là chừng chín hạt tinh thể từ, và nhiệt độ phòng thử lật mỗi hạt một tỉ lần mỗi giây. Hạt 9 nm giữ dữ liệu được 3 253 năm; thu xuống 7 nm — nhỏ hơn 22% — tuổi thọ rơi còn 2,6 giây. Hàm mũ không thương lượng."
+pubDate: 2026-09-02
+tags: ["vat-ly", "dien-tu", "nhiet-hoc", "javascript"]
+translationId: "gioi-han-sieu-thuan-tu-cua-o-cung"
+---
+
+import SuperparamagneticLimit from '../../../components/demos/SuperparamagneticLimit.astro';
+
+Chiếc ổ cứng trong ngăn kéo không quay, không điện, không ai đụng tới. Nhưng
+lớp từ trên mặt đĩa thì không nằm yên: mỗi hạt tinh thể ghi bit đang bị nhiệt
+độ phòng lắc chừng một tỉ lần mỗi giây, và mỗi cú lắc là một lần thử lật. Ba
+mươi năm tăng dung lượng ổ cứng là cuộc đua với đúng cú lắc ấy:
+
+<SuperparamagneticLimit />
+
+## Một bit là một đám đông, không phải một nam châm
+
+Ở mật độ khoảng 1 Tb/in² của ổ 3,5 inch hôm nay, mỗi ô bit rộng vỏn vẹn
+**645 nm²**. Bên dưới là thảm hạt CoCrPt đường kính ~9 nm, mỗi hạt một tinh
+thể đơn đômen — cái kim la bàn cứng chỉ có hai tư thế hợp lệ, lên hoặc xuống,
+ngăn cách nhau bởi vành oxit mỏng. Xếp lục giác với bước 9 nm thì mỗi hạt
+chiếm 70 nm²: một bit ngồi trên **khoảng chín hạt**.
+
+Vì sao không một hạt một bit? Vì mép của một chuyển tiếp từ không bao giờ là
+đường thẳng — nó răng cưa theo đúng biên hạt, và tín hiệu đầu đọc chỉ nổi lên
+khỏi cái mép lởm chởm ấy khi được lấy trung bình trên nhiều hạt. Muốn ổ dày
+dữ liệu hơn thì không có đường nào khác ngoài **làm hạt nhỏ đi**. Đó là lúc
+nhiệt độ phòng vào cuộc.
+
+## Nhiệt độ phòng gõ cửa mỗi hạt một tỉ lần mỗi giây
+
+Lật một hạt sang chiều ngược đòi trèo qua một rào năng lượng cao đúng bằng
+`Ku·V` — hằng số dị hướng của vật liệu nhân thể tích hạt. Với CoCrPt
+(Ku = 5·10⁵ J/m³) và hạt 9 nm, rào cao **191 zJ**, trong khi năng lượng nhiệt
+ở 300 K chỉ là kT = **4,14 zJ**, nhỏ hơn 46 lần. Nghe như bất khả xâm phạm.
+Nhưng nhiệt không rót đều, nó gieo xúc xắc, và hạt được gieo khoảng 10⁹ lần
+mỗi giây — nghịch đảo của tần số tiến động tự nhiên của mômen từ:
+
+```
+τ = τ₀ · exp( Ku·V / (k_B·T) )     với V = π·D³/6 và τ₀ ≈ 10⁻⁹ s
+```
+
+Xác suất thắng mỗi cú gieo là e^(−46,1) = 9,7·10⁻²¹. Nhân với một tỉ cú mỗi
+giây, hạt 9 nm giữ được chiều của nó trung bình **3 253 năm**. Chữ "trung
+bình" phải hiểu cho đúng: giống hệt [hạt phóng xạ không biết tuổi của
+mình](/vi/posts/chu-ky-ban-ra-khong-hat-nao-biet-tuoi-minh), hạt từ không đếm
+ngược tới hạn — xác suất nó lật trong giây tới là như nhau ở ngày đầu tiên và
+ở năm thứ ba nghìn.
+
+## Vách đá nằm giữa 9,8 và 6,9 nanomet
+
+Kéo thanh đường kính và để ý: trục tung của demo là thang logarit trải ba
+mươi bậc, vậy mà đường cong vẫn gần như dựng đứng. Lý do nằm ở chỗ D chui vào
+công thức qua **D³ rồi mới chui tiếp vào số mũ**.
+
+Hạt 9,8 nm sống **2,2 tỉ năm**. Gọt bớt 0,8 nm còn 9,0: **3 253 năm** — đã
+mất một triệu lần. Gọt tiếp 0,4 nm còn 8,6: **9 năm**, đã trượt dưới chuẩn
+lưu trữ mười năm. Và ở 7,0 nm: **2,6 giây**. Toàn bộ dải sinh tử ấy — từ 9,8
+xuống 6,9 nm — dày **2,9 nanomet, chừng mười hai lớp nguyên tử coban**, và
+trong đó tuổi thọ dữ liệu rơi 6,6·10¹⁶ lần, từ nửa tuổi Trái Đất xuống đúng
+một giây. Riêng chặng 9 → 7 nm, đường kính bớt 22%, đã chia tuổi thọ cho
+**4·10¹⁰**.
+
+Đó là *giới hạn siêu thuận từ*: dưới một cỡ nào đó, hạt không còn là nam châm
+nữa mà là một cái kim la bàn bị gõ liên tục. Nó không phải nỗi lo lý thuyết —
+nó là thứ đã chặn đứng đà tăng mật độ ổ cứng vào giữa thập niên 2000.
+
+## Nhiệt độ ở mẫu số, và mùa hè biết điều đó
+
+T nằm dưới mẫu của số mũ nên nó cũng cắn theo kiểu hàm mũ. Vẫn hạt 9 nm ấy:
+ở 27 °C được 3 253 năm; đẩy lên **60 °C — đúng trần nhiệt độ hoạt động mà
+nhà sản xuất ghi trên nhãn** — chỉ còn **34 năm**. Nóng thêm 33 độ, tuổi thọ
+chia cho **96**.
+
+Ba mươi tư năm vẫn thừa cho đời một cái ổ, nên đây không phải lời doạ về
+chiếc laptop nóng của bạn. Nó là lời giải thích vì sao cái trần ghi trên nhãn
+là 60 chứ không phải 90, và vì sao [thẻ nhớ cũng chỉ dám hứa mười
+năm](/vi/posts/xuyen-ham-luong-tu-trong-chiec-the-nho) dù cơ chế rò của nó —
+electron xuyên hầm qua lớp oxit — chẳng dính gì tới nhiệt. Hai loại bộ nhớ,
+hai hàm mũ khác nhau, và cả hai đều chỉ bán cho bạn phần đuôi an toàn.
+
+## Trường hợp biên: nung điểm ghi lên 450 °C rồi làm nguội trong một nano giây
+
+Lối thoát hiển nhiên là đổi vật liệu. FePt pha L1₀ có Ku = 7·10⁶ J/m³, gấp
+mười bốn lần CoCrPt: đặt con số ấy vào demo rồi hạ D xuống **3,6 nm** vẫn
+còn 27 năm, tức ô bit co lại **gần sáu lần diện tích**.
+
+Nhưng chính cái rào cao ấy chặn luôn đầu ghi. Trường dị hướng của FePt là
+2Ku/Ms ≈ **12 T**, trong khi cực từ tốt nhất người ta biết làm — hợp kim
+FeCo — bão hoà ở khoảng 2,4 T. Hạt bền tới mức không ai ghi vào nổi: cái bẫy
+ba mặt mà ngành lưu trữ gọi thẳng là *trilemma*.
+
+Công nghệ HAMR lách qua chữ T. Một laser bán dẫn ngay cạnh đầu ghi nung điểm
+sắp ghi lên ~450 °C trong chưa tới một nano giây; sát điểm Curie (750 K với
+FePt) thì **chính Ku sụp về gần không** — hạt tạm quên rằng nó cứng, đúng kiểu
+[viên ferrite trong nồi cơm điện quên mình là nam
+châm](/vi/posts/noi-com-dien-va-nam-cham-quen-tu-tinh). Đầu từ ghi vào đúng
+khoảnh khắc ấy, điểm nóng nguội đi trong vài nano giây, rào 12 T dựng lại và
+khoá bit hàng thế kỷ. Thang nhiệt độ trong demo dừng ở 450 K cũng vì thế:
+công thức trên giữ Ku cố định, nên nó thấy mẫu số nhích mà không thấy tử số
+sụp.
+
+Ở đầu kia của thang là miếng nam châm dán tủ lạnh. Một hạt ferrite trong đó
+đường kính cỡ 1 µm, thể tích gấp hạt ổ cứng **1,4 triệu lần**, cho
+`Ku·V/(k_B·T) ≈ 4·10⁷`. Dịch số mũ ấy ra thời gian thì τ là số 1 với **mười
+tám triệu chữ số không** đứng sau. Nam châm tủ lạnh không bao giờ tự quên —
+muốn nó quên, bạn phải nung nó, hoặc đợi lâu hơn tuổi vũ trụ chừng mười tám
+triệu bậc.
