@@ -25,3 +25,12 @@ pnpm-debug.log*
 
 # Claude Code memory (local only, may contain personal notes)
 .claude/memory/
+
+# Internal work orders and research notes — local only. They describe account
+# architecture and carry candid assessments that do not belong in a public repo.
+docs/
+
+# Workflow scripts occasionally land at the repo root with a mangled absolute
+# path as their filename, which leaks the local Windows user. Never commit them.
+/CUsers*
+/*workflowsscripts*
