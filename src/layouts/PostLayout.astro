@@ -87,6 +87,9 @@ const jsonLd = {
   modifiedTime={updatedDate}
 >
   <script is:inline type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+  <script>
+    import '../scripts/demo-state.ts';
+  </script>
   <article data-pagefind-body>
     <header class="post-header">
       <h1>{title}</h1>
@@ -181,6 +184,28 @@ const jsonLd = {
   }
   .post-tags a:hover {
     background: rgba(37, 99, 235, 0.2);
+  }
+  /* Injected by src/scripts/demo-state.ts, not present in any component's
+     own markup — has to be :global since Astro's scoping only reaches
+     elements literally written in this file's template. */
+  .post-content :global(.demo-share) {
+    display: inline-block;
+    margin-top: 0.75rem;
+    padding: 0.35rem 0.8rem;
+    font: inherit;
+    font-size: 0.8rem;
+    color: var(--accent);
+    background: rgba(37, 99, 235, 0.08);
+    border: 1px solid rgba(37, 99, 235, 0.25);
+    border-radius: 999px;
+    cursor: pointer;
+  }
+  .post-content :global(.demo-share:hover) {
+    background: rgba(37, 99, 235, 0.16);
+  }
+  .post-content :global(.demo-share:disabled) {
+    opacity: 0.7;
+    cursor: default;
   }
   .post-content :global(h2) {
     margin-top: 2rem;
