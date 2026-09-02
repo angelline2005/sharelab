@@ -38,6 +38,26 @@ for (const file of readdirSync(DEMOS).filter((f) => f.endsWith('.astro'))) {
   }
   if (!/data-demo="/.test(src)) err(file, 'thiếu data-demo');
   if (!/querySelectorAll/.test(src)) warn(file, 'không thấy querySelectorAll — script có chạy không?');
+
+  // The id the script looks for must be an id some figure actually carries.
+  // GhostVoltage and VaristorClamp both had a figure named after the post slug
+  // and a selector still using the component's old working name, so setup()
+  // never ran and the canvas sat blank at 300x150 for weeks. Nothing else
+  // catches this: the build succeeds and the page renders, just without a demo.
+  const selectorIds = [...src.matchAll(/\[data-demo="([^"]+)"\]/g)].map((m) => m[1]);
+  const attrIds = [...src.matchAll(/(?<!\[)data-demo="([^"]+)"/g)].map((m) => m[1]);
+  for (const id of selectorIds) {
+    if (!attrIds.includes(id)) {
+      err(file, `script tìm [data-demo="${id}"] nhưng figure mang "${attrIds[0] ?? '?'}" — setup() không chạy`);
+    }
+  }
+
+  // Astro compiles TypeScript inside a bare <script>, but copies <script lang="ts">
+  // through verbatim — so a type annotation reaches the browser and throws
+  // SyntaxError, killing the demo. SiphonVelocity shipped that way.
+  if (/<script[^>]*\slang=/.test(src)) {
+    err(file, '<script lang="..."> được chép nguyên văn ra trình duyệt — dùng <script> trần');
+  }
 }
 
 const titles = new Map();

@@ -271,7 +271,9 @@
       ctx.stroke();
 
       // Satellite at the animated index.
-      const p = orbit.points[Math.min(satIdx, orbit.points.length - 1)];
+      // satIdx advances by a fraction of a point per frame, so it has to be
+      // floored before it indexes: points[0.96] is undefined, not points[0].
+      const p = orbit.points[Math.min(Math.floor(satIdx), orbit.points.length - 1)];
       const [sx, sy] = px(p[0], p[1]);
       ctx.fillStyle = PATH;
       ctx.beginPath();

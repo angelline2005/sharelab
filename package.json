@@ -9,7 +9,8 @@
     "dev": "astro dev",
     "build": "astro build && pagefind --site dist --exclude-selectors \".controls,.readout\"",
     "preview": "astro preview",
-    "astro": "astro"
+    "astro": "astro",
+    "smoke": "node scripts/smoke-demos.mjs"
   },
   "dependencies": {
     "@astrojs/mdx": "^7.0.5",
@@ -21,6 +22,7 @@
   "devDependencies": {
     "@astrojs/check": "^0.9.10",
     "pagefind": "^1.5.2",
+    "playwright": "^1.62.1",
     "typescript": "^6.0.3"
   }
 }
