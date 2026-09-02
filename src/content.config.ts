@@ -18,6 +18,16 @@ const posts = defineCollection({
     // Optional since the English section was removed; existing posts keep
     // their values, new posts need not set one.
     translationId: z.string().optional(),
+    // Curriculum metadata, set only by the Vật lý 12 lesson layer (see
+    // docs/vat-ly-12-lesson-layer.md). All four are optional so the 290 posts
+    // that are not part of a lesson series keep validating untouched, and all
+    // four must be present together on a post that sets `series` —
+    // validate-posts.mjs enforces that, since Zod cannot express it here
+    // without making them required for everyone.
+    grade: z.number().int().optional(),
+    chapter: z.string().optional(),
+    lesson: z.number().int().optional(),
+    series: z.string().optional(),
     draft: z.boolean().default(false),
   }),
 });

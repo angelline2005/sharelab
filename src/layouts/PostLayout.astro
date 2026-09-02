@@ -57,6 +57,28 @@ const myIndex = timeline.findIndex((p) => p.id === post.id);
 const prevPost = myIndex > 0 ? timeline[myIndex - 1] : undefined;
 const nextPost = myIndex < timeline.length - 1 ? timeline[myIndex + 1] : undefined;
 
+// --- lesson series --------------------------------------------------------
+// Set only by the Vật lý 12 layer (docs/vat-ly-12-lesson-layer.md). When a post
+// belongs to a series its real neighbours are the other lessons in lesson
+// order, not the alphabetical neighbours the generic pager lands on — so the
+// generic pager is suppressed below rather than shown alongside, which would
+// put two "Bài sau" links on one page pointing different ways.
+const { series, grade, chapter, lesson } = post.data;
+const seriesPosts =
+  series && typeof lesson === 'number'
+    ? [...siblings, post]
+        .filter((p) => p.data.series === series && typeof p.data.lesson === 'number')
+        .sort((a, b) => (a.data.lesson as number) - (b.data.lesson as number))
+    : [];
+const seriesAt = seriesPosts.findIndex((p) => p.id === post.id);
+const seriesPrev = seriesAt > 0 ? seriesPosts[seriesAt - 1] : undefined;
+const seriesNext =
+  seriesAt !== -1 && seriesAt < seriesPosts.length - 1 ? seriesPosts[seriesAt + 1] : undefined;
+// The hub route is built from grade and chapter rather than from the series
+// slug: "vat-ly-12-nhiet" has no unambiguous split back into a path.
+const seriesHub =
+  series && grade && chapter ? withBase(`/${locale}/vat-ly-${grade}/${chapter}/`) : undefined;
+
 const postHref = (p: CollectionEntry<'posts'>) =>
   withBase(`/${locale}/posts/${p.id.split('/').slice(1).join('/')}/`);
 
@@ -149,7 +171,29 @@ const jsonLd = {
       <a href={withBase(`/${locale}/rss.xml`)}>RSS</a>
     </aside>
 
-    <nav class="post-pager">
+    {seriesHub && (
+      <nav class="series-nav">
+        <a class="series-hub" href={seriesHub}>{t('post.seriesHub')}</a>
+        <div class="series-steps">
+          {seriesPrev ? (
+            <a class="pager-prev" href={postHref(seriesPrev)}>
+              <span>{t('post.prev')}</span>
+              {seriesPrev.data.title}
+            </a>
+          ) : (
+            <span />
+          )}
+          {seriesNext && (
+            <a class="pager-next" href={postHref(seriesNext)}>
+              <span>{t('post.next')}</span>
+              {seriesNext.data.title}
+            </a>
+          )}
+        </div>
+      </nav>
+    )}
+
+    <nav class="post-pager" hidden={Boolean(seriesHub)}>
       {prevPost ? (
         <a class="pager-prev" href={postHref(prevPost)}>
           <span>{t('post.prev')}</span>
@@ -294,5 +338,36 @@ const jsonLd = {
   .pager-next {
     text-align: right;
     margin-left: auto;
+  }
+  .series-nav {
+    margin: 2rem 0 0;
+    padding-top: 1rem;
+    border-top: 1px solid rgba(128, 128, 128, 0.25);
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+  .series-hub {
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-decoration: none;
+    opacity: 0.75;
+  }
+  .series-steps {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    font-size: 0.9rem;
+  }
+  .series-steps a {
+    max-width: 46%;
+    text-decoration: none;
+    font-weight: 600;
+  }
+  .series-steps a span {
+    display: block;
+    font-size: 0.75rem;
+    font-weight: 400;
+    opacity: 0.6;
   }
 </style>

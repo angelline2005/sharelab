@@ -65,6 +65,11 @@ const titles = new Map();
 // another had already taken: the second post renders the first one's demo, and
 // nothing else in the build complains. Only a cross-post check catches it.
 const componentUsers = new Map();
+// One post per (series, lesson) pair — see the series block below.
+const seriesLessons = new Map();
+// BaseLayout appends this to every rendered <title>; it is what makes the real
+// title budget 49 rather than 60.
+const SITE_SUFFIX = ' · sharelab';
 
 for (const slug of slugs) {
   const path = existsSync(join(POSTS, `${slug}.mdx`))
@@ -116,6 +121,33 @@ for (const slug of slugs) {
 
   if (field('pubDate') && !/^\d{4}-\d{2}-\d{2}$/.test(field('pubDate'))) {
     err(slug, `pubDate không đúng dạng YYYY-MM-DD: ${field('pubDate')}`);
+  }
+
+  // Curriculum series (docs/vat-ly-12-lesson-layer.md). Only posts that opt in
+  // by setting `series` are checked, so the other 290 are untouched.
+  const series = field('series')?.replace(/^"|"$/g, '');
+  if (series) {
+    for (const req of ['grade', 'chapter', 'lesson']) {
+      if (!field(req)) err(slug, `có series nhưng thiếu ${req}`);
+    }
+    const lessonNo = field('lesson');
+    if (lessonNo && !/^\d+$/.test(lessonNo)) {
+      err(slug, `lesson phải là số nguyên, đang là "${lessonNo}"`);
+    }
+    // One lesson number per series: two posts claiming lesson 3 would make the
+    // series pager skip one of them silently.
+    const key = `${series}#${lessonNo}`;
+    const prev = seriesLessons.get(key);
+    if (prev) err(slug, `trùng (series, lesson) với ${prev}`);
+    else seriesLessons.set(key, slug);
+
+    // The rendered <title> is the frontmatter title plus BaseLayout's fixed
+    // " · sharelab" suffix, so the real budget is 60 − 11. Checked here rather
+    // than only in the dist audit, so a writer finds out in one second.
+    const shown = (field('seoTitle') ?? field('title') ?? '').replace(/^"|"$/g, '');
+    if (shown.length > 60 - SITE_SUFFIX.length) {
+      err(slug, `tiêu đề ${shown.length} ký tự, quá ${60 - SITE_SUFFIX.length} (render thành ${shown.length + SITE_SUFFIX.length})`);
+    }
   }
 
   // The demo component: imported, existing on disk, and actually rendered.
