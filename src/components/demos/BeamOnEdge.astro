@@ -126,7 +126,7 @@
       section(h, b, topEdge + h * s + 24, FLAT, `đặt nằm · I = ${group(Iflat)} mm⁴`);
 
       // ---------- right panel: the two deflection curves ----------
-      const padL = leftW + 44, padR = 12;
+      const padL = leftW + 44, padR = cssW < 420 ? 26 : 12;
       const nice = (v: number) => {
         const p = Math.pow(10, Math.floor(Math.log10(v)));
         for (const m of [1, 2, 5, 10]) if (v <= m * p) return m * p;

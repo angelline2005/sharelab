@@ -75,7 +75,7 @@
       const fg = getComputedStyle(root).color;
       ctx.font = '10px system-ui,sans-serif';
 
-      const padL = 52, padR = 12, padT = 14;
+      const padL = 52, padR = cssW < 420 ? 26 : 12, padT = 14;
       const barH = 13, barBottom = cssH - 4, barTop = barBottom - barH;
       const axisB = barTop - 26;
       const X = (p: number) => padL + ((p - PMIN) / (PMAX - PMIN)) * (cssW - padL - padR);

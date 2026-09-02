@@ -87,7 +87,7 @@
       const fg = getComputedStyle(root).color;
       ctx.font = '10px system-ui,sans-serif';
 
-      const padL = 46, padR = 10, padT = 12, padB = 26;
+      const padL = 46, padR = cssW < 420 ? 26 : 10, padT = 12, padB = 26;
       const bandH = Math.round(cssH * 0.30);
       const yBand = padT + bandH * 0.62;
       const chartT = padT + bandH + 20, chartB = cssH - padB;

@@ -209,7 +209,7 @@
       ctx.globalAlpha = 1;
 
       // ================= KHUNG PHẢI: mô-men theo góc =================
-      const padL = qx + 44, padR = 8, padT = 16, padB = 26;
+      const padL = qx + 44, padR = cssW < 420 ? 26 : 8, padT = 16, padB = 26;
       let hi = 0;
       for (const [m, y] of [[ml, yl], [0, yl]]) hi = Math.max(hi, Math.abs(torque(m, y, 60)));
       hi = Math.max(hi, 1);

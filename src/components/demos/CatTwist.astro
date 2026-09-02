@@ -120,7 +120,7 @@
       ctx.globalAlpha = 1;
 
       // --- Khung dưới: góc quay theo số nhịp ---
-      const padL = 44, padR = 10, gTop = topH + 20, gBot = cssH - 22;
+      const padL = 44, padR = cssW < 420 ? 26 : 10, gTop = topH + 20, gBot = cssH - 22;
       const X = (pp: number) => padL + (pp / 6) * (cssW - padL - padR);
       const Y = (a: number) => gBot - (Math.max(0, Math.min(360, a)) / 360) * (gBot - gTop);
 

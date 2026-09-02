@@ -95,7 +95,7 @@
       const fg = getComputedStyle(root).color;
       ctx.font = '10px system-ui,sans-serif';
 
-      const padL = 46, padR = 12, padT = 26, padB = 26, gap = 46;
+      const padL = 46, padR = cssW < 420 ? 26 : 12, padT = 26, padB = 26, gap = 46;
       const plotW = cssW - padL - padR;
       const usable = cssH - padT - padB - gap;
       const hA = Math.round(usable * 0.56), hB = usable - hA;

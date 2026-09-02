@@ -108,7 +108,7 @@
       ctx.font = '10px system-ui,sans-serif';
 
       // ---- panel A: the cube-root law on log-log axes ----
-      const aT = 12, aB = Math.round(cssH * 0.60), padL = 46, padR = 12;
+      const aT = 12, aB = Math.round(cssH * 0.60), padL = 46, padR = cssW < 420 ? 26 : 12;
       const xLo = -7, xHi = -1.3, yLo = -2.58, yHi = -0.5;
       const X = (l: number) => padL + ((l - xLo) / (xHi - xLo)) * (cssW - padL - padR);
       const Y = (l: number) => aT + ((yHi - l) / (yHi - yLo)) * (aB - aT);

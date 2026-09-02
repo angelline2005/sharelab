@@ -170,7 +170,7 @@
 
       // ---------------- Bảng dưới: v_thoát theo bán kính (log-log) ----------------
       const bT = topH, bH = cssH - topH;
-      const padL = 46, padB = 24, padT = 16, padR = 12;
+      const padL = 46, padB = 24, padT = 16, padR = cssW < 420 ? 26 : 12;
       const xLo = -1, xHi = 2.7;                        // km, khớp đúng hai đầu thanh trượt
       const yLo = -2, yHi = 3;                          // m/s
       const X = (km: number) =>

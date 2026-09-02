@@ -82,7 +82,7 @@
       const fg = getComputedStyle(root).color;
       ctx.font = '10px system-ui,sans-serif';
 
-      const padL = 18, padR = 18, padT = 34, padB = 30;
+      const padL = 18, padR = cssW < 420 ? 26 : 18, padT = 34, padB = 30;
       const s = Math.min((cssW - padL - padR) / GW, (cssH - padT - padB) / GH);
       const cx = cssW / 2, yTop = padT, yBot = padT + GH * s;
       const X = (mx: number) => cx + mx * s;   // mx in metres from goal centre

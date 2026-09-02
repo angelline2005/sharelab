@@ -148,7 +148,7 @@
       ctx.globalAlpha = 1;
 
       /* ---------- bottom half: deflection vs rotation rate ---------- */
-      const padL = 54, padR = 12, padT = chipH + 14, padB = 26;
+      const padL = 54, padR = cssW < 420 ? 26 : 12, padT = chipH + 14, padB = 26;
       const yMax = defl(A, f, OM_MAX) * 1e12;            // pm at the right edge
       const X = (o: number) => padL + (o / OM_MAX) * (cssW - padL - padR);
       const Y = (p: number) => cssH - padB - (p / yMax) * (cssH - padB - padT);

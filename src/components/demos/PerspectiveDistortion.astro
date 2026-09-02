@@ -81,7 +81,7 @@
       const fg = getComputedStyle(root).color;
       ctx.font = '10px system-ui,sans-serif';
 
-      const padL = 40, padT = 28, padB = 26, padR = 8, gapR = 44;
+      const padL = 40, padT = 28, padB = 26, padR = cssW < 420 ? 26 : 8, gapR = 44;
       const panelW = narrow ? Math.min(120, cssW * 0.45) : Math.max(92, Math.min(170, cssW * 0.26));
       const gR = cssW - padR - (narrow ? 0 : panelW) - gapR; // right edge of the graph
       const gB = graphH - padB, gT = padT;

@@ -145,7 +145,7 @@
       ctx.globalAlpha = 1;
 
       // ---------- right panel: BPM vs slider position ----------
-      const padL = leftW + 42, padR = 8, padT = 14, padB = 26;
+      const padL = leftW + 42, padR = cssW < 420 ? 26 : 8, padT = 14, padB = 26;
       const X = (c: number) => padL + ((c - 1) / 12) * (cssW - padL - padR);
       const Y = (v: number) => cssH - padB - (v / 240) * (cssH - padB - padT);
 

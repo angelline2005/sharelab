@@ -101,7 +101,7 @@
       ctx.beginPath(); ctx.arc(px, py, 4.5, 0, Math.PI * 2); ctx.fill();
 
       // ---- Bên phải: g theo vĩ độ ----
-      const padL = eW + 46, padB = 26, padT = 26, padR = 12;
+      const padL = eW + 46, padB = 26, padT = 26, padR = cssW < 420 ? 26 : 12;
       const yLo = 9.750, yHi = 9.838;
       const X = (p: number) => padL + (p / 90) * (cssW - padL - padR);
       const Y = (v: number) => padT + ((yHi - v) / (yHi - yLo)) * (cssH - padB - padT);

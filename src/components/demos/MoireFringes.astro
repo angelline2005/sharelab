@@ -183,7 +183,7 @@
       ctx.font = '10px system-ui,sans-serif';
 
       // ---- Lower panel: gain vs angle, log–log.
-      const padL = 46, padR = 10, padT = fieldH + 22, padB = 24;
+      const padL = 46, padR = cssW < 420 ? 26 : 10, padT = fieldH + 22, padB = 24;
       const plotB = cssH - padB;
       // Range covers every angle the article quotes: 0,1° (×573) to 60° (×1).
       const xLo = Math.log10(0.1), xHi = Math.log10(60);

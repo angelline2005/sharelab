@@ -85,7 +85,7 @@
       const fg = getComputedStyle(root).color;
 
       // Layout
-      const padL = 10, padR = 10, padT = 20, padB = 20;
+      const padL = 10, padR = cssW < 420 ? 26 : 10, padT = 20, padB = 20;
       const wid = cssW - padL - padR;
       const hei = cssH - padT - padB;
       const tankX = 20, tankW = 60, waterLevel = padT + hei * 0.4;

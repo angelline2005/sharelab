@@ -96,7 +96,7 @@
       const fg = getComputedStyle(root).color;
       ctx.font = '10px system-ui,sans-serif';
 
-      const padL = 46, padR = 12, padT = 12, padB = 26;
+      const padL = 46, padR = cssW < 420 ? 26 : 12, padT = 12, padB = 26;
       const step = niceStep(z0(L));
       const zTop = Math.max(step, Math.ceil(z0(L) / step) * step);
       const ySea = padT + (cssH - padT - padB) * 0.3;

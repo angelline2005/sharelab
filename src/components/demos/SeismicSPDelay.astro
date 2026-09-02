@@ -87,7 +87,7 @@
       const fg = getComputedStyle(root).color;
       ctx.font = '10px system-ui,sans-serif';
 
-      const padL = 40, padR = 12, padT = 12, padB = 22;
+      const padL = 40, padR = cssW < 420 ? 26 : 12, padT = 12, padB = 22;
       const aTop = padT, aBot = padT + Math.round((cssH - padT - padB) * 0.46);
       const bTop = aBot + 44, bBot = cssH - padB;
       const yc = (aTop + aBot) / 2;

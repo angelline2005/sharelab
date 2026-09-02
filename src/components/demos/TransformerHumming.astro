@@ -67,7 +67,7 @@
       ctx.clearRect(0, 0, cssW, cssH);
       const fg = getComputedStyle(root).color;
 
-      const padL = 44, padB = 26, padT = 12, padR = 10;
+      const padL = 44, padB = 26, padT = 12, padR = cssW < 420 ? 26 : 10;
       const B_lo = -(B_max * 1.3), B_hi = B_max * 1.3;
       const F_lo = 0, F_hi = B_max * B_max;  // F ∝ B², so max is B_m²
 

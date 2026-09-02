@@ -124,7 +124,7 @@
       ctx.globalAlpha = 1;
 
       /* ---------- Phải: biểu đồ ứng suất trên tiết diện eo ---------- */
-      const padL = Lw + 42, padR = 12, padT = 16, padB = 26;
+      const padL = Lw + 42, padR = cssW < 420 ? 26 : 12, padT = 16, padB = 26;
       const span = Math.max(8, Math.ceil(Math.max(Math.abs(sMax), Math.abs(sMin), 6) * 1.15));
       const X = (x: number) => padL + ((x + d / 2) / d) * (cssW - padL - padR);
       const Y = (v: number) => padT + ((span - v) / (2 * span)) * (cssH - padT - padB);

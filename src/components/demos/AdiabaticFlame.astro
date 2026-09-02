@@ -133,7 +133,7 @@
       const fg = getComputedStyle(root).color;
       ctx.font = '10px system-ui,sans-serif';
 
-      const padL = 46, padR = 10, padT = 12;
+      const padL = 46, padR = cssW < 420 ? 26 : 10, padT = 12;
       const plotB = cssH - 74;                 // đáy hệ trục
       const barT = cssH - 44, barH = 22;       // dải thành phần khói
       const yLo = 800, yHi = 2250;

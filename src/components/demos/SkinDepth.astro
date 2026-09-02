@@ -165,7 +165,7 @@
       ctx.globalAlpha = 1;
 
       // ---- Phải: δ theo tần số, log–log ----
-      const padL = discW + 46, padR = 12, padT = 14, padB = 26;
+      const padL = discW + 46, padR = cssW < 420 ? 26 : 12, padT = 14, padB = 26;
       const xLo = 1, xHi = Math.log10(3e9);
       const yLo = Math.log10(5e-7), yHi = Math.log10(3e-2);
       const X = (ff: number) => padL + ((Math.log10(ff) - xLo) / (xHi - xLo)) * (cssW - padL - padR);

@@ -171,7 +171,7 @@
       }
 
       // ---------- zone 3: stopping distance from 40 km/h ----------
-      const axisY = cssH - 20, padL = 86, padR = 10;
+      const axisY = cssH - 20, padL = 86, padR = cssW < 420 ? 26 : 10;
       const rowH = 15, rowGap = 7;
       const row0 = axisY - 9 - (3 * rowH + 2 * rowGap);
       const X = (d: number) => padL + (Math.min(d, DMAX) / DMAX) * (cssW - padL - padR);

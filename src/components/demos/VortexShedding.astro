@@ -93,7 +93,7 @@
       const fg = getComputedStyle(root).color;
       ctx.font = '10px system-ui,sans-serif';
 
-      const padL = 46, padR = 36, padB = 24;
+      const padL = 46, padR = cssW < 420 ? 26 : 36, padB = 24;
       const Wp = cssW - padL - padR;
       const hA = Math.round(cssH * 0.34);
       const gT = hA + 8, gB = cssH - padB;

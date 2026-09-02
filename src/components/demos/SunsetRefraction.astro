@@ -152,7 +152,7 @@
       ctx.fillText(`${vi(R)}′`, ax - 3, (Ys(trueC) + Ys(appC)) / 2 + 3);
 
       // ---------- Bảng phải: đường cong khúc xạ ----------
-      const padL = sceneW + gap + 34, padR = 8;
+      const padL = sceneW + gap + 34, padR = cssW < 420 ? 26 : 8;
       const Xc = (hh: number) => padL + Math.sqrt(hh / HMAX) * (cssW - padL - padR);
       const RMAX = 42;
       const Yc = (r: number) => padT + ((RMAX - r) / RMAX) * pH;

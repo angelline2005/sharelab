@@ -81,7 +81,7 @@
       const fg = getComputedStyle(root).color;
       ctx.font = '10px system-ui,sans-serif';
 
-      const padL = 52, padR = 10;
+      const padL = 52, padR = cssW < 420 ? 26 : 10;
       const topH = Math.round(cssH * 0.60);      // chart area height
       const padT = 12, padB = 24;                // inside chart
       const X = (t: number) => padL + (t / 180) * (cssW - padL - padR);

@@ -102,7 +102,7 @@
       }
 
       // ---------- Khung trái: hình học tam giác thị sai ----------
-      const padL = 8, padR = 10, padT = 18, padB = 26;
+      const padL = 8, padR = cssW < 420 ? 26 : 10, padT = 18, padB = 26;
       const sunX = gR.x + padL + 12;
       const ax0 = gR.x + padL + 52, ax1 = gR.x + gR.w - padR;
       const midY = gR.y + padT + (gR.h - padT - padB) / 2;

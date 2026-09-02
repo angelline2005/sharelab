@@ -143,7 +143,7 @@
       ctx.globalAlpha = 1;
 
       // ---------- panel C: radial-velocity curve ----------
-      const padL = 52, padR = 12, padT = topH + 16, padB = 24;
+      const padL = 52, padR = cssW < 420 ? 26 : 12, padT = topH + 16, padB = 24;
       const x0 = padL, x1 = cssW - padR, y0 = padT, y1 = cssH - padB;
       const yMax = K * 1.3;
       const X = (ph: number) => x0 + ph * (x1 - x0);

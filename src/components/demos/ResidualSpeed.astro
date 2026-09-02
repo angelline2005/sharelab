@@ -87,7 +87,7 @@
       ctx.clearRect(0, 0, cssW, cssH);
       const fg = getComputedStyle(root).color;
 
-      const padL = 46, padB = 26, padT = 22, padR = 12;
+      const padL = 46, padB = 26, padT = 22, padR = cssW < 420 ? 26 : 12;
       const xStep = niceStep(Math.max(d1, d2) * 1.12, 5);
       const xMax = Math.ceil((Math.max(d1, d2) * 1.12) / xStep) * xStep;
       const yStep = niceStep(Math.max(v1, v2) * 1.15, 4);

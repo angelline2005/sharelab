@@ -118,7 +118,7 @@
       ctx.globalAlpha = 1;
 
       // ---------- right panel: limit speed vs curve radius ----------
-      const padL = pw + 34, padR = 8, padT = 12, padB = 26;
+      const padL = pw + 34, padR = cssW < 420 ? 26 : 8, padT = 12, padB = 26;
       const plotW = cssW - padL - padR, plotH = cssH - padT - padB;
       const yMax = 200;
       const X = (r: number) => padL + ((r - 20) / 180) * plotW;

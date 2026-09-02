@@ -104,7 +104,7 @@
       const fg = getComputedStyle(root).color;
       ctx.font = '10px system-ui,sans-serif';
 
-      const padL = 40, padR = 10, padT = 22;
+      const padL = 40, padR = cssW < 420 ? 26 : 10, padT = 22;
       const axisY = Math.round(cssH * 0.52);
       const X = (n: number) => padL + ((n - 1) / (NMAX - 1)) * (cssW - padL - padR);
       const Y = (d: number) => axisY - (d / YMAX) * (axisY - padT);

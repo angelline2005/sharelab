@@ -80,7 +80,7 @@
       const fg = getComputedStyle(root).color;
       ctx.font = '10px system-ui,sans-serif';
 
-      const padL = 42, padR = 12, padT = 14, padB = 26, gap = 30;
+      const padL = 42, padR = cssW < 420 ? 26 : 12, padT = 14, padB = 26, gap = 30;
       const plotW = cssW - padL - padR;
       const innerH = cssH - padT - padB;
       const topH = (innerH - gap) * 0.40, botH = innerH - gap - topH;

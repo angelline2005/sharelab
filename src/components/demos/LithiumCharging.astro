@@ -87,7 +87,7 @@
       const t_99 = timeCC(s_CV, C_mAh, I_A) + timeCVtillState(0.99, C_mAh, I_A, s_CV);
 
       const t_max = t_99 * 1.1; // leave 10% space
-      const padL = 48, padB = 32, padT = 12, padR = 10;
+      const padL = 48, padB = 32, padT = 12, padR = cssW < 420 ? 26 : 10;
 
       // X axis: time (minutes), Y1 axis: battery % (left), Y2 axis: current A (right)
       const X = (t: number) => padL + (t / t_max) * (cssW - padL - padR);

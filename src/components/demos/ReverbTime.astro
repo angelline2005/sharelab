@@ -112,7 +112,7 @@
       }
 
       // ---- panel phải: đường suy giảm mức âm ----
-      const padL = roomW + 40, padB = 26, padT = 12, padR = 10;
+      const padL = roomW + 40, padB = 26, padT = 12, padR = cssW < 420 ? 26 : 10;
       const step = STEPS.find((s) => 5 * s >= rtS * 1.3) ?? 2;
       const tMax = 5 * step;
       const X = (t: number) => padL + (t / tMax) * (cssW - padL - padR);

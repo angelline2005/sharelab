@@ -123,7 +123,7 @@
       ctx.globalAlpha = 1;
 
       // ---- Right panel: flux vs distance, log y ---------------------------
-      const padL = SW + 40, padR = 8, padT = 14, padB = 30;
+      const padL = SW + 40, padR = cssW < 420 ? 26 : 8, padT = 14, padB = 30;
       const plotW = cssW - padL - padR, plotH = cssH - padT - padB;
       const lo = Math.log10(YLO), hi = Math.log10(YHI);
       const X = (d: number) => padL + ((d - 10) / 90) * plotW;

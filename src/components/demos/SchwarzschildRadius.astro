@@ -79,7 +79,7 @@
       ctx.clearRect(0, 0, cssW, cssH);
       const fg = getComputedStyle(root).color;
 
-      const padL = 46, padB = 26, padT = 14, padR = 12;
+      const padL = 46, padB = 26, padT = 14, padR = cssW < 420 ? 26 : 12;
       // log10(r_s) spans about [-26, 15] over M in [10^1, 10^42].
       const lr = (mx: number) => Math.log10((2 * G) / C2) + mx;
       const X = (mx: number) => padL + ((mx - 1) / 41) * (cssW - padL - padR);

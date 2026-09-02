@@ -72,7 +72,7 @@
       ctx.clearRect(0, 0, cssW, cssH);
       const fg = getComputedStyle(root).color;
 
-      const padL = 50, padB = 26, padT = 12, padR = 10;
+      const padL = 50, padB = 26, padT = 12, padR = cssW < 420 ? 26 : 10;
       const iMin = 0.1, iMax = 500;
       const logRMin = Math.log10(500), logRMax = Math.log10(100000);
 

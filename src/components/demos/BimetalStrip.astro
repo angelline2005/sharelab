@@ -93,7 +93,7 @@
       const splitY = Math.round(cssH * 0.54);
 
       /* ---------- Ô TRÊN: hình chiếu cạnh dải ---------- */
-      const padL = 46, padR = 12, topT = 14, topB = 10;
+      const padL = 46, padR = cssW < 420 ? 26 : 12, topT = 14, topB = 10;
       const availW = cssW - padL - padR;
       const availH = splitY - topT - topB;
 

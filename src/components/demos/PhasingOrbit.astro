@@ -160,7 +160,7 @@
       ctx.globalAlpha = 1;
 
       // ---- right panel: separation still to close, versus revolutions flown.
-      const padL = cssW * 0.50, padR = 12, padT = 16, padB = 30;
+      const padL = cssW * 0.50, padR = cssW < 420 ? 26 : 12, padT = 16, padB = 30;
       const sAt = (n: number) => gap - (drift / 1000) * n;
       const nMax = closing ? Math.max(orbits, 0.2) : 5;
       const sMax = closing ? gap : Math.max(gap, sAt(5));

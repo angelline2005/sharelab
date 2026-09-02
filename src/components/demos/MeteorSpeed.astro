@@ -96,7 +96,7 @@
       const fg = getComputedStyle(root).color;
       ctx.font = '10px system-ui,sans-serif';
 
-      const padL = 12, padR = 12, SH = 74;
+      const padL = 12, padR = cssW < 420 ? 26 : 12, SH = 74;
       const baseY = cssH - SH - 18;
       const s = Math.min((cssW / 2 - 34) / VMAX, (baseY - 14) / VMAX);
       const ox = cssW / 2;

@@ -64,7 +64,7 @@
       ctx.clearRect(0, 0, cssW, cssH);
       const fg = getComputedStyle(root).color;
 
-      const padL = 46, padB = 26, padT = 14, padR = 12;
+      const padL = 46, padB = 26, padT = 14, padR = cssW < 420 ? 26 : 12;
       const X = (lx: number) => padL + ((lx + 15) / 12) * (cssW - padL - padR);
       const Y = (lv: number) => cssH - padB - ((lv + 3) / 15) * (cssH - padB - padT);
       const lv = (lx: number) => Math.log10(dv(lx));

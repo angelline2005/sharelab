@@ -79,7 +79,7 @@
       const fg = getComputedStyle(root).color;
       ctx.font = '10px system-ui,sans-serif';
 
-      const padL = 52, padR = 12, padB = 28, chartT = 84;
+      const padL = 52, padR = cssW < 420 ? 26 : 12, padB = 28, chartT = 84;
       const roadX0 = padL, roadX1 = cssW - padR, roadW = roadX1 - roadX0;
       const roadY = 26, roadH = 30;
 

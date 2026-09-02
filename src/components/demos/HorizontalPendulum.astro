@@ -134,7 +134,7 @@
       ctx.fillText(`${vn(Leq, Leq < 10 ? 2 : 1)} m`, ex, py - 6);
 
       // ---------- panel phải: T theo α ----------
-      const padL = SW + 44, padB = 26, padT = 12, padR = 10;
+      const padL = SW + 44, padB = 26, padT = 12, padR = cssW < 420 ? 26 : 10;
       const X = (aa: number) => padL + ((Math.log10(aa) - LG0) / LGSPAN) * (cssW - padL - padR);
       const Y = (t: number) => padT + ((T_MAX - t) / T_MAX) * (cssH - padB - padT);
 

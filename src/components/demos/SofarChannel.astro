@@ -73,7 +73,7 @@
 
       // Layout: left side velocity profile, right side ray diagram
       const midX = cssW * 0.35;
-      const padL = 40, padR = 10, padT = 12, padB = 26;
+      const padL = 40, padR = cssW < 420 ? 26 : 10, padT = 12, padB = 26;
 
       // Velocity profile (left side)
       // Sound speed vs depth: c(z) = c_min + g·|z - z_axis|

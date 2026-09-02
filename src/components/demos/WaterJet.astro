@@ -83,7 +83,7 @@
       ctx.clearRect(0, 0, cssW, cssH);
       const fg = getComputedStyle(root).color;
 
-      const padL = 46, padB = 26, padT = 12, padR = 10;
+      const padL = 46, padB = 26, padT = 12, padR = cssW < 420 ? 26 : 10;
       const maxZ = 1.0;
       const maxD_mm = 25;
 

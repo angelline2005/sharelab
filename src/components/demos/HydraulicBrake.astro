@@ -91,7 +91,7 @@
       const fg = getComputedStyle(root).color;
       ctx.font = '10px system-ui,sans-serif';
 
-      const padL = 46, padR = 12, padT = 12, padB = 24;
+      const padL = 46, padR = cssW < 420 ? 26 : 12, padT = 12, padB = 24;
       const bandTop = padT, bandBot = padT + (cssH - padT - padB) * 0.56;
       const mid = (bandTop + bandBot) / 2;
       const mmPx = (bandBot - bandTop - 30) / 48;   // px trên mỗi mm đường kính

@@ -154,7 +154,7 @@
       ctx.globalAlpha = 1;
 
       // ---------- Panel phải: ITD theo hướng ----------
-      const padL = LW + 54, padR = 10, padT = 16, padB = 26;
+      const padL = LW + 54, padR = cssW < 420 ? 26 : 10, padT = 16, padB = 26;
       const X = (d: number) => padL + ((d + 90) / 180) * (cssW - padL - padR);
       const Y = (us: number) => padT + ((800 - us) / 1600) * (cssH - padT - padB);
 

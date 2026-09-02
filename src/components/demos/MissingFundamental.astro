@@ -98,7 +98,7 @@
       const fg = getComputedStyle(root).color;
       ctx.font = '10px system-ui,sans-serif';
 
-      const padL = 44, padR = 12, padT = 14, padB = 24;
+      const padL = 44, padR = cssW < 420 ? 26 : 12, padT = 14, padB = 24;
       const yA0 = padT + Math.round(cssH * 0.36);          // đáy phổ
       const barY = yA0 + 26, barH = 9;
       const yBt = barY + 26, yBb = cssH - padB;            // khung dạng sóng

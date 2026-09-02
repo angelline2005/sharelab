@@ -76,7 +76,7 @@
       ctx.clearRect(0, 0, cssW, cssH);
       const fg = getComputedStyle(root).color;
 
-      const padL = 50, padB = 30, padT = 20, padR = 20;
+      const padL = 50, padB = 30, padT = 20, padR = cssW < 420 ? 26 : 20;
       const gW = cssW - padL - padR, gH = cssH - padT - padB;
 
       // Draw Earth and ionosphere

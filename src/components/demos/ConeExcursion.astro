@@ -123,7 +123,7 @@
       ctx.fillText(`X_max ±${vn(xm, 2)} mm`, gcx, GY(-xm) + 13);
 
       // ---------- right panel: required excursion vs frequency ----------
-      const padL = gW + 40, padR = 10, padT = 16, padB = 26;
+      const padL = gW + 40, padR = cssW < 420 ? 26 : 10, padT = 16, padB = 26;
       const fLo = 10, fHi = 500;
       const lo = Math.min(exc(spl, fHi, sd), xm), hi = Math.max(exc(spl, fLo, sd), xm);
       const dLo = Math.max(-4, Math.floor(Math.log10(lo))), dHi = Math.min(3, Math.ceil(Math.log10(hi)));

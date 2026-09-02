@@ -71,7 +71,7 @@
       ctx.clearRect(0, 0, cssW, cssH);
       const fg = getComputedStyle(root).color;
 
-      const padL = 46, padB = 30, padT = 20, padR = 10;
+      const padL = 46, padB = 30, padT = 20, padR = cssW < 420 ? 26 : 10;
       const tMax = beat_period * 1.1;
       const X = (t: number) => padL + (t / tMax) * (cssW - padL - padR);
       const Y = (amp: number) => cssH - padB - amp * (cssH - padB - padT) * 0.9;

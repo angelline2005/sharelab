@@ -107,7 +107,7 @@
       ctx.font = '10px system-ui,sans-serif';
 
       // ---- top panel: arrival ladder (time vs period) ----
-      const padL = 46, padR = 12, padT = 12;
+      const padL = 46, padR = cssW < 420 ? 26 : 12, padT = 12;
       const chartH = Math.round(cssH * 0.63), axisY = chartH;
       const X = (dd: number) => padL + (dd / tMax) * (cssW - padL - padR);
       const Y = (tt: number) => padT + ((T_HI - tt) / (T_HI - T_LO)) * (axisY - padT);

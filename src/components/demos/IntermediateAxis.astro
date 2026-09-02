@@ -96,7 +96,7 @@
       const fg = getComputedStyle(root).color;
       ctx.font = '10px system-ui,sans-serif';
 
-      const padL = 46, padR = 12, padT = 14, barsH = 66, axisH = 32;
+      const padL = 46, padR = cssW < 420 ? 26 : 12, padT = 14, barsH = 66, axisH = 32;
       const plotB = cssH - barsH - axisH;
       const tMax = isFinite(tFlip)
         ? (LADDER.find((v) => v >= tFlip * 1.6) ?? 20)

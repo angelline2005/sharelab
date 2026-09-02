@@ -80,7 +80,7 @@
       const fg = getComputedStyle(root).color;
       ctx.font = '10px system-ui,sans-serif';
 
-      const padL = 46, padR = 10, padT = 10;
+      const padL = 46, padR = cssW < 420 ? 26 : 10, padT = 10;
       const W = cssW - padL - padR;
       const hA = Math.round(cssH * 0.40);          // cross-section band
       const sx = W / SPAN;                          // px per mm, horizontal and vertical

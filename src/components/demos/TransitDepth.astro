@@ -142,7 +142,7 @@
       ctx.globalAlpha = 1;
 
       // ---- Bottom panel: the light curve ----
-      const padL = 54, padR = 12, padT = topH + 20, padB = 26;
+      const padL = 54, padR = cssW < 420 ? 26 : 12, padT = topH + 20, padB = 26;
       const xMax = hFull * 1.35;
       const yLo = depth * 1.35;
       const X = (t: number) => padL + ((t + xMax) / (2 * xMax)) * (cssW - padL - padR);

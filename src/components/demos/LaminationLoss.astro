@@ -120,7 +120,7 @@
       ctx.globalAlpha = 1;
 
       // ---- Phải: log–log tổn hao theo bề dày ----
-      const padL = 6 + coreW + 44, padR = 10;
+      const padL = 6 + coreW + 44, padR = cssW < 420 ? 26 : 10;
       const xLo = Math.log10(0.1), xHi = Math.log10(50), yLo = 0, yHi = 10;
       const X = (mm: number) => padL + ((Math.log10(mm) - xLo) / (xHi - xLo)) * (cssW - padL - padR);
       const Y = (w: number) => padT + ((yHi - Math.log10(Math.max(w, 1e-3))) / (yHi - yLo)) * (cssH - padB - padT);

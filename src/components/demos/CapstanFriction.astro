@@ -134,7 +134,7 @@
       ctx.restore();
 
       // ---- Panel phải: hệ số nhân theo số vòng, trục tung log ----
-      const padL = 56, padB = 34, padT = 16, padR = 10;
+      const padL = 56, padB = 34, padT = 16, padR = cssW < 420 ? 26 : 10;
       const x0 = LW + padL;
       const NMAX = 6;
       const X = (nn: number) => x0 + (nn / NMAX) * (cssW - padR - x0);

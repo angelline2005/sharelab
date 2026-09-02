@@ -57,7 +57,7 @@
       ctx.clearRect(0, 0, cssW, cssH);
       const fg = getComputedStyle(root).color;
 
-      const padL = 40, padB = 30, padT = 14, padR = 14;
+      const padL = 40, padB = 30, padT = 14, padR = cssW < 420 ? 26 : 14;
       // Axes normalized to the current maxima so the triangle always fills the frame;
       // the *labels* carry the real scale.
       const x1 = cssW - padR, y1 = padT, x0 = padL, y0 = cssH - padB;

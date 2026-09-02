@@ -89,7 +89,7 @@
       const fg = getComputedStyle(root).color;
       ctx.font = '10px system-ui,sans-serif';
 
-      const padB = 26, padT = 16, padR = 12, gap = 16;
+      const padB = 26, padT = 16, padR = cssW < 420 ? 26 : 12, gap = 16;
       const narrow = cssW < 460;
       const leftW = Math.round((cssW - gap) * (narrow ? 0.46 : 0.40));
 

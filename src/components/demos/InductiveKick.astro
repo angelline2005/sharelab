@@ -107,7 +107,7 @@
       ctx.clearRect(0, 0, cssW, cssH);
       const fg = getComputedStyle(root).color;
 
-      const padL = 54, padR = 12, padT = 14, padB = 26, gap = 34;
+      const padL = 54, padR = cssW < 420 ? 26 : 12, padT = 14, padB = 26, gap = 34;
       const ph = (cssH - padT - padB - gap) / 2;
       const topY = padT, botY = padT + ph + gap;
       const lo = Math.log10(T_LO), hi = Math.log10(T_HI);

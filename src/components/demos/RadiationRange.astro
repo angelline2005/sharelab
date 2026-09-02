@@ -138,7 +138,7 @@
       ctx.clearRect(0, 0, cssW, cssH);
       const fg = getComputedStyle(root).color;
 
-      const padL = 30, padR = 12, padT = 14, padB = 30;
+      const padL = 30, padR = cssW < 420 ? 26 : 12, padT = 14, padB = 30;
       const X = (mm: number) =>
         padL + ((Math.log10(Math.max(mm, 1e-6)) - LO) / (HI - LO)) * (cssW - padL - padR);
       const rowH = (cssH - padT - padB) / 3;

@@ -105,7 +105,7 @@
       const fg = getComputedStyle(root).color;
       ctx.font = '10px system-ui,sans-serif';
 
-      const padT = 30, padB = 34, padL = 26, padR = 12;
+      const padT = 30, padB = 34, padL = 26, padR = cssW < 420 ? 26 : 12;
       const HW = Math.min(118, Math.max(62, (cssW - padL - padR) * 0.26));
       const hx = padL;
       const labelX = hx + HW + 38;

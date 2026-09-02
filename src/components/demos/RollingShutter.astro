@@ -78,7 +78,7 @@
       ctx.clearRect(0, 0, cssW, cssH);
       const fg = getComputedStyle(root).color;
 
-      const padL = 46, padR = 50, padT = 28, padB = 10;
+      const padL = 46, padR = cssW < 420 ? 26 : 50, padT = 28, padB = 10;
       const H = cssH - padT - padB;   // chiều cao khung = số dòng ảnh
       const R = H / 2;                // mút cánh chạm mép khung
       const cx = (padL + cssW - padR) / 2, cy = padT + R;

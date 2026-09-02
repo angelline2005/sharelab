@@ -88,7 +88,7 @@
       const V_min = 100, V_max = 1000;
       const I_min = 1e-6, I_max = 10000;  // 1µA to 10kA
 
-      const padL = 48, padB = 30, padT = 12, padR = 10;
+      const padL = 48, padB = 30, padT = 12, padR = cssW < 420 ? 26 : 10;
 
       const logX = (vv: number) => padL + (Math.log10(vv) - Math.log10(V_min)) / (Math.log10(V_max) - Math.log10(V_min)) * (cssW - padL - padR);
       const logY = (ii: number) => cssH - padB - (Math.log10(ii) - Math.log10(I_min)) / (Math.log10(I_max) - Math.log10(I_min)) * (cssH - padB - padT);

@@ -150,7 +150,7 @@
       ctx.globalAlpha = 1;
 
       // ---- Panel B: kích thước góc của chiếc xe theo khoảng cách thật.
-      const padL = 40, padB = 24, padT = 22, padR = 12;
+      const padL = 40, padB = 24, padT = 22, padR = cssW < 420 ? 26 : 12;
       const uMax = 30, yMax = 35;
       const X = (uu: number) => Bx + padL + (uu / uMax) * (Bw - padL - padR);
       const Y = (dg: number) => By + Bh - padB - (dg / yMax) * (Bh - padB - padT);

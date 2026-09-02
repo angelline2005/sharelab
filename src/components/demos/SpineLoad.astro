@@ -89,7 +89,7 @@
       ctx.font = '10px system-ui,sans-serif';
       ctx.lineJoin = 'round';
 
-      const padT = 10, padB = 30, padL = 6, padR = 8;
+      const padT = 10, padB = 30, padL = 6, padR = cssW < 420 ? 26 : 8;
       const barPanelW = Math.max(132, Math.round(cssW * 0.34));
       const barX0 = cssW - padR - barPanelW;
       const figW = barX0 - padL - 10;

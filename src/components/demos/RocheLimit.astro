@@ -112,7 +112,7 @@
       const fg = getComputedStyle(root).color;
       ctx.font = '10px system-ui,sans-serif';
 
-      const padT = 14, padB = 26, padR = 8;
+      const padT = 14, padB = 26, padR = cssW < 420 ? 26 : 8;
       const cx = cssW / 2, cy = cssH - padB;
       const s = Math.min((cssW / 2 - padR) / EXT, (cssH - padT - padB) / EXT);
       const half = (r: number) => { ctx.beginPath(); ctx.arc(cx, cy, r * s, Math.PI, 2 * Math.PI); };

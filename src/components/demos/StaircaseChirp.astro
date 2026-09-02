@@ -83,7 +83,7 @@
       ctx.font = '10px system-ui,sans-serif';
 
       // ---- Băng trên: mặt cắt cầu thang ----
-      const padL = 46, padR = 10;
+      const padL = 46, padR = cssW < 420 ? 26 : 10;
       const topH = Math.round(cssH * 0.4), gap = 16;
       const bandW = cssW - padL - padR, bandH = topH - 18;
       const wx = d + N * w + 0.6, wy = Math.max(N * h, 0.8);

@@ -101,7 +101,7 @@
       const fg = getComputedStyle(root).color;
       ctx.font = '10px system-ui,sans-serif';
 
-      const padL = 46, padR = 12, padT = 12, padB = 24;
+      const padL = 46, padR = cssW < 420 ? 26 : 12, padT = 12, padB = 24;
       const plotW = cssW - padL - padR;
       const usable = cssH - padT - padB;
       const hTop = Math.round(usable * 0.52);

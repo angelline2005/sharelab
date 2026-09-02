@@ -155,7 +155,7 @@
       ctx.fillText(`${vn(r)} m`, SX(b0 / 2) + 3, yF - 12);
 
       // ---------- dải dưới: v(r) ----------
-      const padL = 46, padR = 10, padT = hTop + 14, padB = 24;
+      const padL = 46, padR = cssW < 420 ? 26 : 10, padT = hTop + 14, padB = 24;
       const yMax = Math.max(10, Math.ceil((vPeak * 1.12) / 10) * 10);
       const X = (rr: number) => padL + (rr / 40) * (cssW - padL - padR);
       const Y = (vv: number) => cssH - padB - (vv / yMax) * (cssH - padB - padT);

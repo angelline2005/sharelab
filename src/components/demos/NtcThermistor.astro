@@ -85,7 +85,7 @@
       const fg = getComputedStyle(root).color;
       ctx.font = '10px system-ui,sans-serif';
 
-      const padL = 50, padR = 10, padT = 12, gap = 34, padB = 24;
+      const padL = 50, padR = cssW < 420 ? 26 : 10, padT = 12, gap = 34, padB = 24;
       const plotW = cssW - padL - padR;
       const hTop = Math.round((cssH - padT - gap - padB) * 0.6);
       const topB = padT + hTop;                 // baseline of upper panel

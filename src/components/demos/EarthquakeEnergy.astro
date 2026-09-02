@@ -69,7 +69,7 @@
       const fg = getComputedStyle(root).color;
 
       // Log energy axis 10^9 … 10^19 J.
-      const padL = 20, padR = 20, axisY = cssH * 0.55;
+      const padL = 20, padR = cssW < 420 ? 26 : 20, axisY = cssH * 0.55;
       const X = (lj: number) => padL + ((lj - 9) / 10) * (cssW - padL - padR);
       ctx.strokeStyle = fg; ctx.globalAlpha = 0.3; ctx.lineWidth = 2;
       ctx.beginPath(); ctx.moveTo(padL, axisY); ctx.lineTo(cssW - padR, axisY); ctx.stroke();

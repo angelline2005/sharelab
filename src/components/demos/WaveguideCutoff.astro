@@ -106,7 +106,7 @@
       const fg = getComputedStyle(root).color;
       ctx.font = '10px system-ui,sans-serif';
 
-      const padL = 46, padR = 12, plotW = cssW - padL - padR;
+      const padL = 46, padR = cssW < 420 ? 26 : 12, plotW = cssW - padL - padR;
 
       // ---------------- Panel A: field amplitude along the tunnel ----------------
       const aTop = 14, aBot = Math.round(cssH * 0.50);

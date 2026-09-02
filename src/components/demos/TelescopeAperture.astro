@@ -80,7 +80,7 @@
       const F = Math.max(10, Math.min(12, cssW / 52));
 
       // ---------- Hàng 1: đĩa khẩu độ vs đĩa con ngươi, đúng tỉ lệ ----------
-      const padL = 34, padR = 10, padT = 10;
+      const padL = 34, padR = cssW < 420 ? 26 : 10, padT = 10;
       const row1B = Math.round(cssH * 0.66);        // đáy hàng 1 = đường thước
       const reserve = Math.min(190, cssW * 0.36);   // chỗ cho khối chữ bên phải
       const diamMax = Math.max(40, Math.min(row1B - padT - 24, cssW - padL - padR - reserve));

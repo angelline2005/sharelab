@@ -89,7 +89,7 @@
       const fg = getComputedStyle(root).color;
       ctx.font = '10px system-ui,sans-serif';
 
-      const padL = 46, padR = 12, padT = 12;
+      const padL = 46, padR = cssW < 420 ? 26 : 12, padT = 12;
       const barH = 16, barTop = cssH - barH - 4, capY = barTop - 6;
       const plotB = capY - 26;
       const yLo = 30, yHi = 110;

@@ -122,7 +122,7 @@
       });
 
       // ---- Đồ thị dưới: tuổi thọ theo cạnh khối đá ----
-      const padL = 44, padR = 10, padB = 24, top = bandH + 10;
+      const padL = 44, padR = cssW < 420 ? 26 : 10, padB = 24, top = bandH + 10;
       const yMax = niceStep(life(60, 1, h, dT) / 60) * 4.5;
       const X = (mm: number) => padL + (mm / 60) * (cssW - padL - padR);
       const Y = (min: number) => cssH - padB - (min / yMax) * (cssH - padB - top);

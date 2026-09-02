@@ -86,7 +86,7 @@
       const fg = getComputedStyle(root).color;
       ctx.font = '10px system-ui,sans-serif';
 
-      const padL = 46, padR = 10, padT = 12;
+      const padL = 46, padR = cssW < 420 ? 26 : 10, padT = 12;
       const chartB = Math.round(cssH * 0.62);
       const sceneTop = chartB + 40, sceneH = cssH - sceneTop;
       const X = (t: number) => padL + ((t - 1.5) / 18.5) * (cssW - padL - padR);

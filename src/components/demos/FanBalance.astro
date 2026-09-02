@@ -161,7 +161,7 @@
       ctx.globalAlpha = 1;
 
       // ---- Panel phải: lực theo vòng/phút ----
-      const padL = PW + 46, padR = 8, padT = 16, padB = 24;
+      const padL = PW + 46, padR = cssW < 420 ? 26 : 8, padT = 16, padB = 24;
       const yMax = niceMax(Math.max(U, Math.abs(Ures)) * Math.pow(w(400), 2) || 0.5);
       const X = (n: number) => padL + ((n - 50) / 350) * (cssW - padL - padR);
       const Y = (f: number) => cssH - padB - (f / yMax) * (cssH - padB - padT);

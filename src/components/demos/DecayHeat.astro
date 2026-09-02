@@ -98,7 +98,7 @@
       ctx.clearRect(0, 0, cssW, cssH);
       const fg = getComputedStyle(root).color;
 
-      const padL = 46, padB = 26, padT = 12, padR = 10;
+      const padL = 46, padB = 26, padT = 12, padR = cssW < 420 ? 26 : 10;
       const tMin = 1, tMax = 31536000; // 1 second to 1 year
       const pMin = 0.001, pMax = 0.15; // 0.1% to 15%
 

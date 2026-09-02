@@ -147,7 +147,7 @@
       ctx.globalAlpha = 1;
 
       // ---- Panel 2: the sine law, Omega vs latitude ----
-      const padL = 42, padR = 12, padT = hc + 14, padB = 24;
+      const padL = 42, padR = cssW < 420 ? 26 : 12, padT = hc + 14, padB = 24;
       const X = (p: number) => padL + (p / 90) * (cssW - padL - padR);
       const Y = (o: number) => cssH - padB - (o / 16) * (cssH - padB - padT);
 

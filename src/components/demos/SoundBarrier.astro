@@ -78,7 +78,7 @@
 
       // LEFT side: geometry diagram (scaled cross-section)
       const leftW = Math.floor(cssW * 0.55);
-      const padL = 30, padR = 10, padB = 20, padT = 10;
+      const padL = 30, padR = cssW < 420 ? 26 : 10, padB = 20, padT = 10;
       const geomW = leftW - padL - padR;
       const geomH = cssH - padT - padB;
 

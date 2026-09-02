@@ -101,7 +101,7 @@
       ctx.font = '10px system-ui,sans-serif';
 
       const Lw = Math.max(104, Math.min(168, cssW * 0.3));
-      const padL = Lw + 44, padR = 44, padT = 22, padB = 26;
+      const padL = Lw + 44, padR = cssW < 420 ? 26 : 44, padT = 22, padB = 26;
       const plotW = cssW - padL - padR, plotH = cssH - padT - padB;
 
       // Vertical range: cover the whole A(f) sweep at this N, B plus the mốc.

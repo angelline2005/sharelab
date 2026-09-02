@@ -144,7 +144,7 @@
       }
 
       // ---------- right panel: κ(d) and T(d) on log axes ----------
-      const padL = panelW + 46, padR = 44, padT = 18, padB = 26;
+      const padL = panelW + 46, padR = cssW < 420 ? 26 : 44, padT = 18, padB = 26;
       const X = (dd: number) => padL + ((dd - 0.1) / 1.9) * (cssW - padL - padR);
       const KLO = -7, KHI = 1;               // log10 κ, N·m/rad
       const TLO = -1.4, THI = 3;             // log10 T, s

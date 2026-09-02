@@ -55,7 +55,7 @@
       ctx.clearRect(0, 0, cssW, cssH);
       const fg = getComputedStyle(root).color;
 
-      const padL = 46, padB = 26, padT = 12, padR = 10;
+      const padL = 46, padB = 26, padT = 12, padR = cssW < 420 ? 26 : 10;
       // x: temperature −10..30, y: altitude 0..4000
       const X = (t: number) => padL + ((t + 10) / 40) * (cssW - padL - padR);
       const Y = (m: number) => cssH - padB - (m / 4000) * (cssH - padB - padT);

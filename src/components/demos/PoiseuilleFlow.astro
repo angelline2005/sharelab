@@ -137,7 +137,7 @@
       ctx.globalAlpha = 1;
 
       // ---------- Khung phải: Q theo đường kính, loga hai chiều ----------
-      const padL = px0 + panW + gap + 20, padR = 8, padT = 16, padB = 26;
+      const padL = px0 + panW + gap + 20, padR = cssW < 420 ? 26 : 8, padT = 16, padB = 26;
       const plotW = cssW - padL - padR, plotH = cssH - padT - padB;
       const X = (dd: number) => padL + (Math.log10(dd / D_LO) / Math.log10(D_HI / D_LO)) * plotW;
       const Y = (q: number) =>

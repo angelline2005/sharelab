@@ -94,7 +94,7 @@
       ctx.clearRect(0, 0, cssW, cssH);
       const fg = getComputedStyle(root).color;
 
-      const padL = 46, padR = 14, padT = 24, padB = 26;
+      const padL = 46, padR = cssW < 420 ? 26 : 14, padT = 24, padB = 26;
       const step = niceStep(Math.max(dEnd * 1.3, 0.5));
       const dMax = Math.max(step, Math.ceil(Math.max(dEnd * 1.3, 0.5) / step) * step);
       const X = (x: number) => padL + (x / XMAX) * (cssW - padL - padR);

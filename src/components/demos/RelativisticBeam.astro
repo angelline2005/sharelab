@@ -151,7 +151,7 @@
       const fg = getComputedStyle(root).color;
       ctx.font = '10px system-ui,sans-serif';
 
-      const padL = 46, padR = 10, padT = 12;
+      const padL = 46, padR = cssW < 420 ? 26 : 10, padT = 12;
       const plotB = cssH - 84;   // baseline of the log-log plot; 84 px reserved below
       const stripT = plotB + 38; // top of the ring-contraction strip
       const LX = 5, HX = 15;                           // log10 eV

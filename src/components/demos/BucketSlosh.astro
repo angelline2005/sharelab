@@ -132,7 +132,7 @@
       ctx.globalAlpha = 1;
 
       // ---------- bottom panel: f vs R ----------
-      const padL = 40, padR = 12, padT = topH + 14, padB = 26;
+      const padL = 40, padR = cssW < 420 ? 26 : 12, padT = topH + 14, padB = 26;
       const xLo = 3, xHi = 25, yLo = 0.8, yHi = 4.4;
       const X = (r: number) => padL + ((r - xLo) / (xHi - xLo)) * (cssW - padL - padR);
       const Y = (f: number) => padT + ((yHi - f) / (yHi - yLo)) * (cssH - padB - padT);

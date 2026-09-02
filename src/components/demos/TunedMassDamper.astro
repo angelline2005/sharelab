@@ -111,7 +111,7 @@
       const fg = getComputedStyle(root).color;
       ctx.font = '10px system-ui,sans-serif';
 
-      const padL = 112, padR = 10, padT = 14, padB = 26;
+      const padL = 112, padR = cssW < 420 ? 26 : 10, padT = 14, padB = 26;
       const X = (g: number) => padL + ((g - GLO) / (GHI - GLO)) * (cssW - padL - padR);
       const lo = Math.log(YLO), hi = Math.log(YHI);
       const Y = (m: number) =>

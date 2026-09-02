@@ -90,7 +90,7 @@
       ctx.lineWidth = 1;
 
       // ---- Panel A: mặt phẳng trở kháng (R sang phải, X_C dựng lên) ----
-      const padL = 46, padT = 26, padB = 30, padR = 14;
+      const padL = 46, padT = 26, padB = 30, padR = cssW < 420 ? 26 : 14;
       const aW = narrow ? cssW : cssW * 0.46;
       const aH = narrow ? cssH * 0.58 : cssH;
       const side = Math.max(60, Math.min(aW - padL - padR, aH - padT - padB));

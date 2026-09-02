@@ -146,7 +146,7 @@
       ctx.fillText(`đứng l₂ = ${vi(l2, 2)} m`, 2, cssH - 8);
 
       // ---- right panel: amplitude staircase ----
-      const padL = panelW + 34, padB = 26, padT = 14, padR = 8;
+      const padL = panelW + 34, padB = 26, padT = 14, padR = cssW < 420 ? 26 : 8;
       const X = (n: number) => padL + (n / NMAX) * (cssW - padL - padR);
       const Y = (deg: number) => padT + ((90 - deg) / 90) * (cssH - padB - padT);
 

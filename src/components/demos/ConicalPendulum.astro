@@ -140,7 +140,7 @@
       }
 
       // ---------- Bảng phải: h theo vòng/phút ----------
-      const padL = LW + 44, padR = 8, padT = 14, padB = 26;
+      const padL = LW + 44, padR = cssW < 420 ? 26 : 8, padT = 14, padB = 26;
       const yMax = 100;                                   // cm
       const X = (n: number) => padL + ((n - 20) / 180) * (cssW - padL - padR);
       const Y = (c: number) => padT + ((yMax - c) / yMax) * (cssH - padT - padB);

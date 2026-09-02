@@ -112,7 +112,7 @@
       // ===== BOTTOM HALF: Pulse broadening on time axis =====
       const bottomH = cssH - topH;
       const botY0 = topH;
-      const padL = 50, padB = 20, padT = 10, padR = 10;
+      const padL = 50, padB = 20, padT = 10, padR = cssW < 420 ? 26 : 10;
       const plotW = cssW - padL - padR, plotH = bottomH - padB - padT;
 
       // Time axis range: 0 to 2x max dispersion

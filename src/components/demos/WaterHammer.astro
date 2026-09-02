@@ -104,7 +104,7 @@
       ctx.font = '10px system-ui,sans-serif';
 
       // --- khung đồ thị áp suất (phần trên) ---
-      const padL = 52, padR = 12, padT = 12;
+      const padL = 52, padR = cssW < 420 ? 26 : 12, padT = 12;
       const plotH = Math.round(cssH * 0.70), padB = cssH - plotH;
       const W = Math.min(3, Math.max(6 * 2 * rt, 2.5 * tc, 0.12));
       const yHi = Math.max(24, peak * 1.12), yLo = Math.min(-2.5, P0 - dp * 1.12);

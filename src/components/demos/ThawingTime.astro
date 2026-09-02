@@ -91,7 +91,7 @@
       ctx.clearRect(0, 0, cssW, cssH);
       const fg = getComputedStyle(root).color;
 
-      const padL = 50, padB = 26, padT = 40, padR = 12;
+      const padL = 50, padB = 26, padT = 40, padR = cssW < 420 ? 26 : 12;
       const hoursAt12 = Math.max(plank(0.12, h, T), plank(0.12, 8, T)) / 3600;
       const yMax = niceMax(hoursAt12);
       const X = (cm: number) => padL + ((cm - 1) / 11) * (cssW - padL - padR);

@@ -184,7 +184,7 @@
       }
 
       // ---------- Tỉ số tốc độ theo hướng đi ----------
-      const padL = CP.x + 40, padR = 18, padT = CP.y + 30;
+      const padL = CP.x + 40, padR = cssW < 420 ? 26 : 18, padT = CP.y + 30;
       const axisY = CP.y + CP.h - 26;
       const yTop = peak * 1.15;
       const X = (bb: number) => padL + ((bb - 5) / 175) * (cssW - padL - padR);

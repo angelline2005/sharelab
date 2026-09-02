@@ -69,7 +69,7 @@
 
       // Layout: left half (wing cross-section), right half (C_L curve)
       const midX = cssW / 2;
-      const padL = 10, padR = 10, padT = 12, padB = 24;
+      const padL = 10, padR = cssW < 420 ? 26 : 10, padT = 12, padB = 24;
 
       // LEFT: Wing cross-section
       const wingX = padL + (midX - padL - padR) * 0.5;

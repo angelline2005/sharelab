@@ -88,7 +88,7 @@
       const fg = getComputedStyle(root).color;
       ctx.font = '10px system-ui,sans-serif';
 
-      const padL = 52, padR = 30, padT = 14, padB = 22;
+      const padL = 52, padR = cssW < 420 ? 26 : 30, padT = 14, padB = 22;
       const aTop = padT, aBot = Math.round(padT + (cssH - padT - padB) * 0.60);
       const bTop = aBot + 42, bBot = cssH - padB;
       const seaY = aTop + 44;                       // mực nước 0

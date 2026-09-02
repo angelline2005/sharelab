@@ -72,7 +72,7 @@
       const fg = getComputedStyle(root).color;
 
       const halfH = cssH / 2;
-      const padL = 40, padR = 20, padT = 10, padB = 10;
+      const padL = 40, padR = cssW < 420 ? 26 : 20, padT = 10, padB = 10;
       const topH = halfH - padB;
       const botH = halfH - padT;
       const graphW = cssW - padL - padR;

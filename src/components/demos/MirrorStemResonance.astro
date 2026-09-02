@@ -120,7 +120,7 @@
       ctx.globalAlpha = 1;
 
       // ---------- panel 2: gain vs engine speed ----------
-      const padL = 40, padR = 12, padB = 24, y0 = topH + 14;
+      const padL = 40, padR = cssW < 420 ? 26 : 12, padB = 24, y0 = topH + 14;
       const gHi = 11;
       const X = (n: number) => padL + ((n - 800) / 7200) * (cssW - padL - padR);
       const Y = (v: number) => cssH - padB - (Math.min(v, gHi) / gHi) * (cssH - padB - y0);

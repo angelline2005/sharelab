@@ -121,7 +121,7 @@
       ctx.font = '10px system-ui,sans-serif';
 
       // ---------- dải phổ ----------
-      const padL = 46, padR = 12;
+      const padL = 46, padR = cssW < 420 ? 26 : 12;
       const swW = 38, sx0 = padL, sx1 = cssW - padR - swW - 10;
       const sy0 = 12, sh = 32;
       const LMIN = 340, LMAX = 1320;

@@ -157,7 +157,7 @@
       ctx.globalAlpha = 1;
 
       // ---------- Bên phải: f theo V, trục log–log ----------
-      const padL = boxW + 46, padR = 8, padT = 14, padB = 26;
+      const padL = boxW + 46, padR = cssW < 420 ? 26 : 8, padT = 14, padB = 26;
       const vLo = 100, vHi = 2000, fLo = 15, fHi = 800;
       const X = (v: number) => padL + (Math.log(v / vLo) / Math.log(vHi / vLo)) * (cssW - padL - padR);
       const Y = (y: number) => cssH - padB - (Math.log(y / fLo) / Math.log(fHi / fLo)) * (cssH - padB - padT);

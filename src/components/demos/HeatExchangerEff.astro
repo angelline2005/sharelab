@@ -107,7 +107,7 @@
 
     const fg = getComputedStyle(canvas.closest('[data-demo]')!).color;
 
-    const padL = 42, padB = 24, padT = 10, padR = 8;
+    const padL = 42, padB = 24, padT = 10, padR = cssW < 420 ? 26 : 8;
     const X = (pos: number) => padL + pos * (cssW - padL - padR);
     const Y = (t: number) => cssH - padB - ((t - T_c_in) / (T_h_in - T_c_in)) * (cssH - padB - padT);
 

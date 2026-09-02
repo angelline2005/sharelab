@@ -100,7 +100,7 @@
       ctx.clearRect(0, 0, cssW, cssH);
       const fg = getComputedStyle(root).color;
 
-      const padL = 46, padB = 28, padT = 12, padR = 12;
+      const padL = 46, padB = 28, padT = 12, padR = cssW < 420 ? 26 : 12;
       const plotW = cssW - padL - padR, plotH = cssH - padT - padB;
       // Trục ngang nén theo căn bậc hai; trục dọc tuyến tính, chia vạch tròn.
       const tick = niceStep(f0 / 4), yMax = Math.ceil(f0 / tick) * tick;

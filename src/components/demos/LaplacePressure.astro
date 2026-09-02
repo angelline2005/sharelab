@@ -114,7 +114,7 @@
       ctx.globalAlpha = 1;
 
       // ---------- panel phải: hyperbol Δp = 4γ/R ----------
-      const padL = splitX + 42, padR = 8, padT = 16, padB = 26;
+      const padL = splitX + 42, padR = cssW < 420 ? 26 : 8, padT = 16, padB = 26;
       const yTop = dp(g, 0.5);
       const X = (R: number) => padL + (R / RMAX) * (cssW - padL - padR);
       const Y = (p: number) => cssH - padB - (p / yTop) * (cssH - padB - padT);

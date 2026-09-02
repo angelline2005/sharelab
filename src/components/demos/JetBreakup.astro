@@ -96,7 +96,7 @@
       ctx.font = '10px system-ui,sans-serif';
       ctx.lineWidth = 1;
 
-      const padL = 12, padR = 12, padT = 12;
+      const padL = 12, padR = cssW < 420 ? 26 : 12, padT = 12;
       const usable = cssW - padL - padR;
       const stripBot = cssH - 74, stripH = stripBot - padT;
       const yc = padT + stripH / 2;

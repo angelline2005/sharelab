@@ -161,7 +161,7 @@
       ctx.globalAlpha = 1;
 
       // ---------- bottom panel: lift force vs wind speed ----------
-      const padL = 46, padR = 12, padB = 24, top = hTop + 16;
+      const padL = 46, padR = cssW < 420 ? 26 : 12, padB = 24, top = hTop + 16;
       const yMax = Math.max(Math.abs(cpR) * q(60) * A, wNgoi) * 1.08 / 1000;
       const X = (vv: number) => padL + ((vv - 5) / 55) * (cssW - padL - padR);
       const Y = (kn: number) => cssH - padB - (kn / yMax) * (cssH - padB - top);

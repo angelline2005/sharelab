@@ -79,7 +79,7 @@
       const fg = getComputedStyle(root).color;
       ctx.font = '10px system-ui,sans-serif';
 
-      const padL = 30, padR = 14, padT = 16;
+      const padL = 30, padR = cssW < 420 ? 26 : 14, padT = 16;
       const coneH = Math.round(cssH * 0.55), yAx = padT + coneH, yc = padT + coneH / 2;
       const YMAX = 2300;
       const X = (km: number) => padL + (km / XMAX) * (cssW - padL - padR);

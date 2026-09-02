@@ -177,7 +177,7 @@
       ctx.restore();
 
       // ---------- Bảng dưới: θ theo β ----------
-      const padL = 42, padR = 12;
+      const padL = 42, padR = cssW < 420 ? 26 : 12;
       const chartT = geomB + 24, chartB = cssH - 24;
       const X = (bb: number) => padL + ((bb - 0.5) / 0.5) * (cssW - padL - padR);
       const Y = (t: number) => chartB - (t / 70) * (chartB - chartT);

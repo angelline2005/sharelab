@@ -89,7 +89,7 @@
       const fg = getComputedStyle(root).color;
       ctx.font = '10px system-ui,sans-serif';
 
-      const padL = 44, padR = 12, padT = 14, padB = 26;
+      const padL = 44, padR = cssW < 420 ? 26 : 12, padT = 14, padB = 26;
       const wallH = 40, gap = 12;
       const gBot = cssH - padB - wallH - gap;      // đáy khung nhiệt độ
       const wallTop = gBot + gap;
