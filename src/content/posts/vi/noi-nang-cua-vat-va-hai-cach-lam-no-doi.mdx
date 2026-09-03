@@ -1,0 +1,136 @@
+---
+title: "Nội năng của vật lớp 12: hàm trạng thái, và hai cách làm nó đổi"
+seoTitle: "Nội năng lớp 12: công thức và hai cách làm đổi"
+description: "Thác cao 426 m làm nước dưới chân ấm hơn trên đỉnh đúng một độ mà không ai đốt lửa — nội năng lớp 12 là hàm trạng thái, và có hai cách làm nó đổi."
+pubDate: 2026-09-03
+translationId: "noi-nang-cua-vat-va-hai-cach-lam-no-doi"
+grade: 12
+chapter: "nhiet"
+lesson: 7
+series: "vat-ly-12-nhiet"
+tags: ["vat-ly", "nhiet-hoc", "javascript"]
+---
+
+import InternalEnergy from '../../../components/demos/InternalEnergy.astro';
+
+Một thác nước cao 426 m: nước dưới chân thác ấm hơn nước trên đỉnh đúng một độ,
+dù không ai đốt lửa ở đó. Thế năng của khối nước không bốc hơi đi đâu mất — nó
+chui vào bên trong chính khối nước ấy, thành dạng năng lượng nhìn từ ngoài
+không thấy. Dạng ấy có tên, đo bằng jun, và mang một tính chất tách nó hẳn khỏi
+mọi đại lượng còn lại của chương.
+
+<InternalEnergy />
+
+## Nội năng cộng hai khoản, và không khoản nào là nhiệt độ
+
+**Nội năng U của một vật là tổng động năng chuyển động hỗn loạn của tất cả các
+phân tử cấu tạo nên nó, cộng với tổng thế năng tương tác giữa các phân tử ấy.**
+Hai khoản chia nhau đúng hai vai: động năng là phần **chuyển động**, thế năng là
+phần **sắp xếp** — các phân tử đang ở gần hay xa nhau.
+
+Nội năng không phải **nhiệt độ**. Nhiệt độ đo động năng trung bình của *một*
+phân tử; nội năng cộng phần của *mọi* phân tử, nên nó phụ thuộc cả khối lượng.
+Hai lít nước 25 °C có nội năng gấp đôi một lít nước cũng 25 °C, dù hai nhiệt kế
+chỉ cùng một số.
+
+Không phải **nhiệt lượng**. Nhiệt lượng là năng lượng *đang đi qua* mặt phân
+cách giữa vật và môi trường; nội năng là thứ vật **đang có**. Hỏi trong cốc nước
+có bao nhiêu nhiệt cũng vô nghĩa như hỏi trong ví có bao nhiêu lần chuyển khoản.
+
+## Vì sao không nhiệt kế nào chỉ thẳng ra nội năng
+
+Tổng ấy có 6,02×10²³ số hạng cho mỗi mol, cộng thêm thế năng của từng cặp phân
+tử. Không dụng cụ nào làm nổi. Thứ đo được luôn là **độ biến thiên ΔU**, suy ra
+từ năng lượng đã cấp vào — và mọi bài toán cũng chỉ hỏi ΔU.
+
+Có đúng một trường hợp tính thẳng ra được: **khí lý tưởng đơn nguyên tử**. Mô
+hình ấy giả thiết các phân tử không hút nhau, nên khoản thế năng bằng 0 và chỉ
+còn khoản động năng:
+
+U = (3/2)nRT
+
+Một mol ở 300 K: U = 1,5 × 8,314 × 300 = **3 741 J**. Hằng số 8,314 thuộc về bài
+[pV = nRT](/vi/posts/phuong-trinh-khi-ly-tuong-va-cai-bay-do-c). Chia cho từng
+hạt, đó là 6,21×10⁻²¹ J mỗi phân tử, nhân với số Avogadro —
+[động năng phân tử và (3/2)kT](/vi/posts/mo-hinh-dong-hoc-phan-tu-ap-suat-tu-va-cham).
+
+Với một lượng khí đã cho, vế phải **chỉ còn T**: không thể tích, không hình dạng
+bình, không lịch sử. Biết nhiệt độ là biết nội năng.
+
+## Hàm trạng thái: tới nơi rồi thì đường đi không còn dấu vết
+
+Nội năng là **hàm trạng thái**. Giá trị của nó chỉ phụ thuộc trạng thái vật đang
+ở, chứ không phụ thuộc vật đã tới đó bằng cách nào — hệt như độ cao của một đỉnh
+núi không phụ thuộc bạn leo lối nào.
+
+Kiểm bằng số của demo. Một mol khí đơn nguyên tử đi từ 300 K lên 400 K:
+
+ΔU = 4 988 − 3 741 = **1 247 J**
+
+Giờ bắt nó đi vòng: nung tới 500 K, nơi nội năng lên 6 235,5 J, rồi để nguội về
+đúng 400 K. Chặng lên nhận 2 494 J, chặng xuống trả lại 1 247 J. Hiệu vẫn là
+**1 247 J**, không lệch một jun. Kéo thanh "ghé qua nhiệt độ", hai mũi tên dài
+ra bao nhiêu cũng được, khoảng cách giữa hai chấm đỏ đứng im.
+
+Chỗ đắt giá là vế còn lại: **nhiệt lượng và công thì không như vậy**. Đường vòng
+tốn nhiều nhiệt hơn hẳn đường thẳng dù điểm đến giống hệt, nên hỏi khối khí chứa
+bao nhiêu công là câu vô nghĩa.
+
+## Hai cách làm nội năng đổi
+
+Chỉ có hai, và chương trình gọi tên rõ ràng:
+
+- **Truyền nhiệt** — đặt vật cạnh vật nóng hơn. Năng lượng sang ngang nhờ chênh
+  lệch nhiệt độ, không ai phải đẩy gì cả; đó là địa hạt của
+  [nhiệt dung riêng và Q = mcΔt](/vi/posts/nhiet-dung-rieng-va-cong-thuc-nhiet-luong/).
+- **Thực hiện công** — cọ xát, khuấy, nén. Không cần chỗ nào nóng hơn chỗ nào:
+  [bóp ống bơm xe đạp làm không khí bên trong vọt lên 156 °C](/vi/posts/nen-doan-nhiet-bom-xe-va-dong-co-diesel/)
+  mà chẳng có ngọn lửa nào; ngược lại, khối khí bốc lên cao **sinh công** đẩy
+  không khí xung quanh nên
+  [tự lạnh đi 9,8 độ mỗi kilômét](/vi/posts/vi-sao-len-nui-thi-lanh-du-gan-mat-troi-hon/).
+  Thác nước ở đầu bài là cách thứ hai, do trọng lực làm hộ.
+
+Thanh dưới cùng của demo là chỗ hai cách gặp nhau. Cùng ΔU = 1 247 J ấy, chia
+60% cho nhiệt và 40% cho công thì được 748 J và 499 J; kéo vạch ngăn sang tận
+đầu nào cũng được, **chiều dài cả thanh không đổi**.
+
+Phần kế toán của hai khoản đó — phương trình, và quy ước dấu khi vật toả nhiệt
+hay sinh công thay vì nhận — là bài
+[định luật I của nhiệt động lực học](/vi/posts/dinh-luat-i-nhiet-dong-luc-hoc-va-quy-uoc-dau/).
+Cả loạt bài nằm ở
+[Vật lý nhiệt và khí lý tưởng lớp 12](/vi/vat-ly-12/nhiet/).
+
+## Ba câu tự kiểm
+
+1. Hai bình khí đơn nguyên tử cùng ở 300 K, bình A có 1 mol, bình B có 3 mol.
+   Nhiệt độ và nội năng so với nhau thế nào? *(Nhiệt độ bằng nhau; nội năng của
+   B gấp ba — 11 224 J so với 3 741 J.)*
+2. Nung 1 mol khí đơn nguyên tử từ 300 K lên 320 K bằng cách khuấy, hoàn toàn
+   không truyền nhiệt. ΔU bằng bao nhiêu, và có khác gì nung bằng bếp? *(ΔU =
+   1,5 × 8,314 × 20 = 249 J trong cả hai cách; nội năng không nhớ nổi cách nào
+   đã được dùng.)*
+3. Một bạn viết: "cốc nước nóng chứa nhiều nhiệt lượng hơn cốc nước nguội". Sửa
+   lại cho đúng. *(Cốc nóng có nội năng lớn hơn; nhiệt lượng chỉ tồn tại trong
+   lúc năng lượng đang truyền qua thành cốc.)*
+
+## Trường hợp biên: đường thẳng U theo T gãy khi vật đổi thể
+
+Bức hình trong demo — nội năng là một đường thẳng qua gốc, đọc được từ mỗi nhiệt
+độ — đúng cho khí lý tưởng đơn nguyên tử và gần như không gì khác.
+
+Nó lệch ngay ở khí thường gặp nhất. Phân tử nitơ và oxygen còn quay được nên cất
+thêm năng lượng vào chuyển động quay: nội năng của khí hai nguyên tử là
+(5/2)nRT, một đường thẳng dốc hơn hẳn ở cùng nhiệt độ.
+
+Nó hỏng nặng hơn khi khoản thế năng tỉnh dậy. Ở khí thực, chất lỏng và chất rắn,
+các phân tử hút nhau, nên **kéo chúng ra xa cũng làm nội năng tăng dù nhiệt độ
+đứng yên**. Một kilôgam nước sôi hoá thành hơi ở đúng 100 °C nhận 2 260 kJ; khoảng 169 kJ
+trong đó là công đẩy khí quyển ra lấy chỗ cho hơi, còn 2 091 kJ đi vào thế năng
+tương tác. Trên đồ thị U theo T, đó là một bậc thẳng đứng mà đường thẳng của khí
+lý tưởng không có chỗ để vẽ. Hai bậc như thế là nội dung của bài
+[nhiệt nóng chảy riêng và nhiệt hoá hơi riêng](/vi/posts/nhiet-an-hai-quang-nhiet-ke-dung-im/).
+
+Và một chỗ tinh vi hơn: nói vật có nội năng U chỉ có nghĩa khi vật **đang ở một
+trạng thái**. Giữa lúc pít-tông vừa nện xuống, lớp khí sát mặt nó nóng hơn lớp
+khí ở đáy xi lanh; không con số T nào mô tả đúng cả bình, và hàm trạng thái tạm
+thời không có giá trị để trả về.

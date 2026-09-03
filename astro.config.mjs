@@ -21,7 +21,7 @@ const basePaths = rehypeBasePaths({ base: BASE });
 // no Ko-fi account exists. Keep this in step with the `noindex` prop on each
 // page — a noindex URL left in the sitemap makes Search Console report
 // "Submitted URL marked noindex".
-const NOINDEXED = ['/tim-kiem/', '/donate/', '/vat-ly-12/nhiet/'];
+const NOINDEXED = ['/tim-kiem/', '/donate/'];
 
 export default defineConfig({
   site: SITE,

@@ -1,0 +1,227 @@
+---
+// Internal energy as a STATE FUNCTION, drawn twice in one canvas.
+//
+// Top: U against T for 1 mol of a monatomic ideal gas, U = (3/2)nRT, a straight
+// line through the origin. State 1 is pinned at 300 K; state 2 rides a slider.
+// A third slider sends the gas on a DETOUR -- up to a peak temperature and back
+// down to state 2 -- drawn as two arrows hugging the same line. Both routes land
+// on the same dot, which is the whole lesson: U depends on where you are, not on
+// how you got there.
+//
+// Bottom: the same delta-U as a stacked bar, split between the two ways of
+// changing it -- heating and doing work. Dragging the split moves the boundary
+// and never the total length. Dragging T2 is the only thing that changes the
+// total, because that is the only thing that changes the STATE.
+//
+// Deliberately NOT drawn here: signs, and the ledger equation itself. Those
+// belong to bai 8 (dinh-luat-i-nhiet-dong-luc-hoc-va-quy-uoc-dau); this figure
+// stops at "the total does not care how you split it".
+//
+// Numbers from scripts/verify-vatly12.mjs section 7:
+//   U(1 mol, 300 K) = 3741,3 J | U(400 K) = 4988,4 J | dU = 1247,1 J
+//   detour via 500 K: +2494,2 J then -1247,1 J, net 1247,1 J -- same dU.
+---
+
+<figure class="demo" data-demo="noi-nang-cua-vat-va-hai-cach-lam-no-doi">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Nhiệt độ trạng thái 2 (K) <output data-out="t"></output>
+      <input type="range" data-in="t" min="320" max="600" step="10" value="400" /></label>
+    <label>Ghé qua nhiệt độ (K) <output data-out="p"></output>
+      <input type="range" data-in="p" min="300" max="650" step="10" value="400" /></label>
+    <label>Phần đến từ truyền nhiệt (%) <output data-out="f"></output>
+      <input type="range" data-in="f" min="0" max="100" step="5" value="60" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Một mol khí đơn nguyên tử, trạng thái 1 ghim ở 300 K. Kéo thanh thứ hai để
+    bắt khối khí đi vòng lên cao rồi quay lại đúng trạng thái 2: hai mũi tên dài
+    ra, mà khoảng cách giữa hai chấm đỏ không nhúc nhích. Kéo thanh thứ ba để
+    đổi tỉ lệ giữa hai cách làm nội năng đổi — vạch ngăn trong thanh dưới chạy,
+    còn chiều dài cả thanh đứng yên. Chỉ trạng thái 2 mới đổi được nó.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const LINE = '#2563eb', MARK = '#dc2626', WORK = '#2563eb', HEAT = '#dc2626';
+  const R = 8.314;          // J/(mol*K) -- the constant belongs to the pV = nRT lesson
+  const T1 = 300;           // K, state 1 is pinned
+  const T_MAX = 650;        // K, right edge of the plot
+  const U = (T: number) => 1.5 * R * T;   // J, one mole of a monatomic ideal gas
+
+  const vn = (x: number, d: number) => x.toFixed(d).replace('.', ',');
+  const grp = (x: number) => x.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (k: string) => root.querySelector(`[data-in="${k}"]`) as HTMLInputElement;
+    const output = (k: string) => root.querySelector(`[data-out="${k}"]`) as HTMLOutputElement;
+
+    function draw() {
+      const T2 = Number(input('t').value);
+      const peakRaw = Number(input('p').value);
+      const frac = Number(input('f').value) / 100;
+      const peak = Math.max(peakRaw, T2);
+      output('t').textContent = String(T2);
+      output('p').textContent = String(peakRaw);
+      output('f').textContent = String(Math.round(frac * 100));
+
+      const U1 = U(T1), U2 = U(T2), dU = U2 - U1;
+      const qHeat = frac * dU, qWork = dU - qHeat;
+      const upLeg = U(peak) - U1, downLeg = U(peak) - U2;
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32;
+      const cssH = Math.max(250, Math.round(cssW * 0.58));
+      canvas.width = Math.round(cssW * dpr); canvas.height = Math.round(cssH * dpr);
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+      ctx.font = '10px system-ui,sans-serif';
+      ctx.lineWidth = 1;
+
+      const padL = 32, padR = 48, padT = 16;
+      const axisY = cssH - 96;
+      const plotW = cssW - padL - padR;
+      const U_MAX = 8500;                    // J, comfortably above U(650 K) = 8 106 J
+      const X = (T: number) => padL + (T / T_MAX) * plotW;
+      const Y = (u: number) => padT + ((U_MAX - u) / U_MAX) * (axisY - padT);
+
+      // Axes, both numbered: U in kJ up the side, T in kelvin along the bottom.
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.3;
+      ctx.beginPath();
+      ctx.moveTo(padL, padT); ctx.lineTo(padL, axisY); ctx.lineTo(cssW - padR + 4, axisY);
+      ctx.stroke();
+      ctx.globalAlpha = 0.55; ctx.fillStyle = fg;
+      ctx.textAlign = 'right';
+      for (const u of [0, 2000, 4000, 6000, 8000]) ctx.fillText(String(u / 1000), padL - 4, Y(u) + 3);
+      ctx.textAlign = 'center';
+      // Last tick carries the unit, so no separate axis title can collide with
+      // it at 375 px -- and it still lands inside the canvas.
+      for (const t of [0, 200, 400, 600]) ctx.fillText(t === 600 ? '600 K' : String(t), X(t), axisY + 13);
+      ctx.textAlign = 'left';
+      ctx.fillText('U (kJ)', padL + 2, padT - 4);
+      ctx.globalAlpha = 1;
+
+      // U = (3/2)nRT: a straight line through the origin. Everything a mole of
+      // this gas can ever be is a point on it.
+      ctx.strokeStyle = LINE; ctx.globalAlpha = 0.35; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.moveTo(X(0), Y(0)); ctx.lineTo(X(T_MAX), Y(U(T_MAX))); ctx.stroke();
+      ctx.globalAlpha = 1; ctx.lineWidth = 1;
+
+      // The route, drawn as arrows hugging that line: out to the peak, back to
+      // state 2. When the peak slider sits at or below T2 there is one leg only.
+      const arrow = (ta: number, tb: number, off: number, col: string) => {
+        const xa = X(ta), ya = Y(U(ta)) + off, xb = X(tb), yb = Y(U(tb)) + off;
+        const len = Math.hypot(xb - xa, yb - ya);
+        if (len < 4) return;
+        const ux = (xb - xa) / len, uy = (yb - ya) / len;
+        ctx.strokeStyle = col; ctx.fillStyle = col; ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.moveTo(xa, ya); ctx.lineTo(xb - ux * 6, yb - uy * 6); ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(xb, yb);
+        ctx.lineTo(xb - ux * 8 - uy * 4, yb - uy * 8 + ux * 4);
+        ctx.lineTo(xb - ux * 8 + uy * 4, yb - uy * 8 - ux * 4);
+        ctx.closePath(); ctx.fill();
+        ctx.lineWidth = 1;
+      };
+      const detour = peak > T2 + 1;
+      if (detour) { arrow(T1, peak, -6, HEAT); arrow(peak, T2, 6, fg); }
+      else arrow(T1, T2, -6, HEAT);
+
+      // The two states.
+      ctx.fillStyle = MARK;
+      for (const [t, u] of [[T1, U1], [T2, U2]] as const) {
+        ctx.beginPath(); ctx.arc(X(t), Y(u), 5, 0, Math.PI * 2); ctx.fill();
+      }
+      ctx.globalAlpha = 0.85; ctx.textAlign = 'left';
+      ctx.fillText('1', X(T1) + 8, Y(U1) + 12);
+      ctx.fillText('2', X(T2) + 8, Y(U2) - 6);
+      ctx.globalAlpha = 1;
+
+      // The gap between the two states, bracketed at the right edge.
+      const xb = cssW - padR + 12;
+      ctx.strokeStyle = MARK;
+      ctx.beginPath();
+      ctx.moveTo(xb - 4, Y(U1)); ctx.lineTo(xb, Y(U1));
+      ctx.lineTo(xb, Y(U2)); ctx.lineTo(xb - 4, Y(U2));
+      ctx.stroke();
+      ctx.fillStyle = MARK; ctx.textAlign = 'left';
+      ctx.fillText('ΔU', xb + 3, (Y(U1) + Y(U2)) / 2 + 3);
+
+      // Same delta-U as a bar, split between the two ways of delivering it.
+      // Scale is fixed to the widest gap the sliders allow, so the bar grows
+      // only when the STATE changes -- never when the split does.
+      const dUmax = U(600) - U1;
+      const barW = (dU / dUmax) * plotW;
+      const barY = axisY + 38, barH = 16;
+      ctx.fillStyle = fg; ctx.globalAlpha = 0.55; ctx.textAlign = 'left';
+      ctx.fillText('cùng ΔU ấy, chia cho hai cách:', padL, axisY + 30);
+      ctx.globalAlpha = 0.16;
+      ctx.fillRect(padL, barY, plotW, barH);
+      ctx.globalAlpha = 1;
+      ctx.fillStyle = HEAT; ctx.fillRect(padL, barY, barW * frac, barH);
+      ctx.fillStyle = WORK; ctx.globalAlpha = 0.55;
+      ctx.fillRect(padL + barW * frac, barY, barW * (1 - frac), barH);
+      ctx.globalAlpha = 1;
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.4;
+      ctx.strokeRect(padL + 0.5, barY + 0.5, Math.max(1, barW), barH);
+      ctx.globalAlpha = 1;
+
+      // Two legends, one at each end of the bar track. On a phone the plot is
+      // about 231 px wide, so the words shrink rather than run into each other.
+      const wide = plotW > 250;
+      const hl = `${wide ? 'truyền nhiệt' : 'nhiệt'} ${grp(qHeat)} J`;
+      const wl = `${wide ? 'thực hiện công' : 'công'} ${grp(qWork)} J`;
+      const legY = barY + barH + 18;
+      ctx.fillStyle = HEAT; ctx.fillRect(padL, legY - 8, 8, 8);
+      ctx.fillStyle = fg; ctx.globalAlpha = 0.75; ctx.textAlign = 'left';
+      ctx.fillText(hl, padL + 12, legY);
+      ctx.globalAlpha = 1;
+      const wlRight = cssW - padR + 4;
+      const wlW = ctx.measureText(wl).width;
+      ctx.fillStyle = WORK; ctx.globalAlpha = 0.55;
+      ctx.fillRect(wlRight - wlW - 12, legY - 8, 8, 8);
+      ctx.globalAlpha = 0.75; ctx.fillStyle = fg; ctx.textAlign = 'right';
+      ctx.fillText(wl, wlRight, legY);
+      ctx.globalAlpha = 1;
+
+      const route = detour
+        ? `Đi vòng qua ${peak} K: nội năng lên tới ${grp(U(peak))} J rồi tụt lại, ` +
+          `nhận vào ${grp(upLeg)} J rồi trả ra ${grp(downLeg)} J — hiệu vẫn đúng ` +
+          `<b>${grp(dU)} J</b>.`
+        : `Đi thẳng từ trạng thái 1 sang trạng thái 2 — kéo thanh "ghé qua nhiệt độ" ` +
+          `lên trên ${T2} K để bắt khối khí đi đường vòng.`;
+      readout.innerHTML =
+        `U₁ = (3/2)nRT₁ = ${grp(U1)} J tại 300 K · U₂ = ${grp(U2)} J tại ${T2} K → ` +
+        `ΔU = <b>${grp(dU)} J</b><br />` +
+        `Chia ${Math.round(frac * 100)}% – ${Math.round(100 - frac * 100)}%: truyền nhiệt ` +
+        `${grp(qHeat)} J cộng thực hiện công ${grp(qWork)} J, tổng vẫn ${grp(dU)} J.<br />` +
+        route;
+    }
+
+    root.querySelectorAll('input').forEach((el) => {
+      el.addEventListener('input', draw);
+      el.addEventListener('change', draw);
+    });
+    addEventListener('resize', draw);
+    draw();
+  }
+  document
+    .querySelectorAll<HTMLElement>('[data-demo="noi-nang-cua-vat-va-hai-cach-lam-no-doi"]')
+    .forEach(setup);
+</script>

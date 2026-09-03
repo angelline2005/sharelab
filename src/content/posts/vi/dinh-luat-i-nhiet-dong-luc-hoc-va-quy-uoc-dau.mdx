@@ -1,0 +1,131 @@
+---
+title: "Định luật 1 nhiệt động lực học lớp 12: ΔU = A + Q và quy ước dấu của A, Q"
+seoTitle: "Quy ước dấu định luật 1 nhiệt động lực học lớp 12"
+description: "Nhận 500 J nhiệt rồi sinh 200 J công mà nội năng chỉ tăng 300 J — định luật 1 nhiệt động lực học lớp 12: quy ước dấu của A và Q, bốn trường hợp."
+pubDate: 2026-09-03
+translationId: "dinh-luat-i-nhiet-dong-luc-hoc-va-quy-uoc-dau"
+grade: 12
+chapter: "nhiet"
+lesson: 8
+series: "vat-ly-12-nhiet"
+tags: ["vat-ly", "nhiet-hoc", "javascript"]
+---
+
+import FirstLawSigns from '../../../components/demos/FirstLawSigns.astro';
+
+Rót vào khối khí 500 J nhiệt, nó giãn ra và đẩy pít-tông hết 200 J. Một bạn
+viết nội năng tăng 500 + 200 = 700 J, bạn bên cạnh viết 500 − 200 = 300 J.
+Hai đáp số lệch nhau 400 J từ một đề bài không có gì mập mờ, và chỉ một cách
+đặt dấu là đúng. Cả bài này là về việc chọn đúng cách ấy.
+
+<FirstLawSigns />
+
+## ΔU = A + Q, và đúng một câu về dấu
+
+Định luật 1 của nhiệt động lực học là phép kiểm kê năng lượng của một hệ:
+
+**ΔU = A + Q**
+
+ΔU là **độ biến thiên nội năng** của hệ, A là **công**, Q là **nhiệt lượng**.
+Vế trái không cần quy ước gì: ΔU = U₂ − U₁, dương khi nội năng tăng, như mọi
+chữ Δ khác. Toàn bộ chỗ mất điểm nằm ở dấu của hai đại lượng vế phải, và quy
+ước cho chúng chỉ có một câu:
+
+> **A và Q dương khi hệ NHẬN, âm khi hệ MẤT.**
+
+Hai đại lượng dùng chung một chiều quy chiếu duy nhất, và chiều ấy là *đi vào
+hệ* — không có ngoại lệ, không có "nhiệt thì thế này còn công thì thế kia".
+Trong demo, chiều quy chiếu là chiều mũi tên: số dương thì mũi tên chỉ vào
+hộp, số âm thì chỉ ra ngoài. Kéo hai thanh trượt qua số 0 và nhìn mũi tên
+quay đầu.
+
+Cái đang thay đổi ở vế trái là
+[nội năng của vật](/vi/posts/noi-nang-cua-vat-va-hai-cach-lam-no-doi/), và Q ở
+vế phải lấy số từ đâu thì tuỳ đề: khi chất chỉ nóng lên mà không chuyển thể,
+đó là [Q = mcΔt của bài nhiệt dung riêng](/vi/posts/nhiet-dung-rieng-va-cong-thuc-nhiet-luong/).
+Định luật 1 không tính hộ bạn Q hay A; nó chỉ nói ba con số ấy phải khớp nhau.
+
+## Bốn tổ hợp dấu, bốn phép cộng
+
+Bốn tình huống dưới đây là bốn kiểu A và Q ghép dấu với nhau. Cả bốn đều kéo
+được bằng hai thanh trượt, và chúng là bốn chấm đánh số trên hình dưới.
+
+| tình huống | A (J) | Q (J) | ΔU = A + Q |
+|---|---|---|---|
+| nhận nhiệt, thể tích không đổi | 0 | +500 | **+500 J** |
+| nhận nhiệt, hệ sinh công | −200 | +500 | **+300 J** |
+| cách nhiệt, hệ bị nén | +300 | 0 | **+300 J** |
+| toả nhiệt, hệ bị nén | +100 | −400 | **−300 J** |
+
+Dòng thứ hai là đề bài ở đầu trang: khí nhận đủ 500 J nhưng trả lại 200 J cho
+pít-tông, nên chỗ nội năng giữ được chỉ còn 300 J. Đáp số 700 J là kết quả của
+việc cộng phần đã trả đi.
+
+Dòng thứ ba cho cùng con số ấy bằng lối khác hẳn: không một jun nhiệt nào, chỉ
+có người bơm ép pít-tông vào. Ống bơm xe đạp nóng lên trong tay chính là dòng
+này làm thật —
+[nén đủ nhanh thì nhiệt chưa kịp thoát, toàn bộ công dồn vào chính khối khí](/vi/posts/nen-doan-nhiet-bom-xe-va-dong-co-diesel/).
+
+Quy tắc đọc nhanh: khi A và Q **cùng dấu** thì dấu của ΔU đã xong, khỏi tính;
+khi **trái dấu** thì phải so độ lớn, và đề thi dựng câu hỏi đúng ở đó. Trên
+mặt phẳng (Q, A) của demo, hai góc cùng dấu nằm trọn về một phía của đường
+chéo ΔU = 0, còn hai góc trái dấu bị nó cắt đôi.
+
+## Dịch đề bài ra dấu
+
+Đề thi hiếm khi cho sẵn "A = −200 J". Nó cho một câu tiếng Việt, và bước đầu
+tiên luôn là dịch câu ấy thành một dấu.
+
+| câu chữ trong đề | đại lượng | dấu |
+|---|---|---|
+| truyền cho khí một nhiệt lượng, đun nóng khí | Q | dương |
+| khí toả nhiệt, nhả nhiệt ra môi trường, làm nguội | Q | âm |
+| nén khí, ngoại lực thực hiện công lên khí | A | dương |
+| khí giãn nở, khí sinh công, khí đẩy pít-tông | A | âm |
+| bình cách nhiệt, quá trình không trao đổi nhiệt | Q | bằng 0 |
+| bình kín thành cứng, thể tích không đổi | A | bằng 0 |
+
+Cái bẫy nằm ở hai dòng về công, vì tiếng Việt đổi chủ ngữ giữa chúng: *khí
+sinh công* là khí mất năng lượng, nên A âm, dù chữ "sinh" nghe như được thêm.
+Cứ hỏi lại một câu: **năng lượng đi vào hay đi ra khỏi khối khí?** Đi vào thì
+dương, đi ra thì âm, bất kể câu văn dùng động từ gì.
+
+## Ba câu tự kiểm
+
+1. Hệ nhận 500 J nhiệt mà nội năng chỉ tăng 300 J. Hệ đã sinh công hay nhận
+   công, bao nhiêu? *(A = ΔU − Q = 300 − 500 = −200 J, tức hệ sinh 200 J công.)*
+2. Nén khí trong xi lanh cách nhiệt, ngoại lực thực hiện lên khí 300 J. Nội
+   năng đổi bao nhiêu, khí nóng lên hay lạnh đi? *(Q = 0 nên ΔU = A = +300 J:
+   nội năng tăng, khí nóng lên dù không ai đun.)*
+3. Một bạn viết: "hệ toả 400 J và bị nén 100 J nên ΔU = 400 − 100 = +300 J."
+   Sai ở đâu? *(Toả nhiệt là Q = −400 J, bị nén là A = +100 J, nên
+   ΔU = 100 − 400 = −300 J. Lệch 600 J và sai cả dấu: bạn ấy kết luận nội năng
+   tăng trong lúc nó đang giảm.)*
+
+## Trường hợp biên: khi khối lượng đi qua biên hệ
+
+ΔU = A + Q chỉ là phép kiểm kê, nên nó không sai — nhưng nó đếm đủ với đúng
+một điều kiện: **hệ phải kín**, cùng chừng ấy vật chất suốt quá trình. Vế phải
+mở đúng hai cửa cho năng lượng, nhiệt và công.
+
+Mở vung nồi nước đang sôi là mở cửa thứ ba. Hơi bay đi mang theo nội năng của
+chính nó, và nội năng phần còn lại tụt xuống một lượng mà không Q nào, không A
+nào giải thích được: thứ rời hệ không phải năng lượng suông mà là **vật chất
+mang năng lượng** — chuyện thuộc về
+[nhiệt hoá hơi riêng](/vi/posts/nhiet-an-hai-quang-nhiet-ke-dung-im/). Muốn
+dùng tiếp định luật 1 thì phải chọn lại biên, lấy cả hơi lẫn nước làm hệ. Tua
+bin và mọi dòng chảy liên tục nằm ngoài dạng hai số hạng này.
+
+Chỗ thứ hai phương trình im lặng: nó không cấm chiều nào. Phép cộng
+100 − 400 = −300 vẫn khớp y hệt nếu khối khí toả 400 J ấy sang một vật *nóng
+hơn* nó. Chuyện đó không xảy ra ngoài đời, và lý do không nằm trong
+ΔU = A + Q.
+
+Chỗ thứ ba, âm thầm nhất: A với Q không phải thuộc tính của hệ, nên không có
+câu "khối khí này chứa 500 J nhiệt". Hai dòng giữa của bảng trên đưa hệ tới
+cùng một nội năng cuối bằng hai bộ (A, Q) khác hẳn nhau — một lần khí giãn ra,
+một lần khí bị nén — và chỉ tổng của chúng là như nhau, vì chỉ nội năng mới là
+con số của riêng trạng thái,
+[động năng của các phân tử bên trong](/vi/posts/mo-hinh-dong-hoc-phan-tu-ap-suat-tu-va-cham/),
+không phụ thuộc hệ đã đi đường nào tới đó. Cả loạt bài nằm ở
+[Vật lý nhiệt và khí lý tưởng lớp 12](/vi/vat-ly-12/nhiet/).

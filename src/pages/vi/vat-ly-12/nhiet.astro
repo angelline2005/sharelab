@@ -8,10 +8,12 @@
 //  - `data-pagefind-body` phải bọc thân trang. Thuộc tính đó chỉ xuất hiện đúng
 //    một lần nữa trong repo (PostLayout), và Pagefind chỉ index trang nào mang
 //    nó. Thiếu nó thì bảng công thức nằm ngoài tìm kiếm nội bộ hoàn toàn.
-//  - `noindex` cho tới khi có ít nhất sáu bài. Một trang gần rỗng nằm trong
-//    sitemap, giữa lúc hồ sơ AdSense đang xét, là mẫu trang mỏng kinh điển.
-//    Gỡ prop này VÀ mục '/vat-ly-12/nhiet/' trong NOINDEXED ở astro.config.mjs
-//    cùng lúc — bỏ một nửa sẽ khiến Search Console báo lỗi.
+//  - Trang từng mang `noindex` khi mới lên, vì một hub gần rỗng nằm trong
+//    sitemap giữa lúc hồ sơ AdSense đang xét là mẫu trang mỏng kinh điển. Ngày
+//    03/09/2026, khi cả 11 bài đã lên (điều kiện đặt ra là sáu), prop ấy được
+//    gỡ CÙNG LÚC với mục '/vat-ly-12/nhiet/' trong NOINDEXED ở astro.config.mjs.
+//    Nếu sau này cần noindex lại, vẫn phải làm cả hai nửa: gỡ hoặc thêm một nửa
+//    là cách khiến Search Console báo "Submitted URL marked noindex".
 import { getCollection } from 'astro:content';
 import BaseLayout from '../../../layouts/BaseLayout.astro';
 import { withBase } from '../../../utils/url';
@@ -50,7 +52,7 @@ const description =
   'Toàn bộ công thức chương nhiệt và khí lý tưởng lớp 12 — mỗi bài một đồ thị tương tác kéo được, và một chỗ nói rõ mô hình thôi đúng ở đâu.';
 ---
 
-<BaseLayout locale={locale} title={title} description={description} noindex>
+<BaseLayout locale={locale} title={title} description={description}>
   <article data-pagefind-body>
     <h1>{title}</h1>
 
@@ -77,7 +79,9 @@ const description =
     <h2>Bảng công thức</h2>
     <p>
       Mỗi công thức thuộc về đúng một bài — bài đó giải thích ký hiệu, đơn vị và
-      chỗ công thức thôi đúng. Những dòng chưa có liên kết là bài chưa lên.
+      chỗ công thức thôi đúng. Hai bài không có mặt ở đây vì chúng không sở hữu
+      công thức nào: bài đồ thị dạy cách đọc cả ba, còn bài nội năng dạy một khái
+      niệm.
     </p>
 
     <div class="table-scroll">

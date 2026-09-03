@@ -1,0 +1,343 @@
+---
+// First law of thermodynamics, sign convention first:
+//
+//   dU = A + Q          A > 0 and Q > 0 when the SYSTEM RECEIVES
+//
+// The whole value of this demo is the convention, not the addition. Two
+// pictures carry it:
+//
+//   Top -- the system as a box with one arrow on each side. The arrow points
+//   INTO the box when the quantity is positive and OUT when it is negative,
+//   and its caption switches word with it ("hệ nhận nhiệt" / "hệ toả nhiệt",
+//   "hệ nhận công" / "hệ sinh công"). A reader who has memorised the reversed
+//   sign sees the arrow disagree with the number immediately.
+//
+//   Bottom -- the (Q, A) plane, both axes numbered in joules. The four
+//   quadrants ARE the four sign combinations, the anti-diagonal A + Q = 0 is
+//   where the internal energy holds still, and everything above it is dU > 0.
+//   Two quadrants settle the sign of dU on their own; the other two depend on
+//   which of the two terms is bigger, and that is the exam question.
+//
+// Sample system, so U and T can be real numbers instead of a bar with no
+// units: one mole of a monatomic ideal gas at 300 K, where U = (3/2)nRT.
+// That formula belongs to bai 7 (noi-nang-cua-vat-va-hai-cach-lam-no-doi),
+// which is the ONLY post in the catalog that writes it. It is used here just
+// to give the box a reading, and the figcaption hands it back to bai 7.
+//
+//   U0 = 1.5 * 1 * 8.314 * 300 = 3741.3 J
+//
+// Worked lines (scripts/verify-vatly12.mjs, section 8), all reachable by
+// dragging both sliders, which is why the step is 50 J:
+//
+//   Q = +500, A =    0  ->  dU = +500 J   U = 4241.3 J   T = 340.09 K
+//   Q = +500, A = -200  ->  dU = +300 J   U = 4041.3 J   T = 324.06 K
+//   Q =    0, A = +300  ->  dU = +300 J   U = 4041.3 J   T = 324.06 K
+//   Q = -400, A = +100  ->  dU = -300 J   U = 3441.3 J   T = 275.94 K
+//
+// Cases 2 and 3 land on the same point of the box and different points of the
+// plane: same final internal energy by two different routes (the gas expands in
+// one and is compressed in the other, so the final volumes are NOT the same).
+// That is the picture behind "U is a state function, Q and A are not".
+---
+
+<figure class="demo" data-demo="dinh-luat-i-nhiet-dong-luc-hoc-va-quy-uoc-dau">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Nhiệt lượng Q <output data-out="q"></output>
+      <input type="range" data-in="q" min="-600" max="600" step="50" value="500" /></label>
+    <label>Công A <output data-out="a"></output>
+      <input type="range" data-in="a" min="-600" max="600" step="50" value="-200" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Quy ước dấu là toàn bộ nội dung của hình: mũi tên chỉ <b>vào hộp</b> khi
+    đại lượng dương, chỉ <b>ra khỏi hộp</b> khi âm, và chữ dưới mũi tên đổi
+    theo. Ở hình dưới, bốn góc phần tư đúng là bốn tổ hợp dấu; đường chéo là
+    nơi A + Q = 0 nên nội năng đứng im, và cả nửa phía trên nó là ΔU &gt; 0.
+    Hệ mẫu để hộp có số đọc được là 1 mol khí đơn nguyên tử ở 300 K, nơi nội
+    năng bằng (3/2)nRT = 3 741 J — công thức ấy thuộc về bài
+    <a href="/vi/posts/noi-nang-cua-vat-va-hai-cach-lam-no-doi/">nội năng của vật</a>, ở đây
+    chỉ mượn làm mặt đồng hồ.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const HEAT = '#dc2626', WORK = '#2563eb';
+  const R = 8.314;          // J/(mol*K)
+  const N_MOL = 1;          // the demo's sample system
+  const T0 = 300;           // K
+  const U0 = 1.5 * N_MOL * R * T0;   // 3741.3 J
+  const LIM = 600;          // slider range, J -- the plot spans the same square
+
+  // Four worked cases from the worksheet, plotted as faint numbered dots.
+  const CASES = [
+    { q: 500, a: 0 },
+    { q: 500, a: -200 },
+    { q: 0, a: 300 },
+    { q: -400, a: 100 },
+  ];
+
+  // Vietnamese number style: decimal comma, thousands split by a space, a real
+  // minus sign. Only ever inside output strings, never in the arithmetic.
+  const vi = (x: number, d: number) => {
+    const s = Math.abs(x).toFixed(d);
+    const [i, f] = s.split('.');
+    const g = i.replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+    return (x < 0 ? '−' : '') + (f ? `${g},${f}` : g);
+  };
+  const signed = (x: number, d: number) => (x > 0 ? '+' : '') + vi(x, d);
+
+  const heatWord = (q: number) => (q > 0 ? 'hệ nhận nhiệt' : q < 0 ? 'hệ toả nhiệt' : 'cách nhiệt');
+  const workWord = (a: number) => (a > 0 ? 'hệ nhận công' : a < 0 ? 'hệ sinh công' : 'không đổi thể tích');
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (k: string) => root.querySelector(`[data-in="${k}"]`) as HTMLInputElement;
+    const output = (k: string) => root.querySelector(`[data-out="${k}"]`) as HTMLOutputElement;
+
+    // Horizontal arrow: the head sits at xTo, so the sign of (xTo - xFrom) is
+    // the direction the reader sees.
+    function hArrow(xFrom: number, xTo: number, y: number, color: string) {
+      const dir = xTo > xFrom ? 1 : -1;
+      ctx.strokeStyle = color; ctx.fillStyle = color; ctx.lineWidth = 2.2;
+      ctx.beginPath(); ctx.moveTo(xFrom, y); ctx.lineTo(xTo - dir * 5, y); ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(xTo, y);
+      ctx.lineTo(xTo - dir * 8, y - 5);
+      ctx.lineTo(xTo - dir * 8, y + 5);
+      ctx.closePath(); ctx.fill();
+      ctx.lineWidth = 1;
+    }
+
+    function draw() {
+      const Q = Number(input('q').value);
+      const A = Number(input('a').value);
+      const dU = A + Q;
+      const U = U0 + dU;
+      const T = (2 * U) / (3 * N_MOL * R);
+
+      output('q').textContent = `${signed(Q, 0)} J · ${heatWord(Q)}`;
+      output('a').textContent = `${signed(A, 0)} J · ${workWord(A)}`;
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32;
+      const P1 = 132;                                            // schematic band
+      const p2H = Math.max(190, Math.min(262, Math.round(cssW * 0.62)));
+      const cssH = P1 + p2H;
+      // Round before comparing: canvas.width truncates, so a fractional dpr
+      // would never match and the backing store would churn every frame. Check
+      // both dimensions -- the default store is 300x150, so a 300 px column
+      // matches on width alone and leaves the height wrong.
+      const bw = Math.round(cssW * dpr), bh = Math.round(cssH * dpr);
+      if (canvas.width !== bw || canvas.height !== bh) {
+        canvas.width = bw; canvas.height = bh;
+        canvas.style.height = `${cssH}px`;
+      }
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+      ctx.font = '10px system-ui,sans-serif';
+      ctx.lineWidth = 1;
+
+      // ---- Panel 1: the system, one arrow per side ----------------------
+      const boxW = Math.round(Math.min(124, Math.max(92, cssW * 0.3)));
+      const boxX = Math.round((cssW - boxW) / 2), boxY = 32, boxH = 62;
+      const yArr = boxY + 22;
+      const zoneW = boxX - 10;
+      const maxLen = Math.max(28, zoneW - 4);
+      const lenOf = (v: number) => 16 + (Math.abs(v) / LIM) * (maxLen - 16);
+
+      ctx.fillStyle = fg; ctx.globalAlpha = 0.6; ctx.textAlign = 'left';
+      ctx.fillText('hệ mẫu: 1 mol khí, U₀ = 3 741 J ở 300 K', 6, 12);
+      ctx.globalAlpha = 1;
+
+      // The box itself, tinted by the sign of the change inside it.
+      ctx.fillStyle = dU > 0 ? HEAT : dU < 0 ? WORK : fg;
+      ctx.globalAlpha = dU === 0 ? 0.04 : 0.08;
+      ctx.fillRect(boxX, boxY, boxW, boxH);
+      ctx.globalAlpha = 0.45; ctx.strokeStyle = fg;
+      ctx.strokeRect(boxX, boxY, boxW, boxH);
+      ctx.globalAlpha = 1;
+
+      ctx.fillStyle = fg; ctx.textAlign = 'center';
+      ctx.globalAlpha = 0.5;
+      ctx.fillText('HỆ', boxX + boxW / 2, boxY + 14);
+      ctx.globalAlpha = 1;
+      ctx.font = '12px system-ui,sans-serif';
+      ctx.fillText(`U = ${vi(U, 0)} J`, boxX + boxW / 2, boxY + 36);
+      ctx.font = '10px system-ui,sans-serif';
+      ctx.globalAlpha = 0.7;
+      ctx.fillText(`T = ${vi(T, 1)} K`, boxX + boxW / 2, boxY + 51);
+      ctx.globalAlpha = 1;
+
+      // Heat, on the left. Positive points right, into the box.
+      ctx.textAlign = 'left';
+      if (Q !== 0) {
+        const tip = boxX - 4, tail = boxX - 4 - lenOf(Q);
+        if (Q > 0) hArrow(tail, tip, yArr, HEAT);
+        else hArrow(tip, tail, yArr, HEAT);
+      }
+      ctx.fillStyle = HEAT;
+      ctx.fillText(`Q = ${signed(Q, 0)} J`, 6, yArr - 9);
+      ctx.fillStyle = fg; ctx.globalAlpha = 0.7;
+      ctx.fillText(heatWord(Q), 6, yArr + 16);
+      ctx.globalAlpha = 1;
+
+      // Work, on the right. Positive points left, into the box.
+      ctx.textAlign = 'right';
+      if (A !== 0) {
+        const tip = boxX + boxW + 4, tail = boxX + boxW + 4 + lenOf(A);
+        if (A > 0) hArrow(tail, tip, yArr, WORK);
+        else hArrow(tip, tail, yArr, WORK);
+      }
+      ctx.fillStyle = WORK;
+      ctx.fillText(`A = ${signed(A, 0)} J`, cssW - 6, yArr - 9);
+      ctx.fillStyle = fg; ctx.globalAlpha = 0.7;
+      ctx.fillText(workWord(A), cssW - 6, yArr + 16);
+      ctx.globalAlpha = 1;
+
+      // The sum, spelled out under the box.
+      ctx.textAlign = 'center'; ctx.fillStyle = fg;
+      ctx.font = '11px system-ui,sans-serif';
+      ctx.fillText(
+        `ΔU = A + Q = (${signed(A, 0)}) + (${signed(Q, 0)}) = ${signed(dU, 0)} J`,
+        cssW / 2, boxY + boxH + 17,
+      );
+      ctx.font = '10px system-ui,sans-serif';
+      ctx.globalAlpha = 0.7;
+      const verb = dU > 0 ? 'tăng' : dU < 0 ? 'giảm' : 'không đổi';
+      const tail2 = dU === 0
+        ? 'nhiệt độ đứng im'
+        : `nhiệt độ ${dU > 0 ? 'lên' : 'xuống'} ${vi(Math.abs(T - T0), 1)} K`;
+      ctx.fillText(`nội năng ${verb} · ${tail2}`, cssW / 2, boxY + boxH + 31);
+      ctx.globalAlpha = 1;
+
+      // ---- Panel 2: the (Q, A) plane, both axes in joules ---------------
+      const mL = 42, mR = 12, mT = 18, mB = 32;
+      const availW = cssW - mL - mR, availH = p2H - mT - mB;
+      const side = Math.max(120, Math.min(availW, availH));
+      const gx0 = mL, gy0 = P1 + mT;
+      const X = (q: number) => gx0 + ((q + LIM) / (2 * LIM)) * side;
+      const Y = (a: number) => gy0 + side - ((a + LIM) / (2 * LIM)) * side;
+
+      // Everything above the anti-diagonal gains internal energy.
+      ctx.fillStyle = fg; ctx.globalAlpha = 0.08;
+      ctx.beginPath();
+      ctx.moveTo(X(-LIM), Y(LIM)); ctx.lineTo(X(LIM), Y(LIM)); ctx.lineTo(X(LIM), Y(-LIM));
+      ctx.closePath(); ctx.fill();
+      ctx.globalAlpha = 1;
+
+      // Contours of constant dU, then the dU = 0 line on top of them.
+      ctx.strokeStyle = fg;
+      for (const c of [-900, -600, -300, 300, 600, 900]) {
+        const q1 = Math.max(-LIM, c - LIM), q2 = Math.min(LIM, c + LIM);
+        ctx.globalAlpha = 0.12;
+        ctx.beginPath(); ctx.moveTo(X(q1), Y(c - q1)); ctx.lineTo(X(q2), Y(c - q2)); ctx.stroke();
+      }
+      ctx.globalAlpha = 0.55; ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.moveTo(X(-LIM), Y(LIM)); ctx.lineTo(X(LIM), Y(-LIM)); ctx.stroke();
+      ctx.lineWidth = 1; ctx.globalAlpha = 1;
+
+      // Frame, zero lines, ticks.
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.25;
+      ctx.strokeRect(gx0, gy0, side, side);
+      ctx.globalAlpha = 0.5;
+      ctx.beginPath(); ctx.moveTo(X(0), gy0); ctx.lineTo(X(0), gy0 + side); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(gx0, Y(0)); ctx.lineTo(gx0 + side, Y(0)); ctx.stroke();
+      ctx.globalAlpha = 1;
+
+      const TICKS = [-600, -300, 0, 300, 600];
+      const LABELS = side < 200 ? [-600, 0, 600] : TICKS;
+      ctx.fillStyle = fg; ctx.strokeStyle = fg;
+      for (const t of TICKS) {
+        ctx.globalAlpha = 0.35;
+        ctx.beginPath(); ctx.moveTo(X(t), gy0 + side); ctx.lineTo(X(t), gy0 + side + 4); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(gx0 - 4, Y(t)); ctx.lineTo(gx0, Y(t)); ctx.stroke();
+        if (!LABELS.includes(t)) continue;
+        ctx.globalAlpha = 0.6;
+        // Keep the outermost x label inside the canvas at 375 px wide: the
+        // alignment pulls it back over the plot instead of past the edge.
+        ctx.textAlign = t === 600 ? 'right' : t === -600 ? 'left' : 'center';
+        ctx.fillText(vi(t, 0), X(t), gy0 + side + 15);
+        ctx.textAlign = 'right';
+        ctx.fillText(vi(t, 0), gx0 - 6, Y(t) + 3);
+      }
+      ctx.globalAlpha = 0.6; ctx.textAlign = 'center';
+      ctx.fillText('Q (J)', gx0 + side / 2, gy0 + side + 27);
+      ctx.textAlign = 'left';
+      ctx.fillText('A (J)', gx0 - 4, gy0 - 6);
+
+      // What each quadrant means, one short tag per corner.
+      ctx.font = '9px system-ui,sans-serif'; ctx.globalAlpha = 0.55;
+      ctx.textAlign = 'right';
+      ctx.fillText('nhận · nén', X(560), Y(520));
+      ctx.fillText('nhận · sinh', X(560), Y(-560));
+      ctx.textAlign = 'left';
+      ctx.fillText('toả · nén', X(-560), Y(520));
+      ctx.fillText('toả · sinh', X(-560), Y(-560));
+      ctx.globalAlpha = 0.75; ctx.textAlign = 'center';
+      ctx.fillText('ΔU > 0', X(300), Y(360));
+      ctx.fillText('ΔU < 0', X(-300), Y(-380));
+      ctx.font = '10px system-ui,sans-serif'; ctx.globalAlpha = 1;
+
+      // The four worked cases, as reference dots.
+      ctx.textAlign = 'left';
+      CASES.forEach((c, i) => {
+        ctx.globalAlpha = 0.45; ctx.fillStyle = fg;
+        ctx.beginPath(); ctx.arc(X(c.q), Y(c.a), 3, 0, Math.PI * 2); ctx.fill();
+        ctx.font = '9px system-ui,sans-serif';
+        ctx.fillText(String(i + 1), X(c.q) + 5, Y(c.a) - 4);
+        ctx.font = '10px system-ui,sans-serif';
+      });
+      ctx.globalAlpha = 1;
+
+      // Where the sliders are now: dashed guides, then the marker.
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.35; ctx.setLineDash([3, 3]);
+      ctx.beginPath(); ctx.moveTo(X(Q), Y(A)); ctx.lineTo(X(Q), gy0 + side); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(X(Q), Y(A)); ctx.lineTo(gx0, Y(A)); ctx.stroke();
+      ctx.setLineDash([]); ctx.globalAlpha = 1;
+      ctx.fillStyle = HEAT;
+      ctx.beginPath(); ctx.arc(X(Q), Y(A), 5.5, 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.7; ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.arc(X(Q), Y(A), 5.5, 0, Math.PI * 2); ctx.stroke();
+      ctx.lineWidth = 1; ctx.globalAlpha = 1;
+
+      // Legend, only when there is room to the right of the square.
+      const legX = gx0 + side + 14;
+      if (cssW - mR - legX > 92) {
+        ctx.fillStyle = fg; ctx.globalAlpha = 0.6; ctx.textAlign = 'left';
+        ctx.font = '9px system-ui,sans-serif';
+        const lines = ['phải: hệ nhận nhiệt', 'lên: hệ nhận công', 'chéo: ΔU = 0', '1–4: bốn ví dụ'];
+        lines.forEach((l, i) => ctx.fillText(l, legX, gy0 + 12 + i * 14));
+        ctx.font = '10px system-ui,sans-serif'; ctx.globalAlpha = 1;
+      }
+
+      readout.innerHTML =
+        `Q = <b>${signed(Q, 0)} J</b> (${heatWord(Q)}) · A = <b>${signed(A, 0)} J</b> ` +
+        `(${workWord(A)}) → ΔU = A + Q = <b>${signed(dU, 0)} J</b> · nội năng của ` +
+        `mẫu 1 mol đi từ 3 741 J tới <b>${vi(U, 0)} J</b>, nhiệt độ ` +
+        `${dU === 0 ? 'đứng im ở 300,0 K' : `${dU > 0 ? 'lên' : 'xuống'} ${vi(Math.abs(T - T0), 1)} K, còn ${vi(T, 1)} K`}`;
+    }
+
+    root.querySelectorAll('input').forEach((el) => {
+      el.addEventListener('input', draw);
+      el.addEventListener('change', draw);
+    });
+    addEventListener('resize', draw);
+    draw();
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="dinh-luat-i-nhiet-dong-luc-hoc-va-quy-uoc-dau"]').forEach(setup);
+</script>

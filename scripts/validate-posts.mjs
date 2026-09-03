@@ -166,7 +166,15 @@ for (const slug of slugs) {
 
   const words = body.split(/\s+/).length;
   if (words < 420) warn(slug, `hơi ngắn (${words} từ)`);
-  if (words > 1400) warn(slug, `hơi dài (${words} từ)`);
+  // 1 400 is a documented ceiling for the whole catalog and a HARD one for a
+  // lesson series. The soft version drifted: the Vật lý 12 batches went 1 091 →
+  // 1 347 → 1 388 across three batches, each one longer because the last one
+  // was, and a ceiling nobody enforces stops being a ceiling. Series posts fail
+  // the gate; everything else keeps the warning it always had.
+  if (words > 1400) {
+    if (field('series')) err(slug, `quá dài (${words} từ, trần 1400 cho bài trong loạt)`);
+    else warn(slug, `hơi dài (${words} từ)`);
+  }
 
   // Internal links must resolve, and a post with none is a dead end for readers.
   const links = [...body.matchAll(/\]\(\/vi\/posts\/([a-z0-9-]+)/g)].map((m) => m[1]);
