@@ -34,3 +34,14 @@ docs/
 # path as their filename, which leaks the local Windows user. Never commit them.
 /CUsers*
 /*workflowsscripts*
+
+# Content planning and batch tooling — local only. Pre-written slug/title/SEO
+# queues and per-batch verifiers describe how the catalogue gets produced, which
+# is nobody's business but ours, and reads badly out of context. The real build
+# gates (validate-posts, check-mdx, smoke-demos) stay tracked.
+/remaining-batches.json
+scripts/topic-queue.json
+scripts/vatly12-queue.json
+scripts/backdate-posts.mjs
+scripts/verify-batch*.mjs
+scripts/verify-vatly12.mjs
