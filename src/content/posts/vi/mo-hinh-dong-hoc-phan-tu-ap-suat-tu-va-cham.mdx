@@ -1,7 +1,7 @@
 ---
 title: "Mô hình động học phân tử chất khí lớp 12: áp suất sinh ra từ va chạm vào thành"
 seoTitle: "Mô hình động học phân tử chất khí lớp 12"
-description: "Mỗi giây có 3,59×10²³ phân tử đập vào 1 cm² thành bình, tổng lực đúng 10,14 N — mô hình động học phân tử chất khí lớp 12, từ va chạm ra công thức áp suất."
+description: "Mỗi giây có 2,86×10²³ phân tử đập vào 1 cm² thành bình, tổng lực đúng 10,14 N — mô hình động học phân tử chất khí lớp 12, từ va chạm ra công thức áp suất."
 pubDate: 2026-09-03
 translationId: "mo-hinh-dong-hoc-phan-tu-ap-suat-tu-va-cham"
 grade: 12
@@ -13,9 +13,9 @@ tags: ["vat-ly", "nhiet-hoc", "javascript"]
 
 import KineticPressure from '../../../components/demos/KineticPressure.astro';
 
-Một phân tử không khí đập vào thành bình rồi bật ra, để lại đúng
-**2,82×10⁻²³ kg·m/s** động lượng — nhỏ tới mức không dụng cụ nào đo nổi. Nhưng
-mỗi ô vuông 1 cm² của thành hứng **3,59×10²³** cú như thế mỗi giây, và hai luỹ
+Một phân tử không khí đập vào thành bình rồi bật ra, trung bình để lại
+**3,54×10⁻²³ kg·m/s** động lượng — nhỏ tới mức không dụng cụ nào đo nổi. Nhưng
+mỗi ô vuông 1 cm² của thành hứng **2,86×10²³** cú như thế mỗi giây, và hai luỹ
 thừa gần như triệt tiêu nhau: còn lại **10,14 N**, sức nặng của một vật 1,03 kg
 đè lên đầu ngón tay. Áp suất khí quyển là hoá đơn cộng dồn của những cú ấy.
 
@@ -23,8 +23,8 @@ thừa gần như triệt tiêu nhau: còn lại **10,14 N**, sức nặng của
 
 ## Bốn giả thiết dựng nên mô hình
 
-Mô hình không định mô tả từng phân tử một — chỉ 24,6 L khí đã chứa 6,02×10²³
-phân tử. Nó giữ đúng bốn giả thiết, và mọi thứ còn lại là hệ quả:
+Mô hình không mô tả từng phân tử — 24,6 L khí đã chứa 6,02×10²³ phân tử. Nó
+giữ bốn giả thiết, mọi thứ còn lại là hệ quả:
 
 - Phân tử là **chất điểm**: thể tích riêng bỏ qua được so với thể tích bình.
 - Giữa hai lần va chạm, phân tử **chuyển động thẳng đều**; không lực nào tác
@@ -35,92 +35,98 @@ phân tử. Nó giữ đúng bốn giả thiết, và mọi thứ còn lại là
 
 ## Một cú va chạm trao đi bao nhiêu
 
-Giả thiết cuối là chỗ áp suất ra đời. Đặt trục x vuông góc với thành. Một phân
-tử khối lượng m bay tới với thành phần vận tốc v_x rồi bật ngược lại đúng tốc
-độ ấy: động lượng theo trục x đổi từ +mv_x thành −mv_x, nên thành nhận được
+Giả thiết cuối là chỗ áp suất ra đời. Đặt trục x vuông góc với thành. Phân tử
+khối lượng m tới với vận tốc v_x rồi bật ngược lại đúng tốc độ ấy: động lượng
+theo x đổi từ +mv_x thành −mv_x, nên thành nhận được
 
 Δp = 2mv_x
 
-Trong 1 giây, số phân tử kịp đập vào diện tích A là số phân tử trong khối trụ
-dài v_x dựng trước nó, và chỉ một nửa trong đó bay về phía thành:
-
-số va chạm = ½ · (N/V) · A · v_x
-
-Lực là động lượng trao đi mỗi giây, áp suất là lực trên một đơn vị diện tích:
+Trong 1 giây, số phân tử kịp đập vào diện tích A nằm trong khối trụ dài v_x
+dựng trước nó, và chỉ một nửa bay về phía thành: ½·(N/V)·A·v_x. Lực là động
+lượng trao đi mỗi giây:
 
 F = ½·(N/V)·A·v_x × 2mv_x = (N/V)·A·m·v_x²  →  p = (N/V)·m·v_x²
 
-Bước cuối là một bước đối xứng: hỗn loạn nên ba trục ngang nhau, mà
-v̄² = v_x² + v_y² + v_z², vậy v_x² = v̄²/3. Thay vào:
+Bước cuối là đối xứng: hỗn loạn nên ba trục ngang nhau, mà
+v̄² = v_x² + v_y² + v_z², vậy v_x² = v̄²/3:
 
 **p = (1/3)·(N/V)·m·v̄²**
 
-Tích m·(N/V) chính là khối lượng riêng ρ, nên cùng câu ấy viết gọn được thành
+Tích m·(N/V) là khối lượng riêng ρ, nên cùng câu ấy viết gọn thành
 **p = (1/3)·ρ·v̄²**.
+
+## Số cú đập thật là bao nhiêu
+
+Phép đếm trên giả vờ mọi phân tử cùng một v_x, nên ½·(N/V)·A·v_x lẫn 2mv_x đều
+không phải giá trị thật — chúng chỉ đúng khi đã nhân với nhau. Số cú đập thật
+lên một đơn vị diện tích dùng **tốc độ trung bình** ⟨v⟩ = √(8kT/πm), hệ số ¼
+đến từ trung bình mọi hướng bay tới:
+
+**Φ = ¼ · (N/V) · ⟨v⟩**
+
+còn mỗi cú trung bình chỉ trao **4kT/⟨v⟩**. Phép đếm quy ước đếm thừa
+√(π/2) = 1,25 lần, mỗi cú lại nhẹ đi đúng 1,25 lần, nên p không đổi — nhưng ai
+trích riêng một con số ở giữa là trích trúng con số sai.
 
 ## Một centimet vuông thành bình, tính bằng số
 
-Không khí ở 300 K, lấy mốc quen của cả chương là một mol trong 24,6 L:
+Không khí ở 300 K, mốc quen của cả chương: một mol trong 24,6 L:
 
 | đại lượng | giá trị |
 |---|---|
 | mật độ phân tử N/V | 2,448×10²⁵ phân tử/m³ |
 | khối lượng một phân tử m | 4,82×10⁻²⁶ kg |
-| tốc độ vuông góc với thành v_x | 293,3 m/s |
-| động lượng mỗi cú Δp = 2mv_x | 2,82×10⁻²³ kg·m/s |
-| số va chạm trên 1 cm² mỗi giây | 3,59×10²³ |
+| tốc độ trung bình ⟨v⟩ = √(8kT/πm) | 468,0 m/s |
+| số va chạm trên 1 cm² mỗi giây Φ | 2,86×10²³ |
+| động lượng trung bình mỗi cú 4kT/⟨v⟩ | 3,54×10⁻²³ kg·m/s |
 | lực trên 1 cm² | 10,14 N |
 
 Hàng cuối đáng nhìn lâu: 10,14 N trên 1 cm² tức 101,4 kPa, đúng một atmosphere
-— và nó chỉ là tích của hai hàng ngay trên.
+— và chỉ là tích của hai hàng trên.
 
 ## Nhiệt độ đo cái gì: Ē_đ = (3/2)kT
 
-Đặt cạnh nhau hai cách viết áp suất của cùng một khối khí, một từ va chạm và
-một từ thực nghiệm, rồi rút gọn:
+Đặt cạnh nhau hai cách viết áp suất của cùng một khối khí rồi rút gọn:
 
 (1/3)·N·m·v̄² = nRT  →  (1/2)·m·v̄² = (3/2)·(R/N_A)·T
 
-Tỉ số R/N_A là hằng số Boltzmann **k = 1,380649×10⁻²³ J/K**, còn vế trái là
-động năng tịnh tiến trung bình của một phân tử:
+Tỉ số R/N_A là hằng số Boltzmann **k = 1,380649×10⁻²³ J/K**, vế trái là động
+năng tịnh tiến trung bình của một phân tử:
 
 **Ē_đ = (3/2)kT**
 
-Ở 300 K, con số đó là 6,21×10⁻²¹ J cho mỗi phân tử, tức 3 741 J cho mỗi mol.
+Ở 300 K là 6,21×10⁻²¹ J mỗi phân tử, tức 3 741 J mỗi mol.
 
-Câu này đắt hơn vẻ ngoài của nó. Vế phải không nhắc tới khí gì: nhiệt độ tuyệt
-đối **chỉ** đo động năng tịnh tiến trung bình. Hydro và không khí ở cùng 300 K
+Câu này đắt hơn vẻ ngoài. Vế phải không nhắc khí gì: nhiệt độ tuyệt đối
+**chỉ** đo động năng tịnh tiến trung bình. Hydro và không khí ở cùng 300 K
 có cùng một Ē_đ, chỉ tốc độ là khác vì khối lượng khác — v_rms = √(3RT/M) cho
-1 934 m/s với hydro và 508 m/s với không khí, tỉ số 3,81 đúng bằng √(29/2). Tốc
-độ là hệ quả chứ không phải nội dung của công thức, và sau con số trung bình ấy
-còn
+1 934 m/s với hydro và 508 m/s với không khí, tỉ số 3,81 đúng bằng √(29/2). Sau
+con số trung bình ấy còn
 [cả một phân bố tốc độ trải rộng](/vi/posts/phan-bo-maxwell-khong-khi-nhanh-hon-am-thanh/).
 
-Chữ **tịnh tiến** là một hàng rào: nhiệt độ không nói gì về năng lượng nằm
-trong dao động và quay của phân tử, mà chính phần ấy khiến
-[nhiệt dung riêng](/vi/posts/nhiet-dung-rieng-va-cong-thuc-nhiet-luong/) của
-mỗi chất một khác và không suy ra được từ (3/2)kT.
+Chữ **tịnh tiến** là hàng rào: nhiệt độ không nói gì về năng lượng dao động và
+quay của phân tử, mà chính phần ấy khiến
+[nhiệt dung riêng](/vi/posts/nhiet-dung-rieng-va-cong-thuc-nhiet-luong/) mỗi
+chất một khác.
 
 ## Phép kiểm chéo đáng giá nhất của chương
 
-Lấy một mol không khí ở 300 K trong 24,6 L rồi tính áp suất bằng hai lối rời
-nhau:
+Một mol không khí ở 300 K trong 24,6 L, tính áp suất bằng hai lối rời nhau:
 
 - đếm va chạm: p = (1/3)·(N/V)·m·v̄² = **101,40 kPa**, dùng k và N_A
 - đo đạc thực nghiệm: [p = nRT/V](/vi/posts/phuong-trinh-khi-ly-tuong-va-cai-bay-do-c/)
   = **101,39 kPa**, dùng hằng số khí R
 
-Lệch **0,006 %**, và cả phần lệch tí xíu ấy cũng có lý do sạch sẽ: tra bảng thì
+Lệch **0,006 %**, và phần lệch ấy cũng có lý do sạch sẽ: tra bảng thì
 R = 8,314 J/(mol·K) đã làm tròn, trong khi k·N_A = 8,3145. Hai con đường không
 dùng chung một hằng số nào mà gặp nhau ở chữ số thứ năm. Trong demo, cột đỏ
-dựng lên từ chuỗi va chạm còn vạch ngang bên cạnh là nRT/V — kéo thanh trượt
-kiểu gì chúng cũng dính nhau.
+dựng từ chuỗi va chạm còn vạch ngang bên cạnh là nRT/V — kéo thanh trượt kiểu
+gì chúng cũng dính nhau.
 
 Kéo nhiệt độ từ 300 K lên 600 K thì áp suất đi từ 101,40 lên **202,79 kPa**,
-đúng gấp đôi, dù v_rms chỉ tăng √2 lần: phân tử tới thành nhanh hơn √2 lần nên
-số va chạm mỗi giây tăng √2 lần, đồng thời mỗi cú mạnh hơn √2 lần. Hai thừa số
-√2 nhân nhau ra 2 — đó là lý do vật lý đằng sau chữ T mũ một trong pV = nRT.
-Cả loạt bài nằm ở
+đúng gấp đôi, dù ⟨v⟩ chỉ tăng √2 lần: Φ tăng √2 lần, mỗi cú cũng mạnh thêm
+√2 lần, hai thừa số nhân nhau ra 2 — đó là lý do vật lý đằng sau chữ T mũ một
+trong pV = nRT. Cả loạt bài nằm ở
 [Vật lý nhiệt và khí lý tưởng lớp 12](/vi/vat-ly-12/nhiet/).
 
 ## Ba câu tự kiểm
@@ -138,20 +144,20 @@ Cả loạt bài nằm ở
 ## Trường hợp biên: phân tử tới thành bị chính đồng loại kéo ngược lại
 
 Ở điều kiện phòng, một phân tử không khí chỉ bay được **67 nm** là đâm vào một
-phân tử khác, gần 7×10⁹ lần mỗi giây. Nghe như đủ phá nát phép đếm ở trên,
-nhưng không: va chạm nội bộ xáo lại vận tốc mà không lấy đi năng lượng nào, nên
-thứ thành bình nhìn thấy vẫn y nguyên.
+phân tử khác, gần 7×10⁹ lần mỗi giây. Nghe như đủ phá nát phép đếm trên, nhưng
+không: va chạm nội bộ xáo lại vận tốc mà không lấy đi năng lượng nào, nên thứ
+thành bình thấy vẫn y nguyên.
 
-Thứ giết mô hình là **lực hút giữa các phân tử**. Nén khí đủ chặt, chúng đến
-gần nhau tới mức lực hút lên tiếng, và một phân tử đang lao về phía thành thì
-có đồng loại ở mọi phía trừ phía thành: hợp lực kéo nó **ngược vào lòng khí**.
-Nó cập thành với v_x nhỏ hơn giá trị mà (3/2)kT hứa hẹn, trao lại ít hơn 2mv_x,
-nên áp suất đo được tụt xuống dưới con số mô hình tính ra. Ép chặt hơn nữa thì
+Thứ giết mô hình là **lực hút giữa các phân tử**. Nén đủ chặt, chúng đến gần
+tới mức lực hút lên tiếng, và phân tử đang lao về phía thành có đồng loại ở mọi
+phía trừ phía thành: hợp lực kéo nó **ngược vào lòng khí**. Nó cập thành chậm
+hơn giá trị mà (3/2)kT hứa hẹn, trao lại ít động lượng hơn, nên áp suất đo được
+tụt xuống dưới con số mô hình tính ra. Ép chặt hơn nữa thì
 tới lượt giả thiết chất điểm gãy: thể tích riêng của phân tử không còn bỏ qua
 được, chỗ trống để bay ít hơn V, và số va chạm vọt lên trên dự đoán.
 
 Đi hết đường thì chẳng còn gì để hiệu chỉnh. Nén nitơ tới mật độ gấp khoảng
 710 lần lúc nó còn là khí ở 300 K, thứ trong bình đã hoá lỏng: thành thôi hứng
 một trận mưa hạt độc lập mà bị thấm ướt bởi một khối liên tục. Phép đếm va chạm
-hết chỗ bấu víu, và p = (1/3)ρv̄² không còn sai số nữa — đơn giản vì nó không
-còn đối tượng nào để nói về.
+hết chỗ bấu víu, và p = (1/3)ρv̄² không còn sai số — vì không còn đối tượng nào
+để nói về.

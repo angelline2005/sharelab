@@ -16,7 +16,7 @@ import SpecificHeat from '../../../components/demos/SpecificHeat.astro';
 Chiếc nồi nhôm nặng 2 kg, và hai lít nước đổ vào nó cũng nặng 2 kg. Bắt cả hai
 nóng thêm đúng 75 độ như nhau: cái nồi lấy 132 kJ, chỗ nước lấy 627 kJ — gấp
 4,75 lần, dù khối lượng bằng nhau và số độ bằng nhau. Chênh lệch ấy không thể
-nằm ở hai đại lượng vừa được giữ bằng nhau, nên nó phải nằm ở một con số thứ
+nằm ở hai đại lượng vừa giữ bằng nhau, nên phải nằm ở một con số thứ
 ba: con số của riêng từng chất.
 
 <SpecificHeat />
@@ -32,13 +32,12 @@ dung riêng** của chất, đo bằng **J/(kg·K)**.
 
 Đơn vị ấy đọc ra thành đúng một câu: *số jun cần cấp cho một kilôgam chất để nó
 nóng thêm một độ*. Nói c của nước bằng 4 180 J/(kg·K) là nói một kilôgam nước,
-một độ, 4 180 jun — công thức chỉ là câu ấy nhân cho m kilôgam và Δt độ.
+một độ, 4 180 jun.
 
 Δt là **độ tăng**, không phải nhiệt độ. Vì thế đây là chỗ hiếm hoi trong cả
 chương mà độ C và kelvin dùng thay nhau được: một độ chia của thang Celsius dài
 đúng bằng một kelvin, nên hiệu hai nhiệt độ có cùng trị số trên cả hai thang.
-Từ 25 °C lên 100 °C là Δt = 75 K, viết 75 °C cũng ra con số ấy. Ngoại lệ này là
-của riêng công thức trên; trong
+Ngoại lệ này là của riêng công thức trên; trong
 [pV = nRT](/vi/posts/phuong-trinh-khi-ly-tuong-va-cai-bay-do-c) thì T đứng một
 mình và bắt buộc là kelvin.
 
@@ -70,7 +69,9 @@ ra tiền, và phép quy ấy là Q = mcΔt nhân giá điện —
 Đọc ngược, cùng công thức nói vì sao
 [thả miếng thịt lạnh làm mặt chảo nhôm tụt 126 °C](/vi/posts/chao-mong-tut-126-do-khi-tha-mieng-thit/)
 còn chảo gang thì gần như không nhúc nhích: cái quyết định là tích m·c của cả
-vật, không riêng c.
+vật, không riêng c. Bài ấy lấy c nhôm = 900 J/(kg·K) chứ không phải 880: giá
+trị tra bảng của nhôm chạy 880–900 tuỳ nguồn và tuỳ nhiệt độ, nên đừng ngạc
+nhiên khi hai trang lệch nhau.
 
 ## Đo c thật: nhiệt lượng kế, Q = UIt, và chỗ nhiệt đi mất
 
@@ -138,7 +139,7 @@ pít-tông, bằng đúng R chia cho khối lượng mol của không khí. Con 
 bảng trên là giá trị ở áp suất không đổi; viết mỗi "c của không khí" mà không
 nói giữ gì cố định là chưa đủ nghĩa.
 
-Và công thức giả thiết **vật ở cùng một nhiệt độ**: một thanh sắt nung một đầu
-mang đủ mọi nhiệt độ nằm giữa hai đầu, không con số Δt nào thay vào là đúng. Đó
-là lý do nhiệt lượng kế nào cũng có que khuấy. Cả loạt bài nằm ở
+Và công thức giả thiết **vật ở cùng một nhiệt độ**: thanh sắt nung một đầu
+mang đủ mọi nhiệt độ giữa hai đầu, không Δt nào thay vào là đúng — vì thế
+nhiệt lượng kế nào cũng có que khuấy. Cả loạt bài nằm ở
 [Vật lý nhiệt và khí lý tưởng lớp 12](/vi/vat-ly-12/nhiet/).
