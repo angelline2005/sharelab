@@ -1,0 +1,312 @@
+---
+// Pressure as wall collisions -- the kinetic model, drawn as the wall rather
+// than as another swarm of dots (IdealGas.astro already owns the swarm).
+//
+// One wall of the box is the measuring surface, area A = 1 cm^2. Molecules
+// with x-velocity v_x hit it at a rate (1/2)(N/V)*A*v_x and each rebound
+// hands over dp = 2*m*v_x, so
+//
+//   F = (1/2)(N/V)*A*v_x * 2*m*v_x = (N/V)*A*m*v_x^2
+//   p = F/A = (N/V)*m*v_x^2 = (1/3)*(N/V)*m*vbar^2      because vbar^2 = 3*v_x^2
+//
+// with vbar^2 = 3kT/m, which is the same statement as Ebar = (3/2)kT.
+//
+// The cross-check is the whole point of the picture: the column is built from
+// the collision chain (kB, NA, molecular mass) and the tick beside it from
+// n*R*T/V (the tabulated R). Two independent routes, 0.006% apart because R is
+// rounded to 8.314 while kB*NA = 8.3145.
+//
+// Worked lines (scripts/verify-vatly12.mjs, section 11), air at 300 K,
+// N/V = 2.448e25 /m^3 (one mole in 24.6 L):
+//   v_rms = 508 m/s, v_x = 293.3 m/s
+//   dp    = 2*m*v_x = 2.82e-23 kg*m/s
+//   rate  = 3.59e23 hits per second on 1 cm^2
+//   F     = 10.14 N on that 1 cm^2  ->  p = 101.40 kPa vs nRT/V = 101.39 kPa
+//
+// The molecules on screen are a token sample -- a few dozen standing in for
+// 10^25 -- so the drawn arrows show the mechanism while every number comes
+// from the formulas above.
+---
+
+<figure class="demo" data-demo="mo-hinh-dong-hoc-phan-tu-ap-suat-tu-va-cham">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Mật độ phân tử N/V <output data-out="nv"></output>
+      <input type="range" data-in="nv" min="0.15" max="1.6" step="0.005" value="1" /></label>
+    <label>Nhiệt độ T <output data-out="t"></output>
+      <input type="range" data-in="t" min="100" max="600" step="5" value="300" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Thành bên phải là mặt đo, diện tích A = 1 cm². Mỗi mũi tên đỏ là một cú
+    va chạm vừa xảy ra, dài theo động lượng nó truyền cho thành. Cột bên phải
+    là áp suất dựng lên từ chuỗi va chạm — số va chạm mỗi giây nhân động lượng
+    mỗi cú — còn vạch nRT/V dựng từ hằng số khí R. Hai lối tính không dùng
+    chung một hằng số nào, và chúng trùng nhau trong 0,006 %. Vài chục chấm
+    trên hình chỉ là mẫu đại diện cho khoảng 10²⁵ phân tử thật; mọi con số
+    đều tính từ mật độ thật.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const kB = 1.380649e-23;      // J/K
+  const NA = 6.02214076e23;     // 1/mol
+  const R = 8.314;              // J/(mol*K), the tabulated value
+  const M_AIR = 0.029;          // kg/mol
+  const m = M_AIR / NA;         // kg per molecule
+  const V_REF = 0.0246;         // m^3, the chapter's anchor: one mole at 300 K, 1 atm
+  const N_REF = NA / V_REF;     // 2.448e25 molecules per m^3, the slider's unit
+
+  const P_MAX = 400;            // kPa, top of the pressure column
+  const RATE_MAX = 9;           // in 1e23 hits per second per cm^2
+  const MAX_DOTS = 52;
+  const GAS = '#2563eb', MARK = '#dc2626';
+
+  // Vietnamese number style: decimal comma, thousands split by a space, a real
+  // minus sign for negatives. Only ever inside output strings, never in code.
+  const vi = (x: number, d: number) => {
+    const s = Math.abs(x).toFixed(d);
+    const [i, f] = s.split('.');
+    const g = i.replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+    return (x < 0 ? '−' : '') + (f ? `${g},${f}` : g);
+  };
+
+  const SUP: Record<string, string> = {
+    '0': '⁰', '1': '¹', '2': '²', '3': '³', '4': '⁴',
+    '5': '⁵', '6': '⁶', '7': '⁷', '8': '⁸', '9': '⁹', '-': '⁻',
+  };
+  const sup = (n: number) => String(n).split('').map((c) => SUP[c] ?? c).join('');
+
+  // 2.8246e-23 -> "2,82×10⁻²³"
+  const sci = (x: number, d: number) => {
+    let e = Math.floor(Math.log10(Math.abs(x)));
+    let mant = x / Math.pow(10, e);
+    if (Math.abs(Number(mant.toFixed(d))) >= 10) { mant /= 10; e += 1; }
+    return `${vi(mant, d)}×10${sup(e)}`;
+  };
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (k: string) => root.querySelector(`[data-in="${k}"]`) as HTMLInputElement;
+    const output = (k: string) => root.querySelector(`[data-out="${k}"]`) as HTMLOutputElement;
+
+    // Sample molecules live in unit coordinates of the box.
+    const dots = Array.from({ length: MAX_DOTS }, () => ({
+      x: Math.random(), y: Math.random(), a: Math.random() * Math.PI * 2,
+    }));
+    let arrows: { y: number; t: number; mag: number }[] = [];
+    let marks: { y: number; t: number }[] = [];
+    let clock = 0;      // seconds of animation actually run
+    let counted = 0;    // real hits tallied on 1 cm^2 while the reader watches
+    let raf = 0, last = 0;
+
+    function draw(dt = 0) {
+      const nvU = Number(input('nv').value);   // in multiples of one mole per 24.6 L
+      const T = Number(input('t').value);      // kelvin
+      const nv = nvU * N_REF;                  // molecules per m^3
+
+      const v2 = (3 * kB * T) / m;             // mean square speed, m^2/s^2
+      const vrms = Math.sqrt(v2);
+      const vx = vrms / Math.sqrt(3);          // one axis carries a third
+      const dp = 2 * m * vx;                   // momentum handed over per hit
+      const rateM2 = 0.5 * nv * vx;            // hits per second per m^2
+      const rateCm2 = rateM2 / 1e4;
+      const forceCm2 = rateM2 * dp * 1e-4;     // newtons on 1 cm^2
+      const pModel = (1 / 3) * nv * m * v2;    // Pa, straight from collisions
+      const pState = (nvU * R * T) / V_REF;    // Pa, the same gas through nRT/V
+      const eBar = 1.5 * kB * T;               // J per molecule
+
+      clock += dt;
+      counted += rateCm2 * dt;
+
+      output('nv').textContent = `${sci(nv, 3)} /m³ (${vi(nvU, 2)} mol trong 24,6 L)`;
+      output('t').textContent = `${vi(T, 0)} K (${vi(T - 273.15, 0)} °C)`;
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.58);
+      // Round before comparing: canvas.width truncates, so a fractional dpr
+      // would never match and the backing store would churn every frame.
+      const bw = Math.round(cssW * dpr), bh = Math.round(cssH * dpr);
+      // Compare BOTH dimensions: the default backing store is 300x150, so a
+      // 300 px wide column at dpr 1 matches on width alone, skips the branch,
+      // and leaves the height at 150 while we draw into a 174 px tall space --
+      // the numbered collision-rate axis at the bottom gets clipped off.
+      if (canvas.width !== bw || canvas.height !== bh) {
+        canvas.width = bw; canvas.height = bh;
+        canvas.style.height = `${cssH}px`;
+      }
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+      ctx.font = '10px system-ui,sans-serif';
+      ctx.lineWidth = 1;
+
+      // Layout: the box on the left, its right wall thick, the pressure column
+      // beyond it, and the collision-rate axis underneath the box.
+      const padT = 26, padB = 58;
+      const rightW = 86;
+      const x0 = 8, xw = Math.max(x0 + 60, cssW - rightW - 8);
+      const yTop = padT, yBot = cssH - padB, boxH = yBot - yTop;
+      const wallW = 7;
+      const colX = xw + 34, colW = 14;
+      const Y = (q: number) => yBot - Math.min(q / P_MAX, 1) * boxH;
+
+      // Box: three faint walls, one measuring wall.
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.3;
+      ctx.beginPath();
+      ctx.moveTo(xw, yTop); ctx.lineTo(x0, yTop);
+      ctx.lineTo(x0, yBot); ctx.lineTo(xw, yBot);
+      ctx.stroke();
+      ctx.globalAlpha = 0.06; ctx.fillStyle = GAS;
+      ctx.fillRect(x0, yTop, xw - x0, boxH);
+      ctx.globalAlpha = 1;
+
+      // Sample molecules, drawn as streaks so the direction of travel reads.
+      const shown = Math.max(6, Math.min(MAX_DOTS, Math.round(nvU * 30)));
+      const speed = 0.34 * Math.sqrt(T / 300);
+      const tail = 8 * Math.sqrt(T / 300);
+      ctx.strokeStyle = GAS; ctx.fillStyle = GAS;
+      for (let i = 0; i < shown; i++) {
+        const d = dots[i];
+        d.x += Math.cos(d.a) * speed * dt;
+        d.y += Math.sin(d.a) * speed * dt;
+        if (d.x > 1) {
+          const mag = Math.abs(Math.cos(d.a));
+          d.x = 1; d.a = Math.PI - d.a;
+          if (arrows.length < 40) arrows.push({ y: d.y, t: clock, mag });
+          if (marks.length < 90) marks.push({ y: d.y, t: clock });
+        }
+        if (d.x < 0) { d.x = 0; d.a = Math.PI - d.a; }
+        if (d.y < 0 || d.y > 1) { d.a = -d.a; d.y = Math.min(Math.max(d.y, 0), 1); }
+        const px = x0 + d.x * (xw - x0), py = yTop + d.y * boxH;
+        ctx.globalAlpha = 0.45;
+        ctx.beginPath();
+        ctx.moveTo(px - Math.cos(d.a) * tail, py - Math.sin(d.a) * tail);
+        ctx.lineTo(px, py); ctx.stroke();
+        ctx.globalAlpha = 0.9;
+        ctx.beginPath(); ctx.arc(px, py, 2.2, 0, Math.PI * 2); ctx.fill();
+      }
+      ctx.globalAlpha = 1;
+
+      // The measuring wall, then the freshest hits burnt onto it.
+      ctx.fillStyle = MARK;
+      ctx.globalAlpha = 0.85;
+      ctx.fillRect(xw, yTop, wallW, boxH);
+      ctx.globalAlpha = 1;
+      marks = marks.filter((h) => clock - h.t < 1.4);
+      for (const h of marks) {
+        ctx.globalAlpha = 0.85 * (1 - (clock - h.t) / 1.4);
+        ctx.fillRect(xw - 2, yTop + h.y * boxH - 1.5, wallW + 4, 3);
+      }
+      // Each rebound as an outward arrow, length set by the momentum handed over.
+      arrows = arrows.filter((h) => clock - h.t < 0.55);
+      ctx.strokeStyle = MARK;
+      for (const h of arrows) {
+        const age = (clock - h.t) / 0.55;
+        ctx.globalAlpha = 1 - age;
+        const ay = yTop + h.y * boxH;
+        const ax = xw + wallW + 2, len = 5 + 13 * h.mag;
+        ctx.beginPath(); ctx.moveTo(ax, ay); ctx.lineTo(ax + len, ay); ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(ax + len, ay); ctx.lineTo(ax + len - 4, ay - 3);
+        ctx.lineTo(ax + len - 4, ay + 3); ctx.closePath();
+        ctx.fillStyle = MARK; ctx.fill();
+      }
+      ctx.globalAlpha = 1;
+
+      // Pressure column: filled from the collision chain, ticks in kPa.
+      ctx.strokeStyle = fg; ctx.fillStyle = fg;
+      ctx.globalAlpha = 0.3; ctx.strokeRect(colX, yTop, colW, boxH);
+      ctx.globalAlpha = 1;
+      ctx.fillStyle = MARK;
+      ctx.fillRect(colX + 1, Y(pModel / 1000), colW - 2, yBot - Y(pModel / 1000));
+
+      const yRef = Y(pState / 1000);
+      ctx.fillStyle = fg; ctx.globalAlpha = 0.55; ctx.textAlign = 'right';
+      for (let i = 0; i <= 4; i++) {
+        const q = (P_MAX * i) / 4;
+        if (Math.abs(Y(q) - yRef) < 9) continue;
+        ctx.fillText(vi(q, 0), cssW - 2, Y(q) + 3);
+      }
+      ctx.globalAlpha = 1;
+      ctx.strokeStyle = fg; ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.moveTo(colX - 6, yRef); ctx.lineTo(colX + colW + 6, yRef); ctx.stroke();
+      ctx.lineWidth = 1;
+      ctx.fillStyle = fg; ctx.textAlign = 'right';
+      ctx.fillText('nRT/V', cssW - 2, yRef + 3);
+      ctx.globalAlpha = 1;
+
+      // Header, all on one baseline: the running tally, the area every number
+      // refers to, and the column's unit.
+      ctx.fillStyle = fg; ctx.globalAlpha = 0.65; ctx.textAlign = 'left';
+      ctx.fillText(`đã đếm ${counted < 1 ? '0' : sci(counted, 2)} cú`, x0, 11);
+      ctx.textAlign = 'right';
+      ctx.fillText('A = 1 cm²', xw + wallW, 11);
+      ctx.textAlign = 'left';
+      ctx.fillText('p (kPa)', colX - 4, 11);
+      ctx.globalAlpha = 1;
+
+      // Collision-rate axis under the box: numbered, in 1e23 per cm^2 per second.
+      const rateU = rateCm2 / 1e23;
+      const barY = yBot + 20, barH = 9;
+      const RX = (r: number) => x0 + (Math.min(r, RATE_MAX) / RATE_MAX) * (xw - x0);
+      ctx.fillStyle = fg; ctx.globalAlpha = 0.55; ctx.textAlign = 'left';
+      ctx.fillText('va chạm mỗi giây trên 1 cm² (×10²³)', x0, yBot + 14);
+      ctx.globalAlpha = 0.3; ctx.strokeStyle = fg;
+      ctx.strokeRect(x0, barY, xw - x0, barH);
+      ctx.globalAlpha = 1;
+      ctx.fillStyle = GAS;
+      ctx.fillRect(x0 + 1, barY + 1, Math.max(0, RX(rateU) - x0 - 2), barH - 2);
+      ctx.fillStyle = fg; ctx.strokeStyle = fg; ctx.globalAlpha = 0.55;
+      for (const r of [0, 3, 6, 9]) {
+        ctx.beginPath();
+        ctx.moveTo(RX(r), barY + barH); ctx.lineTo(RX(r), barY + barH + 4); ctx.stroke();
+        ctx.textAlign = r === RATE_MAX ? 'right' : r === 0 ? 'left' : 'center';
+        ctx.fillText(String(r), RX(r), barY + barH + 15);
+      }
+      ctx.globalAlpha = 1;
+
+      readout.innerHTML =
+        `v̄² = 3kT/m nên v_x = ${vi(vx, 1)} m/s · mỗi cú va chạm truyền ` +
+        `Δp = 2mv_x = <b>${sci(dp, 2)} kg·m/s</b> · thành nhận ` +
+        `<b>${sci(rateCm2, 2)}</b> cú mỗi giây trên 1 cm² → lực <b>${vi(forceCm2, 2)} N</b> ` +
+        `→ p = (1/3)(N/V)m·v̄² = <b>${vi(pModel / 1000, 2)} kPa</b>, đối chiếu ` +
+        `nRT/V = ${vi(pState / 1000, 2)} kPa · Ē_đ = (3/2)kT = ${sci(eBar, 2)} J`;
+    }
+
+    function frame(now: number) {
+      raf = requestAnimationFrame(frame);
+      if (!last) last = now;
+      const dt = Math.min((now - last) / 1000, 0.05); last = now;
+      draw(dt);
+    }
+
+    root.querySelectorAll('input').forEach((el) => {
+      el.addEventListener('input', () => draw(0));
+      el.addEventListener('change', () => draw(0));
+    });
+    addEventListener('resize', () => draw(0));
+    const io = new IntersectionObserver((es) => {
+      for (const e of es) {
+        if (e.isIntersecting) { last = 0; raf = requestAnimationFrame(frame); }
+        else cancelAnimationFrame(raf);
+      }
+    });
+    io.observe(root);
+    draw(0);
+  }
+  document.querySelectorAll<HTMLElement>('[data-demo="mo-hinh-dong-hoc-phan-tu-ap-suat-tu-va-cham"]').forEach(setup);
+</script>

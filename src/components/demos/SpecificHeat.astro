@@ -1,0 +1,224 @@
+---
+// Q = m*c*dt as a BAR CHART: one bar per material, length = the heat bill in
+// kJ at the chosen mass and temperature rise.
+//
+// The first draft drew this as a fan of straight lines through the origin with
+// a slider that rotated the fan. That is the picture CharlesLaw.astro (bai 3)
+// already owns -- rotating a pencil of lines about a pinned intercept is that
+// lesson's entire teaching point -- so two posts on one hub would have carried
+// the same drawing with different axis labels. Bars read the same ratio and
+// leave the fan to bai 3.
+//
+// Every bar carries a second, amber segment: the calorimeter vessel itself,
+// an 80 g aluminium cup, C = 0.08*880 = 70.4 J/K, warming through the same dt.
+// It is a FIXED tail on every bar, so it is a hairline next to 2 kg of water
+// and nearly half the bill next to 0.2 kg of copper -- which is the whole
+// reason an uncorrected calorimeter always reports c too large.
+//
+// c values in J/(kg*K), room temperature, from scripts/verify-vatly12.mjs:
+//   nuoc 4180 | nuoc da 2100 | nhom 880 | sat 460 | dong 380
+// Worked lines: 2 kg water, dt = 75 K -> 627 kJ, vessel 5.28 kJ (0.8%).
+//   0.2 kg water -> m*c = 836 J/K, vessel share 7.8%, the article's number.
+//   0.2 kg copper -> m*c = 76 J/K, vessel share 48.1%.
+---
+
+<figure class="demo" data-demo="nhiet-dung-rieng-va-cong-thuc-nhiet-luong">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Chất được đun
+      <select data-in="s">
+        <option value="0" selected>Nước — c = 4 180 J/(kg·K)</option>
+        <option value="1">Nước đá — c = 2 100 J/(kg·K)</option>
+        <option value="2">Nhôm — c = 880 J/(kg·K)</option>
+        <option value="3">Sắt — c = 460 J/(kg·K)</option>
+        <option value="4">Đồng — c = 380 J/(kg·K)</option>
+      </select></label>
+    <label>Khối lượng m (kg) <output data-out="m"></output>
+      <input type="range" data-in="m" min="0.1" max="5" step="0.1" value="2" /></label>
+    <label>Độ tăng nhiệt độ Δt (K) <output data-out="d"></output>
+      <input type="range" data-in="d" min="5" max="100" step="1" value="75" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Mỗi thanh là hoá đơn nhiệt của một chất ở cùng khối lượng và cùng số độ.
+    Khúc đặc của nước dài gấp 4,75 lần khúc đặc của nhôm — đó chính là tỉ số
+    hai nhiệt dung riêng, đọc bằng mắt thay vì bằng máy tính. Khúc vàng nối
+    thêm ở đuôi là chiếc cốc nhiệt lượng kế bằng nhôm 80 g nóng lên cùng: một
+    khoản cố định như nhau cho mọi thanh, nên hãy kéo khối lượng xuống 0,2 kg
+    rồi xem nó nuốt mất bao nhiêu phần hoá đơn của đồng.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input, .controls select { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const CURVE = '#2563eb', MARK = '#dc2626', VESSEL = '#f59e0b';
+  const NAMES = ['nước', 'nước đá', 'nhôm', 'sắt', 'đồng'];
+  const CS = [4180, 2100, 880, 460, 380];
+  const M_MAX = 5;
+  const C_VESSEL = 0.08 * 880;   // J/K, the 80 g aluminium calorimeter cup
+
+  const vn = (x: number, d: number) => x.toFixed(d).replace('.', ',');
+  const grp = (x: number, d: number) => {
+    const [i, f] = x.toFixed(d).split('.');
+    const s = i.replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+    return f ? `${s},${f}` : s;
+  };
+  const nice = (v: number) => {
+    const e = Math.pow(10, Math.floor(Math.log10(v)));
+    // A finer ladder than the usual 1/2/5: the longest bar is water at 5 kg,
+    // and a coarse ladder would leave it filling two thirds of the axis at
+    // most settings. Every step still divides by four into a whole number,
+    // which is what the quarter tick labels need.
+    for (const f of [1, 1.2, 1.4, 1.6, 1.8, 2, 2.2, 2.4, 2.8, 3.2, 4, 5, 6, 8, 10])
+      if (f * e >= v) return f * e;
+    return 10 * e;
+  };
+  // kJ with a sensible number of decimals: copper at 0.1 kg and 5 K is 0.19 kJ.
+  const kJ = (q: number) => (q >= 100 ? grp(q, 0) : q >= 10 ? vn(q, 1) : vn(q, 2));
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (k: string) =>
+      root.querySelector(`[data-in="${k}"]`) as HTMLInputElement | HTMLSelectElement;
+    const output = (k: string) => root.querySelector(`[data-out="${k}"]`) as HTMLOutputElement;
+
+    function draw() {
+      const sel = Math.min(4, Math.max(0, Number(input('s').value) | 0));
+      const m = Number(input('m').value);
+      const dt = Number(input('d').value);
+      output('m').textContent = vn(m, 1);
+      output('d').textContent = String(dt);
+
+      const c = CS[sel];
+      const Q = m * c * dt;                 // J, the substance alone
+      const qVessel = C_VESSEL * dt;        // J, the cup, same for every bar
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32;
+      // Fixed row height: this is a five-row chart, not a plot, so the drawing
+      // must not get squat on a phone the way an aspect-ratio canvas would.
+      const rowH = 26, padT = 26, padB = 34;
+      const padL = cssW < 380 ? 52 : 60;
+      const padR = cssW < 380 ? 62 : 76;
+      const cssH = padT + CS.length * rowH + padB;
+      canvas.width = Math.round(cssW * dpr); canvas.height = Math.round(cssH * dpr);
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+      ctx.font = '10px system-ui,sans-serif';
+      ctx.lineWidth = 1;
+
+      // The scale follows water at full mass, so the ordering of the five bars
+      // never jumps around and only their lengths move.
+      const qMax = nice((CS[0] * dt * M_MAX + C_VESSEL * dt) / 1000);
+      const plotW = cssW - padL - padR;
+      const X = (q: number) => padL + (q / qMax) * plotW;
+      const axisY = padT + CS.length * rowH + 4;
+
+      // Gridlines first, so the bars sit on top of them.
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.14;
+      for (let i = 1; i <= 4; i++) {
+        ctx.beginPath();
+        ctx.moveTo(X((qMax * i) / 4), padT); ctx.lineTo(X((qMax * i) / 4), axisY);
+        ctx.stroke();
+      }
+      ctx.globalAlpha = 0.3;
+      ctx.beginPath();
+      ctx.moveTo(padL, padT); ctx.lineTo(padL, axisY); ctx.lineTo(cssW - padR + 2, axisY);
+      ctx.stroke();
+      ctx.globalAlpha = 1;
+
+      // Five bars: the substance in solid colour, the vessel as an amber tail.
+      const barH = 13;
+      for (let i = 0; i < CS.length; i++) {
+        const yMid = padT + i * rowH + rowH / 2;
+        const y = yMid - barH / 2;
+        const qSub = (m * CS[i] * dt) / 1000;
+        const xEnd = X(qSub), xTail = X(qSub + qVessel / 1000);
+        const on = i === sel;
+
+        ctx.fillStyle = on ? CURVE : fg;
+        ctx.globalAlpha = on ? 1 : 0.26;
+        ctx.fillRect(padL + 1, y, Math.max(1, xEnd - padL - 1), barH);
+
+        ctx.fillStyle = VESSEL;
+        ctx.globalAlpha = on ? 0.95 : 0.32;
+        ctx.fillRect(xEnd, y, Math.max(1.5, xTail - xEnd), barH);
+        ctx.globalAlpha = 1;
+
+        // Name on the left, the substance's own bill on the right.
+        ctx.fillStyle = fg; ctx.globalAlpha = on ? 0.95 : 0.5;
+        ctx.textAlign = 'right';
+        ctx.fillText(NAMES[i], padL - 6, yMid + 3.5);
+        ctx.globalAlpha = on ? 1 : 0.55;
+        ctx.fillStyle = on ? MARK : fg;
+        ctx.textAlign = 'left';
+        ctx.fillText(kJ(qSub), xTail + 5, yMid + 3.5);
+        ctx.globalAlpha = 1;
+      }
+
+      // Axis numbers in kJ.
+      ctx.fillStyle = fg; ctx.globalAlpha = 0.55;
+      for (let i = 0; i <= 4; i++) {
+        const q = (qMax * i) / 4;
+        ctx.textAlign = i === 0 ? 'left' : i === 4 ? 'right' : 'center';
+        ctx.fillText(i === 4 ? `${grp(q, 0)} kJ` : grp(q, 0), X(q), axisY + 14);
+      }
+
+      // Header: what a bar's length means, and what the amber tail is. Both
+      // strings stay short on purpose -- at 375 px the canvas is about 311 px
+      // wide, and a longer caption here would run under the legend swatch.
+      ctx.textAlign = 'left';
+      ctx.fillText('nhiệt lượng cần cấp', padL, 11);
+      ctx.globalAlpha = 1;
+      ctx.fillStyle = VESSEL;
+      ctx.fillRect(cssW - padR + 2, 4, 8, 8);
+      ctx.fillStyle = fg; ctx.globalAlpha = 0.55; ctx.textAlign = 'left';
+      ctx.fillText('cốc', cssW - padR + 13, 11);
+      ctx.globalAlpha = 1;
+
+      const ref = sel === 0 ? 2 : 0;
+      const ratio = sel === 0 ? CS[0] / CS[ref] : CS[ref] / CS[sel];
+      const word = sel === 0 ? 'ít hơn' : 'nhiều hơn';
+      // Two different percentages, and mixing them up is the classic slip:
+      // the cup's SHARE of the bill is C_v/(m*c + C_v), while the error it puts
+      // into a c worked back from an uncorrected run is C_v/(m*c) -- 7.8% and
+      // 8.4% respectively for 0.2 kg of water, the numbers used in the article.
+      const share = (qVessel / (Q + qVessel)) * 100;
+      const cErr = (C_VESSEL / (m * c)) * 100;
+      const secs = Q / 2000;
+      const time = secs < 60 ? `${vn(secs, 1)} giây` : `${vn(secs / 60, 1)} phút`;
+      readout.innerHTML =
+        `Q = m·c·Δt = ${vn(m, 1)} kg × ${grp(CS[sel], 0)} J/(kg·K) × ${dt} K = ` +
+        `<b>${kJ(Q / 1000)} kJ</b> · bếp 2 000 W rót từng ấy mất ${time}` +
+        `<br />Cùng khối lượng, cùng độ tăng nhiệt, ${NAMES[ref]} cần ` +
+        `${kJ((m * CS[ref] * dt) / 1000)} kJ — ${word} <b>${vn(ratio, ratio >= 10 ? 1 : 2)} lần</b>.` +
+        `<br />Chiếc cốc nhôm 80 g của nhiệt lượng kế nuốt thêm ` +
+        `${kJ(qVessel / 1000)} kJ, tức <b>${vn(share, 1)}%</b> hoá đơn — bỏ qua nó rồi ` +
+        `tính ngược ra c thì được con số lớn hơn giá trị thật <b>${vn(cErr, 1)}%</b>.`;
+    }
+
+    root.querySelectorAll('input, select').forEach((el) => {
+      el.addEventListener('input', draw);
+      el.addEventListener('change', draw);
+    });
+    addEventListener('resize', draw);
+    draw();
+  }
+  document
+    .querySelectorAll<HTMLElement>('[data-demo="nhiet-dung-rieng-va-cong-thuc-nhiet-luong"]')
+    .forEach(setup);
+</script>

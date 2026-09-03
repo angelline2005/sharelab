@@ -1,0 +1,144 @@
+---
+title: "Nhiệt dung riêng lớp 12: công thức Q = mcΔt và phép đo c bằng nhiệt lượng kế"
+seoTitle: "Nhiệt dung riêng lớp 12: công thức Q = mcΔt"
+description: "Đun 2 kg nước từ 25 °C lên 100 °C tốn 627 kJ, cùng bấy nhiêu nhôm chỉ tốn 132 kJ — nhiệt dung riêng lớp 12: công thức Q = mcΔt và cách đo c thật."
+pubDate: 2026-09-03
+translationId: "nhiet-dung-rieng-va-cong-thuc-nhiet-luong"
+grade: 12
+chapter: "nhiet"
+lesson: 6
+series: "vat-ly-12-nhiet"
+tags: ["vat-ly", "nhiet-hoc", "javascript"]
+---
+
+import SpecificHeat from '../../../components/demos/SpecificHeat.astro';
+
+Chiếc nồi nhôm nặng 2 kg, và hai lít nước đổ vào nó cũng nặng 2 kg. Bắt cả hai
+nóng thêm đúng 75 độ như nhau: cái nồi lấy 132 kJ, chỗ nước lấy 627 kJ — gấp
+4,75 lần, dù khối lượng bằng nhau và số độ bằng nhau. Chênh lệch ấy không thể
+nằm ở hai đại lượng vừa được giữ bằng nhau, nên nó phải nằm ở một con số thứ
+ba: con số của riêng từng chất.
+
+<SpecificHeat />
+
+## Q = mcΔt, và đơn vị của c đã nói hết
+
+Nhiệt lượng phải cấp cho một vật để nhiệt độ của nó tăng thêm Δt:
+
+**Q = m·c·Δt**
+
+với m là khối lượng tính bằng kilôgam, Δt là độ tăng nhiệt độ, và c là **nhiệt
+dung riêng** của chất, đo bằng **J/(kg·K)**.
+
+Đơn vị ấy đọc ra thành đúng một câu: *số jun cần cấp cho một kilôgam chất để nó
+nóng thêm một độ*. Nói c của nước bằng 4 180 J/(kg·K) là nói một kilôgam nước,
+một độ, 4 180 jun — công thức chỉ là câu ấy nhân cho m kilôgam và Δt độ.
+
+Δt là **độ tăng**, không phải nhiệt độ. Vì thế đây là chỗ hiếm hoi trong cả
+chương mà độ C và kelvin dùng thay nhau được: một độ chia của thang Celsius dài
+đúng bằng một kelvin, nên hiệu hai nhiệt độ có cùng trị số trên cả hai thang.
+Từ 25 °C lên 100 °C là Δt = 75 K, viết 75 °C cũng ra con số ấy. Ngoại lệ này là
+của riêng công thức trên; trong
+[pV = nRT](/vi/posts/phuong-trinh-khi-ly-tuong-va-cai-bay-do-c) thì T đứng một
+mình và bắt buộc là kelvin.
+
+Thay số mặc định của demo — 2 kg nước, Δt = 75 K:
+
+Q = 2 × 4 180 × 75 = 627 000 J = **627 kJ**
+
+Bếp 2 000 W rót trọn vào nước mất 313,5 giây, tức 5,2 phút.
+
+## Bảng nhiệt dung riêng, và vì sao thứ tự của nó quan trọng
+
+| chất | c (J/(kg·K)) | nước tốn gấp mấy lần |
+|---|---|---|
+| nước | 4 180 | 1 |
+| nước đá | 2 100 | 1,99 |
+| không khí | 1 005 | 4,16 |
+| nhôm | 880 | 4,75 |
+| sắt | 460 | 9,09 |
+| đồng | 380 | 11,0 |
+
+Nước đứng đầu, và đứng cách xa. Trong demo, cột thứ ba ấy là **tỉ lệ độ dài
+giữa hai thanh**: khúc đặc của nước dài gấp 4,75 lần khúc đặc của nhôm, và
+không thanh trượt nào đổi được tỉ lệ ấy. Nước và nước đá là hai dòng riêng dù
+cùng công thức hoá học: c là con số đo được của một chất **ở một thể**.
+
+Hai chuyện bếp núc rơi thẳng ra từ bảng. Đun sôi nước tốn điện tới mức đáng quy
+ra tiền, và phép quy ấy là Q = mcΔt nhân giá điện —
+[đun một ấm nước hết bao nhiêu tiền](/vi/posts/dun-mot-am-nuoc-het-bao-nhieu-tien/).
+Đọc ngược, cùng công thức nói vì sao
+[thả miếng thịt lạnh làm mặt chảo nhôm tụt 126 °C](/vi/posts/chao-mong-tut-126-do-khi-tha-mieng-thit/)
+còn chảo gang thì gần như không nhúc nhích: cái quyết định là tích m·c của cả
+vật, không riêng c.
+
+## Đo c thật: nhiệt lượng kế, Q = UIt, và chỗ nhiệt đi mất
+
+Câu đúng/sai phần nhiệt trong đề thi hiếm khi dựng trên một phép thay số, mà
+trên một bố trí thí nghiệm rồi hỏi bạn đọc bố trí ấy.
+
+Bố trí tối thiểu: một nhiệt lượng kế — cốc kim loại lồng trong vỏ cách nhiệt —
+đựng 0,2 kg nước, một dây may-so nhúng chìm, vôn kế đo hiệu điện thế U trên
+dây, ampe kế đo dòng I qua dây, một nhiệt kế và một đồng hồ. Điện năng qua dây
+thành nhiệt:
+
+**Q = U·I·t**
+
+Với U = 12 V, I = 2 A và t = 300 s (dây có công suất 24 W):
+
+Q = 12 × 2 × 300 = 7 200 J
+
+Nếu chừng ấy chỉ vào nước thì Δt = Q/(m·c) = 7 200/(0,2 × 4 180) = 8,61 K.
+**Nhiệt kế không bao giờ chỉ 8,61 K.** Nhiệt đi mất theo ba đường: cốc và que
+khuấy nóng lên **cùng** với nước; hệ rò ra không khí và ra nắp suốt năm phút
+đun; một phần nằm lại trong chính dây may-so.
+
+Riêng đường thứ nhất đã đủ thấy độ lớn, và nó là khúc vàng ở đuôi mỗi thanh
+trong demo. Cốc nhôm 80 g có nhiệt dung
+0,08 × 880 = 70,4 J/K; nước có 0,2 × 4 180 = 836 J/K; cộng lại là 906,4 J/K.
+Cùng 7 200 J ấy giờ chỉ nâng được 7 200/906,4 = 7,94 K — cốc chiếm 7,8% sức
+chứa nhiệt của hệ, và độ tăng nhiệt độ tụt đúng ngần ấy.
+
+Bỏ qua cốc mà tính ngược ra nhiệt dung riêng, c = UIt/(m·Δt) =
+7 200/(0,2 × 7,94) = 4 532 J/(kg·K), cao hơn giá trị thật 8,4%. Mọi thất thoát
+đều đẩy sai số về **cùng một phía**: Δt nhỏ đi thì c tính ra lớn lên, nên phép
+đo không hiệu chỉnh gần như luôn cho c quá lớn. Chữa bằng cách cộng nhiệt dung
+của bình vào vế phải, hoặc đo hai lần với hai khối lượng nước khác nhau rồi lấy
+hiệu — phần của bình có mặt như nhau ở cả hai lần nên tự triệt tiêu.
+
+## Ba câu tự kiểm
+
+1. Nung 0,5 kg nhôm từ 20 °C lên 120 °C cần bao nhiêu nhiệt lượng? *(Δt = 100 K,
+   Q = 0,5 × 880 × 100 = 44 000 J = 44 kJ.)*
+2. Ấm 2 000 W đun 1,5 L nước từ 25 °C lên 100 °C, bỏ qua thất thoát: mất bao
+   lâu? *(Q = 1,5 × 4 180 × 75 = 470 250 J; t = 470 250/2 000 = 235,1 s, tức
+   3 phút 55 giây.)*
+3. Dây may-so 24 W chạy 400 giây trong 0,15 kg dầu ăn, nhiệt kế lên thêm 32 K.
+   Bỏ qua bình, c tính ra bằng bao nhiêu và lệch về phía nào? *(Q = 9 600 J,
+   c = 9 600/(0,15 × 32) = 2 000 J/(kg·K), lớn hơn c thật của dầu.)*
+
+## Trường hợp biên: c thôi là một con số của riêng chất
+
+Công thức có một chỗ hỏng hẳn và một chỗ hỏng âm thầm.
+
+Chỗ hỏng hẳn là lúc chất **đang đổi thể**. Rót nhiệt vào nước đá đúng 0 °C thì
+nhiệt kế đứng im: Δt bằng 0 nên Q = mcΔt trả về 0, trong khi năng lượng thật
+vẫn chảy vào từng giây. Công thức này chỉ mô tả phần nhiệt làm nhiệt độ đổi;
+phần bẻ liên kết giữa các phân tử thuộc về
+[nhiệt nóng chảy riêng và nhiệt hoá hơi riêng](/vi/posts/nhiet-an-hai-quang-nhiet-ke-dung-im/),
+nơi nhiệt lượng tỉ lệ với khối lượng mà không có Δt nào trong biểu thức. Mọi
+đường thẳng trong demo vì thế chỉ đúng bên trong một thể.
+
+Chỗ hỏng âm thầm nằm ở chữ *riêng*. Với chất rắn và chất lỏng, c gần như là
+thuộc tính của chất: đo một lần rồi tra bảng. Với **chất khí thì không**. Một
+kilôgam không khí trong bình kín, thể tích không đổi, nhận 718 J cho mỗi độ;
+cũng một kilôgam ấy trong xi lanh có pít-tông tự do, giãn ra ở áp suất không
+đổi, nhận 1 005 J — tỉ số 1,399. Chênh lệch 287 J là phần khí phải trả để đẩy
+pít-tông, bằng đúng R chia cho khối lượng mol của không khí. Con số 1 005 trong
+bảng trên là giá trị ở áp suất không đổi; viết mỗi "c của không khí" mà không
+nói giữ gì cố định là chưa đủ nghĩa.
+
+Và công thức giả thiết **vật ở cùng một nhiệt độ**: một thanh sắt nung một đầu
+mang đủ mọi nhiệt độ nằm giữa hai đầu, không con số Δt nào thay vào là đúng. Đó
+là lý do nhiệt lượng kế nào cũng có que khuấy. Cả loạt bài nằm ở
+[Vật lý nhiệt và khí lý tưởng lớp 12](/vi/vat-ly-12/nhiet/).

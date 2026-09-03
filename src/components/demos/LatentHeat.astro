@@ -1,27 +1,40 @@
 ---
-// Heating curve of 1 kg of water on a 1000 W burner, from −20 °C ice to the
-// last drop boiled away. Piecewise closed form: warm ice (42 s), melt (334 s),
-// warm water (419 s), boil off (2260 s). Slider scrubs time. Static redraw.
+// Heating curve of m kg of water, from -20 degC ice to the last drop boiled
+// away, drawn against ENERGY POURED IN rather than clock time.
+//   warm ice    Q = m*c_ice*20  =   42*m kJ   (c_ice = 2100 J/(kg*K))
+//   melt        Q = lambda*m    =  334*m kJ   (lambda = 334 kJ/kg)
+//   warm water  Q = m*c_w*100   =  418*m kJ   (c_w = 4180 J/(kg*K))
+//   boil off    Q = L*m         = 2260*m kJ   (L = 2260 kJ/kg)
+// Four segments, total 3054*m kJ. The mass slider stretches all four against a
+// FIXED energy axis, so the width of each plateau on screen IS Q = lambda*m and
+// Q = L*m. The second x row reads minutes on a 1000 W burner, which keeps the
+// kJ number from looking like a clock reading.
+// Worked lines: scripts/verify-vatly12.mjs, section 10.
 ---
 
-<figure class="demo" data-demo="latent-heat">
+<figure class="demo" data-demo="nhiet-an-hai-quang-nhiet-ke-dung-im">
   <canvas></canvas>
   <div class="controls">
-    <label>Thời gian đun t (s) <output data-out="t"></output>
-      <input type="range" data-in="t" min="0" max="3055" step="5" value="400" /></label>
+    <label>Khối lượng nước m (kg) <output data-out="m"></output>
+      <input type="range" data-in="m" min="0.1" max="2" step="0.1" value="1" /></label>
+    <label>Nhiệt lượng đã rót vào Q (kJ) <output data-out="q"></output>
+      <input type="range" data-in="q" min="0" max="6110" step="5" value="300" /></label>
   </div>
   <p class="readout" data-readout></p>
   <figcaption>
-    1 kg nước đá −20 °C trên bếp 1000 W (hấp thụ trọn). Hai đoạn nằm ngang là
-    lúc nhiệt kế "chết đứng": năng lượng vẫn rót vào đều đặn nhưng dồn hết cho
-    việc bẻ liên kết — nhiệt ẩn nóng chảy rồi nhiệt ẩn hoá hơi.
+    Nước đá −20 °C được đun tới lúc cạn nồi. Trục ngang là <b>nhiệt lượng đã
+    rót vào</b>, không phải đồng hồ — hàng số thứ hai chỉ đổi ra phút cho một
+    cái bếp 1 000 W. Hai vùng tô vàng là lúc nhiệt kế "chết đứng": bề rộng của
+    vùng thứ nhất đúng bằng λm, bề rộng vùng thứ hai đúng bằng Lm. Kéo thanh
+    khối lượng và nhìn hai bề rộng ấy dài ra theo m — đó là toàn bộ nội dung của
+    hai công thức.
   </figcaption>
 </figure>
 
 <style>
   .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
   .demo canvas { width: 100%; height: auto; display: block; }
-  .controls { margin-top: 1rem; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
   .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
   .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
   .controls input { width: 100%; }
@@ -30,84 +43,151 @@
 </style>
 
 <script>
-  // 1 kg, 1000 W: segment boundaries in seconds.
-  const T1 = 41.8, T2 = T1 + 334, T3 = T2 + 418.6, T4 = T3 + 2260;
   const CURVE = '#2563eb', MARK = '#dc2626', PLATEAU = '#f59e0b';
 
-  function tempAt(t: number): number {
-    if (t <= T1) return -20 + (20 * t) / T1;
-    if (t <= T2) return 0;
-    if (t <= T3) return (100 * (t - T2)) / (T3 - T2);
-    return 100;
-  }
-  function stateAt(t: number): string {
-    if (t <= T1) return 'nước đá đang ấm lên';
-    if (t <= T2) return `đang tan — ${(((t - T1) / 334) * 100).toFixed(0)}% đã thành nước, nhiệt kế đứng im`;
-    if (t <= T3) return 'nước lỏng đang nóng lên';
-    if (t < T4) return `đang sôi — ${(((t - T3) / 2260) * 100).toFixed(0)}% đã bay hơi, nhiệt kế vẫn đứng im`;
-    return 'cạn nồi';
-  }
+  // kJ per kg for each of the four segments.
+  const K_ICE = 42, LAMBDA = 334, K_WATER = 418, LATENT = 2260;
+  const K_TOTAL = K_ICE + LAMBDA + K_WATER + LATENT;   // 3054 kJ/kg
+  const QMAX = 6110;      // fixed energy axis: covers the 2 kg run (6108 kJ)
+  const POWER = 1;        // kJ per second on a 1000 W burner
+
+  const dec = (x: number, d: number) => x.toFixed(d).replace('.', ',');
+  const grp = (x: number) => Math.round(x).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+  const kJ = (x: number) => (x >= 100 ? grp(x) : dec(x, 1));
+  const neg = (x: number) => String(x).replace('-', '−');
 
   function setup(root: HTMLElement) {
     const canvas = root.querySelector('canvas') as HTMLCanvasElement;
     const ctx = canvas.getContext('2d')!;
     const readout = root.querySelector('[data-readout]') as HTMLElement;
-    const slider = root.querySelector('[data-in="t"]') as HTMLInputElement;
-    const out = root.querySelector('[data-out="t"]') as HTMLOutputElement;
+    const input = (k: string) => root.querySelector(`[data-in="${k}"]`) as HTMLInputElement;
+    const output = (k: string) => root.querySelector(`[data-out="${k}"]`) as HTMLOutputElement;
 
     function draw() {
-      const t = Number(slider.value);
-      out.textContent = String(t);
+      const m = Number(input('m').value);
+      const q = Number(input('q').value);
+
+      // Segment boundaries in kJ poured in, all proportional to m.
+      const B1 = K_ICE * m, B2 = B1 + LAMBDA * m;
+      const B3 = B2 + K_WATER * m, B4 = B3 + LATENT * m;
+      const qc = Math.min(q, B4);
+
+      const tempAt = (e: number) => {
+        if (e <= B1) return -20 + (20 * e) / B1;
+        if (e <= B2) return 0;
+        if (e <= B3) return (100 * (e - B2)) / (B3 - B2);
+        return 100;
+      };
+      const stateAt = (e: number) => {
+        if (e <= B1) return 'nước đá đang ấm lên';
+        if (e <= B2) return `đang tan — ${((e - B1) / (LAMBDA * m) * 100).toFixed(0)}% đã thành nước, nhiệt kế đứng im`;
+        if (e <= B3) return 'nước lỏng đang nóng lên';
+        if (e < B4) return `đang sôi — ${((e - B3) / (LATENT * m) * 100).toFixed(0)}% đã bay hơi, nhiệt kế vẫn đứng im`;
+        return 'cạn nồi, không còn gì để đun';
+      };
+
+      output('m').textContent = `${dec(m, 1)} kg`;
+      output('q').textContent = `${grp(q)} kJ`;
 
       const dpr = Math.min(devicePixelRatio || 1, 2);
-      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.44);
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.5);
       canvas.width = cssW * dpr; canvas.height = cssH * dpr;
       canvas.style.height = `${cssH}px`;
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       ctx.clearRect(0, 0, cssW, cssH);
       const fg = getComputedStyle(root).color;
+      ctx.font = '10px system-ui,sans-serif';
+      ctx.lineWidth = 1;
 
-      const padL = 40, padB = 26, padT = 12, padR = cssW < 420 ? 26 : 10;
-      const X = (s: number) => padL + (s / T4) * (cssW - padL - padR);
-      const Y = (c: number) => cssH - padB - ((c + 20) / 140) * (cssH - padB - padT);
+      const padL = 42, padT = 12, padB = 40, padR = cssW < 420 ? 26 : 14;
+      const plotW = cssW - padL - padR, plotH = cssH - padT - padB;
+      const yLo = -28, yHi = 130;   // headroom so the 100 degC line clears the y-axis caption
+      const X = (e: number) => padL + (e / QMAX) * plotW;
+      const Y = (c: number) => padT + ((yHi - c) / (yHi - yLo)) * plotH;
+      const axisY = cssH - padB;
 
-      ctx.strokeStyle = fg; ctx.globalAlpha = 0.3;
-      ctx.beginPath(); ctx.moveTo(padL, padT); ctx.lineTo(padL, cssH - padB); ctx.lineTo(cssW - padR, cssH - padB); ctx.stroke();
-      ctx.globalAlpha = 0.55; ctx.fillStyle = fg; ctx.font = '10px system-ui,sans-serif'; ctx.textAlign = 'right';
-      for (const c of [-20, 0, 100]) ctx.fillText(`${c}°`, padL - 4, Y(c) + 3);
+      // Axes.
+      ctx.strokeStyle = fg; ctx.fillStyle = fg;
+      ctx.globalAlpha = 0.32;
+      ctx.beginPath();
+      ctx.moveTo(padL, padT); ctx.lineTo(padL, axisY); ctx.lineTo(cssW - padR, axisY);
+      ctx.stroke();
+
+      // Both axes numbered: degC on y, kJ and minutes on x.
+      ctx.globalAlpha = 0.6;
+      ctx.textAlign = 'right';
+      for (const c of [-20, 0, 50, 100]) ctx.fillText(`${neg(c)}°`, padL - 5, Y(c) + 3);
+      const rowQ = axisY + 14, rowT = axisY + 27;
+      ctx.fillText('kJ', padL - 6, rowQ);
+      ctx.fillText('phút', padL - 6, rowT);
       ctx.textAlign = 'center';
-      for (const s of [500, 1500, 2500]) ctx.fillText(`${s}s`, X(s), cssH - padB + 14);
+      const ticks = plotW < 240 ? [0, 2000, 4000, 6000] : [0, 1000, 2000, 3000, 4000, 5000, 6000];
+      for (const e of ticks) {
+        ctx.fillText(grp(e), X(e), rowQ);
+        ctx.fillText(String(Math.round(e / (60 * POWER))), X(e), rowT);
+      }
+      ctx.textAlign = 'left';
+      ctx.fillText('nhiệt độ (°C)', padL + 5, padT + 9);
       ctx.globalAlpha = 1;
 
-      // Plateau highlights.
-      ctx.fillStyle = PLATEAU; ctx.globalAlpha = 0.15;
-      ctx.fillRect(X(T1), padT, X(T2) - X(T1), cssH - padB - padT);
-      ctx.fillRect(X(T3), padT, X(T4) - X(T3), cssH - padB - padT);
-      ctx.globalAlpha = 0.7; ctx.fillStyle = fg; ctx.textAlign = 'center';
-      ctx.fillText('tan (334 s)', (X(T1) + X(T2)) / 2, padT + 12);
-      ctx.fillText('sôi cạn (2260 s)', (X(T3) + X(T4)) / 2, padT + 12);
+      // The two plateaus: their WIDTH is the formula. Melt = lambda*m, boil = L*m.
+      ctx.fillStyle = PLATEAU; ctx.globalAlpha = 0.16;
+      ctx.fillRect(X(B1), padT, X(B2) - X(B1), plotH);
+      ctx.fillRect(X(B3), padT, X(B4) - X(B3), plotH);
       ctx.globalAlpha = 1;
 
-      // Heating curve.
+      // Heating curve, drawn only as far as the pot lasts.
       ctx.strokeStyle = CURVE; ctx.lineWidth = 2; ctx.beginPath();
       for (let i = 0; i <= 400; i++) {
-        const s = (T4 * i) / 400;
-        i ? ctx.lineTo(X(s), Y(tempAt(s))) : ctx.moveTo(X(s), Y(tempAt(s)));
+        const e = (B4 * i) / 400;
+        i ? ctx.lineTo(X(e), Y(tempAt(e))) : ctx.moveTo(X(e), Y(tempAt(e)));
       }
       ctx.stroke(); ctx.lineWidth = 1;
 
-      // Marker.
-      ctx.fillStyle = MARK;
-      ctx.beginPath(); ctx.arc(X(t), Y(tempAt(t)), 5, 0, Math.PI * 2); ctx.fill();
+      // End of the run.
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.3;
+      ctx.setLineDash([3, 3]);
+      ctx.beginPath(); ctx.moveTo(X(B4), Y(100)); ctx.lineTo(X(B4), axisY); ctx.stroke();
+      ctx.setLineDash([]); ctx.globalAlpha = 1;
 
+      // Plateau labels: one below the boiling line, one above the melting line,
+      // so they never collide however narrow the bands get. Clamped inside the plot.
+      const short = plotW < 240;
+      const place = (text: string, centre: number, y: number) => {
+        const half = ctx.measureText(text).width / 2 + 2;
+        const x = Math.max(padL + half, Math.min(cssW - padR - half, centre));
+        ctx.fillText(text, x, y);
+      };
+      ctx.globalAlpha = 0.85; ctx.fillStyle = fg; ctx.textAlign = 'center';
+      place(short ? `λm = ${kJ(LAMBDA * m)} kJ` : `tan: Q = λm = ${kJ(LAMBDA * m)} kJ`,
+        (X(B1) + X(B2)) / 2, Y(0) - 7);
+      place(short ? `Lm = ${kJ(LATENT * m)} kJ` : `sôi cạn: Q = Lm = ${kJ(LATENT * m)} kJ`,
+        (X(B3) + X(B4)) / 2, Y(100) + 15);
+      ctx.globalAlpha = 1;
+
+      // Working point, with a guide down to the energy axis.
+      ctx.strokeStyle = MARK; ctx.globalAlpha = 0.45;
+      ctx.setLineDash([3, 3]);
+      ctx.beginPath(); ctx.moveTo(X(qc), Y(tempAt(qc))); ctx.lineTo(X(qc), axisY); ctx.stroke();
+      ctx.setLineDash([]); ctx.globalAlpha = 1;
+      ctx.fillStyle = MARK;
+      ctx.beginPath(); ctx.arc(X(qc), Y(tempAt(qc)), 5, 0, Math.PI * 2); ctx.fill();
+
+      const spent = q > B4 ? B4 : q;
       readout.innerHTML =
-        `t = ${t} s: nhiệt độ <b>${tempAt(t).toFixed(1).replace('.', ',')} °C</b> — ${stateAt(t)}` +
-        ` · đã rót vào <b>${(t).toLocaleString('vi-VN')} kJ</b>`;
+        `Đã rót <b>${grp(spent)} kJ</b> (${dec(spent / (60 * POWER), 1)} phút trên bếp 1 000 W) → ` +
+        `nhiệt độ <b>${dec(tempAt(qc), 1)} °C</b> — ${stateAt(qc)}.<br />` +
+        `Với m = ${dec(m, 1)} kg: làm tan hết cần Q = λm = 334 × ${dec(m, 1)} = <b>${kJ(LAMBDA * m)} kJ</b>; ` +
+        `hoá hơi hết cần Q = Lm = 2 260 × ${dec(m, 1)} = <b>${kJ(LATENT * m)} kJ</b>; ` +
+        `cả nồi từ −20 °C tới cạn là ${kJ(K_TOTAL * m)} kJ (${dec(K_TOTAL * m / (60 * POWER), 1)} phút).`;
     }
 
-    slider.addEventListener('input', draw);
+    root.querySelectorAll('input').forEach((el) => {
+      el.addEventListener('input', draw);
+      el.addEventListener('change', draw);
+    });
     addEventListener('resize', draw);
     draw();
   }
-  document.querySelectorAll<HTMLElement>('[data-demo="latent-heat"]').forEach(setup);
+  document.querySelectorAll<HTMLElement>('[data-demo="nhiet-an-hai-quang-nhiet-ke-dung-im"]').forEach(setup);
 </script>
