@@ -1,23 +1,39 @@
 ---
-// PV = nRT as a piston you can squeeze and heat. Sliders set V and T for one
-// mole; P follows from the law. Molecule speed in the sketch scales with √T
-// and the dot density with 1/V, so the picture carries the kinetic story the
-// equation abbreviates.
+// pV = nRT as a piston you can squeeze, heat, and now refill.
+//
+//   p = nRT / V,  R = 8.314 J/(mol*K),  T in kelvin, V in m^3, p in Pa
+//   1 J = 1 Pa*m^3 = 1 kPa*L, so R = 8.314 L*kPa/(mol*K) as used below.
+//
+// Three sliders, one per free variable on the right-hand side; p is never set
+// directly because in this equation p is the consequence. The number of moles
+// used to be hardcoded at 1 with no control, which hid both n and R from the
+// lesson that owns them -- hence the n slider and R spelled out in the readout.
+//
+// Molecule count in the sketch scales with n and their speed with sqrt(T), so
+// the picture carries the kinetic story: density is n/V, impact rate is speed.
+//
+// Worked lines (scripts/verify-vatly12.mjs, section 9):
+//   n = 1 mol, T = 300 K, V = 24.6 L  -> p = 101.4 kPa (about 1 atm)
+//   molar volume at 300 K, 1 atm = 24.62 L/mol
 ---
 
-<figure class="demo" data-demo="ideal-gas">
+<figure class="demo" data-demo="phuong-trinh-khi-ly-tuong-va-cai-bay-do-c">
   <canvas></canvas>
   <div class="controls">
+    <label>Số mol n <output data-out="n"></output>
+      <input type="range" data-in="n" min="0.25" max="3" step="0.05" value="1" /></label>
     <label>Thể tích V <output data-out="v"></output>
-      <input type="range" data-in="v" min="5" max="50" step="0.5" value="24.6" /></label>
+      <input type="range" data-in="v" min="5" max="50" step="0.1" value="24.6" /></label>
     <label>Nhiệt độ T <output data-out="t"></output>
       <input type="range" data-in="t" min="100" max="600" step="5" value="300" /></label>
   </div>
   <p class="readout" data-readout></p>
   <figcaption>
-    Một mol khí trong xy-lanh có pit-tông. Áp suất không được chỉnh trực tiếp —
-    nó là hệ quả: P = nRT/V. Ở 300 K và 1 atm, một mol chiếm 24,6 lít, con số
-    đáng thuộc của hoá học.
+    Khí trong xy-lanh có pit-tông. Áp suất không có thanh trượt riêng — nó là
+    hệ quả: p = nRT/V, với R = 8,314 L·kPa/(mol·K). Cột bên trái là áp suất
+    tính ra, thước dưới đáy là thể tích. Số chấm tỉ lệ với n và tốc độ chấm tỉ
+    lệ với căn bậc hai của T, nên bức hình mang đúng hai thứ phương trình viết
+    tắt: mật độ phân tử và tốc độ va đập.
   </figcaption>
 </figure>
 
@@ -33,69 +49,141 @@
 </style>
 
 <script>
-  const R = 8.314;
-  const GASD = '#2563eb', PISTON = '#dc2626';
-  const N_DOTS = 60;
+  const R = 8.314;          // L*kPa/(mol*K), numerically the same as J/(mol*K)
+  const ATM = 101.325;      // kPa
+  const V_MAX = 50;         // litres, the width of the cylinder drawing
+  const GAS = '#2563eb', PISTON = '#dc2626';
+  const MAX_DOTS = 72;
+
+  // Vietnamese number style: decimal comma, thousands split by a space, and a
+  // real minus sign for negatives (only ever in output strings, never in code).
+  const vi = (x: number, d: number) => {
+    const s = Math.abs(x).toFixed(d);
+    const [i, f] = s.split('.');
+    const g = i.replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+    return (x < 0 ? '−' : '') + (f ? `${g},${f}` : g);
+  };
+
+  const niceCeil = (x: number) => {
+    const e = Math.pow(10, Math.floor(Math.log10(x)));
+    const m = x / e;
+    return (m <= 1 ? 1 : m <= 2 ? 2 : m <= 2.5 ? 2.5 : m <= 5 ? 5 : 10) * e;
+  };
 
   function setup(root: HTMLElement) {
     const canvas = root.querySelector('canvas') as HTMLCanvasElement;
     const ctx = canvas.getContext('2d')!;
     const readout = root.querySelector('[data-readout]') as HTMLElement;
-    const input = (n: string) => root.querySelector(`[data-in="${n}"]`) as HTMLInputElement;
-    const output = (n: string) => root.querySelector(`[data-out="${n}"]`) as HTMLOutputElement;
+    const input = (k: string) => root.querySelector(`[data-in="${k}"]`) as HTMLInputElement;
+    const output = (k: string) => root.querySelector(`[data-out="${k}"]`) as HTMLOutputElement;
 
     // Molecules live in unit coordinates of the current gas volume.
-    const dots = Array.from({ length: N_DOTS }, () => ({
+    const dots = Array.from({ length: MAX_DOTS }, () => ({
       x: Math.random(), y: Math.random(),
       a: Math.random() * Math.PI * 2,
     }));
     let raf = 0, last = 0;
 
     function draw(dt = 0) {
-      const V = Number(input('v').value); // litres
-      const T = Number(input('t').value);
-      output('v').textContent = `${V.toFixed(1)} L`;
-      output('t').textContent = `${T.toFixed(0)} K (${(T - 273.15).toFixed(0)} °C)`;
-      const P = (1 * R * T) / (V / 1000); // Pa
-      const atm = P / 101325;
+      const n = Number(input('n').value);
+      const V = Number(input('v').value);   // litres
+      const T = Number(input('t').value);   // kelvin
+      const p = (n * R * T) / V;            // kPa
+
+      output('n').textContent = `${vi(n, 2)} mol`;
+      output('v').textContent = `${vi(V, 1)} L`;
+      output('t').textContent = `${vi(T, 0)} K (${vi(T - 273.15, 0)} °C)`;
 
       const dpr = Math.min(devicePixelRatio || 1, 2);
-      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.42);
-      if (canvas.width !== cssW * dpr) { canvas.width = cssW * dpr; canvas.height = cssH * dpr; canvas.style.height = `${cssH}px`; }
+      const cssW = root.clientWidth - 32, cssH = Math.round(cssW * 0.5);
+      // Round before comparing: canvas.width truncates to an integer, so a
+      // fractional dpr (1.5 on a 150%-scaled Windows display) would never
+      // match and the backing store would be reallocated on every rAF frame.
+      const bw = Math.round(cssW * dpr);
+      if (canvas.width !== bw) {
+        canvas.width = bw; canvas.height = Math.round(cssH * dpr);
+        canvas.style.height = `${cssH}px`;
+      }
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       ctx.clearRect(0, 0, cssW, cssH);
       const fg = getComputedStyle(root).color;
+      ctx.font = '10px system-ui,sans-serif';
+      ctx.lineWidth = 1;
 
-      // Cylinder: fixed height, width ∝ V; piston at the right edge of the gas.
-      const cylX = 24, cylY = 24, cylH = cssH - 48;
-      const maxW = cssW - 120;
-      const gasW = (V / 50) * maxW;
+      // Layout: a numbered pressure column on the left, the cylinder to its
+      // right, a numbered volume ruler underneath.
+      const padT = 14, padB = 30;
+      const lblR = 40, barX = 44, barW = 12;
+      const cylX = 68, cylR = cssW - 12;
+      const cylY = padT, cylH = cssH - padT - padB;
+      const innerW = Math.max(40, cylR - cylX - 12);
+      const X = (v: number) => cylX + (v / V_MAX) * innerW;
+      const yHi = niceCeil(Math.max(p * 1.12, 120));
+      const Y = (q: number) => cylY + cylH - Math.min(q / yHi, 1) * cylH;
 
-      ctx.strokeStyle = fg; ctx.globalAlpha = 0.5;
-      ctx.strokeRect(cylX, cylY, maxW + 20, cylH);
+      // Pressure axis: five numbered ticks in kPa.
+      ctx.strokeStyle = fg; ctx.fillStyle = fg;
+      ctx.globalAlpha = 0.55; ctx.textAlign = 'right';
+      for (let i = 0; i <= 4; i++) {
+        const q = (yHi * i) / 4;
+        ctx.fillText(vi(q, 0), lblR, Y(q) + 3);
+      }
+      ctx.textAlign = 'left';
+      ctx.fillText('p (kPa)', barX - 4, cylY - 4);
+      ctx.globalAlpha = 0.3;
+      ctx.strokeRect(barX, cylY, barW, cylH);
       ctx.globalAlpha = 1;
-      ctx.fillStyle = GASD; ctx.globalAlpha = 0.08;
-      ctx.fillRect(cylX, cylY, gasW, cylH);
+
+      // The bar itself, plus the 1 atm reference the whole chapter is scaled to.
+      ctx.fillStyle = PISTON;
+      ctx.fillRect(barX + 1, Y(p), barW - 2, cylY + cylH - Y(p));
+      if (ATM < yHi) {
+        ctx.strokeStyle = fg; ctx.globalAlpha = 0.5;
+        ctx.beginPath(); ctx.moveTo(barX - 3, Y(ATM)); ctx.lineTo(barX + barW + 3, Y(ATM)); ctx.stroke();
+        ctx.globalAlpha = 1;
+      }
+
+      // Cylinder outline, gas column, piston.
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.45;
+      ctx.strokeRect(cylX, cylY, innerW + 12, cylH);
+      ctx.globalAlpha = 0.08;
+      ctx.fillStyle = GAS;
+      ctx.fillRect(cylX, cylY, X(V) - cylX, cylH);
       ctx.globalAlpha = 1;
       ctx.fillStyle = PISTON;
-      ctx.fillRect(cylX + gasW, cylY - 2, 10, cylH + 4);
+      ctx.fillRect(X(V), cylY - 3, 8, cylH + 6);
 
-      // Molecules: speed ∝ √T (kinetic theory), bouncing in unit box.
+      // Volume axis: numbered ruler under the cylinder, last label pulled in.
+      ctx.strokeStyle = fg; ctx.fillStyle = fg; ctx.globalAlpha = 0.55;
+      const rowY = cylY + cylH + 15;
+      for (const v of [10, 20, 30, 40, 50]) {
+        ctx.beginPath(); ctx.moveTo(X(v), cylY + cylH); ctx.lineTo(X(v), cylY + cylH + 4); ctx.stroke();
+        ctx.textAlign = v === V_MAX ? 'right' : 'center';
+        ctx.fillText(String(v), Math.min(X(v), cssW - 2), rowY);
+      }
+      ctx.textAlign = 'left';
+      ctx.fillText('V (L)', cylX, rowY + 12);
+      ctx.globalAlpha = 1;
+
+      // Molecules: count proportional to n, speed proportional to sqrt(T).
+      const shown = Math.max(4, Math.round(24 * n));
       const speed = 0.25 * Math.sqrt(T / 300);
-      for (const d of dots) {
+      const gasW = X(V) - cylX;
+      ctx.fillStyle = GAS;
+      for (let i = 0; i < shown; i++) {
+        const d = dots[i];
         d.x += Math.cos(d.a) * speed * dt;
         d.y += Math.sin(d.a) * speed * dt;
         if (d.x < 0 || d.x > 1) { d.a = Math.PI - d.a; d.x = Math.min(Math.max(d.x, 0), 1); }
         if (d.y < 0 || d.y > 1) { d.a = -d.a; d.y = Math.min(Math.max(d.y, 0), 1); }
-        ctx.fillStyle = GASD;
         ctx.beginPath();
         ctx.arc(cylX + d.x * gasW, cylY + d.y * cylH, 2.4, 0, Math.PI * 2);
         ctx.fill();
       }
 
       readout.innerHTML =
-        `P = nRT/V = <b>${atm.toFixed(2)} atm</b> (${(P / 1000).toFixed(0)} kPa) · ` +
-        `nén nửa thể tích → áp suất ×2 · nhân đôi T (kelvin!) → áp suất ×2`;
+        `p = nRT/V = ${vi(n, 2)} × 8,314 × ${vi(T, 0)} / ${vi(V, 1)} = <b>${vi(p, 1)} kPa</b> ` +
+        `(${vi(p / ATM, 2)} atm) · mật độ phân tử tỉ lệ n/V, tốc độ tỉ lệ √T`;
     }
 
     function frame(now: number) {
@@ -105,7 +193,10 @@
       draw(dt);
     }
 
-    root.querySelectorAll('input').forEach((el) => el.addEventListener('input', () => draw(0)));
+    root.querySelectorAll('input').forEach((el) => {
+      el.addEventListener('input', () => draw(0));
+      el.addEventListener('change', () => draw(0));
+    });
     addEventListener('resize', () => draw(0));
     const io = new IntersectionObserver((es) => {
       for (const e of es) {
@@ -116,5 +207,5 @@
     io.observe(root);
     draw(0);
   }
-  document.querySelectorAll<HTMLElement>('[data-demo="ideal-gas"]').forEach(setup);
+  document.querySelectorAll<HTMLElement>('[data-demo="phuong-trinh-khi-ly-tuong-va-cai-bay-do-c"]').forEach(setup);
 </script>

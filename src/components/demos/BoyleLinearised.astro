@@ -1,0 +1,206 @@
+---
+// Dinh luat Boyle, dang nhiet: p*V = n*R*T = hang so khi n va T dung yen.
+// Voi V tinh bang L, n bang mol, T bang K thi p ra kPa:
+//   p(kPa) = 8.314 * n * T(K) / V(L)          (1 kPa*L = 1 J)
+// Diem mac dinh = moc chung ca loat (muc 1 cua scripts/verify-vatly12.mjs):
+//   n = 1 mol, T = 300 K, V = 24,6 L -> p = 101,4 kPa, pV = 2494,2 kPa*L
+// Panel trai : p theo V, truc V co dinh 0..50 L  -> hyperbol. Buoc slider 0,1 L
+//   de ba diem cua muc 1 (12,3 / 24,6 / 49,2 L) deu keo toi duoc dung so.
+//   Hinh chu nhat duoi diem lam viec co dien tich ti le voi pV, nen no doi
+//   hinh dang ma giu nguyen dien tich khi keo V. No duoc to, vien net dut va
+//   ghi nhan chinh gia tri pV: panel trai la mot BUC TRANH DIEN TICH, khong
+//   phai them mot duong p-V nua canh IsoprocessAxes.astro cua bai 1.
+// Panel phai: cung bo so do tren truc 1/V (0..0,22 1/L) -> duong thang
+//   p = (nRT) * (1/V), do doc nRT, di qua goc toa do. Doan net dut la khuc
+//   1/V < 1/45 nam ngoai tam keo cua slider.
+// Truc p tu dong chia lai theo p(V = 5 L) cua n, T dang chon, buoc chia lam
+// tron; hai panel dung chung truc p vi chung la cung mot bo so.
+---
+
+<figure class="demo" data-demo="dinh-luat-boyle-hyperbol-va-duong-thang">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Thể tích xi lanh V (L) <output data-out="v"></output>
+      <input type="range" data-in="v" min="5" max="50" step="0.1" value="24.6" /></label>
+    <label>Nhiệt độ T (K) <output data-out="t"></output>
+      <input type="range" data-in="t" min="200" max="500" step="5" value="300" /></label>
+    <label>Lượng khí n (mol) <output data-out="n"></output>
+      <input type="range" data-in="n" min="0.2" max="2" step="0.05" value="1" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Kéo thanh thể tích: hai thừa số p và V chạy ngược nhau, còn tích pV đứng
+    yên — hình chữ nhật mờ dưới điểm làm việc đổi hình dạng mà không đổi diện
+    tích. Bên phải là đúng bộ số ấy vẽ trên trục 1/V, nơi nó thành đường thẳng
+    qua gốc toạ độ với độ dốc nRT. Đổi nhiệt độ hoặc lượng khí là sang một
+    hyperbol khác, tức một đường thẳng khác — vẫn qua gốc. Màn hình hẹp xếp hai
+    ô chồng dọc.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input { width: 100%; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const CURVE = '#2563eb', MARK = '#dc2626';
+  const R = 8.314;
+  const V_MIN = 5, V_MAX = 50;
+  const INV_SPAN = 0.22; // 1/V axis runs 0..0,22 so the 0,20 tick stays inside
+
+  // Vietnamese numerals: decimal comma, thin-ish space for thousands.
+  const vn = (x: number, d: number) => {
+    const [i, f] = x.toFixed(d).split('.');
+    const g = i.replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+    return f ? g + ',' + f : g;
+  };
+
+  const NICE = [1, 1.2, 1.5, 2, 2.5, 3, 4, 5, 6, 8, 10];
+  function niceStep(v: number) {
+    const e = Math.pow(10, Math.floor(Math.log10(v)));
+    for (const m of NICE) if (v <= m * e * 1.000001) return m * e;
+    return 10 * e;
+  }
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const input = (k: string) => root.querySelector(`[data-in="${k}"]`) as HTMLInputElement;
+    const output = (k: string) => root.querySelector(`[data-out="${k}"]`) as HTMLOutputElement;
+
+    function draw() {
+      const V = Number(input('v').value);
+      const T = Number(input('t').value);
+      const n = Number(input('n').value);
+      const k = R * n * T;      // pV in kPa*L, the constant of this hyperbola
+      const p = k / V;
+
+      output('v').textContent = vn(V, 1);
+      output('t').textContent = vn(T, 0);
+      output('n').textContent = vn(n, 2);
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32;
+      const side = cssW >= 430;
+      const panelW = side ? (cssW - 14) / 2 : cssW;
+      const panelH = side ? Math.round(cssW * 0.40) : Math.round(cssW * 0.42);
+      const cssH = side ? panelH : panelH * 2 + 12;
+      canvas.width = Math.round(cssW * dpr);
+      canvas.height = Math.round(cssH * dpr);
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+
+      // Shared p axis: tall enough for the most compressed state the slider reaches.
+      const pTop = k / V_MIN;
+      const yStep = niceStep(pTop / 4);
+      const yMax = yStep * 4;
+
+      function panel(x0: number, y0: number, w: number, h: number, linear: boolean) {
+        const padL = 46, padT = 22, padB = 24, padR = 14;
+        const L = x0 + padL, Rt = x0 + w - padR;
+        const Tp = y0 + padT, B = y0 + h - padB;
+        const xSpan = linear ? INV_SPAN : V_MAX;
+        const X = (v: number) => L + (v / xSpan) * (Rt - L);
+        const Y = (v: number) => B - (v / yMax) * (B - Tp);
+
+        ctx.font = '10px system-ui,sans-serif';
+        ctx.globalAlpha = 0.55; ctx.fillStyle = fg; ctx.textAlign = 'left';
+        ctx.fillText(linear ? 'p (kPa) theo 1/V (1/L)' : 'p (kPa) theo V (L)', L - 4, y0 + 12);
+
+        ctx.strokeStyle = fg; ctx.lineWidth = 1; ctx.globalAlpha = 0.3;
+        ctx.beginPath();
+        ctx.moveTo(L, Tp); ctx.lineTo(L, B); ctx.lineTo(Rt, B);
+        ctx.stroke();
+
+        ctx.globalAlpha = 0.55; ctx.fillStyle = fg;
+        ctx.textAlign = 'center';
+        const xt = linear ? [0, 0.05, 0.1, 0.15, 0.2] : [0, 10, 20, 30, 40];
+        for (const t of xt) {
+          ctx.fillText(t === 0 ? '0' : linear ? vn(t, 2) : String(t), X(t), B + 14);
+        }
+        ctx.textAlign = 'right';
+        for (let i = 0; i <= 4; i++) ctx.fillText(vn(yStep * i, 0), L - 5, Y(yStep * i) + 3);
+        ctx.globalAlpha = 1;
+
+        if (linear) {
+          // Dashed from the origin to the first volume the slider can reach,
+          // solid across the measured span: the claim is "through the origin".
+          ctx.strokeStyle = CURVE; ctx.lineWidth = 2;
+          ctx.setLineDash([4, 4]); ctx.globalAlpha = 0.6;
+          ctx.beginPath();
+          ctx.moveTo(X(0), Y(0)); ctx.lineTo(X(1 / V_MAX), Y(k / V_MAX));
+          ctx.stroke();
+          ctx.setLineDash([]); ctx.globalAlpha = 1;
+          ctx.beginPath();
+          ctx.moveTo(X(1 / V_MAX), Y(k / V_MAX)); ctx.lineTo(X(1 / V_MIN), Y(k / V_MIN));
+          ctx.stroke();
+          ctx.lineWidth = 1;
+          ctx.fillStyle = MARK;
+          ctx.beginPath(); ctx.arc(X(1 / V), Y(p), 5.5, 0, Math.PI * 2); ctx.fill();
+          return;
+        }
+
+        // pV as an area, and the area IS the subject of this panel: the same
+        // rectangle is drawn outlined and labelled with its own value, so the
+        // left panel reads as an area diagram whose boundary happens to be a
+        // hyperbola -- not as one more p-V curve.
+        const rx = X(0), ry = Y(p), rw = X(V) - X(0), rh = Y(0) - Y(p);
+        ctx.fillStyle = CURVE; ctx.globalAlpha = 0.13;
+        ctx.fillRect(rx, ry, rw, rh);
+        ctx.strokeStyle = CURVE; ctx.globalAlpha = 0.5;
+        ctx.setLineDash([3, 3]);
+        ctx.strokeRect(rx + 0.5, ry + 0.5, rw - 1, rh - 1);
+        ctx.setLineDash([]);
+        if (rw > 96 && rh > 26) {
+          ctx.globalAlpha = 0.85; ctx.fillStyle = CURVE;
+          ctx.textAlign = 'center';
+          ctx.font = 'bold 11px system-ui,sans-serif';
+          ctx.fillText(`pV = ${vn(k, 0)}`, rx + rw / 2, ry + rh / 2 + 4);
+          ctx.font = '10px system-ui,sans-serif';
+        }
+        ctx.globalAlpha = 1;
+
+        ctx.strokeStyle = CURVE; ctx.lineWidth = 2; ctx.beginPath();
+        for (let i = 0; i <= 200; i++) {
+          const vv = V_MIN + ((V_MAX - V_MIN) * i) / 200;
+          const px = X(vv), py = Y(k / vv);
+          i ? ctx.lineTo(px, py) : ctx.moveTo(px, py);
+        }
+        ctx.stroke(); ctx.lineWidth = 1;
+
+        ctx.fillStyle = MARK;
+        ctx.beginPath(); ctx.arc(X(V), Y(p), 5.5, 0, Math.PI * 2); ctx.fill();
+      }
+
+      panel(0, 0, panelW, panelH, false);
+      if (side) panel(panelW + 14, 0, panelW, panelH, true);
+      else panel(0, panelH + 12, panelW, panelH, true);
+
+      readout.innerHTML =
+        `n = <b>${vn(n, 2)} mol</b> · T = <b>${vn(T, 0)} K</b> · V = <b>${vn(V, 1)} L</b> ` +
+        `→ p = <b>${vn(p, 1)} kPa</b><br />` +
+        `tích pV = <b>${vn(k, 1)} kPa·L</b> (kéo riêng thanh thể tích thì con số này không nhúc nhích) · ` +
+        `1/V = <b>${vn(1 / V, 4)} 1/L</b> · độ dốc đường thẳng bên phải = nRT = <b>${vn(k, 1)} kPa·L</b>`;
+    }
+
+    root.querySelectorAll('input').forEach((el) => {
+      el.addEventListener('input', draw);
+      el.addEventListener('change', draw);
+    });
+    addEventListener('resize', draw);
+    draw();
+  }
+  document
+    .querySelectorAll<HTMLElement>('[data-demo="dinh-luat-boyle-hyperbol-va-duong-thang"]')
+    .forEach(setup);
+</script>

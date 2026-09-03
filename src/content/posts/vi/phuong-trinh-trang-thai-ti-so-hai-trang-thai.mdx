@@ -1,0 +1,144 @@
+---
+title: "Phương trình trạng thái khí lý tưởng lớp 12: một tỉ số nối hai trạng thái"
+seoTitle: "Phương trình trạng thái khí lý tưởng lớp 12"
+description: "Nén 2,0 L khí từ 1 atm lên 2 atm rồi nung tới 400 K, còn 1,333 L — phương trình trạng thái khí lý tưởng lớp 12 gộp ba đẳng quá trình vào đúng một tỉ số."
+pubDate: 2026-09-03
+translationId: "phuong-trinh-trang-thai-ti-so-hai-trang-thai"
+grade: 12
+chapter: "nhiet"
+lesson: 5
+series: "vat-ly-12-nhiet"
+tags: ["vat-ly", "nhiet-hoc", "javascript"]
+---
+
+import StateEquationTwoPoints from '../../../components/demos/StateEquationTwoPoints.astro';
+
+Ba đẳng quá trình đều đòi cùng một điều kiện: phải có một đại lượng chịu đứng
+yên. Đời thật ít khi chiều — khí trong xi lanh vừa bị nén vừa nóng lên, gói bim
+bim mang lên máy bay gặp cả áp suất thấp lẫn cabin mát hơn. Khi cả ba con số
+cùng chạy thì vẫn còn đúng **một** thứ không đổi. Đặt trạng thái 1, đổi hai đại
+lượng của trạng thái 2, rồi xem đại lượng thứ ba thôi không còn là lựa chọn của
+bạn.
+
+<StateEquationTwoPoints />
+
+## Một tỉ số sống sót khi cả ba đại lượng cùng đổi
+
+Trạng thái của một khối khí được mô tả bằng ba con số p, V và T. Chúng không tự
+do: với **cùng những phân tử ấy**, không thêm không bớt, tổ hợp pV/T luôn cho ra
+một con số duy nhất, dù bạn đưa khí đi qua đâu. Viết cho hai trạng thái bất kỳ:
+
+**p₁V₁/T₁ = p₂V₂/T₂**
+
+Thử bằng số của demo. Trạng thái 1: 1,0 atm, 2,0 L, 300 K. Nén lên 2,0 atm rồi
+nung tới 400 K. Rút V₂ ra:
+
+V₂ = p₁V₁T₂ / (T₁p₂) = 1,0 × 2,0 × 400 / (300 × 2,0) = **1,333 L**
+
+Kiểm hai đầu: 1,0 × 2,0 / 300 = 6,667×10⁻³ và 2,0 × 1,3333… / 400 cũng bằng
+6,667×10⁻³ atm·L/K. Hai thanh ngang trong demo dài bằng nhau chính là hình của
+phép kiểm đó. Con số ấy là của riêng khối khí này — lấy nhiều khí hơn thì nó lớn
+lên — và nó phụ thuộc vào cái gì thì thuộc về bài [phương trình Clapeyron và
+thang Kelvin](/vi/posts/phuong-trinh-khi-ly-tuong-va-cai-bay-do-c). Ở đây chỉ
+cần biết nó **không đổi**.
+
+## Đi từ trạng thái 1 sang trạng thái 2 bằng hai chặng
+
+Vì sao tỉ số ấy tồn tại? Không cần chứng minh mới — chỉ cần đi bằng hai chặng mà
+mỗi chặng đã có một bài riêng.
+
+**Chặng một, giữ nhiệt độ.** Ở nguyên 300 K, nén từ 1,0 atm lên 2,0 atm. Tích pV
+không đổi nên thể tích tụt từ 2,0 L xuống **1,000 L**: điểm rỗng màu lục trong
+demo, và là [định luật Boyle cho quá trình đẳng
+nhiệt](/vi/posts/dinh-luat-boyle-hyperbol-va-duong-thang/). Trên p–V, chặng này
+bò dọc nhánh hyperbol.
+
+**Chặng hai, giữ áp suất.** Đứng yên ở 2,0 atm, nung từ 300 K lên 400 K. Tỉ số
+V/T không đổi nên thể tích nở từ 1,000 L lên **1,333 L**: [định luật Charles cho
+quá trình đẳng
+áp](/vi/posts/dinh-luat-charles-dang-ap-va-do-khong-tuyet-doi/), và trên p–V là
+đoạn nằm ngang màu lục.
+
+Ghép hai phép nhân: V₂ = V₁ × (p₁/p₂) × (T₂/T₁), chuyển vế là ra
+p₁V₁/T₁ = p₂V₂/T₂. Phương trình trạng thái không phải định luật thứ tư; nó là
+hai định luật cũ nhân với nhau.
+
+Đi lối khác cũng vậy: giữ 2,0 L mà nung lên 400 K trước, áp suất lên 1,333 atm,
+rồi ở 400 K nén tới 2,0 atm — vẫn 1,333 L. Phương trình chỉ phát biểu về **hai
+đầu mút**.
+
+## Che một chữ đi là ra ba định luật quen
+
+Đây là mẹo nhớ đáng giá nhất của cả chương: không cần thuộc ba công thức riêng,
+chỉ cần thuộc một cái rồi rút gọn.
+
+- T₁ = T₂ ⇒ nhiệt độ triệt tiêu ⇒ **p₁V₁ = p₂V₂**, [đẳng
+  nhiệt](/vi/posts/dinh-luat-boyle-hyperbol-va-duong-thang/).
+- p₁ = p₂ ⇒ áp suất triệt tiêu ⇒ **V₁/T₁ = V₂/T₂**, [đẳng
+  áp](/vi/posts/dinh-luat-charles-dang-ap-va-do-khong-tuyet-doi/).
+- V₁ = V₂ ⇒ thể tích triệt tiêu ⇒ **p₁/T₁ = p₂/T₂**, [quá trình đẳng
+  tích](/vi/posts/qua-trinh-dang-tich-ap-suat-lop-xe/).
+
+Ba tấm ảnh của ba trường hợp ấy nằm cạnh nhau trong bài [đồ thị đẳng nhiệt, đẳng
+áp, đẳng tích](/vi/posts/do-thi-dang-nhiet-dang-ap-dang-tich/); cả loạt bài ở
+trang [Vật lý nhiệt và khí lý tưởng lớp 12](/vi/vat-ly-12/nhiet/).
+
+## Chỉ nhiệt độ mới bắt buộc đổi đơn vị
+
+Áp suất xuất hiện ở cả hai vế, thể tích cũng vậy, nên hệ số đổi đơn vị của chúng
+**rút gọn mất**: chúng chỉ cần khớp nhau giữa hai trạng thái — atm ở vế trái thì
+atm ở vế phải, mL ở vế trái thì mL ở vế phải. Đổi hết sang pascal và mét khối
+cũng ra đúng con số ấy, chỉ mất thêm hai phép nhân.
+
+Nhiệt độ thì không, vì cái ta lấy là **tỉ số** T₂/T₁, mà tỉ số chỉ có nghĩa trên
+thang có số 0 thật. Nhiệt kế trong ví dụ trên chỉ 27 °C và 127 °C; cắm thẳng hai
+số ấy vào sẽ ra 4,704 L thay vì 1,333 L. Cái bẫy này đã được mổ bằng số thật ở
+bài đẳng tích phía trên; ở đây chỉ cần một luật: **đổi T sang kelvin trước, mọi
+thứ khác giữ nguyên**.
+
+## Túi bim bim trên máy bay: cả p lẫn T cùng đổi
+
+Gói snack hàn kín ở mặt đất, 101,3 kPa và 30 °C, theo bạn lên cabin giữ ở 75 kPa
+và 22 °C. Lớp màng hàn kín giữ nguyên lượng khí bên trong, nên đây đúng là bài
+toán hai trạng thái.
+
+V₂/V₁ = (p₁/p₂) × (T₂/T₁) = 1,3507 × 0,9736 = **1,315**
+
+Túi phồng thêm khoảng 31,5%. Chỉ nhìn áp suất mà quên nhiệt độ thì ra 1,351 —
+cao hơn 2,7%, vì cabin mát hơn mặt đất đã kéo lại một phần. Cột áp suất theo độ
+cao ở đâu ra thuộc về [bầu trời và hàm mũ của
+nó](/vi/posts/tui-snack-tren-may-bay-va-ham-mu-cua-bau-troi); khối khí trong túi
+phản ứng thế nào là phần của bài này.
+
+## Ba câu tự kiểm
+
+1. Xi lanh chứa 3,0 L khí ở 100 kPa và 300 K, bị nén còn 1,5 L và áp suất tuyệt
+   đối lên 250 kPa. Nhiệt độ cuối bằng bao nhiêu? *(T₂ = T₁p₂V₂/(p₁V₁) =
+   300 × 250 × 1,5 / (100 × 3,0) = 375,0 K, tức 101,85 °C. Tỉ số pV/T bằng
+   1,0000 kPa·L/K ở cả hai đầu.)*
+2. Khối khí 5,0 L ở 200 kPa và 27 °C bị nén còn 4,0 L đồng thời nung tới 87 °C.
+   Áp suất mới? *(T₁ = 300,15 K, T₂ = 360,15 K → p₂ = 200 × 5,0 × 360,15 /
+   (300,15 × 4,0) = 300,0 kPa.)*
+3. Đề cho 250 mL khí ở 760 mmHg và 290 K, nén tới 1 520 mmHg ở 310 K. Có phải
+   đổi mmHg sang pascal và mL sang mét khối không? *(Không — hai đơn vị ấy rút
+   gọn: V₂ = 760 × 250 × 310 / (290 × 1 520) = 133,62 mL.)*
+
+## Trường hợp biên: giữa hai trạng thái có thể không tồn tại trạng thái nào
+
+Phương trình này nói về **trạng thái**, không nói về quá trình — và chữ "trạng
+thái" mang theo một giả thiết dễ trôi tuột: cả khối khí phải có chung một áp
+suất và chung một nhiệt độ, mỗi thứ đúng một con số. Điều đó chỉ đúng khi khí đã
+kịp cân bằng.
+
+Đẩy pít-tông thật nhanh thì giả thiết ấy vỡ. Lớp khí sát mặt pít-tông bị dồn lại
+và nóng lên trong khi lớp ở đầu kia chưa hay biết gì; áp suất lúc đó là một
+**trường** trải trong không gian, không phải một số. Không có bộ ba p, V, T nào
+để chấm lên đồ thị, nên hai chặng gọn ghẽ mà demo vẽ ra là câu chuyện kể lại chứ
+không phải chuyến đi có thật — và với một vụ nổ, ngay cả hai đầu mút cũng phải
+chờ khí lặng xuống mới có nghĩa.
+
+Cả khi đã cân bằng, tỉ số pV/T vẫn không bất tử: nó rút ra từ mô hình coi phân
+tử là chất điểm không chiếm chỗ và không hút nhau. Ép mạnh hoặc làm lạnh sâu thì
+tỉ số bắt đầu trôi, rồi tới ngưỡng ngưng tụ [hyperbol gãy thành một đoạn nằm
+ngang](/vi/posts/do-thi-dang-nhiet-dang-ap-dang-tich/) và pV/T tụt hẳn — phần
+khí hoá lỏng đã rời khỏi phép tính, dù không phân tử nào thoát ra ngoài bình.

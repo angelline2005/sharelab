@@ -1,0 +1,136 @@
+---
+title: "Định luật Boyle lớp 12: hyperbol trên p–V, đường thẳng trên p–(1/V)"
+seoTitle: "Định luật Boyle lớp 12: pV = hằng số và bài tập"
+description: "Nén 6,0 L khí xuống 2,0 L ở nhiệt độ không đổi thì áp suất lên gấp ba — định luật Boyle lớp 12: pV = hằng số, và mẹo vẽ p–(1/V) để kiểm bằng thước."
+pubDate: 2026-09-03
+translationId: "dinh-luat-boyle-hyperbol-va-duong-thang"
+grade: 12
+chapter: "nhiet"
+lesson: 4
+series: "vat-ly-12-nhiet"
+tags: ["vat-ly", "nhiet-hoc", "javascript"]
+---
+
+import BoyleLinearised from '../../../components/demos/BoyleLinearised.astro';
+
+Một hình chữ nhật có thể cao và hẹp, hoặc thấp và rộng, mà diện tích không đổi
+lấy một milimét vuông. Áp suất và thể tích của một khối khí giữ nguyên nhiệt độ
+cư xử đúng như hai cạnh ấy: ép pít-tông vào, cạnh này ngắn đi bao nhiêu lần thì
+cạnh kia dài ra bấy nhiêu lần. Định luật Boyle chỉ là câu đó viết bằng ký hiệu —
+và trong demo dưới đây, nó đúng là một hình chữ nhật không chịu đổi diện tích.
+
+<BoyleLinearised />
+
+## Nén xi lanh mà không cho nó nóng lên: pV = hằng số
+
+Định luật Boyle có hai điều kiện, cả hai đều dễ mất mà khó thấy: khí phải là
+**một lượng xác định** — xi lanh không rò, không ai bơm thêm — và **nhiệt độ
+phải giữ nguyên**. Quá trình thoả cả hai gọi là đẳng nhiệt, và khi đó áp suất tỉ
+lệ nghịch với thể tích:
+
+**pV = hằng số**, dạng hai trạng thái quen dùng khi giải bài: **p₁V₁ = p₂V₂**
+
+Khối khí trong demo, ở vị trí mặc định, là một mol ở 300 K, và hằng số của nó
+là 2 494,2 kPa·L. Ở 24,6 L nó đẩy vào thành xi lanh 101,4 kPa; nén còn 12,3 L
+thì lên 202,8 kPa; buông cho giãn tới 49,2 L thì tụt về 50,7 kPa. Nhân từng
+cặp, cả ba đều ra
+2 494. Hình chữ nhật mờ dưới điểm làm việc chính là tích ấy vẽ thành diện tích:
+kéo thanh thể tích, nó dẹt ra rồi cao lên mà **diện tích không đổi**.
+
+Hằng số đó thuộc về *khối khí này, ở nhiệt độ này*, không phải một hằng số của
+tự nhiên: gấp đôi lượng khí lên 2 mol thì tích pV thành 4 988,4 kPa·L, tức một
+hyperbol khác. Cụm nRT ở vế phải thuộc về bài
+[phương trình khí lý tưởng pV = nRT](/vi/posts/phuong-trinh-khi-ly-tuong-va-cai-bay-do-c).
+
+## Bảng số của một xi lanh, và cột thứ ba
+
+Lấy một xi lanh có hằng số 600 kPa·L cho tròn — ở 300 K thì đó là 0,2406 mol
+khí. Cột thứ ba là cột mà các tài liệu đều bỏ qua:
+
+| V (L) | p = 600/V (kPa) | 1/V (1/L) |
+|---|---|---|
+| 2 | 300,0 | 0,5000 |
+| 3 | 200,0 | 0,3333 |
+| 4 | 150,0 | 0,2500 |
+| 6 | 100,0 | 0,1667 |
+| 12 | 50,0 | 0,0833 |
+
+Chia ba thể tích, từ 6,0 L xuống 2,0 L, thì áp suất nhân ba: 100 kPa thành
+300 kPa. Còn lấy cột hai chia cột ba — 300/0,5 rồi 200/0,3333 — cả năm dòng đều
+trả về 600, mấy con số lẻ ở đuôi chỉ là do cột 1/V đã làm tròn.
+
+## Vì sao đường thẳng đáng tin hơn hyperbol
+
+Gọi C là hằng số pV rồi đặt x = 1/V, định luật thành p = C·x. Đó là **y = ax**,
+đường thẳng đi qua gốc toạ độ với hệ số góc bằng chính C. Cùng bấy nhiêu điểm,
+không sửa số nào, mà trên p–V thì cong còn trên p–(1/V) thì thẳng. Đó là lý do
+một phép đo Boyle tử tế hiếm khi dừng ở đồ thị p–V: chấm lại đúng bộ số ấy lên
+trục 1/V thì cả bài kiểm chứng rút xuống hai câu trả lời được bằng cây thước —
+có thẳng không, và có đi qua gốc toạ độ không.
+
+Một đường cong đi qua năm điểm thì đường cong nào cũng đi được, và mắt không
+phân biệt nổi 1/V với 1/V^(1,05). Một đường thẳng thì kiểm được **độ thẳng** và
+**giao điểm** — và giao điểm mới là chỗ bắt lỗi. Nếu các điểm thẳng hàng nhưng
+đường **không qua gốc**, định luật vẫn đúng còn phép đo có một lượng thừa cố
+định. Hay gặp nhất là đồng hồ đo áp suất dư thay vì áp suất tuyệt đối: số nó chỉ
+bằng C·x − 101,3 kPa, vẫn thẳng, vẫn đúng hệ số góc, chỉ cắt trục tung ở dưới
+gốc đúng một
+[áp suất khí quyển](/vi/posts/ap-suat-khi-quyen-va-tran-10-met-cua-moi-may-bom).
+
+Cùng khối khí ấy vẽ trên p–T và V–T ra hình gì thì thuộc bài
+[đồ thị ba đẳng quá trình](/vi/posts/do-thi-dang-nhiet-dang-ap-dang-tich/); khi
+nhiệt độ cũng được phép đổi, hai trạng thái nối nhau bằng
+[phương trình trạng thái](/vi/posts/phuong-trinh-trang-thai-ti-so-hai-trang-thai/).
+Cả loạt bài nằm ở [Vật lý nhiệt và khí lý tưởng lớp 12](/vi/vat-ly-12/nhiet/).
+
+## Đổi đơn vị áp suất trước khi thay số
+
+Đề bài thích trộn đơn vị, và đây là bảng đủ dùng cho cả chương:
+
+| 1 đơn vị | kPa | atm | mmHg |
+|---|---|---|---|
+| 1 atm | 101,325 | 1,00000 | 760,0 |
+| 1 bar | 100,000 | 0,98692 | 750,1 |
+| 1 kPa | 1,000 | 0,00987 | 7,5 |
+
+Điều tiết kiệm sức nhất: p₁V₁ = p₂V₂ là phương trình **tỉ số**, nên đơn vị tự
+triệt tiêu. Đề cho mmHg thì cứ tính bằng mmHg; chỉ khi con số đi tiếp vào công
+thức mang hằng số khí mới bắt buộc quy về pascal.
+
+## Ba câu tự kiểm
+
+1. Xi lanh chứa khí ở 250 kPa, thể tích 1,6 L. Đẩy pít-tông cho thể tích còn
+   0,5 L, nhiệt độ giữ nguyên. Áp suất bằng bao nhiêu? *(pV = 400 kPa·L →
+   p₂ = 400/0,5 = 800 kPa.)*
+2. Một lượng khí 240 mL ở 750 mmHg bị nén còn 200 mL ở cùng nhiệt độ. Áp suất
+   mới bằng bao nhiêu mmHg? *(750 · 240/200 = 900 mmHg, tức 120,0 kPa. Không
+   cần đổi đơn vị lần nào.)*
+3. Trên đồ thị p–(1/V) của một khối khí, đường thẳng qua gốc và tại
+   1/V = 0,25 1/L đọc được p = 150 kPa. Hằng số pV bằng bao nhiêu, và ở 6,0 L
+   thì áp suất là bao nhiêu? *(Hệ số góc 150/0,25 = 600 kPa·L; p = 600/6,0 =
+   100 kPa.)*
+
+## Trường hợp biên: tích pV không chịu đứng yên nữa
+
+Định luật Boyle không nói về khí bị nén — nó nói về khí bị nén **chậm**. Ép
+pít-tông đủ nhanh thì nhiệt sinh ra chưa kịp thoát, khối khí tự nóng lên, và
+tích pV lớn dần ngay trong lúc bạn đang đo: điểm làm việc rời hyperbol cũ để leo
+sang hyperbol của một nhiệt độ cao hơn. Đó đúng là chuyện xảy ra trong
+[ống bơm xe nóng tay](/vi/posts/nen-doan-nhiet-bom-xe-va-dong-co-diesel) — cùng
+một hành trình pít-tông, chỉ khác tốc độ. Điều kiện "nhiệt độ không đổi" không
+phải câu mở đầu cho có; nó là toàn bộ nội dung.
+
+Nén thật chậm để nhiệt độ đứng yên tuyệt đối thì đường thẳng vẫn cong. Mô hình
+khí lý tưởng coi phân tử là chất điểm không thể tích riêng và không hút nhau;
+hai giả thiết ấy hỏng ngược chiều nhau. Lực hút kéo áp suất xuống dưới mức tính
+được nên đường võng xuống trước: nitơ ở 300 K có tích pV hụt hơn 1% ở 20 atm và
+gần 3% ở 50 atm. Ép chặt hơn nữa thì thể tích riêng của phân tử lên tiếng, khí
+khó nén hơn dự đoán và đường vọt ngược lên, cắt lại đúng giá trị lý tưởng đâu đó
+gần mốc 200 atm — trùng số vì hai cái sai vừa vặn bù nhau, không phải vì mô hình
+đã đúng trở lại. Còn ở điều kiện phòng thì chẳng có gì để bù: phân tử chiếm chưa tới
+0,2% thể tích bình, và cả hai hiệu ứng cộng lại chưa lệch nổi một phần nghìn.
+Đó mới là lý do định luật Boyle trông chính xác đến thế trên bàn thí nghiệm.
+
+Xa hơn nữa thì không còn gì để cong: tới ngưỡng ngưng tụ, khí hoá lỏng và tích
+pV mất luôn ý nghĩa hằng số — không phải vì phép đo hỏng, mà vì thứ trong xi
+lanh đã thôi làm chất khí.

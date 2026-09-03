@@ -1,71 +1,141 @@
 ---
-title: "PV = nRT và cái bẫy độ C: vì sao 'gấp đôi nhiệt độ' hầu như luôn sai"
-description: "Nung khí từ 25°C lên 50°C, áp suất tăng gấp đôi? Sai — chỉ tăng 8%. Phương trình khí lý tưởng chỉ nói chuyện bằng kelvin, và hiểu vì sao là hiểu nhiệt độ thật sự đo cái gì."
+title: "pV = nRT lớp 12: cách tính, hằng số R và cái bẫy độ C"
+seoTitle: "pV = nRT lớp 12: cách tính, R và thang Kelvin"
+description: "Một mol khí ở 300 K và 1 atm chiếm 24,6 lít dù là khí gì — pV = nRT lớp 12: cách tính từng đại lượng, hằng số R và vì sao T phải là kelvin."
 pubDate: 2026-09-01
-tags: ["vat-ly", "nhiet-hoc", "javascript"]
+updatedDate: 2026-09-03
 translationId: "phuong-trinh-khi-ly-tuong-va-cai-bay-do-c"
+grade: 12
+chapter: "nhiet"
+lesson: 9
+series: "vat-ly-12-nhiet"
+tags: ["vat-ly", "nhiet-hoc", "javascript"]
 ---
 
 import IdealGas from '../../../components/demos/IdealGas.astro';
 
-Một phương trình gánh cả chương nhiệt học:
+Bốn đại lượng, một hằng số, và một dấu bằng buộc tất cả lại với nhau:
 
 ```
-P·V = n·R·T
+p·V = n·R·T
 ```
 
-Bốn biến, một hằng số, và một cái bẫy đơn vị đã đánh trượt nhiều thế hệ học
-sinh. Nhưng trước hết, hãy bóp thử pit-tông:
+Ghim chặt một trong bốn rồi cho hai cái còn lại chạy, bạn được một định luật
+chất khí có tên riêng. Nhưng phương trình gốc chỉ chịu nói chuyện bằng một thang
+nhiệt độ duy nhất, và đó là chỗ mất điểm quen thuộc nhất của cả chương.
 
 <IdealGas />
 
-Ba thao tác đáng làm:
+## Cách tính từng đại lượng trong pV = nRT
 
-**Nén nửa thể tích, giữ nhiệt độ:** áp suất nhân đôi. Cùng số phân tử ấy chen
-trong nửa không gian, đập vào thành thường xuyên gấp đôi — đó là định luật
-Boyle, và các chấm trong demo diễn nó theo nghĩa đen.
+Chốt một bộ đơn vị rồi dùng suốt: **p bằng kPa, V bằng lít, n bằng mol, T bằng
+kelvin**. Với bộ đó, **R = 8,314 L·kPa/(mol·K)**.
 
-**Nhân đôi nhiệt độ, giữ thể tích:** áp suất nhân đôi. Nhưng để ý demo: cái
-nhân đôi là **kelvin**.
+Demo bố trí đúng vậy: n, V, T mỗi cái một thanh trượt, còn áp suất không có
+thanh nào — nó là **hệ quả**, cột đỏ bên trái tự dâng theo p = nRT/V. Một mol ở
+300 K trong 24,6 L cho
 
-**Kéo T xuống sát đáy thang trượt:** các chấm bò chậm dần. Kéo tiếp trong
-tưởng tượng tới 0 K — phân tử đứng im, áp suất bằng 0. Số không của kelvin là
-số không **thật** của chuyển động, không phải điểm nước đóng băng.
+p = 1 · 8,314 · 300 / 24,6 = **101,4 kPa**, xấp xỉ đúng 1 atm.
 
-## Cái bẫy độ C
+Ba thao tác đáng làm, mỗi cái là một bài học riêng ở chỗ khác. **Kéo V còn một
+nửa** mà giữ T: áp suất gấp đôi, tích pV đứng yên — đó là
+[định luật Boyle cho quá trình đẳng nhiệt](/vi/posts/dinh-luat-boyle-hyperbol-va-duong-thang/).
+**Kéo T lên gấp đôi** mà giữ V: áp suất cũng gấp đôi, nhưng cái gấp đôi là
+kelvin — đó là
+[quá trình đẳng tích, p/T = hằng số](/vi/posts/qua-trinh-dang-tich-ap-suat-lop-xe/).
 
-Câu hỏi bẫy: *nung khí trong bình kín từ 25 °C lên 50 °C, áp suất tăng bao
-nhiêu lần?*
+**Kéo n từ 0,25 lên 3 mol:** số chấm đông lên đúng theo tỉ lệ. Ba đẳng quá trình
+không nhắc tới n vì chúng luôn giả thiết một khối khí kín; khi đề chỉ cho hai
+trạng thái của cùng khối khí ấy, n và R triệt tiêu và bài rút gọn thành
+[phương trình trạng thái p₁V₁/T₁ = p₂V₂/T₂](/vi/posts/phuong-trinh-trang-thai-ti-so-hai-trang-thai/).
 
-Cám dỗ nói "gấp đôi" — 50 là hai lần 25. Nhưng phương trình không biết độ C.
-Đổi sang thang nó hiểu: 298 K → 323 K, tức tăng **8,4%**. Muốn áp suất thật sự
-gấp đôi phải nung tới 596 K ≈ 323 °C — đủ nướng bánh.
+## Hằng số R: một con số, ba bộ đơn vị
 
-Vì sao độ C phản bội ở đây? Vì nó là thang **đo lệch**: số 0 của nó đặt tuỳ
-tiện ở điểm băng, một mốc tiện cho thời tiết chứ không liên quan gì tới phân
-tử. Nhiệt độ trong PV = nRT đóng vai *thước đo động năng trung bình* — thứ có
-số không tuyệt đối hẳn hoi — nên chỉ thang nào bắt đầu từ số không đó mới được
-phép nhân chia. Cộng trừ chênh lệch thì °C vô hại (Δ25°C = Δ25 K); **nhân
-chia tỉ lệ thì bắt buộc kelvin.**
+Giá trị chính tắc là **R = 8,314 J/(mol·K)**. Vì 1 J = 1 Pa·m³ = 1 kPa·L, đúng
+con số ấy cũng là 8,314 L·kPa/(mol·K) — cùng một hằng số đọc bằng thước khác.
+Ai quen làm với atmosphere thì dùng R = 0,08205 L·atm/(mol·K).
 
-Quy tắc đáng dán lên bàn học: *thấy T đứng trong phép nhân hay phép chia —
-đổi sang kelvin trước, không có ngoại lệ.*
+R cũng không rơi từ trời xuống: nó là hằng số Boltzmann tính theo mol thay vì
+theo từng phân tử. Nhân 1,380649×10⁻²³ với số Avogadro 6,02214×10²³ được đúng
+8,3145 J/(mol·K).
+
+## Số mol không cho sẵn: n = m/M
+
+Đề hiếm khi phát thẳng n. Nó phát khối lượng, và cầu nối là **n = m/M**, với M
+là khối lượng mol. Lấy 8,0 g khí oxygen, M = 32 g/mol, nhốt trong bình 5,0 L ở
+27 °C: n = 0,25 mol, T = 300,15 K, và
+
+p = 0,25 · 8,314 · 300,15 / 5,0 = **124,8 kPa**.
+
+Hai mốc thể tích mol đáng thuộc, cùng rơi ra từ V = nRT/p với n = 1 và
+p = 1 atm: **22,41 L ở 0 °C** và **24,46 L ở 25 °C**. Chúng không phụ thuộc khí
+gì, vì danh tính phân tử vắng mặt hoàn toàn trong phương trình.
+
+## Cái bẫy độ C: chỗ °C thôi được phép nhân chia
+
+Câu hỏi kinh điển là nung một bình kín từ 25 °C lên 50 °C rồi hỏi áp suất tăng
+mấy lần. Đáp số không phải gấp đôi mà là **8,4%** — vẫn là cái bẫy đã thổi
+phồng áp suất lốp xe trong
+[bài về quá trình đẳng tích](/vi/posts/qua-trinh-dang-tich-ap-suat-lop-xe/).
+
+Bài này chịu trách nhiệm phần **vì sao**. Celsius là thang **đo lệch**: số 0 của
+nó đặt ở điểm băng của nước, một mốc tiện cho thời tiết chứ không liên quan gì
+tới phân tử. T trong pV = nRT thì đóng vai thước đo động năng trung bình — thứ
+có số không tuyệt đối hẳn hoi, và chỉ thang bắt đầu từ đó mới cho tỉ số có
+nghĩa.
+
+Cộng trừ **chênh lệch** thì độ C vô hại, vì một bậc Celsius bằng đúng một bậc
+kelvin; nhân chia **tỉ lệ** thì bắt buộc kelvin. Muốn áp suất bình kín ấy thật
+sự gấp đôi phải nhân đôi kelvin: 2 × 298,15 = **596,30 K**, tức **323,15 °C**.
+Quy tắc đáng dán lên bàn học: *thấy T đứng trong phép nhân hay phép chia, đổi
+sang kelvin trước khi làm bất cứ việc gì khác.*
+
+## Thang Kelvin: số 0 nằm ở đâu, và vì sao nằm ở đó
+
+Phép đổi là **T(K) = t(°C) + 273,15**. Khác nhau duy nhất là gốc — và gốc ấy
+nằm ngay trong phương trình: đặt T = 0 vào pV = nRT thì p = 0 với mọi thể tích
+hữu hạn, tức không còn cú va đập nào vào thành bình. Kéo thanh nhiệt độ về sát
+100 K mà xem, các chấm bò chậm hẳn và cột áp suất tụt theo. Số không của kelvin
+là số không **thật** của chuyển động.
+
+Con số 273,15 cũng không phải quy ước chọn cho đẹp — nó được đo, bằng cách kéo
+dài một đường thẳng thực nghiệm cho tới khi chạm trục, và chuyện ấy thuộc về bài
+[định luật Charles và độ không tuyệt đối](/vi/posts/dinh-luat-charles-dang-ap-va-do-khong-tuyet-doi/).
+Cả loạt bài nằm ở
+[Vật lý nhiệt và khí lý tưởng lớp 12](/vi/vat-ly-12/nhiet/).
+
+## Ba câu tự kiểm
+
+1. Bình thép 10 L chứa 64 g khí oxygen, M = 32 g/mol, ở 27 °C. Áp suất tuyệt
+   đối bằng bao nhiêu? *(n = 64/32 = 2 mol, T = 300,15 K →
+   p = 2 · 8,314 · 300,15/10 = 499,1 kPa, tức 4,93 atm.)*
+2. Một bạn nung khối khí kín từ 30 °C lên 60 °C rồi viết p₂ = p₁ · 60/30. Sai
+   bao nhiêu? *(Đúng phải là 333,15/303,15 = 1,099, tăng 9,9%. Phép sai cho ×2,
+   gấp hơn mười lần mức tăng thật.)*
+3. Một mol khí bất kỳ ở 0 °C và 1 atm chiếm bao nhiêu lít, và con số đó đổi thế
+   nào ở 25 °C? *(22,41 L, lên 24,46 L — tỉ số đúng bằng 298,15/273,15.)*
 
 ## Trường hợp biên: "lý tưởng" đến đâu?
 
 Chữ "lý tưởng" trong tên là một lời thú nhận: phương trình coi phân tử là chất
-điểm không kích thước, không hút nhau. Không khí quanh bạn vi phạm cả hai —
-nhưng nhẹ tới mức ở điều kiện phòng, sai số chỉ cỡ **vài phần nghìn**. Con số
-đáng thuộc từ demo: một mol khí bất kỳ ở 300 K, 1 atm chiếm **24,6 lít** — bất
-kể là heli tí hon hay CO₂ nặng nề, vì trong thế giới lý tưởng, danh tính phân
-tử không có mặt trong phương trình.
+điểm không kích thước, không hút nhau. Không khí quanh bạn vi phạm cả hai, nhưng
+nhẹ tới mức ở điều kiện phòng gần như không đo ra. Ở 300 K và 1 atm, mô hình hứa
+24,62 L cho một mol; kể thêm thể tích riêng và lực hút của phân tử nitơ thì được
+24,60 L — lệch **0,07%**.
 
-Ranh giới của "lý tưởng" nằm ở chỗ quen thuộc: nén đủ mạnh hoặc lạnh đủ sâu để
-phân tử chạm mặt nhau thường xuyên, phương trình trượt dần — và tại điểm nó
-gãy hẳn, khí hoá lỏng. Hơi nước trong nồi áp suất đã lệch vài phần trăm; còn
-một bình khí hoá lỏng là tờ giấy báo tử của PV = nRT, viết bằng chính hai giả
-định nó đã bỏ qua.
+Danh tính phân tử vắng mặt trong phương trình, nhưng ở đời thật nó ló ra một
+chút: cùng 300 K và 1 atm, heli cho 24,64 L còn carbon dioxide chỉ cho 24,51 L.
+Heli **rộng hơn** dự đoán vì phân tử của nó chỉ chiếm chỗ chứ gần như không hút
+nhau; CO₂ **chật hơn** vì lực hút giữa các phân tử nặng kéo chúng lại gần. Hai
+giả thiết bị bỏ qua đẩy sai số về hai phía.
 
-Còn nếu tò mò chữ T trong phương trình *là* cái gì ở mức từng phân tử —
-nó là bề rộng của [bảng lương tốc độ Maxwell](/vi/posts/phan-bo-maxwell-khong-khi-nhanh-hon-am-thanh):
-nhiệt độ chính là thống kê của những cú va đập bạn vừa coi là "chất điểm".
+Mô hình chỉ trượt hẳn khi nén đủ mạnh hoặc lạnh đủ sâu để phân tử chạm mặt nhau
+thường xuyên. Hơi nước trong nồi áp suất, khoảng 2 atm và 120 °C, đã lệch
+**0,87%**; nén nitơ tới 100 atm ở 300 K thì lệch **3,7%**. Tại điểm nó gãy hẳn,
+khí hoá lỏng: thể tích tụt một bậc mà áp suất đứng im — hành vi pV = nRT không
+sinh ra được.
+
+Còn chữ T ở mức từng phân tử *là* cái gì, nó là bề rộng của
+[bảng lương tốc độ Maxwell](/vi/posts/phan-bo-maxwell-khong-khi-nhanh-hon-am-thanh);
+và khi khối khí ấy là cả bầu trời, cùng phương trình này giải thích
+[cái túi snack phồng lên trong cabin máy bay](/vi/posts/tui-snack-tren-may-bay-va-ham-mu-cua-bau-troi).

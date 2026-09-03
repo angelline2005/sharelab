@@ -1,0 +1,315 @@
+---
+// State equation as a ratio between two states of one fixed gas sample:
+//   p1*V1/T1 = p2*V2/T2,  T in kelvin, p and V in any units that MATCH.
+// Solving for whichever of the three quantities of state 2 is unknown:
+//   V2 = p1*V1*T2/(T1*p2)   p2 = p1*V1*T2/(T1*V2)   T2 = T1*p2*V2/(p1*V1)
+// The picture is the chained path on p-V: an isothermal leg at T1 from state 1
+// to the intermediate point Vi = p1*V1/p2, then an isobaric leg at p2 out to
+// state 2. That is Boyle followed by Charles, and chaining them IS the
+// equation. Two bars underneath print pV/T at both ends; they never differ.
+// No amount-of-substance and no gas constant appear here on purpose -- the
+// ratio form needs neither, and both belong to the Clapeyron lesson.
+// Worked line (scripts/verify-vatly12.mjs, section 5):
+//   1 atm, 2,0 L, 300 K -> 2 atm, ?, 400 K  =>  V2 = 1,333 L
+//   intermediate on the Boyle leg: Vi = 1*2/2 = 1,000 L
+---
+
+<figure class="demo" data-demo="phuong-trinh-trang-thai-ti-so-hai-trang-thai">
+  <canvas></canvas>
+  <div class="controls">
+    <label>Đại lượng cần tìm ở trạng thái 2
+      <select data-in="solve">
+        <option value="V" selected>V₂ — thể tích</option>
+        <option value="P">p₂ — áp suất</option>
+        <option value="T">T₂ — nhiệt độ</option>
+      </select></label>
+    <label>Trạng thái 1 · p₁ (atm) <output data-out="p1"></output>
+      <input type="range" data-in="p1" min="0.5" max="4" step="0.1" value="1" /></label>
+    <label>Trạng thái 1 · V₁ (L) <output data-out="v1"></output>
+      <input type="range" data-in="v1" min="0.5" max="6" step="0.1" value="2" /></label>
+    <label>Trạng thái 1 · T₁ (K) <output data-out="t1"></output>
+      <input type="range" data-in="t1" min="200" max="600" step="10" value="300" /></label>
+    <label>Trạng thái 2 · p₂ (atm) <output data-out="p2"></output>
+      <input type="range" data-in="p2" min="0.5" max="4" step="0.1" value="2" /></label>
+    <label>Trạng thái 2 · V₂ (L) <output data-out="v2"></output>
+      <input type="range" data-in="v2" min="0.5" max="6" step="0.1" value="1.3" /></label>
+    <label>Trạng thái 2 · T₂ (K) <output data-out="t2"></output>
+      <input type="range" data-in="t2" min="200" max="600" step="10" value="400" /></label>
+  </div>
+  <p class="readout" data-readout></p>
+  <figcaption>
+    Cùng một khối khí kín, hai trạng thái. Chọn đại lượng cần tìm, thanh trượt
+    của nó mờ đi và tự nhảy tới đáp số — bạn chỉ được đặt hai trong ba đại
+    lượng của trạng thái 2. Đường xanh là chặng đẳng nhiệt ở T₁, đường lục là
+    chặng đẳng áp ở p₂; nối hai chặng ấy lại chính là phương trình trạng thái.
+    Hai thanh ngang bên dưới là tỉ số pV/T ở hai đầu — kéo bất kỳ thanh trượt
+    nào, chúng vẫn dài bằng nhau.
+  </figcaption>
+</figure>
+
+<style>
+  .demo { margin: 2rem 0; padding: 1rem; border: 1px solid rgba(128,128,128,.3); border-radius: 10px; }
+  .demo canvas { width: 100%; height: auto; display: block; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: .75rem 1.25rem; margin-top: 1rem; }
+  .controls label { display: flex; flex-direction: column; font-size: .85rem; gap: .3rem; }
+  .controls output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .controls input, .controls select { width: 100%; }
+  .controls input:disabled { opacity: .4; }
+  .readout { margin: .9rem 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; line-height: 1.6; }
+  figcaption { margin-top: .75rem; font-size: .8rem; opacity: .7; line-height: 1.5; }
+</style>
+
+<script>
+  const ISOT = '#2563eb';   // isothermal leg (Boyle)
+  const ISOB = '#059669';   // isobaric leg (Charles)
+  const S1 = '#f59e0b';     // state 1
+  const S2 = '#dc2626';     // state 2
+
+  // Vietnamese numerals: decimal comma, thousands split by a space. T2 is a
+  // computed quantity and reaches five digits well inside the slider ranges
+  // (0.5 atm, 0.5 L at state 1 against 4 atm, 6 L at state 2), so the grouping
+  // is not decoration.
+  const f = (x: number, d: number) => {
+    const [whole, frac] = Math.abs(x).toFixed(d).split('.');
+    const grouped = whole.replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+    return (x < 0 ? '−' : '') + grouped + (frac ? `,${frac}` : '');
+  };
+
+  // Tick spacing that lands on 1, 2 or 5 times a power of ten.
+  function step(range: number, want: number) {
+    const raw = range / want;
+    const mag = Math.pow(10, Math.floor(Math.log10(raw)));
+    const n = raw / mag;
+    return (n > 5 ? 10 : n > 2 ? 5 : n > 1 ? 2 : 1) * mag;
+  }
+
+  function niceCeil(x: number) {
+    const mag = Math.pow(10, Math.floor(Math.log10(x)));
+    return Math.ceil(x / mag) * mag;
+  }
+
+  function setup(root: HTMLElement) {
+    const canvas = root.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const readout = root.querySelector('[data-readout]') as HTMLElement;
+    const range = (k: string) => root.querySelector(`input[data-in="${k}"]`) as HTMLInputElement;
+    const output = (k: string) => root.querySelector(`[data-out="${k}"]`) as HTMLOutputElement;
+    const mode = () => root.querySelector('select[data-in="solve"]') as HTMLSelectElement;
+
+    function arrow(x0: number, y0: number, x1: number, y1: number) {
+      const a = Math.atan2(y1 - y0, x1 - x0);
+      ctx.beginPath();
+      ctx.moveTo(x1, y1);
+      ctx.lineTo(x1 - 7 * Math.cos(a - 0.4), y1 - 7 * Math.sin(a - 0.4));
+      ctx.lineTo(x1 - 7 * Math.cos(a + 0.4), y1 - 7 * Math.sin(a + 0.4));
+      ctx.closePath();
+      ctx.fill();
+    }
+
+    function draw() {
+      const solve = mode().value;
+      const p1 = Number(range('p1').value);
+      const v1 = Number(range('v1').value);
+      const t1 = Number(range('t1').value);
+
+      // Two of the three below are read; the third is computed and written back
+      // into its slider so the thumb sits on the answer.
+      let p2 = Number(range('p2').value);
+      let v2 = Number(range('v2').value);
+      let t2 = Number(range('t2').value);
+      if (solve === 'V') v2 = (p1 * v1 * t2) / (t1 * p2);
+      else if (solve === 'P') p2 = (p1 * v1 * t2) / (t1 * v2);
+      else t2 = (t1 * p2 * v2) / (p1 * v1);
+
+      const solved = solve === 'V' ? 'v2' : solve === 'P' ? 'p2' : 't2';
+      const value: Record<string, number> = { p2, v2, t2 };
+      for (const k of ['p2', 'v2', 't2']) {
+        const el = range(k);
+        el.disabled = k === solved;
+        if (k === solved) el.value = String(value[k]);
+      }
+
+      const tag = (k: string) => (k === solved ? ' ← tính ra' : '');
+      output('p1').textContent = `${f(p1, 1)} atm`;
+      output('v1').textContent = `${f(v1, 1)} L`;
+      output('t1').textContent = `${f(t1, 0)} K`;
+      output('p2').textContent = `${f(p2, 3)} atm${tag('p2')}`;
+      output('v2').textContent = `${f(v2, 3)} L${tag('v2')}`;
+      output('t2').textContent = `${f(t2, 1)} K${tag('t2')}`;
+
+      // One ratio per state, each built from that state's own three numbers.
+      // They come out equal because the solved quantity was solved to make
+      // them equal -- but the picture has to compute both to be worth looking
+      // at, so inv2 is never copied from inv.
+      const inv = (p1 * v1) / t1;                 // atm*L/K
+      const inv2 = (p2 * v2) / t2;
+      const vi = (p1 * v1) / p2;                  // intermediate on the Boyle leg
+
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const cssW = root.clientWidth - 32;
+      const barsH = 66;
+      const cssH = Math.min(Math.round(cssW * 0.52) + 78, 430);
+      canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+      canvas.style.height = `${cssH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const fg = getComputedStyle(root).color;
+      ctx.font = '10px system-ui,sans-serif';
+      ctx.lineWidth = 1;
+
+      const padL = 44, padR = cssW < 420 ? 30 : 18, padT = 16;
+      const axisY = cssH - barsH - 22;
+      const vMax = Math.max(v1, v2, vi) * 1.22;
+      const pMax = Math.max(p1, p2) * 1.24;
+      const X = (v: number) => padL + (v / vMax) * (cssW - padL - padR);
+      const Y = (p: number) => axisY - (p / pMax) * (axisY - padT);
+
+      // Axes, both numbered, origin at (0, 0) so the shapes read correctly.
+      ctx.strokeStyle = fg; ctx.fillStyle = fg;
+      ctx.globalAlpha = 0.32;
+      ctx.beginPath();
+      ctx.moveTo(padL, padT); ctx.lineTo(padL, axisY); ctx.lineTo(cssW - padR, axisY);
+      ctx.stroke();
+      ctx.globalAlpha = 0.6;
+      ctx.textAlign = 'right';
+      const pStep = step(pMax, 4);
+      for (let p = pStep; p <= pMax + 1e-9; p += pStep) {
+        ctx.fillText(f(p, pStep < 1 ? 1 : 0), padL - 5, Y(p) + 3);
+      }
+      ctx.fillText('0', padL - 5, axisY + 3);
+      ctx.textAlign = 'center';
+      const vStep = step(vMax, cssW < 420 ? 3 : 5);
+      for (let v = vStep; v <= vMax + 1e-9; v += vStep) {
+        if (X(v) > cssW - padR - 2) break;      // keep the last tick on canvas
+        ctx.fillText(f(v, vStep < 1 ? 1 : 0), X(v), axisY + 14);
+      }
+      ctx.textAlign = 'left';
+      ctx.fillText('p (atm)', padL + 5, padT + 2);
+      ctx.textAlign = 'right';
+      ctx.fillText('V (L)', cssW - padR, axisY + 14);
+      ctx.globalAlpha = 1;
+
+      // The two isotherms, faint: p = (pV)/V through each state point.
+      const isotherm = (k: number) => {
+        ctx.beginPath();
+        let started = false;
+        for (let i = 0; i <= 240; i++) {
+          const v = (vMax * (i + 1)) / 241;
+          const p = k / v;
+          if (p > pMax) { started = false; continue; }
+          if (started) ctx.lineTo(X(v), Y(p));
+          else { ctx.moveTo(X(v), Y(p)); started = true; }
+        }
+        ctx.stroke();
+      };
+      ctx.setLineDash([4, 3]); ctx.globalAlpha = 0.4;
+      ctx.strokeStyle = ISOT; isotherm(p1 * v1);
+      ctx.strokeStyle = S2; isotherm(p2 * v2);
+      ctx.setLineDash([]); ctx.globalAlpha = 1;
+
+      // Leg A: isothermal at T1, from state 1 along the hyperbola to Vi.
+      ctx.strokeStyle = ISOT; ctx.lineWidth = 2.5;
+      ctx.beginPath();
+      for (let i = 0; i <= 120; i++) {
+        const v = v1 + ((vi - v1) * i) / 120;
+        const p = (p1 * v1) / v;
+        i ? ctx.lineTo(X(v), Y(p)) : ctx.moveTo(X(v), Y(p));
+      }
+      ctx.stroke();
+      ctx.fillStyle = ISOT;
+      if (Math.abs(X(vi) - X(v1)) > 12) {
+        const vm = v1 + (vi - v1) * 0.94;
+        arrow(X(vm), Y((p1 * v1) / vm), X(vi), Y(p2));
+      }
+
+      // Leg B: isobaric at p2, from the intermediate point out to state 2.
+      ctx.strokeStyle = ISOB; ctx.lineWidth = 2.5;
+      ctx.beginPath(); ctx.moveTo(X(vi), Y(p2)); ctx.lineTo(X(v2), Y(p2)); ctx.stroke();
+      ctx.fillStyle = ISOB;
+      if (Math.abs(X(v2) - X(vi)) > 12) arrow(X(vi), Y(p2), X(v2), Y(p2));
+      ctx.lineWidth = 1;
+
+      // Dotted guides from state 2 down to both axes.
+      ctx.strokeStyle = S2; ctx.globalAlpha = 0.4; ctx.setLineDash([3, 3]);
+      ctx.beginPath();
+      ctx.moveTo(padL, Y(p2)); ctx.lineTo(X(v2), Y(p2)); ctx.lineTo(X(v2), axisY);
+      ctx.stroke();
+      ctx.setLineDash([]); ctx.globalAlpha = 1;
+
+      // The three marked points.
+      ctx.strokeStyle = ISOB; ctx.lineWidth = 1.6;
+      ctx.beginPath(); ctx.arc(X(vi), Y(p2), 4, 0, Math.PI * 2); ctx.stroke();
+      ctx.lineWidth = 1;
+      ctx.fillStyle = S1;
+      ctx.beginPath(); ctx.arc(X(v1), Y(p1), 5.5, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = S2;
+      ctx.beginPath(); ctx.arc(X(v2), Y(p2), 5.5, 0, Math.PI * 2); ctx.fill();
+
+      ctx.font = 'bold 11px system-ui,sans-serif';
+      ctx.textAlign = X(v1) > cssW - padR - 40 ? 'right' : 'left';
+      ctx.fillStyle = S1;
+      ctx.fillText(`1 · ${f(t1, 0)} K`, X(v1) + (ctx.textAlign === 'left' ? 9 : -9), Y(p1) - 8);
+      ctx.fillStyle = S2;
+      ctx.textAlign = X(v2) < padL + 60 ? 'left' : 'right';
+      ctx.fillText(`2 · ${f(t2, 0)} K`, X(v2) + (ctx.textAlign === 'left' ? 9 : -9), Y(p2) - 8);
+      ctx.font = '10px system-ui,sans-serif';
+      if (cssW > 420) {
+        ctx.fillStyle = ISOB; ctx.globalAlpha = 0.85; ctx.textAlign = 'center';
+        ctx.fillText('trung gian', X(vi), Y(p2) + 17);
+        ctx.globalAlpha = 1;
+      }
+
+      // The invariant, one bar per state. Same number, built from different
+      // factors -- that is the whole point of the picture.
+      const full = niceCeil(Math.max(inv, inv2) * 1.55);
+      const dec = inv * 1000 >= 100 ? 1 : inv * 1000 >= 10 ? 2 : 3;
+      const rows: [string, string, number][] = [
+        [`1: ${f(p1, 1)}·${f(v1, 1)}/${f(t1, 0)}`, S1, inv],
+        [`2: ${f(p2, 2)}·${f(v2, 2)}/${f(t2, 0)}`, S2, inv2],
+      ];
+      // Bars start after the widest of the two labels, measured rather than
+      // guessed: a solved T2 of five digits makes that label grow.
+      const bx0 = Math.min(Math.ceil(Math.max(...rows.map((r) => ctx.measureText(r[0]).width))) + 8, cssW * 0.5);
+      const bx1 = Math.max(bx0 + 40, cssW - 56);
+      rows.forEach((row, i) => {
+        const y = cssH - barsH + 8 + i * 20;
+        ctx.fillStyle = fg; ctx.globalAlpha = 0.7; ctx.textAlign = 'left';
+        ctx.fillText(row[0], 0, y + 9);
+        ctx.globalAlpha = 0.14;
+        ctx.fillRect(bx0, y, bx1 - bx0, 12);
+        ctx.globalAlpha = 1; ctx.fillStyle = row[1];
+        ctx.fillRect(bx0, y, ((bx1 - bx0) * row[2]) / full, 12);
+        ctx.textAlign = 'right';
+        ctx.fillText(f(row[2] * 1000, dec), cssW, y + 9);
+      });
+      ctx.fillStyle = fg; ctx.globalAlpha = 0.6; ctx.textAlign = 'left';
+      ctx.fillText(
+        cssW < 300 ? 'pV/T (10⁻³ atm·L/K), hai thanh bằng nhau'
+                   : 'tỉ số pV/T (10⁻³ atm·L/K) — hai thanh luôn dài bằng nhau',
+        0, cssH - 4);
+      ctx.globalAlpha = 1;
+
+      const name = solve === 'V' ? 'V₂' : solve === 'P' ? 'p₂' : 'T₂';
+      const ans = solve === 'V' ? `${f(v2, 3)} L` : solve === 'P' ? `${f(p2, 3)} atm` : `${f(t2, 1)} K`;
+      const el = range(solved);
+      const off = value[solved] < Number(el.min) || value[solved] > Number(el.max)
+        ? ' (đáp số nằm ngoài biên thanh trượt, nhưng đồ thị vẫn vẽ đúng)' : '';
+      readout.innerHTML =
+        `Trạng thái 1: ${f(p1, 1)} atm · ${f(v1, 1)} L · ${t1} K → trạng thái 2: ` +
+        `${f(p2, 2)} atm · ${f(v2, 2)} L · ${f(t2, 0)} K. ` +
+        `<b>${name} = ${ans}</b>${off}. ` +
+        `Chặng đẳng nhiệt dừng ở ${f(vi, 3)} L, rồi chặng đẳng áp kéo tới ${f(v2, 3)} L. ` +
+        `Tỉ số pV/T ở cả hai đầu: <b>${f(inv * 1000, dec)}·10⁻³ atm·L/K</b>.`;
+    }
+
+    root.querySelectorAll('[data-in]').forEach((el) => {
+      el.addEventListener('input', draw);
+      el.addEventListener('change', draw);
+    });
+    addEventListener('resize', draw);
+    draw();
+  }
+  document
+    .querySelectorAll<HTMLElement>('[data-demo="phuong-trinh-trang-thai-ti-so-hai-trang-thai"]')
+    .forEach(setup);
+</script>
